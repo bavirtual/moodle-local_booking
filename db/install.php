@@ -188,13 +188,13 @@ function create_course_customfields() {
     }
 
     // create course Session Booking custom fields for ATO
-    save_course_customfield($category, 'checkbox', 'subscribed', get_string('useplugin', 'local_booking'),',"checkbydefault":"0"');
+    save_course_customfield($category, 'checkbox', 'subscribed', get_string('useplugin', 'local_booking'),',"visibility":"2","checkbydefault":"0"');
     save_course_customfield($category, 'text', 'homeicao',  get_string('homeicao', 'local_booking'),
-        ',"defaultvalue":"","displaysize":50,"maxlength":1333,"ispassword":"0","link":""');
-    save_course_customfield($category, 'textarea', 'aircrafticao', get_string('trainingaircraft', 'local_booking'), ',"defaultvalue":"","defaultvalueformat":"1"',
-        get_string('trainingaircraftdesc', 'local_booking'));
-    save_course_customfield($category, 'textarea', 'exercisetitles', get_string('exercisetitles', 'local_booking'), ',"defaultvalue":"","defaultvalueformat":"1"',
-        get_string('exercisetitlesdesc', 'local_booking'));
+        ',"visibility":"2","defaultvalue":"","displaysize":50,"maxlength":1333,"ispassword":"0","link":""');
+    save_course_customfield($category, 'textarea', 'aircrafticao', get_string('trainingaircraft', 'local_booking'),
+        ',"visibility":"2","defaultvalue":"","defaultvalueformat":"1"', get_string('trainingaircraftdesc', 'local_booking'));
+    save_course_customfield($category, 'textarea', 'exercisetitles', get_string('exercisetitles', 'local_booking'),
+        ',"visibility":"1","defaultvalue":"","defaultvalueformat":"1"', get_string('exercisetitlesdesc', 'local_booking'));
 }
 
 /**
@@ -226,7 +226,7 @@ function save_course_customfield($category, $type, $shortname, $name, $configdat
         $field->set('description', !empty($description) ? '<p dir="ltr" style="text-align:left;">' . $description . '</p>' : '');
         $field->set('descriptionformat', 1);
         $field->set('sortorder', $fieldsortorder + 1);
-        $field->set('configdata', '{"required":"0","uniquevalues":"0","locked":"0","visibility":"2"' . $configdata . '}');
+        $field->set('configdata', '{"required":"0","uniquevalues":"0","locked":"0"' . $configdata . '}');
         $field->save();
         field_created::create_from_object($field)->trigger();
     }

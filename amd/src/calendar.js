@@ -79,7 +79,7 @@ define([
             SlotActions.copySlots(root);
         });
 
-        // Listen the click on the Copy button.
+        // Listen the click on the Paste button.
         root.on('click', SELECTORS.PASTE_BUTTON, function() {
             SlotActions.pasteSlots(root);
         });

@@ -175,6 +175,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
                         date_add($weekday, date_interval_create_from_date_string('1 days'));
                     }
                     $params['time'] = $weekday->getTimestamp();
+                    $params['action'] = 'post';
                     $nodename = get_string('availability', 'local_booking');
                 }
                 $url = new moodle_url('/local/booking/availability.php', $params);
@@ -628,23 +629,6 @@ function get_week_start($date) {
     date_timestamp_set($week_start_date, $date[0]);
     $week_start_date->setISODate($date['year'], strftime('%W', $date[0]))->format('Y-m-d');
     return $week_start_date;
-}
-
-/**
- * Checks if the student completed
- * all pending lessons before marking
- * availability for an instructor session.
- *
- * @param   int     The course id
- * @param   int     The student id
- * @return  bool
- */
-function has_completed_lessons($courseid, $studentid) {
-    $student = new student($courseid, $studentid);
-    list($nextexercise, $exercisesection) = $student->get_next_exercise();
-    $completedlessons = $student->get_lessons_complete($exercisesection);
-
-    return $completedlessons;
 }
 
 /**

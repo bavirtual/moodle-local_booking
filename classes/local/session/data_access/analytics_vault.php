@@ -52,10 +52,10 @@ class analytics_vault implements analytics_vault_interface {
     public function get_session_recency(int $courseid, int $studentid) {
         global $DB;
 
-        $sql = 'SELECT timemodified AS lastsessiondate
-                FROM {' . self::DB_BOOKINGS . '}
-                WHERE studentid = :studentid
-                ORDER BY timemodified desc LIMIT 1';
+        $sql = 'SELECT endtime AS lastsessiondate
+                FROM {' . self::DB_SLOTS . '}
+                WHERE userid = :studentid
+                ORDER BY endtime desc LIMIT 1';
 
         $rs = $DB->get_record_sql($sql, ['studentid'=>$studentid]);
 

@@ -211,8 +211,9 @@ class student extends participant {
      * @param   int     The upcoming next exercise id
      * @return  bool    Whether the lessones were completed or not.
      */
-    public function get_lessons_complete($nextexercisesection) {
-        return $this->vault->get_lessons_complete($this->userid, $this->courseid, $nextexercisesection);
+    public function completed_lessons() {
+        list($nextexercise, $exercisesection) = $this->get_next_exercise();
+        return $this->vault->get_student_lessons_complete($this->userid, $this->courseid, $exercisesection);
     }
 
     /**

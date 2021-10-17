@@ -10,6 +10,7 @@
 
 // Booking
 $string['activestudents'] = 'Active Students Progression';
+$string['averagewaittime'] = 'Avg wait days';
 $string['book'] = 'Book';
 $string['bookings'] = 'Session booking';
 $string['bookingactive'] = 'My Active Bookings';

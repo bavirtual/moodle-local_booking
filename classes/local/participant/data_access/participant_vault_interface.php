@@ -106,4 +106,36 @@ interface participant_vault_interface {
      * @return string               The full participatn username
      */
     public static function get_customfield_data(int $courseid, int $participantid, string $field);
+
+    /**
+     * Returns the timestamp of the last
+     * graded session.
+     *
+     * @param   int The user id
+     * @param   int The course id
+     * @return  stdClass The record containing timestamp of the last grading
+     */
+    function get_last_graded_date(int $userid, int $courseid);
+
+    /**
+     * Returns whether the student complete
+     * all sessons prior to the upcoming next
+     * exercise.
+     *
+     * @param   int     The student id
+     * @param   int     The course id
+     * @param   int     The upcoming next exercise id
+     * @return  bool    Whether the lessones were completed or not.
+     */
+    function get_student_lessons_complete(int $studentid, int $courseid, int $nextexercisesection);
+
+    /**
+     * Returns the next upcoming exercise id
+     * for the student and its associated course section.
+     *
+     * @param   int     The course id
+     * @param   int     The student id
+     * @return  array   The next exercise id and associated course section
+     */
+    function get_next_student_exercise(int $courseid, int $studentid);
 }

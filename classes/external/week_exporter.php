@@ -309,7 +309,8 @@ class week_exporter extends exporter {
 
         // notify student if wait period restriction since last session is not up yet
         if ($this->actiondata['action'] != 'book' & $this->view == 'user') {
-            if (!has_completed_lessons($this->courseid, $this->studentid)) {
+            $student = new student($this->courseid, $this->studentid);
+            if (!$student->completed_lessons()) {
                 \core\notification::WARNING(get_string('lessonsincomplete', 'local_booking'));
             }
         }

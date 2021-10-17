@@ -68,12 +68,19 @@ define([
 
         getUISlots(root);
 
-        // Send the form data to the server for processing.
-        return Repository.saveSlots(Slots, course, year, week)
+        let serverCall = null;
+        if (Slots.length != 0) {
+            serverCall = Repository.saveSlots(Slots, course, year, week);
+        } else {
+            serverCall = Repository.clearSlots(course, year, week);
+        }
+
+        // Send a request to the server to clear slots.
+        return serverCall
             .then(function(response) {
                 if (response.validationerror) {
                     // eslint-disable-next-line no-alert
-                    alert('Errors encountered: Unable to save slot!');
+                    alert('Errors encountered: Unable to process availability posting action!');
                 }
                 return;
             }
@@ -124,25 +131,6 @@ define([
             }
             .bind(this))
             .fail(Notification.exception);
-    }
-
-    /**
-     * Clear slots for a user per course in week and year
-     * given they are not otherwsie booked
-     *
-     * @method clearWeekSlots
-     * @param {object} root The calendar root element
-     */
-     function clearWeekSlots(root) {
-        $('td').filter(function() {
-            if ($(this).data('slot-booked') == 0) {
-                $(this).data('slot-marked', 0);
-                $(this).removeClass('slot-selected');
-            }
-        });
-        setSaveButtonState(root, 'post');
-
-        return;
     }
 
      /**
@@ -267,10 +255,29 @@ define([
         return;
      }
 
+    /**
+     * Clear slots for a user per course in week and year
+     * given they are not otherwsie booked
+     *
+     * @method clearWeekSlots
+     * @param {object} root The calendar root element
+     */
+     function clearWeekSlots(root) {
+        $('td').filter(function() {
+            if ($(this).data('slot-booked') == 0) {
+                $(this).data('slot-marked', 0);
+                $(this).removeClass('slot-selected');
+            }
+        });
+        setSaveButtonState(root, 'post', true);
+
+        return;
+    }
+
      /**
      * Set the cells from the CopiedSlotsIndexes to the current table
      *
-     * @method pasteSlots
+     * @method setPasteState
      * @param {object} root The calendar root element
      */
       function setPasteState(root) {
@@ -287,33 +294,24 @@ define([
      * Set the cells from the CopiedSlotsIndexes to the current table
      *
      * @method setSaveButtonState
-     * @param {object} root     The calendar root element
-     * @param {string} action   The action behind the view
+     * @param {object} root      The calendar root element
+     * @param {string} action    The action behind the view
+     * @param {bool} forceenable Enable save button
      */
-      function setSaveButtonState(root, action) {
+      function setSaveButtonState(root, action, forceenable) {
         getUISlots(root, action);
 
-        if (action == 'book') {
-            // Enable or disable the booking save button if it has booked slots
-            let bookSaveButton = root.find(SELECTORS.BOOK_BUTTON);
-            if (BookedSlot !== undefined && BookedSlot.length !== 0) {
-                bookSaveButton.addClass('slot-button-blue').removeClass('slot-button-gray');
-                bookSaveButton.prop('disabled', false);
-            } else {
-                bookSaveButton.addClass('slot-button-gray').removeClass('slot-button-blue');
-                bookSaveButton.prop('disabled', true);
-            }
-        } else {
-            // Enable or disable the slot posting save button if it has slots
-            let slotSaveButton = root.find(SELECTORS.SAVE_BUTTON);
-            if (Slots !== undefined && Slots.length !== 0) {
-                slotSaveButton.addClass('slot-button-blue').removeClass('slot-button-gray');
-                slotSaveButton.prop('disabled', false);
-            } else {
-                slotSaveButton.addClass('slot-button-gray').removeClass('slot-button-blue');
-                slotSaveButton.prop('disabled', true);
-            }
-        }
+        const enabled = 'slot-button-blue';
+        const disabled = 'slot-button-gray';
+        const SaveButton = root.find(action == 'book' ? SELECTORS.BOOK_BUTTON : SELECTORS.SAVE_BUTTON);
+
+        let state = forceenable ||
+                (action == 'book' && BookedSlot !== undefined && BookedSlot.length !== 0) ||
+                (action == 'post' && Slots !== undefined && Slots.length !== 0);
+
+        SaveButton.addClass(state ? enabled : disabled).removeClass(!state ? enabled : disabled);
+        SaveButton.prop('disabled', !state);
+
         return;
      }
 

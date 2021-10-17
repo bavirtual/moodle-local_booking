@@ -33,7 +33,6 @@ use renderer_base;
 use core\external\exporter;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\session\entities\action;
-use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\session\entities\booking;
 
@@ -48,14 +47,14 @@ use local_booking\local\session\entities\booking;
 class booking_student_exporter extends exporter {
 
     /**
-     * @var int $studentid An id of the student.
+     * @var int $course An id of the current course.
      */
     protected $courseid;
 
     /**
-     * @var int $studentid A user of the student.
+     * @var student $student The student.
      */
-    protected $studentid;
+    protected $student;
 
     /**
      * @var array $courseexercises An array of the course exercises.
@@ -80,7 +79,7 @@ class booking_student_exporter extends exporter {
      */
     public function __construct($data, $courseid, $related) {
         $this->courseid = $courseid;
-        $this->studentid = $data['studentid'];
+        $this->student = new student($courseid, $data['studentid']);
         $this->courseexercises = $related['courseexercises'];
         $this->booking = new booking(0, $courseid, $data['studentid']);
         $this->booking->load();
@@ -164,7 +163,7 @@ class booking_student_exporter extends exporter {
 
         // check if the student to be book has incomplete lessons
         if ($action->get_type() == 'book') {
-            $hasincompletelessons = !has_completed_lessons($this->courseid, $this->studentid);
+            $hasincompletelessons = !$this->student->completed_lessons();
             if ($hasincompletelessons) { $action->set_type('disabled'); }
         }
 
@@ -199,18 +198,17 @@ class booking_student_exporter extends exporter {
      */
     protected function get_sessions($output) {
         // get student grades
-        $student = new student($this->courseid, $this->studentid);
-        $this->studentgrades = $student->get_grades();
+        $this->studentgrades = $this->student->get_grades();
 
         // get student log book
-        $logbook = new logbook($this->courseid, $this->studentid);
+        $logbook = new logbook($this->courseid, $this->student->get_id());
         $logbook->load();
 
         // export all exercise sessions, quizes, and exams
         foreach ($this->courseexercises as $exercise) {
             $studentinfo = [];
             $studentinfo = [
-                'studentid'   => $this->studentid,
+                'studentid'   => $this->student->get_id(),
                 'studentname' => $this->data['studentname'],
                 'courseid'    => $this->courseid,
                 'exerciseid'  => $exercise->exerciseid,
@@ -238,12 +236,11 @@ class booking_student_exporter extends exporter {
         // next action depends if the student has any booking
         $actiontype = !empty($this->booking->get_id()) ? 'grade' : 'book';
         if ($actiontype == 'book') {
-            $student = new student($this->courseid, $this->studentid);
-            list($nextexerciseid, $section) = $student->get_next_exercise();
+            list($nextexerciseid, $section) = $this->student->get_next_exercise();
         } else {
             $nextexerciseid = $this->booking->get_exerciseid();
         }
-        $action = new action($actiontype, $this->courseid, $this->studentid, $nextexerciseid);
+        $action = new action($actiontype, $this->courseid, $this->student->get_id(), $nextexerciseid);
 
         return $action;
     }

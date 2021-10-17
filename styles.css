@@ -78,11 +78,11 @@
     background-color: #0d47a1;
 }
 .session-button-book {
-    background-color: black;
+    background-color: green;
     transition: ease background-color 250ms;
 }
 .session-button-book:hover {
-    background-color: gray;
+    background-color: rgb(82, 110, 82);
 }
 .session-button-disabled {
     background-color: darkgray;

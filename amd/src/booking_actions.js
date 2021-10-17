@@ -250,7 +250,7 @@ function(
                 modal.setLogentryId(logentryId);
                 modal.setStudentId(studentId);
                 modal.setCourseId(bookingWrapper.data('courseid'));
-                modal.setContextId(bookingWrapper.data('contextId'));
+                modal.setContextId(bookingWrapper.data('contextid'));
                 modal.show();
 
                 e.stopImmediatePropagation();

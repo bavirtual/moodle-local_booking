@@ -187,8 +187,7 @@ function(
         ]);
 
         this.getEditButton().on(CustomEvents.events.activate, function(e, data) {
-            // When the edit button is clicked we fire an event for the calendar UI to handle.
-            // We don't care how the UI chooses to handle it.
+            // When the edit button is clicked we fire an event for the booking UI to handle edit.
             $('body').trigger(BookingEvents.editLogentry, [this.getLogentryId(), this.getStudentId()]);
 
             // There is nothing else for us to do so let's hide.

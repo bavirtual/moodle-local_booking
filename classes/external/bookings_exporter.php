@@ -70,6 +70,11 @@ class bookings_exporter extends exporter {
     protected $subscribedcourse;
 
     /**
+     * @var int $averagewait The average wait time for students.
+     */
+    protected $averagewait;
+
+    /**
      * Constructor.
      *
      * @param mixed $data An array of student progress data.
@@ -124,6 +129,9 @@ class bookings_exporter extends exporter {
                 'type' => booking_mybookings_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
+            'avgwait' => [
+                'type' => PARAM_INT,
+            ],
         ];
     }
 
@@ -139,6 +147,7 @@ class bookings_exporter extends exporter {
             'exercises'  => $this->get_exercises($output),
             'activestudents' => $this->get_students($output),
             'activebookings' => $this->get_bookings($output),
+            'avgwait' => $this->averagewait,
         ];
 
         return $return;
@@ -196,6 +205,7 @@ class bookings_exporter extends exporter {
         $this->activestudents = $this->prioritze($this->subscribedcourse->get_active_students());
 
         $i = 0;
+        $totaldays = 0;
         foreach ($this->activestudents as $student) {
             $i++;
             $sequencetooltip = [
@@ -223,7 +233,9 @@ class bookings_exporter extends exporter {
                 'courseexercises' => $this->exercises,
             ]);
             $activestudentsexports[] = $studentexporter->export($output);
+            $totaldays += $student->priority->get_recency_days();
         }
+        $this->averagewait = ceil($totaldays / $i);
 
         return $activestudentsexports;
     }

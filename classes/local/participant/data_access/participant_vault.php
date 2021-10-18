@@ -459,12 +459,12 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // Get the student's grades
-        $sql = 'SELECT cm.id, cm.course, cm.module, cm.instance, cm.section
+        $sql = 'SELECT cm.id, cm.course, cm.module, cm.instance, cs.section
                 FROM {' . self::DB_COURSE_MODS .'} cm
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
                 INNER JOIN {' . self::DB_MODULES . '} as m ON m.id = cm.module
                 WHERE cm.course = :courseid
-                AND cm.section <= :nextexercisesection
+                AND cs.section <= :nextexercisesection
                 AND m.name = "lesson"
                 AND cm.instance NOT IN (SELECT lt.lessonid
                     FROM {' . self::DB_LESSON_TIMER . '} lt
@@ -496,7 +496,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // Get first record of exercises not completed yet
-        $sql = 'SELECT cm.id AS nextexerciseid, cm.section AS section
+        $sql = 'SELECT cm.id AS nextexerciseid, cs.section AS section
                 FROM {' . self::DB_COURSE_MODS .'} cm
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
                 INNER JOIN {' . self::DB_MODULES . '} m ON m.id = cm.module

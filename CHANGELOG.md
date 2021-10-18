@@ -1,6 +1,10 @@
 # Change log
 
-## [0.02.75] BETA - RELEASED 2021-10-xx
+## [0.02.76] BETA - UNRELEASED 2021-10-18 - hotfix
+### Fixed
+- Lesson completion section passed correction
+
+## [0.02.75] BETA - UNRELEASED 2021-10-17
 ### Fixed
 - Lesson completion based on section order not id
 

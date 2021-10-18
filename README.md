@@ -35,9 +35,25 @@ The plugin can be installed either directly from Moodle or through CLI.
 - [Robin Herbots Inputmask 5.x](https://github.com/RobinHerbots/Inputmask) (package already included in js folder)
 
 ## Configuration
-There are three areas of configurations
+There are three areas of configurations:
+
+1. Plugin configuration (moodle administrators)
+    - User custom fields (primary & secondary simulators, and callsign)
+    - Session Booking Configurations:
+        -
+    - Capability and role assignment: the plugin should have the same configuration as what is shown below. Note that the `Beta User` role is meant for beta rollout, afterwhich the `student` role should have the same capability as the `Beta User`:
+    <img src="pix/capability.png" alt="capabilities">
+
+2. Course configuration (course administrators)
+
+3. User configuration (users)
+    - Notifications
+    - Primary Simulator
+    - Secondary Simulator
+    -
 
 ## Troubleshooting
+-
 ## FAQ
 - Q: How to adjust and tune student prioritization?
 - A: In the plugin there are multiplier settings that allow higher multiplier score for weighing each student prioritization.  The higher the multiplier the higher the weight of that setting in the overall score determining prioritization.

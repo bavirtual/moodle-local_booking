@@ -250,10 +250,10 @@ class participant_vault implements participant_vault_interface {
 
         // Get the student's grades
         $sql = 'SELECT cm.id AS exerciseid, ag.assignment AS assignid,
-                    ag.userid, ag.grade, 0 AS totalgrade, ag.timemodified AS gradedate,
-                    u.id AS instructorid, ' . $DB->sql_concat('u.firstname', '" "',
-                    'u.lastname', '" "', 'u.alternatename') . ' AS instructorname,
-                    m.name AS exercisetype
+                    ag.userid, MAX(ag.grade) AS grade, 0 AS totalgrade,
+                    MAX(ag.timemodified) AS gradedate, m.name AS exercisetype,
+                    MAX(u.id) AS instructorid, ' . $DB->sql_concat('u.firstname', '" "',
+                    'u.lastname', '" "', 'u.alternatename') . ' AS instructorname
                 FROM {' . self::DB_GRADES . '} ag
                 INNER JOIN {' . self::DB_COURSE_MODS . '} cm ON ag.assignment = cm.instance
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
@@ -261,6 +261,7 @@ class participant_vault implements participant_vault_interface {
                 INNER JOIN {' . self::DB_USER . '} u ON ag.grader = u.id
                 WHERE m.name = :assign
                     AND ag.userid = :studentid
+                GROUP BY exerciseid, assignid, exercisetype
                 ORDER BY cs.section';
 
         $params = [
@@ -504,7 +505,8 @@ class participant_vault implements participant_vault_interface {
                     AND m.name = :assign
                     AND cm.instance NOT IN (SELECT ag.assignment
                                             FROM {' . self::DB_GRADES . '} ag
-                                            WHERE ag.userid = :studentid)
+                                            WHERE ag.userid = :studentid
+                                            AND ag.grader != -1)
                 ORDER BY cs.section asc
                 LIMIT 1';
 

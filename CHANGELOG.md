@@ -1,6 +1,11 @@
 # Change log
 
-## [0.02.76] BETA - UNRELEASED 2021-10-18 - hotfix
+## [0.02.77] BETA - RELEASED 2021-10-18 - hotfix
+### Changed
+- get_student_assignment_grades to retrieve unique rows
+- version 2021101801
+
+## [0.02.76] BETA - UNRELEASED 2021-10-18
 ### Fixed
 - Lesson completion section passed correction
 
@@ -13,7 +18,7 @@
 - Average wait days for student sessions
 
 ### Changed
-- version 202110xxxx
+- version 2021101700
 - changed ATO exercise_titles to be visible to Teachers only to avoid from titles displaying in Course listing from Site home
 - Analytics to retrieve session recency for priority wait days from booked slots endtime vs session booked timemodified
 - lessons completed logic

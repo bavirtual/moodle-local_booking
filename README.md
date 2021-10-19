@@ -54,11 +54,16 @@ There are three areas of configurations:
 
 ## Troubleshooting
 -
+
 ## FAQ
 - Q: How to adjust and tune student prioritization?
 - A: In the plugin there are multiplier settings that allow higher multiplier score for weighing each student prioritization.  The higher the multiplier the higher the weight of that setting in the overall score determining prioritization.
 
 - Q: What happens when the plugin is uninstalled?
 - A: The plugin follows Moodle standard for plugins and it is uninstalled completely from Moodle including associated data and configurations.  The only addition that is left is the ATO category and simulators & callsign custom fields.  If desired these can be removed from [Site administration > Users > User profile fields]
+
+## Known Issues
+- [BR00268]: Active Students does not show students after initial plugin install. Interim fix is to update user profile [SAVE] to persist added custom fields.
+- [BR00254]: A user can copy slots and paste them into restricted period.
 
 ## Maintainers

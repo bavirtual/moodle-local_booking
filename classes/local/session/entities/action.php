@@ -67,11 +67,10 @@ class action implements action_interface {
         // Load student(s) availability slots
         switch ($actiontype) {
             case 'grade':
-                $actionurl = new moodle_url('/mod/assign/view.php', [
-                    'id' => $refid,
-                    'rownum' => 0,
+                $actionurl = new moodle_url('/local/booking/assign.php', [
+                    'courseid' => $courseid,
+                    'exeid' => $refid,
                     'userid' => $studentid,
-                    'action' => 'grader',
                 ]);
                 $name = get_string('grade', 'grades');
                 break;

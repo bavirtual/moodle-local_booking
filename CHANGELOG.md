@@ -1,5 +1,15 @@
 # Change log
 
+## [0.02.78] BETA - RELEASED 2021-10-19 - hotfix
+### Fixed
+- [BR00272]: redirect to assignment for grading does not bring the correct student if a filter is applied in ‘View Submissions’.
+
+### Added
+- assign.php to clear any preset filters for the assignment feedback submission and redirects to the feedback Moodle page
+
+### Changed
+- Grade button link to assign.php vs direct feedback Moodle page
+
 ## [0.02.77] BETA - RELEASED 2021-10-18 - hotfix
 ### Changed
 - get_student_assignment_grades to retrieve unique rows

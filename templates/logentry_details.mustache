@@ -17,7 +17,7 @@
 {{!
     @template local_booking/logentry_details
 
-    Calendar logentry details.
+    Log book entry details.
 
     The purpose of this template is to render the logentry details.
 
@@ -50,12 +50,13 @@
 
 <div class="row mb-5">
     <div class="col-1">{{#pix}} booking, local_booking {{/pix}}</div>
-    <div class="col-11" style="font-weight: bolder;">{{{formattedtime}}}</div>
+    <div class="col-11 logbook-title">{{{formattedtime}}}</div>
 </div>
 <div class="row mt-1">
-    <div class="col-1"><i class="icon fa fa-question-circle fa-fw"
-        style="color: cornflowerblue;"title="{{#str}} exercise, local_booking {{/str}}"
-        aria-label="{{#str}} exercise, local_booking {{/str}}"></i></div>
+    <div class="col-1 logbook-mt1">
+        <i class="logbook-mt1">{{#pix}} question-circle, local_booking, {{#str}} exercise, local_booking {{/str}} {{/pix}}
+        </i>
+    </div>
     <div class="col-5">{{#str}} exercise, local_booking {{/str}}</div>
     <div class="col-6">{{exercisename}}</div>
 </div>
@@ -75,16 +76,18 @@
     <div class="col-6">{{soloflighttime}}</div>
 </div>
 <div class="row mt-1">
-    <div class="col-1"><i class="icon fa fa-user fa-fw"
-        style="color: cornflowerblue;"title="{{#str}} pic, local_booking {{/str}}"
-        aria-label="{{#str}} pic, local_booking {{/str}}"></i></div>
+    <div class="col-1">
+        <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} pic, local_booking {{/str}} {{/pix}}
+        </i>
+    </div>
     <div class="col-5">{{#str}} pic, local_booking {{/str}}</div>
     <div class="col-6">{{picname}}</div>
 </div>
 <div class="row mt-1">
-    <div class="col-1"><i class="icon fa fa-user fa-fw"
-        style="color: cornflowerblue;"title="{{#str}} sic, local_booking {{/str}}"
-        aria-label="{{#str}} sic, local_booking {{/str}}"></i></div>
+    <div class="col-1">
+        <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} sic, local_booking {{/str}} {{/pix}}
+        </i>
+    </div>
     <div class="col-5">{{#str}} sic, local_booking {{/str}}</div>
     <div class="col-6">{{sicname}}</div>
 </div>

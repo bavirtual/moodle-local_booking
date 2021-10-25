@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Group observers.
+ * Grading observers.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -30,7 +30,8 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/local/booking/lib.php');
 
 /**
- * Group observers class.
+ * Group observers class to listen to graded assignments
+ * for clearing previously posted student availability.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)

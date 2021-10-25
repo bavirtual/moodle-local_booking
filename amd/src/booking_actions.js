@@ -99,7 +99,7 @@ function(
      * @param {Number} courseId The course of the logentry.
      * @return {Promise}
      */
-    function confirmDeletion(logentryId, studentId, courseId) {
+    var confirmDeletion = (logentryId, studentId, courseId) => {
         var pendingPromise = new Pending('local_booking/booking_actions:confirmDeletion');
         var deleteStrings = [
             {
@@ -121,6 +121,7 @@ function(
 
         var stringsPromise = Str.get_strings(deleteStrings);
 
+        // Setup modal delete prompt form
         var finalPromise = $.when(stringsPromise, deletePromise)
         .then(function(strings, deleteModal) {
             deleteModal.setRemoveOnClose(true);
@@ -151,47 +152,7 @@ function(
         .catch(Notification.exception);
 
         return finalPromise;
-    }
-
-    /**
-     * Register the listeners required to delete the logentry.
-     *
-     * @param   {jQuery} root
-     */
-     function registerDelete(root) {
-        root.on('click', BookingSelectors.actions.deleteLogentry, function(e) {
-            // Fetch the logentry title, and pass them into the new dialogue.
-            var logentrySource = root.find(BookingSelectors.logentryItem),
-                logentryId = logentrySource.data('logentryId'),
-                studentId = logentrySource.data('studentId'),
-                courseId = logentrySource.data('courseId');
-            confirmDeletion(logentryId, studentId, courseId);
-
-            e.preventDefault();
-        });
-    }
-
-    /**
-     * Register the listeners required to redirect to
-     * assignment grading page.
-     *
-     * @param   {jQuery} root
-     */
-    function registerRedirect(root) {
-        root.on('click', BookingSelectors.actions.gotoFeedback, function(e) {
-            // Fetch the logentry title, and pass them into the new dialogue.
-            var logentrySource = root.find(BookingSelectors.logentryItem),
-                modId = logentrySource.data('exerciseId'),
-                userId = logentrySource.data('studentId');
-                $('body').trigger(BookingEvents.gotoFeedback, [modId]);
-
-                // Redirect to the grading and feedback page
-                location.href = M.cfg.wwwroot + '/mod/assign/view.php?id=' + modId +
-                    '&rownum=0&userid=' + userId + '&action=grader';
-
-            e.preventDefault();
-        });
-    }
+    };
 
     /**
      * Create the logentry form modal for creating new logentries and
@@ -200,7 +161,7 @@ function(
      * @param {object} root The progression booking root element
      * @return {promise} The create modal promise
      */
-     function registerLogentryFormModal(root) {
+     var registerLogentryFormModal = (root) => {
         var logentryFormPromise = ModalFactory.create({
             type: ModalLogentryForm.TYPE,
             large: true
@@ -228,7 +189,7 @@ function(
         });
 
         return logentryFormPromise;
-    }
+    };
 
     /**
      * Register the listeners required to edit the logentry.
@@ -237,7 +198,7 @@ function(
      * @param   {Promise} logentryFormModalPromise
      * @returns {Promise}
      */
-    function registerEditListeners(root, logentryFormModalPromise) {
+    var registerEditListeners = (root, logentryFormModalPromise) => {
         var pendingPromise = new Pending('local_booking/booking_actions:registerEditListeners');
 
         return logentryFormModalPromise
@@ -263,7 +224,47 @@ function(
             return modal;
         })
         .catch(Notification.exception);
-    }
+    };
+
+    /**
+     * Register the listeners required to delete the logentry.
+     *
+     * @param   {jQuery} root
+     */
+     var registerDelete = (root) => {
+        root.on('click', BookingSelectors.actions.deleteLogentry, function(e) {
+            // Fetch the logentry title, and pass them into the new dialogue.
+            var logentrySource = root.find(BookingSelectors.logentryItem),
+                logentryId = logentrySource.data('logentryId'),
+                studentId = logentrySource.data('studentId'),
+                courseId = logentrySource.data('courseId');
+            confirmDeletion(logentryId, studentId, courseId);
+
+            e.preventDefault();
+        });
+    };
+
+    /**
+     * Register the listeners required to redirect to
+     * exercise (assignment) grading page.
+     *
+     * @param   {jQuery} root
+     */
+     var registerRedirect = (root) => {
+        root.on('click', BookingSelectors.actions.gotoFeedback, function(e) {
+            // Fetch the logentry title, and pass them into the new dialogue.
+            var logentrySource = root.find(BookingSelectors.logentryItem),
+                modId = logentrySource.data('exerciseId'),
+                userId = logentrySource.data('studentId');
+                $('body').trigger(BookingEvents.gotoFeedback, [modId]);
+
+                // Redirect to the grading and feedback page
+                location.href = M.cfg.wwwroot + '/mod/assign/view.php?id=' + modId +
+                    '&rownum=0&userid=' + userId + '&action=grader';
+
+            e.preventDefault();
+        });
+    };
 
     return {
         registerRedirect: registerRedirect,

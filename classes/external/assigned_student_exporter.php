@@ -31,7 +31,7 @@ use core\external\exporter;
 use DateTime;
 
 /**
- * Class for displaying instructor's booked sessions view.
+ * Class for displaying instructor's 'My assigned students' view.
  *
  * @package   local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)

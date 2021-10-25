@@ -15,7 +15,6 @@
 
 /**
  * A javascript module to handle calendar ajax actions.
- * Improvised from core_calendar.
  *
  * @module     local_booking/repository
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -78,9 +77,7 @@ import Ajax from 'core/ajax';
 };
 
 /**
- * Change the start day for the given event id. The day timestamp
- * only has to be any time during the target day because only the
- * date information is extracted, the time of the day is ignored.
+ * Send booked slots to the server for persistence
  *
  * @param {array} bookedslot    The array of booked slots
  * @param {int} courseId        The course id of the booking
@@ -123,9 +120,8 @@ import Ajax from 'core/ajax';
 };
 
 /**
- * Change the start day for the given event id. The day timestamp
- * only has to be any time during the target day because only the
- * date information is extracted, the time of the day is ignored.
+ * Send marked availability posts (time slots)
+ * to the server to be persisted
  *
  * @param {string} weekSlots The URL encoded values from the form
  * @param {int} course The id of the associated course
@@ -148,9 +144,8 @@ import Ajax from 'core/ajax';
 };
 
 /**
- * Change the start day for the given event id. The day timestamp
- * only has to be any time during the target day because only the
- * date information is extracted, the time of the day is ignored.
+ * Remove all saved slots for a specific week & year
+ * for the current user (student)
  *
  * @param {int} course The id of the associated course
  * @param {int} year The id of the event to update
@@ -171,7 +166,8 @@ import Ajax from 'core/ajax';
 };
 
 /**
- * Submit the form data for the logbook entry form.
+ * Send the form data of the logbook entry form
+ * to be persisted at the server.
  *
  * @method submitCreateUpdateLogentryForm
  * @param {string} formArgs An array of J URL encoded values from the form

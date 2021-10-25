@@ -17,7 +17,7 @@
 {{!
     @template local_booking/my_bookings
 
-    Calendar week view for blocks.
+    Instructor bookings view.
 
     The purpose of this template is to render the main, detailed weekly view.
 
@@ -38,7 +38,7 @@
 }}>
 {{> core/overlay_loading}}
 <br/><p><h3>{{#str}}bookingactive,local_booking{{/str}}</h3></p>
-<table id="bookings-detail-{{uniqid}}" data-region="instructor-bookings" class="calendartable booking-table table-hover" style="width: 100%;">
+<table id="bookings-detail-{{uniqid}}" data-region="instructor-bookings" class="calendartable booking-table table-hover">
     <thead>
         <tr>
             <th class="header booking-header text-xs-center">
@@ -47,13 +47,13 @@
             <th class="header booking-header text-xs-center">
                 <span class="media-body" aria-hidden="true">{{#str}}exercise,local_booking{{/str}}</span>
             </th>
-            <th class="header booking-header text-xs-center" style="width: 120px;">
+            <th class="header booking-header booking-xxbig text-xs-center">
                 <span class="media-body" aria-hidden="true">{{#str}}sessiondate,local_booking{{/str}}</span>
             </th>
-            <th class="header booking-header text-xs-center" style="width: 100px;">
+            <th class="header booking-header booking-xbig text-xs-center">
                 <span class="media-body" aria-hidden="true">{{#str}}zulutime,local_booking{{/str}}</span>
             </th>
-            <th class="header booking-header text-xs-center" style="width: 100px;">
+            <th class="header booking-header booking-xbig text-xs-center">
                 <span class="media-body" aria-hidden="true">{{#str}}bookingcancel,local_booking{{/str}}</span>
             </th>
         </tr>
@@ -61,29 +61,28 @@
     <tbody>
     {{#activebookings}}
         <tr id="{{bookingid}}">
-            <td class="text-md-left" style="padding: 10px; width: 40%;">
+            <td class="booking-text-big text-md-left">
                 <span>{{studentname}}</span>
             </td>
-            <td class="text-sm-center" style="padding: 4px; width: 500px;">
+            <td class="booking-text booking-text-med text-sm-center">
                 <span><i>{{exercise}}</i></span>
             </td>
-            <td class="text-sm-center" style="padding: 4px; width: 140px;">
+            <td class="booking-text booking-text-small text-sm-center">
                 <span>{{sessiondate}}</span>
             </td>
-            <td class="text-sm-center" style="padding: 4px; width: 140px;">
+            <td class="booking-text booking-text-small text-sm-center">
                 <span>{{sessiontime}}</span>
             </td>
             <td>
-                <div class="singlebutton">
-                    <button class="session-button session-button-cancel" style="float: right; margin: 4px 0 0 0;"
+                <div class="singlebutton session-right">
+                    <button class="session-button session-button-cancel"
                         data-region="cancel-button"
                         id="cancel_button"
                         data-bookingid="{{bookingid}}"
                         data-studentid="{{studentid}}"
-                        data-exerciseid="{{exerciseid}}"
-                        title="">
-                        <i class="fa fa-window-close" style="padding-right: 5px;"></i>
-                        {{actionname}}
+                        data-exerciseid="{{exerciseid}}">
+                        {{#pix}}window-close,local_booking{{/pix}}
+                        <span>{{actionname}}</span>
                     </button>
                      </a>
                 </div>

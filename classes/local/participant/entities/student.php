@@ -27,6 +27,7 @@ namespace local_booking\local\participant\entities;
 
 use DateTime;
 use moodle_exception;
+use local_booking\local\session\entities\priority;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\slot\entities\slot;
 
@@ -51,6 +52,11 @@ class student extends participant {
      * @var string $nextlesson The student's next upcoming lesson.
      */
     protected $nextlesson;
+
+    /**
+     * @var priority $priority The student's priority object.
+     */
+    protected $priority;
 
     /**
      * Constructor.
@@ -204,6 +210,33 @@ class student extends participant {
     }
 
     /**
+     * Returns the timestamp of the next
+     * allowed session date for the student.
+     *
+     * @return  DateTime
+     */
+    public function get_next_allowed_session_date() {
+        $daysfromlast = (get_config('local_booking', 'nextsessionwaitdays')) ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
+
+        $lastsession = slot::get_last_posting($this->courseid, $this->userid);
+        $sessiondatets = !empty($lastsession) ? $lastsession->starttime : time();
+        $sessiondate = new DateTime('@' . $sessiondatets);
+        date_add($sessiondate, date_interval_create_from_date_string($daysfromlast . ' days'));
+
+        // advance by one day if it is Sunday to avoid showing a restricted week
+        if ((getdate($sessiondate->getTimestamp()))['wday'] == 0) {
+            date_add($sessiondate, date_interval_create_from_date_string('1 days'));
+        }
+
+        // return today's date if the last next allowed session is in the past
+        if ($sessiondate->getTimestamp() < time()) {
+            $sessiondate = new DateTime('@' . time());
+        }
+
+        return $sessiondate;
+    }
+
+    /**
      * Returns whether the student complete
      * all sessons prior to the upcoming next
      * exercise.
@@ -211,7 +244,7 @@ class student extends participant {
      * @param   int     The upcoming next exercise id
      * @return  bool    Whether the lessones were completed or not.
      */
-    public function completed_lessons() {
+    public function has_completed_lessons() {
         list($nextexercise, $exercisesection) = $this->get_next_exercise();
         return $this->vault->get_student_lessons_complete($this->userid, $this->courseid, $exercisesection);
     }
@@ -224,6 +257,18 @@ class student extends participant {
      */
     public function get_next_exercise() {
         return $this->vault->get_next_student_exercise($this->courseid, $this->userid);
+    }
+
+    /**
+     * Returns the student's priority object.
+     *
+     * @return priority The student's priority object
+     */
+    public function get_priority() {
+        if (empty($this->priority)) {
+            $this->priority = new priority($this->courseid, $this->userid);
+        }
+        return $this->priority;
     }
 
     /**

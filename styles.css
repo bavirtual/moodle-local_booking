@@ -6,12 +6,55 @@
  */
 
 /* Booking grid */
+.booking-table {
+    width: 100%;
+}
 .booking-table tr {
     border: 1px solid lightgray;
     border-collapse: collapse;
 }
+.booking-title {
+    width: 100%;
+}
 .booking-header {
     text-align: center;
+}
+.booking-xsmall {
+    width: 20px;
+}
+.booking-small {
+    width: 30px;
+}
+.booking-med {
+    width: 60px;
+}
+.booking-big {
+    width: 80px;
+}
+.booking-xbig {
+    width: 100px;
+}
+.booking-xxbig {
+    width: 120px;
+}
+.booking-text-big {
+    padding: 10px;
+    width: 40%;
+}
+.booking-text {
+    font-style: italic;
+}
+.booking-text-med {
+    padding: 4px;
+    width: 500px;
+}
+.booking-text-small {
+    padding: 4px;
+    width: 140px;
+}
+.booking-text-xsmall {
+    padding: 4px;
+    width: 100px;
 }
 .booking-truncate {
     font-size: smaller;
@@ -53,15 +96,21 @@
     display: block;
     background-color: #f3a0a0;
 }
+.session-right {
+    float: right;
+}
+#exercise-session .fa-fw {
+    width: 5px;
+    text-align: center;
+}
 
 /* Buttons */
 .session-button {
-    height: 25px;
-    width: 75px;
+    height: 26px;
+    width: 80px;
     color: white;
-    font-size: smaller;
+    font-size: small;
     font-weight: bold;
-    padding: 2px 5px;
     border-radius: 5px;
     border-width: 0px;
     outline: 0;
@@ -88,6 +137,7 @@
     background-color: darkgray;
 }
 .session-button-cancel {
+    width: 90px;
     background-color: #c40a0a;
     transition: ease background-color 250ms;
 }
@@ -99,6 +149,9 @@
 }
 
 /* Availability calendar */
+.availability-student {
+    font-size: small;
+}
 .slot-month-day {
     border-top: 0;
     font-weight: normal;
@@ -133,7 +186,10 @@
     cursor: pointer;
 }
 .slot-action-book {
-    width: 150px;
+    width: 160px;
+}
+.slot-editing {
+    margin-left: 10px;
 }
 .slot-button {
     width: 75px;
@@ -173,6 +229,10 @@
 .slot-button-black:hover {
     background-color: darkgray;
 }
+.single-button-clear {
+    float: right;
+    margin-right: 10px;
+}
 
 /* availability calendar */
 .path-availability .slotcalendartable {
@@ -193,6 +253,12 @@
 .path-availability .slotcalendartable .localtime {
     width: 60px;
     vertical-align: bottom;
+}
+.path-availability .slotcalendartable .localtimecol {
+    border-right: 2px solid grey;
+}
+.path-availability .slotcalendartable .daynames {
+    border: 2px solid grey;
 }
 .path-availability .slotcalendartable .zulutime {
     color: rgb(122, 26, 26);
@@ -327,4 +393,10 @@
 }
 .logbook-shadow2 {
     box-shadow: 0 7px 30px -10px rgba(150, 170, 180, 0.5);
+}
+.logbook-title {
+    font-weight: bolder;
+}
+.logbook-mt1 {
+    color: cornflowerblue;
 }

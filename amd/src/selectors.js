@@ -14,7 +14,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This module is responsible for the calendar filter.
+ * This module is responsible UI selectors for both
+ * availability and booking UIs.
  * Improvised from core_calendar.
  *
  * @module     local_booking/selectors
@@ -26,10 +27,9 @@ define([], function() {
     return {
         viewSelector: 'div[data-region="view-selector"]',
         actions: {
-            create: '[data-action="new-event-button"]',
             edit: '[data-action="edit"]',
             deleteLogentry: '[data-action="delete"]',
-            viewEvent: '[data-action="view-logentry"]',
+            viewLogEntry: '[data-action="view-logentry"]',
             gotoFeedback: '[data-action="feedback"]',
         },
         today: '.today',

@@ -35,6 +35,7 @@ use moodle_url;
 
 /**
  * Class for displaying the day view.
+ * Improvised from core_calendar day_exporter.
  *
  * @package   core_calendar
  * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>

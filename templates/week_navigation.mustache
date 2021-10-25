@@ -17,7 +17,7 @@
 {{!
     @template local_booking/week_navigation
 
-    Calendar month navigation.
+    Calendar week navigation header view.
 
     The purpose of this template is to render the navigation to switch to previous and next week.
 
@@ -48,7 +48,7 @@
         <span class="hide"> | </span>
         <h2 class="current">{{periodname}}
         {{^editing}}
-        <br/><span style="font-size: small;">{{username}}</span>
+        <br/><span class="availability-student">{{username}}</span>
         {{/editing}}
         </h2>
     <span class="hide"> | </span>

@@ -121,16 +121,16 @@ define([
                     const target = e.target;
                     const pendingPromise = new Pending('local_booking/booking_view_manager:logentrySession:click');
 
-                    if (target.matches(BookingSelectors.actions.viewEvent)) {
+                    if (target.matches(BookingSelectors.actions.viewLogEntry)) {
                         logentrySession = target;
                     } else {
-                        logentrySession = target.closest(BookingSelectors.actions.viewEvent);
+                        logentrySession = target.closest(BookingSelectors.actions.viewLogEntry);
                     }
 
                     if (logentrySession) {
                         logentryId = logentrySession.dataset.logentryId;
                     } else {
-                        logentryId = target.querySelector(BookingSelectors.actions.viewEvent).dataset.logentryId;
+                        logentryId = target.querySelector(BookingSelectors.actions.viewLogEntry).dataset.logentryId;
                     }
 
                     if (logentryId) {

@@ -16,6 +16,7 @@
 
 /**
  * Session Booking Plugin
+ * Class for displaying students progression and instructor active bookings.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -29,7 +30,6 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 use local_booking\local\participant\entities\instructor;
-use local_booking\local\session\entities\priority;
 use local_booking\local\subscriber\entities\subscriber;
 use renderer_base;
 use moodle_url;
@@ -209,21 +209,21 @@ class bookings_exporter extends exporter {
         foreach ($this->activestudents as $student) {
             $i++;
             $sequencetooltip = [
-                'score'     => $student->priority->get_score(),
-                'recency'   => $student->priority->get_recency_days(),
-                'slots'     => $student->priority->get_slot_count(),
-                'activity'  => $student->priority->get_activity_count(false),
-                'completion'=> $student->priority->get_completions(),
+                'score'     => $student->get_priority()->get_score(),
+                'recency'   => $student->get_priority()->get_recency_days(),
+                'slots'     => $student->get_priority()->get_slot_count(),
+                'activity'  => $student->get_priority()->get_activity_count(false),
+                'completion'=> $student->get_priority()->get_completions(),
             ];
 
-            $waringflag = $this->get_warning($student->priority->get_recency_days());
+            $waringflag = $this->get_warning($student->get_priority()->get_recency_days());
             $data = [];
             $data = [
                 'sequence'        => $i,
                 'sequencetooltip' => get_string('sequencetooltip', 'local_booking', $sequencetooltip),
                 'studentid'       => $student->get_id(),
                 'studentname'     => $student->get_name(),
-                'dayssincelast'   => $student->dayssincelast,
+                'dayssincelast'   => $student->get_priority()->get_recency_days(),
                 'overduewarning'  => $waringflag == self::OVERDUEWARNING,
                 'latewarning'     => $waringflag == self::LATEWARNING,
                 'simulator'       => $student->get_simulator(),
@@ -233,7 +233,7 @@ class bookings_exporter extends exporter {
                 'courseexercises' => $this->exercises,
             ]);
             $activestudentsexports[] = $studentexporter->export($output);
-            $totaldays += $student->priority->get_recency_days();
+            $totaldays += $student->get_priority()->get_recency_days();
         }
         $this->averagewait = ceil($totaldays / $i);
 
@@ -248,14 +248,8 @@ class bookings_exporter extends exporter {
      */
     protected function prioritze($activestudents) {
         // Get student booking priority
-        foreach ($activestudents as $student) {
-            $priority = new priority($this->data['courseid'], $student->get_id());
-            $student->priority = $priority;
-            $student->dayssincelast = $priority->get_recency_days();
-        }
-
         usort($activestudents, function($st1, $st2) {
-            return $st1->priority->get_score() < $st2->priority->get_score();
+            return $st1->get_priority()->get_score() < $st2->get_priority()->get_score();
         });
 
         return $activestudents;

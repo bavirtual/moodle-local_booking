@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Session Booking Plugin
+ * Class for displaying student time slots for the week calendar view.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -163,7 +163,7 @@ class booking_student_exporter extends exporter {
 
         // check if the student to be book has incomplete lessons
         if ($action->get_type() == 'book') {
-            $hasincompletelessons = !$this->student->completed_lessons();
+            $hasincompletelessons = !$this->student->has_completed_lessons();
             if ($hasincompletelessons) { $action->set_type('disabled'); }
         }
 

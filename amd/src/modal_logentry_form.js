@@ -493,7 +493,7 @@ define([
                     // No problemo! Our work here is done.
                     this.hide();
 
-                    // Trigger the appropriate calendar event so that the view can be updated.
+                    // Trigger the appropriate logbook event so that the view can be updated.
                     if (isExisting) {
                         $('body').trigger(LogbookEvents.updated, [response.logentry]);
                     } else {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Session Booking Plugin
+ * Session Booking plugin en language file
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -13,7 +13,7 @@ $string['activestudents'] = 'Active Students Progression';
 $string['averagewaittime'] = 'Avg wait days';
 $string['book'] = 'Book';
 $string['bookings'] = 'Session booking';
-$string['bookingactive'] = 'My Active Bookings';
+$string['bookingactive'] = 'My active bookings';
 $string['bookingcancel'] = 'Cancel';
 $string['bookingcanceledsuccess'] = 'Booking with \'{$a->studentname}\' cancelled!';
 $string['bookingcanceledunable'] = 'Unable to cancel booking!';
@@ -37,7 +37,7 @@ $string['lastsessiondate'] = 'Last VFC Flight/Lesson';
 $string['participation'] = 'Instructor Participation';
 $string['pluginname'] = 'Session Booking';
 $string['progression'] = 'Students Progression';
-$string['mystudents'] = 'My Assigned Students';
+$string['mystudents'] = 'My assigned students';
 $string['nextlesson'] = 'Next Lesson';
 $string['role'] = 'Role';
 $string['sequencetooltip'] = 'Score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views

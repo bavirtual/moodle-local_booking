@@ -77,7 +77,7 @@ class action implements action_interface {
             case 'book':
                 // Book action takes the instructor to the week of the firs slot or after waiting period
                 $nextslotdate = ($student->get_first_slot_date())->getTimestamp();
-                $waitenddate = (get_next_allowed_session_date($courseid, $studentid))->getTimestamp();
+                $waitenddate = ($student->get_next_allowed_session_date())->getTimestamp();
                 $week = $nextslotdate > time() ? $nextslotdate : $waitenddate;
                 $actionurl = new moodle_url('/local/booking/availability.php', [
                     'course' => $courseid,

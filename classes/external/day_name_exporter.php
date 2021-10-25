@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 use core\external\exporter;
 
 /**
- * Class for displaying the day view.
+ * Class for displaying the day names view.
  *
  * @package   core_calendar
  * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>

@@ -55,6 +55,7 @@ class analytics_vault implements analytics_vault_interface {
         $sql = 'SELECT endtime AS lastsessiondate
                 FROM {' . self::DB_SLOTS . '}
                 WHERE userid = :studentid
+                AND slotstatus != ""
                 ORDER BY endtime desc LIMIT 1';
 
         $rs = $DB->get_record_sql($sql, ['studentid'=>$studentid]);

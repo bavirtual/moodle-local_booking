@@ -17,7 +17,7 @@
 {{!
     @template local_booking/my_students
 
-    Calendar week view for blocks.
+    Instructor assigned students view.
 
     The purpose of this template is to render the main, detailed weekly view.
 
@@ -33,7 +33,7 @@
 }}
 <div>
 <br/><p><h3>{{#str}}mystudents,local_booking{{/str}}</h3></p>
-<table id="students-detail-{{uniqid}}" data-region="instructor-students" class="calendartable booking-table table-hover" style="width: 100%;">
+<table id="students-detail-{{uniqid}}" data-region="instructor-students" class="calendartable booking-table table-hover">
     <thead>
         <tr>
             <th class="header booking-header text-xs-center">
@@ -53,16 +53,16 @@
     <tbody>
     {{#assignedstudents}}
         <tr data-region="booking">
-            <td class="text-md-left" style="padding: 10px; width: 40%;">
+            <td class="booking-text-big text-md-left">
                 <span>{{studentname}}</span>
             </td>
-            <td class="text-sm-center" style="padding: 4px; width: 500px;">
-                <span><i>{{simulator}}</i></span>
+            <td class="booking-text booking-text-med text-sm-center">
+                <span>{{simulator}}</span>
             </td>
-            <td class="text-sm-center" style="padding: 4px; width: 500px;">
-                <span><i>{{nextlesson}}</i></span>
+            <td class="booking-text booking-text-med text-sm-center">
+                <span>{{nextlesson}}</span>
             </td>
-            <td class="text-sm-center" style="padding: 4px; width: 140px;">
+            <td class="booking-text booking-text-small text-sm-center">
                 <span>{{enroldate}}</span>
             </td>
         </tr>

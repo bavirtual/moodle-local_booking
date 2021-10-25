@@ -50,8 +50,7 @@ define([
     var SlotIndexes = [];
 
     /**
-     * Create the event form modal for creating new events and
-     * editing existing events.
+     * Save marked availability posts.
      *
      * @method saveWeekSlots
      * @param {object} root The calendar root element
@@ -94,8 +93,7 @@ define([
     }
 
     /**
-     * Create the event form modal for creating new events and
-     * editing existing events.
+     * Save marked booking posts.
      *
      * @method saveBookedSlot
      * @param {object} root The calendar root element
@@ -134,8 +132,8 @@ define([
     }
 
      /**
-     * Create the event form modal for creating new events and
-     * editing existing events.
+     * Update Slots & BookedSlots with marked availability
+     * posts in the calendar view.
      *
      * @method getSlots
      * @param {object} root     The calendar root element
@@ -196,7 +194,7 @@ define([
     }
 
     /**
-     * Adds a slot to local object array.
+     * Adds a slot to local object array (Slots).
      *
      * @method addSlot
      * @param {object} aSlot The slot to be add to the local object array
@@ -238,7 +236,8 @@ define([
     }
 
      /**
-     * Set the cells from the CopiedSlotsIndexes to the current table
+     * Set the cells from the copied SlotIndexes
+     * to the calendar
      *
      * @method pasteSlots
      * @param {object} root The calendar root element
@@ -260,7 +259,7 @@ define([
      * given they are not otherwsie booked
      *
      * @method clearWeekSlots
-     * @param {object} root The calendar root element
+     * @param {object} root The week calendar root element
      */
      function clearWeekSlots(root) {
         $('td').filter(function() {
@@ -275,10 +274,10 @@ define([
     }
 
      /**
-     * Set the cells from the CopiedSlotsIndexes to the current table
+     * Set the cells from the copied SlotIndexes to the current table
      *
      * @method setPasteState
-     * @param {object} root The calendar root element
+     * @param {object} root The week calendar root element
      */
       function setPasteState(root) {
         if (SlotIndexes.length > 0) {
@@ -291,7 +290,9 @@ define([
      }
 
      /**
-     * Set the cells from the CopiedSlotsIndexes to the current table
+     * Set the save buttons state to enabled/disabled based
+     * on user calendar time slot selection (cells) in
+     * the week calendar
      *
      * @method setSaveButtonState
      * @param {object} root      The calendar root element

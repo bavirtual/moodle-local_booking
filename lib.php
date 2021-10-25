@@ -140,7 +140,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
     $course = new subscriber($courseid);
 
     if (!empty($course->subscribed) && $course->subscribed) {
-        // Add student availability navigation node
+        // Add student log book navigation node
         if (has_capability('local/booking:logbookview', $context)) {
             $node = $navigation->find('logbook', navigation_node::NODETYPE_LEAF);
             if (!$node && $courseid!==SITEID) {
@@ -170,11 +170,8 @@ function local_booking_extend_navigation(global_navigation $navigation) {
                     $params['view'] = 'all';
                     $nodename = get_string('availabilityinst', 'local_booking');
                 } else {
-                    $weekday = get_next_allowed_session_date($courseid, $USER->id);
-                    if ((getdate($weekday->getTimestamp()))['wday'] == 0) {
-                        date_add($weekday, date_interval_create_from_date_string('1 days'));
-                    }
-                    $params['time'] = $weekday->getTimestamp();
+                    $student = new student($courseid, $USER->id);
+                    $params['time'] = $student->get_next_allowed_session_date()->getTimestamp();
                     $params['action'] = 'post';
                     $nodename = get_string('availability', 'local_booking');
                 }
@@ -285,6 +282,17 @@ function local_booking_get_fontawesome_icon_map() {
         'local_booking:logbook' => 'fa-address-book-o',
         'local_booking:subscribed' => 'fa-envelope-o',
         'local_booking:unsubscribed' => 'fa-envelope-open-o',
+        'local_booking:question-circle' => 'fa-question-circle',
+        'local_booking:user' => 'fa-user',
+        'local_booking:window-close' => 'fa-window-close',
+        'local_booking:info-circle' => 'fa-info-circle',
+        'local_booking:check' => 'fa-check',
+        'local_booking:plane' => 'fa-plane',
+        'local_booking:pencil-square' => 'fa-pencil-square',
+        'local_booking:copy' => 'fa-copy',
+        'local_booking:paste' => 'fa-paste',
+        'local_booking:trash' => 'fa-trash',
+        'local_booking:save' => 'fa-save',
     ];
 }
 
@@ -629,25 +637,6 @@ function get_week_start($date) {
     date_timestamp_set($week_start_date, $date[0]);
     $week_start_date->setISODate($date['year'], strftime('%W', $date[0]))->format('Y-m-d');
     return $week_start_date;
-}
-
-/**
- * Returns the date of the last booked
- * session or today if unavailable.
- *
- * @param   int     The course id for subscribing course.
- * @param   int     The student id related.
- * @return  DateTime
- */
-function get_next_allowed_session_date($courseid, $studentid) {
-    $daysfromlast = (get_config('local_booking', 'nextsessionwaitdays')) ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
-
-    $lastsession = slot::get_last_posting($courseid, $studentid);
-    $sessiondatets = !empty($lastsession) ? $lastsession->starttime : time();
-    $sessiondate = new DateTime('@' . $sessiondatets);
-    date_add($sessiondate, date_interval_create_from_date_string($daysfromlast . ' days'));
-
-    return $sessiondate;
 }
 
 /**

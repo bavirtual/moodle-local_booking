@@ -35,7 +35,7 @@ use renderer_base;
 use moodle_url;
 
 /**
- * Class for displaying instructor's booked sessions view.
+ * Class for displaying instructor's 'My assigned students' view.
  *
  * @package   local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)

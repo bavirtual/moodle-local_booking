@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local/booking/calendar_week
+    @template local/booking/week_detail
 
-    Calendar week view for blocks.
+    Calendar detailed week view for blocks.
 
     The purpose of this template is to render the main, detailed weekly view.
 
@@ -64,7 +64,7 @@
                     <span class="media-body" aria-hidden="true">{{#str}}zulutime,local_booking{{/str}}</span>
                 </th>
                 {{#daynames}}
-                <th class="header text-xs-center" style="border: 2px solid grey;" colspan="{{maxlanes}}" data-region="slot-week-day">
+                <th class="header text-xs-center daynames" colspan="{{maxlanes}}" data-region="slot-week-day">
                     <span class="sr-only">{{fullname}}</span>
                     <span aria-hidden="true">{{shortname}}</span>
                     <br><span class="media-body small slot-month-day" aria-hidden="true">{{dayofmonth}}</span></br>
@@ -80,7 +80,7 @@
                     <span class="media-body small" aria-hidden="true">{{localtimeslot}}</span>
                 </td>
                 {{/showlocaltime}}
-                <td class="text-sm-center text-md-left}}" style="border-right: 2px solid grey;"
+                <td class="text-sm-center text-md-left}} localtimecol"
                     data-slot="{{timeslot}}">
                     <span class="zulutimeslot" aria-hidden="true">{{timeslot}}</span>
                 </td>
@@ -124,13 +124,13 @@
     {{#editing}}
     <div>
         <div>
-            <div style="margin-left: 10px;">
+            <div class="slot-editing">
                 <div class="singlebutton">
                     <button type="submit" class="slot-button slot-button-blue"
                         data-region="copy-button"
                         id="copy_button"{{uniqid}}
                         title="">
-                        <i class="fa fa-copy" style="padding-right: 5px;"></i>
+                        {{#pix}}copy,local_booking{{/pix}}
                         {{#str}}buttoncopy,local_booking{{/str}}
                     </button>
                 </div>
@@ -139,16 +139,16 @@
                         data-region="paste-button"
                         id="paste_button"
                         title="">
-                        <i class="fa fa-paste" style="padding-right: 5px;"></i>
+                        {{#pix}}paste,local_booking{{/pix}}
                         {{#str}}buttonpaste,local_booking{{/str}}
                     </button>
                 </div>
-                <div class="singlebutton" style="float: right; margin-right: 10px;">
+                <div class="singlebutton single-button-clear">
                     <button type="submit" class="slot-button slot-button-red"
                         data-region="clear-button"
                         id="clear_button"{{uniqid}}
                         title="">
-                        <i class="fa fa-trash" style="padding-right: 5px;"></i>
+                        {{#pix}}trash,local_booking{{/pix}}
                         {{#str}}buttonclear,local_booking{{/str}}
                     </button>
                 </div>
@@ -161,13 +161,13 @@
                 data-region="save-button"
                 id="save_button"
                 title="">
-                <i class="fa fa-save" style="padding-right: 5px;"></i>
+                {{#pix}}save,local_booking{{/pix}}</i>
                 {{#str}}buttonsave,local_booking{{/str}}
             </button>
         </div>
     </div>
     <div>
-        <br/><span style="font-size: small;"><a href='{{viewalllink}}'>
+        <br/><span class="small"><a href='{{viewalllink}}'>
             {{#str}}availabilityallview,local_booking{{/str}}</a></span>
     </div>
     {{/editing}}
@@ -175,11 +175,11 @@
     {{^groupview}}
     <div class="bottom">
         <div class="singlebutton">
-            <button type="submit" class="slot-action-button slot-action-book slot-button-gray"
+            <button type="submit" class="slot-action-button slot-action-book slot-button-gray" style="width: 160px;"
                 data-region="book-button"
                 id="book_button"
                 title="">
-                <i class="fa fa-plane" style="padding-right: 5px;"></i>
+                {{#pix}}plane,local_booking{{/pix}}
                 {{#str}}booksave,local_booking{{/str}}
             </button>
         </div>

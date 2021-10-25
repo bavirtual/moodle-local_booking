@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Contains timeslot class for displaying the timeslot in the week view.
+ * Contains timeslot class for displaying the time slots in
+ * the availability calendar week view.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -29,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 use DateTime;
+use local_booking\local\participant\entities\student;
 use renderer_base;
 
 /**
@@ -234,7 +236,8 @@ class week_timeslot_exporter extends exporter {
         if ($this->groupview || $this->bookview) {
             $lastsessionwait = false;
         } else {
-            $nextsessiondt = get_next_allowed_session_date($this->courseid, $this->studentid);
+            $student = new student($this->courseid, $this->studentid);
+            $nextsessiondt = $student->get_next_allowed_session_date();
             $nextsessiondate = $this->related['type']->timestamp_to_date_array($nextsessiondt->getTimestamp());
             $lastsessionwait = $lastsessionwait && $nextsessiondate['year'] >= $date['year'];
             $lastsessionwait = $lastsessionwait && $nextsessiondate['yday'] >= $date['yday'];

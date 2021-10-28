@@ -50,7 +50,7 @@ class logbook_vault implements logbook_vault_interface {
      * @param logbook   $logbook    The logbook_interface of for all entries.
      * @return logentries[]     Array of logentry_interfaces.
      */
-    public function get_logbook(int $courseid, int $studentid, $logbook = null) {
+    public static function get_logbook(int $courseid, int $studentid, $logbook = null) {
         global $DB;
 
         $logbook = [];
@@ -66,7 +66,7 @@ class logbook_vault implements logbook_vault_interface {
         $param = ['studentid'=>$studentid];
         $logentryrecs = $DB->get_records_sql($sql, $param);
         foreach ($logentryrecs as $logentryrec) {
-            $logbook[] = $this->get_logentry_instance($logentryrec, $logbook);
+            $logbook[] = self::get_logentry_instance($logentryrec, $logbook);
         }
 
         return $logbook;
@@ -82,7 +82,7 @@ class logbook_vault implements logbook_vault_interface {
      * @param logbook   $logbook    The logbook_interface of for all entries.
      * @return logentry         A logentry_insterface.
      */
-    public function get_logentry(int $studentid, int $courseid, int $logentryid = 0, int $exerciseid = 0, $logbook) {
+    public static function get_logentry(int $studentid, int $courseid, int $logentryid = 0, int $exerciseid = 0, $logbook) {
         global $DB;
 
         $conditions = $logentryid!=0 ? ['id'=>$logentryid] : [
@@ -92,7 +92,7 @@ class logbook_vault implements logbook_vault_interface {
         ];
         $logentryrec = $DB->get_record(static::DB_LOGBOOKS, $conditions);
 
-        return $this->get_logentry_instance($logentryrec, $logbook);
+        return self::get_logentry_instance($logentryrec, $logbook);
     }
 
     /**
@@ -103,10 +103,10 @@ class logbook_vault implements logbook_vault_interface {
      * @param logentry  $logentry   A logbook entry of the student.
      * @return int      The log entry id.
      */
-    public function insert_logentry(int $courseid, int $studentid, logentry $logentry) {
+    public static function insert_logentry(int $courseid, int $studentid, logentry $logentry) {
         global $DB;
 
-        $logentryobj = $this->get_logentryrecobj($courseid, $studentid, $logentry);
+        $logentryobj = self::get_logentryrecobj($courseid, $studentid, $logentry);
 
         return $DB->insert_record(static::DB_LOGBOOKS, $logentryobj);
     }
@@ -119,10 +119,10 @@ class logbook_vault implements logbook_vault_interface {
      * @param logentry  $logentry A logbook entry of the student.
      * @return bool     result of the database update operation.
      */
-    public function update_logentry(int $courseid, int $studentid, logentry $logentry){
+    public static function update_logentry(int $courseid, int $studentid, logentry $logentry){
         global $DB;
 
-        $logentryobj = $this->get_logentryrecobj($courseid, $studentid, $logentry);
+        $logentryobj = self::get_logentryrecobj($courseid, $studentid, $logentry);
 
         return $DB->update_record(static::DB_LOGBOOKS, $logentryobj);
     }
@@ -134,7 +134,7 @@ class logbook_vault implements logbook_vault_interface {
      * @param int       $studentid  The student id associated with the logbook.
      * @return array    $totalflighttime, $totalsessiontime, $totalsolotime
      */
-    public function get_logbook_summary(int $courseid, int $studentid){
+    public static function get_logbook_summary(int $courseid, int $studentid) {
         global $DB;
 
         $sql = 'SELECT SUM(flighttimemins) as totalflighttime,
@@ -162,7 +162,7 @@ class logbook_vault implements logbook_vault_interface {
      * @param int   $logentryid   The logbook entry id to be deleted.
      * @return bool result of the database update operation.
      */
-    public function delete_logentry($logentryid) {
+    public static function delete_logentry($logentryid) {
         global $DB;
 
         return $DB->delete_records(static::DB_LOGBOOKS, ['id'=>$logentryid]);
@@ -174,7 +174,7 @@ class logbook_vault implements logbook_vault_interface {
      * @param logentry  $logentry       A logbook entry of the student.
      * @return stdClass $logentryobj    The log entry object for persistence.
      */
-    protected function get_logentryrecobj(int $courseid, int $studentid, logentry $logentry) {
+    protected static function get_logentryrecobj(int $courseid, int $studentid, logentry $logentry) {
         $logentryobj = new stdClass();
 
         $logentryobj->id = $logentry->get_id();
@@ -202,7 +202,7 @@ class logbook_vault implements logbook_vault_interface {
      * @param object $dataob: A data record representing a logbook entry.
      * @return logentry $logentryobj: The log entry instance.
      */
-    protected function get_logentry_instance($dataobj, $logbook) {
+    protected static function get_logentry_instance($dataobj, $logbook) {
         $logentry = new logentry($logbook);
         $logentry->set_id($dataobj->id);
         $logentry->set_exerciseid($dataobj->exerciseid);

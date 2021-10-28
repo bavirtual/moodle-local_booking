@@ -81,7 +81,7 @@ class subscriber_vault implements subscriber_vault_interface {
      *
      * @return array
      */
-    public function get_subscriber_exercises(int $courseid) {
+    public static function get_subscriber_exercises(int $courseid) {
         global $DB;
 
         // get assignments for this course based on sorted course topic sections

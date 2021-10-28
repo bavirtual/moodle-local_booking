@@ -48,18 +48,12 @@ class subscriber implements subscriber_interface {
     protected $courseid;
 
     /**
-     * @var participant_vault $vault The vault access to the database.
-     */
-    protected $vault;
-
-    /**
      * Constructor.
      *
      * @param string $courseid  The description's value.
      */
     public function __construct($courseid) {
         $this->courseid = $courseid;
-        $this->vault = new participant_vault();
 
         // define course custom fields globally
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
@@ -100,7 +94,7 @@ class subscriber implements subscriber_interface {
      */
     public function get_active_students() {
         $activestudents = [];
-        $studentrecs = $this->vault->get_active_students($this->courseid);
+        $studentrecs = participant_vault::get_active_students($this->courseid);
         $colors = (array) get_booking_config('colors', true);
 
         // add a color for the student slots from the config.json file for each student
@@ -124,7 +118,7 @@ class subscriber implements subscriber_interface {
      */
     public function get_active_instructors(bool $courseadmins = false) {
         $activeinstructors = [];
-        $instructorrecs = $this->vault->get_active_instructors($this->courseid, $courseadmins);
+        $instructorrecs = participant_vault::get_active_instructors($this->courseid, $courseadmins);
 
         foreach ($instructorrecs as $instructorrec) {
             $instructor = new instructor($this->courseid, $instructorrec->userid);
@@ -150,7 +144,7 @@ class subscriber implements subscriber_interface {
      * @return {Object}[]   Array of course's senior instructors.
      */
     public function get_active_participants() {
-        $participants = array_merge($this->vault->get_active_students($this->courseid), $this->vault->get_active_instructors($this->courseid));
+        $participants = array_merge(participant_vault::get_active_students($this->courseid), participant_vault::get_active_instructors($this->courseid));
         return $participants;
     }
 
@@ -171,11 +165,9 @@ class subscriber implements subscriber_interface {
      * @return array
      */
     public function get_exercises() {
-        $subscribervault = new subscriber_vault();
-
         $exercises = [];
 
-        $exerciserecs = $subscribervault->get_subscriber_exercises($this->courseid);
+        $exerciserecs = subscriber_vault::get_subscriber_exercises($this->courseid);
 
         foreach ($exerciserecs as $exerciserec) {
             $exerciseitem = $exerciserec->modulename == 'assign' ? (object) [

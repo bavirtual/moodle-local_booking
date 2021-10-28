@@ -28,6 +28,7 @@ namespace local_booking\local\session\data_access;
 defined('MOODLE_INTERNAL') || die();
 
 use local_booking\local\session\entities\booking;
+use local_booking\local\slot\entities\slot;
 
 interface booking_vault_interface {
 
@@ -38,7 +39,7 @@ interface booking_vault_interface {
      * @param bool   $oldestfirst sort order of the returned records.
      * @return array {Object}
      */
-    public function get_bookings(int $userid, bool $oldestfirst = false);
+    public static function get_bookings(int $userid, bool $oldestfirst = false);
 
     /**
      * Get booking based on passed object.
@@ -46,7 +47,7 @@ interface booking_vault_interface {
      * @param booking $booking
      * @return Object
      */
-    public function get_booking(booking $booking);
+    public static function get_booking(booking $booking);
 
     /**
      * Delete a specific booking.
@@ -54,7 +55,7 @@ interface booking_vault_interface {
      * @param   booking $booking  The bookingid id to be deleted.
      * @return  bool    $result
      */
-    public function delete_booking(booking $booking);
+    public static function delete_booking(booking $booking);
 
     /**
      * Saves the passed booked session
@@ -62,7 +63,7 @@ interface booking_vault_interface {
      * @param   booking_interface   $session
      * @return  bool                $result
      */
-    public function save_booking(booking $booking);
+    public static function save_booking(booking $booking);
 
     /**
      * Confirm the passed book
@@ -70,9 +71,11 @@ interface booking_vault_interface {
      * @param   int                 $courseid
      * @param   int                 $studentid
      * @param   int                 $exerciseid
+     * @param   slot                $slot
+     * @param   string              $confirmationmsg
      * @return  bool                $result
      */
-    public function confirm_booking(int $courseid, int $studentid, int $exerciseid);
+    public static function confirm_booking(int $courseid, int $studentid, int $exerciseid, slot $slot, string $confirmationmsg);
 
     /**
      * Get the date of the booked exercise
@@ -80,14 +83,14 @@ interface booking_vault_interface {
      * @param int $studentid
      * @param int $exerciseid
      */
-    public function get_booked_exercise_date(int $studentid, int $exerciseid);
+    public static function get_booked_exercise_date(int $studentid, int $exerciseid);
 
     /**
      * Get the date of the last booked session
      *
      * @param int $instructorid
      */
-    public function get_last_booked_session(int $userid, bool $isinstructor = false);
+    public static function get_last_booked_session(int $userid, bool $isinstructor = false);
 
     /**
      * set active flag to false to deactive the booking.
@@ -95,5 +98,5 @@ interface booking_vault_interface {
      * @param booking $booking The booking in reference.
      * @return bool
      */
-    public function set_booking_inactive($booking);
+    public static function set_booking_inactive($booking);
 }

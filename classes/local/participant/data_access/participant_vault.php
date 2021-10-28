@@ -118,7 +118,7 @@ class participant_vault implements participant_vault_interface {
      * @param int $courseid The course id.
      * @return {Object}[]   Array of database records.
      */
-    public function get_active_students(int $courseid) {
+    public static function get_active_students(int $courseid) {
         global $DB;
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
@@ -162,7 +162,7 @@ class participant_vault implements participant_vault_interface {
      * @param bool $courseadmins Indicates whether the instructor is an admin or not.
      * @return {Object}[]   Array of database records.
      */
-    public function get_active_instructors(int $courseid, bool $courseadmins = false) {
+    public static function get_active_instructors(int $courseid, bool $courseadmins = false) {
         global $DB;
         $roles = (!$courseadmins ? '"' . LOCAL_BOOKING_INSTRUCTORROLE . '", ' : '') . '"' .
                 LOCAL_BOOKING_SENIORINSTRUCTORROLE . '", "' .
@@ -387,7 +387,7 @@ class participant_vault implements participant_vault_interface {
      * @param string $field         The field name associated with the rquested data
      * @return string               The full participatn username
      */
-    public static function get_customfield_data(int $courseid, int $userid, string $field) {
+    public function get_customfield_data(int $courseid, int $userid, string $field) {
         global $DB;
 
         // Look for ATO category
@@ -426,7 +426,7 @@ class participant_vault implements participant_vault_interface {
      * @param   int The course id
      * @return  stdClass The record containing timestamp of the last grading
      */
-    function get_last_graded_date($userid, $courseid) {
+    public function get_last_graded_date($userid, $courseid) {
         global $DB;
 
         // Get the student's grades
@@ -456,7 +456,7 @@ class participant_vault implements participant_vault_interface {
      * @param   int     The upcoming next exercise id
      * @return  bool    Whether the lessones were completed or not.
      */
-    function get_student_lessons_complete($studentid, $courseid, $nextexercisesection) {
+    public function get_student_lessons_complete($studentid, $courseid, $nextexercisesection) {
         global $DB;
 
         // Get the student's grades
@@ -493,7 +493,7 @@ class participant_vault implements participant_vault_interface {
      * @param   int     The student id
      * @return  array   The next exercise id and associated course section
      */
-    function get_next_student_exercise($courseid, $studentid) {
+    public function get_next_student_exercise($courseid, $studentid) {
         global $DB;
 
         // Get first record of exercises not completed yet

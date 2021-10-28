@@ -23,7 +23,7 @@ $string['bookingconfirmunable'] = 'Unable to confirm booking!';
 $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
 $string['bookingsavesuccess'] = 'Booking saved for \'{$a->exercise}\' with {$a->studentname} on {$a->sessiondate} zulu';
 $string['bookingsaveunable'] = 'Unable to save booking!';
-$string['bookingfooter'] = '{$a->coursename} -> <a href="{$a->bookingurl}">Session Booking</a>';
+$string['bookingfooter'] = '<a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href="{$a->bookingurl}">Session Booking</a>';
 $string['booksave'] = 'Save Booking';
 $string['cancellationcomment'] = 'Please provide the student with a short comment on this cancellation:';
 $string['configmissing'] = 'Failed to open {$a}';
@@ -31,6 +31,7 @@ $string['crontask'] = 'Background processing for session booking';
 $string['elapseddays'] = 'Elapsed Days';
 $string['enroldate'] = 'Enrol Date';
 $string['exercise'] = 'Exercise';
+$string['grade'] = 'Grade';
 $string['incompletelessontooltip'] = 'The student has not completed ground lesson';
 $string['instructors'] = 'Instructors';
 $string['lastsessiondate'] = 'Last VFC Flight/Lesson';
@@ -150,55 +151,73 @@ $string['messageprovider:sessionoverdue_notification'] = 'Instructor session ove
 $string['emailnotify'] = '{$a->coursename} session booking notification: \'{$a->exercise}\'';
 $string['emailnotifymsg'] = '{$a->instructor} has booked a session for your availability on {$a->sessiondate} for \'{$a->exercise}\'.
 Please confirm this booking by clicking on this link: {$a->confirmurl}';
-$string['emailnotifyhtml'] = '<font face="sans-serif"><p>{$a->coursename} -> Assignment -> {$a->exercise}</p><hr /><p>{$a->instructor} has booked a session for your availability on <strong>{$a->sessiondate}</strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p></font><hr />';
+$string['emailnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has booked a session for your availability on <strong>{$a->sessiondate}
+    </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p></font><hr />';
 
 // email to instructor: confirming session tentative by him/her
 $string['emailconfirm'] = 'Session booked';
 $string['emailconfirmsubject'] = '{$a->coursename} session booked: \'{$a->exercise}\'';
 $string['emailconfirmnmsg'] = '\'{$a->exercise}\' session booked with {$a->student} for \'{$a->exercise}\' on {$a->sessiondate}.';
-$string['emailconfirmhtml'] = '<font face="sans-serif"><p>{$a->coursename} -> Assignment -> {$a->exercise}</p><hr /><p>Session booked with <strong>{$a->student}</strong> for \'<i>{$a->exercise}</i>\' on <strong>{$a->sessiondate}</strong>.</p></p><hr />';
+$string['emailconfirmhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>Session booked with <strong>{$a->student}</strong> for \'<i>{$a->exercise}</i>\' on
+    <strong>{$a->sessiondate}</strong>.</p></p><hr />';
 
 // email to instructor: session confirmed by student
 $string['emailinstconfirm'] = 'Booked session confirmed by Student';
 $string['emailinstconfirmsubject'] = '{$a->coursename} - Student confirmed booking: \'{$a->exercise}\'';
 $string['emailinstconfirmnmsg'] = '{$a->student} confirmed your booked session for \'{$a->exercise}\' on {$a->sessiondate} zulu.';
-$string['emailinstconfirmhtml'] = '<font face="sans-serif"><p>{$a->coursename} -> Assignment -> {$a->exercise}</p><hr /><p><strong>{$a->student}</strong> confirmed your booked session for \'<i>{$a->exercise}</i>\' on <strong>{$a->sessiondate} zulu</strong>.</p></p><hr />';
+$string['emailinstconfirmhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p><strong>{$a->student}</strong> confirmed your booked session for \'<i>{$a->exercise}</i>\' on
+    <strong>{$a->sessiondate} zulu</strong>.</p></p><hr />';
 
 // email to student: session cancellation
 $string['emailcancel'] = '{$a->coursename} session booking cancellation: \'{$a->exercise}\'';
 $string['emailcancelmsg'] = '{$a->instructor} has cancelled your booked session scheduled for {$a->sessiondate} on \'{$a->exercise}\'.
 Instructor\'s comment: {$a->comment}.
 Please note you will have to post new availability as current availability posts were purged.';
-$string['emailcancelhtml'] = '<font face="sans-serif"><p>{$a->coursename} -> Assignment -> {$a->exercise}</p><hr /><p>{$a->instructor} has cancelled your booked session scheduled for <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\'.</p><p><strong>Instructor\'s comment:</strong></br>{$a->comment}</p><p>
-Please note you will have to post new availability as current availability posts were purged.</p></p></font><hr />';
+$string['emailcancelhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has cancelled your booked session scheduled for
+    <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\'.</p><p><strong>Instructor\'s comment:</strong></br>{$a->comment}</p><p>
+    Please note you will have to post new availability as current availability posts were purged.</p></p></font><hr />';
 
 // email to student: on-hold warning
 $string['emailonholdwarning'] = '{$a->coursename}: Inactivity notification';
 $string['emailonholdwarningmsg'] = 'Please post an availability slot to avoid being automatically placed on-hold on \'{$a->onholddate}\'. You can post an availability slot for \'{$a->coursename}\' from the following link: {$a->slotsurl}';
-$string['emailonholdwarninghtml'] = '<font face="sans-serif">Please post an availability slot to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong>.<p>You can post an availability slot for \'{$a->coursename}\' <a href="{$a->slotsurl}">here</a>.</p></font><hr />';
+$string['emailonholdwarninghtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
+    <p>Please post an availability slot to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong></p>.<p>You can post an availability slot for
+    \'{$a->coursename}\' <a href="{$a->slotsurl}">here</a>.</p></font><hr />';
 
 // email to student: on-hold notification
 $string['emailonholdnotify'] = '{$a->coursename}: Student placed on-hold';
 $string['emailonholdnotifymsg'] = 'Due to inactivity since your last posting on \'{$a->lastsessiondate}\', you have been placed on-hold. Please contact your instructor if you are still interested in resuming \'{$a->coursename}\' course work.';
-$string['emailonholdnotifyhtml'] = '<font face="sans-serif">Due to inactivity since your last posting on <strong>\'{$a->lastsessiondate}\'</strong>, you have been placed on-hold. Please contact your instructor if you are still interested in resuming \'{$a->coursename}\' course work.
-<p>Please note, if you are no longer interested in continuing course work, you will be automatically unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p></font><hr />';
+$string['emailonholdnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
+    <p>Due to inactivity since your last posting on <strong>\'{$a->lastsessiondate}\'</strong>, you have been placed on-hold. Please contact your instructor if you are
+    still interested in resuming \'{$a->coursename}\' course work.</p><p>Please note, if you are no longer interested in continuing course work, you will be automatically
+    unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p></font><hr />';
 $string['emailonholdinstnotifymsg'] = 'Due to inactivity since last posting on \'{$a->lastsessiondate}\', {$a->studentname} has been placed on-hold.';
-$string['emailonholdinstnotifyhtml'] = '<font face="sans-serif">Due to inactivity since last posting on <strong>\'{$a->lastsessiondate}\'</strong>, {$a->studentname} has been placed on-hold.
-<p>Please note, {$a->studentname} will be automatically unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p></font><hr />';
+$string['emailonholdinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
+    <p>Due to inactivity since last posting on <strong>\'{$a->lastsessiondate}\'</strong>, {$a->studentname} has been placed on-hold.</p>
+    <p>Please note, {$a->studentname} will be automatically unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p></font><hr />';
 
 // email to student: suspension notification
 $string['emailsuspendnotify'] = '{$a->coursename}: Suspension notification';
 $string['emailsuspendnotifymsg'] = 'Please note that you have been suspended from the \'{$a->coursename}\' course due to session booking inactivity since \'{$a->lastsessiondate}\'.  Please contact your instructor if you are still interested in being enrolled in this course.';
-$string['emailsuspendnotifyhtml'] = '<font face="sans-serif">Please note you have been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.<p>Please contact your instructor if you are still interested in being enrolled in this course.</p></font><hr />';
+$string['emailsuspendnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
+    <p>Please note you have been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.</p>
+    <p>Please contact your instructor if you are still interested in being enrolled in this course.</p></font><hr />';
 $string['emailsuspendinstnotifymsg'] = 'Please note that {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since \'{$a->lastsessiondate}\'.';
-$string['emailsuspendinstnotifyhtml'] = '<font face="sans-serif">Please note {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.</font><hr />';
+$string['emailsuspendinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
+    <p>Please note {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.</p></font><hr />';
 
 // email to instructor: session overdue notification
 $string['emailoverduenobooking'] = 'no booking on record';
 $string['emailoverduenotify'] = '{$a->coursename}: Session overdue notification';
 $string['emailoverduenotifymsg'] = 'Please note that you have {$a->status}.  Please book a session with your assigned student or any student from the booking view. Otherwise, please ask the course administrator to remove you from the list of active instructors for this course.
 You can book a session from the following view link: {$a->bookingurl}';
-$string['emailoverduenotifyhtml'] = '<font face="sans-serif">Please note that you have {$a->status}.<p>Please book a session with your assigned student or any student from the <a href="{$a->bookingurl}">booking view</a> as soon as possible. To stop receiving these messages, please ask the course administrator to remove you from the list of active instructors for this course.</p></font><hr />';
+$string['emailoverduenotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
+    <p>Please note that you have {$a->status}.</p><p>Please book a session with your assigned student or any student from the <a href="{$a->bookingurl}">booking view</a>
+    as soon as possible. To stop receiving these messages, please ask the course administrator to remove you from the list of active instructors for this course.</p></font><hr />';
 $string['emailoverduestatus'] = 'not booked a session since \'{$a}\'';
 
 // settings

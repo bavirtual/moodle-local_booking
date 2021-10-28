@@ -130,8 +130,7 @@ class booking implements booking_interface {
      */
     public function load(object $bookingrec = null) {
         if (empty($bookingrec)) {
-            $vault = new booking_vault();
-            $bookingrec = $vault->get_booking($this);
+            $bookingrec = booking_vault::get_booking($this);
         }
 
         if (!empty($bookingrec)) {
@@ -156,8 +155,6 @@ class booking implements booking_interface {
      */
     public function save() {
         global $DB;
-        $vault = new booking_vault();
-        $slotsvault = new slot_vault();
 
         $transaction = $DB->start_delegated_transaction();
 
@@ -165,8 +162,8 @@ class booking implements booking_interface {
         // booking info, and purge student availability posts
         $result = false;
         if ($this->slot->save()) {
-            if ($this->id = $vault->save_booking($this)) {
-                $result = $slotsvault->delete_slots($this->courseid, $this->studentid, 0, 0, false);
+            if ($this->id = booking_vault::save_booking($this)) {
+                $result = slot_vault::delete_slots($this->courseid, $this->studentid, 0, 0, false);
             }
         }
 
@@ -190,12 +187,7 @@ class booking implements booking_interface {
      * @return bool
      */
     public function delete() {
-        $vault = new booking_vault();
-        $result = false;
-        if (($this->slot)->delete()) {
-            $result = $vault->delete_booking($this);
-        }
-        return $result;
+        return booking_vault::delete_booking($this);
     }
 
     /**
@@ -205,14 +197,7 @@ class booking implements booking_interface {
      * @return bool
      */
     public function confirm(string $confirmationmsg) {
-        $vault = new booking_vault();
-        $result = false;
-
-        if ($vault->confirm_booking($this->courseid, $this->studentid, $this->exerciseid)) {
-            $result = ($this->slot)->confirm($confirmationmsg);
-        }
-
-        return $result;
+        return booking_vault::confirm_booking($this->courseid, $this->studentid, $this->exerciseid, $this->slot, $confirmationmsg);
     }
 
     /**
@@ -223,11 +208,8 @@ class booking implements booking_interface {
      * @return bool
      */
     public function deactivate() {
-        $vault = new booking_vault();
-        $slotvault = new slot_vault();
-
-        if ($vault->set_booking_inactive($this)) {
-            $slotvault->delete_slots($this->courseid, 0, 0, $this->studentid, false);
+        if (booking_vault::set_booking_inactive($this)) {
+            slot_vault::delete_slots($this->courseid, 0, 0, $this->studentid, false);
         }
     }
 
@@ -349,9 +331,7 @@ class booking implements booking_interface {
      * @return int
      */
     public function get_exercise_date() {
-        $vault = new booking_vault();
-
-        $bookeddate = $vault->get_booked_exercise_date($this->studentid, $this->exerciseid);
+        $bookeddate = booking_vault::get_booked_exercise_date($this->studentid, $this->exerciseid);
 
         return $bookeddate;
     }
@@ -363,8 +343,7 @@ class booking implements booking_interface {
      * @param int $userid
      */
     public static function get_last_session(int $userid, bool $isinstructor = false) {
-        $vault = new booking_vault();
-        return $vault->get_last_booked_session($userid, $isinstructor);
+        return booking_vault::get_last_booked_session($userid, $isinstructor);
     }
 
     // Setter functions

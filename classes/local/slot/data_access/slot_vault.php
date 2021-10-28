@@ -37,7 +37,7 @@ class slot_vault implements slot_vault_interface {
      * @param int       $slot The id of the slot
      * @return slot     The slot object from the id
      */
-    public function get_slot(int $slotid) {
+    public static function get_slot(int $slotid) {
         global $DB;
 
         return $DB->get_record(static::DB_SLOTS, ['id' => $slotid]);
@@ -51,7 +51,7 @@ class slot_vault implements slot_vault_interface {
      * @param int $week The week of the slots
      * @return array
      */
-    public function get_slots($studentid, $week = 0, $year = 0) {
+    public static function get_slots($studentid, $week = 0, $year = 0) {
         global $DB;
 
 
@@ -70,7 +70,7 @@ class slot_vault implements slot_vault_interface {
      * @param string $slot
      * @return bool
      */
-    public function save_slot(slot $slot) {
+    public static function save_slot(slot $slot) {
         global $DB, $USER;
 
         $slotrecord = new \stdClass();
@@ -92,7 +92,7 @@ class slot_vault implements slot_vault_interface {
      * @param int $slotid The slot id.
      * @return bool
      */
-    public function delete_slot($slotid) {
+    public static function delete_slot($slotid) {
         global $DB;
 
         return $DB->delete_records(self::DB_SLOTS, ['id' => $slotid]);
@@ -109,7 +109,7 @@ class slot_vault implements slot_vault_interface {
      * @param int $useredits    The associated course.
      * @return bool
      */
-    public function delete_slots($course = 0, $userid = 0, $year = 0, $week = 0, $useredits = true) {
+    public static function delete_slots($course = 0, $userid = 0, $year = 0, $week = 0, $useredits = true) {
         global $DB;
 
         $condition = [
@@ -134,7 +134,7 @@ class slot_vault implements slot_vault_interface {
      * @param slot $slot The slot to be confirmed
      * @return bool the result of the update
      */
-    public function confirm_slot(slot $slot, string $bookinginfo) {
+    public static function confirm_slot(slot $slot, string $bookinginfo) {
         global $DB;
 
         $slotrecord = new \stdClass();
@@ -150,7 +150,7 @@ class slot_vault implements slot_vault_interface {
      *
      * @param int $studentid
      */
-    public function get_first_posted_slot(int $studentid) {
+    public static function get_first_posted_slot(int $studentid) {
         global $DB;
 
         $sql = 'SELECT starttime
@@ -169,7 +169,7 @@ class slot_vault implements slot_vault_interface {
      * @param int $courseid
      * @param int $studentid
      */
-    public function get_last_posted_slot(int $courseid, int $studentid) {
+    public static function get_last_posted_slot(int $courseid, int $studentid) {
         global $DB;
 
         $sql = 'SELECT starttime

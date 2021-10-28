@@ -43,7 +43,7 @@ interface subscriber_vault_interface {
      *
      * @return array
      */
-    public function get_subscriber_exercises(int $courseid);
+    public static function get_subscriber_exercises(int $courseid);
 
     /**
      * Retrieves the exercise name of a specific exercise

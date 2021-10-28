@@ -516,15 +516,11 @@ function save_booking($params) {
  * @return  array An array containing the result and confirmation message string.
  */
 function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
-    global $DB;
     $result = false;
 
     // Get the student slot
     $booking = new booking(0, $courseid, $studentid, $exerciseid);
     $booking->load();
-
-    // confirm the booking and redirect to the student's availability
-    $transaction = $DB->start_delegated_transaction();
 
     if (!empty($booking->get_id())) {
         // update the booking by the instructor.
@@ -543,10 +539,8 @@ function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
     }
 
     if ($result) {
-        $transaction->allow_commit();
         \core\notification::success(get_string('bookingconfirmsuccess', 'local_booking', $strdata));
     } else {
-        $transaction->rollback(new moodle_exception(get_string('bookingconfirmunable', 'local_booking')));
         \core\notification::ERROR(get_string('bookingconfirmunable', 'local_booking'));
     }
 
@@ -559,7 +553,7 @@ function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
  * @return  bool  $resut    The cancellation result.
  */
 function cancel_booking($bookingid, $comment) {
-    global $DB, $COURSE;
+    global $COURSE;
 
     // get the booking to be deleted
     $booking = new booking($bookingid);
@@ -569,9 +563,6 @@ function cancel_booking($bookingid, $comment) {
 
     require_login($courseid, false);
 
-    // start a transaction
-    $transaction = $DB->start_delegated_transaction();
-
     $result = $booking->delete();
 
     $cancellationmsg = [
@@ -580,14 +571,12 @@ function cancel_booking($bookingid, $comment) {
     ];
 
     if ($result) {
-        $transaction->allow_commit();
         // send email notification to the student of the booking cancellation
         $message = new notification();
         if ($message->send_session_cancellation($booking->get_studentid(), $booking->get_exerciseid(), $sessiondate, $comment)) {
             \core\notification::success(get_string('bookingcanceledsuccess', 'local_booking', $cancellationmsg));
         }
     } else {
-        $transaction->rollback(new moodle_exception(get_string('bookingsaveunable', 'local_booking')));
         \core\notification::warning(get_string('bookingcanceledunable', 'local_booking'));
     }
 

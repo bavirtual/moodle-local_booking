@@ -42,7 +42,7 @@ interface slot_vault_interface {
      * @param int       $slot The id of the slot
      * @return slot     The slot object from the id
      */
-    public function get_slot(int $slotid);
+    public static function get_slot(int $slotid);
 
     /**
      * Get all slots for a user that fall on a specific year and week.
@@ -53,7 +53,7 @@ interface slot_vault_interface {
      *
      * @return slot_interface[]     Array of slot_interfaces.
      */
-    public function get_slots(
+    public static function get_slots(
         $userid,
         $year = 0,
         $week = 0
@@ -64,7 +64,7 @@ interface slot_vault_interface {
      *
      * @param slot_interface $slot
      */
-    public function save_slot(slot $slot);
+    public static function save_slot(slot $slot);
 
     /**
      * Delete all slots for a user that fall on a specific year and week.
@@ -75,7 +75,7 @@ interface slot_vault_interface {
      *
      * @return result               result
      */
-    public function delete_slots(
+    public static function delete_slots(
         $course = 0,
         $year = 0,
         $week = 0,
@@ -88,7 +88,14 @@ interface slot_vault_interface {
      *
      * @param slot $slot The slot to be confirmed
      */
-    public function confirm_slot(slot $slot, string $bookinginfo);
+    public static function confirm_slot(slot $slot, string $bookinginfo);
+
+    /**
+     * Get the date of the last posted availability slot
+     *
+     * @param int $studentid
+     */
+    public static function get_first_posted_slot(int $studentid);
 
     /**
      * Get the date of the last posted availability slot
@@ -96,5 +103,5 @@ interface slot_vault_interface {
      * @param int $courseid
      * @param int $studentid
      */
-    public function get_last_posted_slot(int $courseid, int $studentid);
+    public static function get_last_posted_slot(int $courseid, int $studentid);
 }

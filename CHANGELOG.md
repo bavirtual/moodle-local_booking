@@ -1,5 +1,13 @@
 # Change log
 
+## [0.03.80] BETA - UNRELEASED 2021-10-28
+
+### Changed
+
+- moved transaction management (start, commit, and rollback) to vaults
+- Fontawesome icon formatting
+- css slot and session buttons formatting
+
 ## [0.03.79] BETA - UNRELEASED 2021-10-25
 
 ### Changed
@@ -10,6 +18,8 @@
 - Moved Priority object to Student accessed through get_priority()
 - Moved get_next_allowed_session_date from lib to Student class
 - completed_lessons to has_completed_lesson method
+- Email notification edits matching Assignment Moodle notifications formatting
+- vault methods made static
 
 ## [0.02.78] BETA - RELEASED 2021-10-19 - hotfix
 

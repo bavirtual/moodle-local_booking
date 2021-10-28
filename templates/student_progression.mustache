@@ -98,10 +98,10 @@
                     {{/lessonincomplete}}>
                     <div id="action-button-{{studentid}}" class="singlebutton session-right">
                         <a href="{{actionurl}}"{{#lessonincomplete}} class="disabled-link"{{/lessonincomplete}}>
-                            <button class="session-button session-button-{{actiontype}}"
+                            <button id="exercise-session" class="session-button session-button-{{actiontype}}"
                                 data-region="action-button">
                                 {{#pix}}{{#actionbook}}plane{{/actionbook}}{{^actionbook}}pencil-square{{/actionbook}},local_booking{{/pix}}
-                                <span>{{actionname}}</span>
+                                <span>&nbsp;&nbsp;{{actionname}}</span>
                             </button>
                          </a>
                     </div>

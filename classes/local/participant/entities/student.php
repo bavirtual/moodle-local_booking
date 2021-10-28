@@ -79,7 +79,6 @@ class student extends participant {
      */
     public function save_slots(array $params) {
         global $DB;
-        $vault = new slot_vault();
 
         $slots = $params['slots'];
         $year = $params['year'];
@@ -89,7 +88,7 @@ class student extends participant {
         $transaction = $DB->start_delegated_transaction();
 
         // remove all week/year slots for the user to avoid updates
-        $result = $vault->delete_slots($this->courseid, $year, $week, $this->userid);
+        $result = slot_vault::delete_slots($this->courseid, $year, $week, $this->userid);
 
         if ($result) {
             foreach ($slots as $slot) {
@@ -103,7 +102,7 @@ class student extends participant {
                 );
 
                 // add each slot.
-                $result = $result && $vault->save_slot($newslot);
+                $result = $result && slot_vault::save_slot($newslot);
             }
         }
 
@@ -124,7 +123,6 @@ class student extends participant {
      */
     public function delete_slots(array $params) {
         global $DB;
-        $vault = new slot_vault();
 
         $year = $params['year'];
         $week = $params['week'];
@@ -133,7 +131,7 @@ class student extends participant {
         $transaction = $DB->start_delegated_transaction();
 
         // remove all week/year slots for the user to avoid updates
-        $result = $vault->delete_slots($this->courseid, $this->userid, $year, $week);
+        $result = slot_vault::delete_slots($this->courseid, $this->userid, $year, $week);
         if ($result) {
             $transaction->allow_commit();
         } else {
@@ -164,8 +162,7 @@ class student extends participant {
      * @return array array of days
      */
     public function get_slots($weekno, $year) {
-        $slotvault = new slot_vault();
-        $this->slots = $slotvault->get_slots($this->userid, $weekno, $year);
+        $this->slots = slot_vault::get_slots($this->userid, $weekno, $year);
 
         // add student's slot color to each slot
         foreach ($this->slots as $slot) {
@@ -200,9 +197,7 @@ class student extends participant {
      * @return  DateTime
      */
     public function get_first_slot_date() {
-        $vault = new slot_vault();
-
-        $firstsession = $vault->get_first_posted_slot($this->userid);
+        $firstsession = slot_vault::get_first_posted_slot($this->userid);
         $sessiondatets = !empty($firstsession) ? $firstsession->starttime : time();
         $sessiondate = new DateTime('@' . $sessiondatets);
 

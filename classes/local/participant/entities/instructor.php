@@ -63,10 +63,9 @@ class instructor extends participant {
      * @return booking[] An array of bookings.
      */
     public function get_bookings(bool $oldestfirst = false) {
-        $bookingvault = new booking_vault();
         $bookings = [];
 
-        $bookingobjs = $bookingvault->get_bookings($this->userid, $oldestfirst);
+        $bookingobjs = booking_vault::get_bookings($this->userid, $oldestfirst);
         foreach ($bookingobjs as $bookingobj) {
             $booking = new booking();
             $booking->load($bookingobj);

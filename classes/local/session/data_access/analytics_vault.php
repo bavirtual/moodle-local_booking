@@ -49,7 +49,7 @@ class analytics_vault implements analytics_vault_interface {
      * @param int   $studentid  The student id in reference
      * @return int  $days       The number of days since last session
      */
-    public function get_session_recency(int $courseid, int $studentid) {
+    public static function get_session_recency(int $courseid, int $studentid) {
         global $DB;
 
         $sql = 'SELECT endtime AS lastsessiondate
@@ -80,7 +80,7 @@ class analytics_vault implements analytics_vault_interface {
      * @param int   $studentid  The student id in reference
      * @return int  $slotcount  The number of availability slots marked by the student.
      */
-    public function get_slot_count(int $studentid) {
+    public static function get_slot_count(int $studentid) {
         global $DB;
 
         $slotcount = $DB->count_records(self::DB_SLOTS, ['userid' => $studentid]);
@@ -94,7 +94,7 @@ class analytics_vault implements analytics_vault_interface {
      * @param int   $studentid      The student id in reference
      * @return int  $activitycount  The number of activity events in the log.
      */
-    public function get_activity_count(int $studentid) {
+    public static function get_activity_count(int $studentid) {
         global $DB, $COURSE;
 
         $activitycount = $DB->count_records(self::DB_LOGSTORE, ['userid' => $studentid, 'courseid' => $COURSE->id]);
@@ -108,7 +108,7 @@ class analytics_vault implements analytics_vault_interface {
      * @param int   $studentid      The student id in reference
      * @return int  $completions    The number of lesson completions.
      */
-    public function get_lesson_completions(int $studentid) {
+    public static function get_lesson_completions(int $studentid) {
         global $DB;
 
         $completions = $DB->count_records(self::DB_LESSONCOMPLETION, ['userid' => $studentid, 'completed' => '1']);

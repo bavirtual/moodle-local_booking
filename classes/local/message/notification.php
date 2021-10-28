@@ -72,11 +72,17 @@ class notification extends \core\message\message {
             'instructor'    => instructor::get_fullname($USER->id),
             'sessiondate'   => $sessiondate->format('l M j \a\t H:i \z\u\l\u'),
             'exercise'      => subscriber::get_exercise_name($exerciseid),
+            'courseurl'     => (new \moodle_url('/course/view.php', array(
+                'id'=> $COURSE->id)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
+                'id'=> $COURSE->id)))->out(false),
+            'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array(
+                'id'=> $exerciseid)))->out(false),
             'confirmurl'    => (new \moodle_url('/local/booking/confirm.php', array(
-                'courseid'=> $COURSE->id,
-                'exeid'   => $exerciseid,
-                'userid'  => $studentid,
-                'insid'   => $USER->id
+                'courseid'  => $COURSE->id,
+                'exeid'     => $exerciseid,
+                'userid'    => $studentid,
+                'insid'     => $USER->id
                 )))->out(false),
         );
 
@@ -105,6 +111,12 @@ class notification extends \core\message\message {
             'student'       => student::get_fullname($studentid),
             'sessiondate'   => $sessiondate->format('l M j \a\t H:i \z\u\l\u'),
             'exercise'      => subscriber::get_exercise_name($exerciseid),
+            'courseurl'     => (new \moodle_url('/course/view.php', array(
+                'id'        => $COURSE->id)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
+                'id'        => $COURSE->id)))->out(false),
+            'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array(
+                'id'        => $exerciseid)))->out(false),
             'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$COURSE->id)))->out(false),
         );
 
@@ -132,10 +144,16 @@ class notification extends \core\message\message {
 
         // notification message data
         $data = (object) array(
-            'coursename'        => $COURSE->shortname,
-            'student'           => student::get_fullname($studentid),
-            'sessiondate'       => $sessiondatetime,
-            'exercise'          => subscriber::get_exercise_name($exerciseid),
+            'coursename'    => $COURSE->shortname,
+            'student'       => student::get_fullname($studentid),
+            'sessiondate'   => $sessiondatetime,
+            'exercise'      => subscriber::get_exercise_name($exerciseid),
+            'courseurl'     => (new \moodle_url('/course/view.php', array(
+                'id'        => $COURSE->id)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
+                'id'        => $COURSE->id)))->out(false),
+            'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array(
+                'id'        => $exerciseid)))->out(false),
             'bookingurl'        => (new \moodle_url('/local/booking/view.php', array('courseid'=>$COURSE->id)))->out(false),
         );
 
@@ -194,6 +212,10 @@ class notification extends \core\message\message {
         $data = (object) array(
             'coursename'    => $coursename,
             'onholddate'    => $onholddate->format('M d, Y'),
+            'courseurl'     => (new \moodle_url('/course/view.php', array(
+                'id'        => $courseid)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
+                'id'        => $courseid)))->out(false),
             'slotsurl'      => (new \moodle_url('/local/booking/availability.php', array('course'=> $courseid)))->out(false),
         );
 
@@ -215,12 +237,18 @@ class notification extends \core\message\message {
      * @return bool  The notification message id.
      */
     public function send_onhold_notification($studentid, $lastsessiondate, $suspenddate, $coursename, $seniorinstructors) {
+        global $COURSE;
+
         // notification message data
         $data = (object) array(
             'coursename'        => $coursename,
             'lastsessiondate'   => $lastsessiondate->format('M d, Y'),
             'suspenddate'       => $suspenddate->format('M d, Y'),
             'studentname'       => student::get_fullname($studentid),
+            'courseurl'         => (new \moodle_url('/course/view.php', array(
+                'id'            => $COURSE->id)))->out(false),
+            'assignurl'         => (new \moodle_url('/mod/assign/index.php', array(
+                'id'            => $COURSE->id)))->out(false),
         );
 
         $this->name              = 'onhold_notification';
@@ -236,8 +264,8 @@ class notification extends \core\message\message {
         foreach ($seniorinstructors as $seniorinstructor) {
             $this->userto            = $seniorinstructor->id;
             $this->subject           = get_string('emailonholdnotify', 'local_booking', $data);
-            $this->fullmessage       = get_string('emailonholdnotifymsg', 'local_booking', $data);
-            $this->fullmessagehtml   = get_string('emailonholdnotifyhtml', 'local_booking', $data);
+            $this->fullmessage       = get_string('emailonholdinstnotifymsg', 'local_booking', $data);
+            $this->fullmessagehtml   = get_string('emailonholdinstnotifyhtml', 'local_booking', $data);
 
             $result = $result && message_send($this) != 0;
         }
@@ -251,10 +279,16 @@ class notification extends \core\message\message {
      * @return bool  The notification message id.
      */
     public function send_suspension_notification($studentid, $lastsessiondate, $coursename, $seniorinstructors) {
+        global $COURSE;
+
         // notification message data
         $data = (object) array(
             'coursename'        => $coursename,
             'lastsessiondate'   => $lastsessiondate->format('M d, Y'),
+            'courseurl'         => (new \moodle_url('/course/view.php', array(
+                'id'            => $COURSE->id)))->out(false),
+            'assignurl'         => (new \moodle_url('/mod/assign/index.php', array(
+                'id'            => $COURSE->id)))->out(false),
         );
 
         $this->name              = 'suspension_notification';
@@ -270,8 +304,8 @@ class notification extends \core\message\message {
         foreach ($seniorinstructors as $seniorinstructor) {
             $this->userto            = $seniorinstructor->get_id();
             $this->subject           = get_string('emailonholdnotify', 'local_booking', $data);
-            $this->fullmessage       = get_string('emailonholdnotifymsg', 'local_booking', $data);
-            $this->fullmessagehtml   = get_string('emailonholdnotifyhtml', 'local_booking', $data);
+            $this->fullmessage       = get_string('emailsuspendinstnotifymsg', 'local_booking', $data);
+            $this->fullmessagehtml   = get_string('emailsuspendinstnotifyhtml', 'local_booking', $data);
 
             $result = $result && message_send($this) != 0;
         }
@@ -289,6 +323,10 @@ class notification extends \core\message\message {
         $data = (object) array(
             'coursename'    => $coursename,
             'status'        => $status,
+            'courseurl'     => (new \moodle_url('/course/view.php', array(
+                'id'        => $courseid)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
+                'id'        => $courseid)))->out(false),
             'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$courseid)))->out(false),
         );
 

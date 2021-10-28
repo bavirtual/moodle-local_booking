@@ -120,9 +120,7 @@ class slot implements slot_interface {
      *
      */
     public function load() {
-        $vault = new slot_vault();
-
-        $slotrec = $vault->get_slot($this->id);
+        $slotrec = slot_vault::get_slot($this->id);
         if (!empty($slotrec)) {
             $this->id = $slotrec->id;
             $this->userid = $slotrec->userid;
@@ -162,8 +160,7 @@ class slot implements slot_interface {
      * @return bool
      */
     public function confirm(string $bookinginfo) {
-        $vault = new slot_vault();
-        return $vault->confirm_slot($this, $bookinginfo);
+        return slot_vault::confirm_slot($this, $bookinginfo);
     }
 
     /**
@@ -254,7 +251,6 @@ class slot implements slot_interface {
      * @param int $studentid
      */
     public static function get_last_posting(int $courseid, int $studentid) {
-        $vault = new slot_vault();
-        return $vault->get_last_posted_slot($courseid, $studentid);
+        return slot_vault::get_last_posted_slot($courseid, $studentid);
     }
 }

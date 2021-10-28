@@ -26,6 +26,7 @@
 namespace local_booking\local\session\data_access;
 
 use local_booking\local\session\entities\booking;
+use local_booking\local\slot\entities\slot;
 
 class booking_vault implements booking_vault_interface {
 
@@ -42,8 +43,8 @@ class booking_vault implements booking_vault_interface {
      * @param bool   $oldestfirst sort order of the returned records.
      * @return array {Object}
      */
-    public function get_bookings(int $userid, bool $oldestfirst = false) {
-        global $DB, $USER;
+    public static function get_bookings(int $userid, bool $oldestfirst = false) {
+        global $DB;
 
         $sql = 'SELECT b.id, b.userid, b.courseid, b.studentid, b.exerciseid,
                        b.slotid, b.confirmed, b.active, b.timemodified
@@ -62,7 +63,7 @@ class booking_vault implements booking_vault_interface {
      * @param booking $booking
      * @return Object
      */
-    public function get_booking($booking) {
+    public static function get_booking($booking) {
         global $DB;
 
         $conditions = [];
@@ -91,7 +92,7 @@ class booking_vault implements booking_vault_interface {
      * @param string $username The username.
      * @return bool
      */
-    public function delete_booking(booking $booking) {
+    public static function delete_booking(booking $booking) {
         global $DB;
 
         $conditions = !empty($booking->get_id()) ? [
@@ -102,7 +103,20 @@ class booking_vault implements booking_vault_interface {
             'exerciseid'=> $booking->get_exerciseid()
         ];
 
-        return $DB->delete_records(static::DB_BOOKINGS, $conditions);
+        // start a transaction
+        $transaction = $DB->start_delegated_transaction();
+
+        if ($result = $DB->delete_records(static::DB_BOOKINGS, $conditions)) {
+            if ($result = ($booking->slot)->delete()) {
+                $transaction->allow_commit();
+            }
+        }
+
+        if (!$result) {
+            $transaction->rollback(new \moodle_exception(get_string('bookingsaveunable', 'local_booking')));
+        }
+
+        return $result;
     }
 
     /**
@@ -111,7 +125,7 @@ class booking_vault implements booking_vault_interface {
      * @param {booking} $booking
      * @return bool
      */
-    public function save_booking(booking $booking) {
+    public static function save_booking(booking $booking) {
         global $DB;
 
         $sessionrecord = new \stdClass();
@@ -131,9 +145,11 @@ class booking_vault implements booking_vault_interface {
      * @param   int                 $courseid
      * @param   int                 $studentid
      * @param   int                 $exerciseid
+     * @param   slot                $slot
+     * @param   string              $confirmationmsg
      * @return  bool                $result
      */
-    public function confirm_booking(int $courseid, int $studentid, int $exerciseid) {
+    public static function confirm_booking(int $courseid, int $studentid, int $exerciseid, slot $slot, string $confirmationmsg) {
         global $DB;
 
         $sql = 'UPDATE {' . static::DB_BOOKINGS . '}
@@ -148,7 +164,20 @@ class booking_vault implements booking_vault_interface {
             'exerciseid'  => $exerciseid
         ];
 
-        return $DB->execute($sql, $params);
+        // confirm the booking and slot as well
+        $transaction = $DB->start_delegated_transaction();
+
+        if ($result = $DB->execute($sql, $params)) {
+            if ($result = $slot->confirm($confirmationmsg)) {
+                $transaction->allow_commit();
+            }
+        }
+
+        if (!$result) {
+            $transaction->rollback(new \moodle_exception(get_string('bookingconfirmunable', 'local_booking')));
+        }
+
+        return $result;
     }
 
     /**
@@ -158,7 +187,7 @@ class booking_vault implements booking_vault_interface {
      * @param int $exerciseid
      * @return int $exercisedate
      */
-    public function get_booked_exercise_date(int $studentid, int $exerciseid) {
+    public static function get_booked_exercise_date(int $studentid, int $exerciseid) {
         global $DB;
 
         $sql = 'SELECT timemodified as exercisedate
@@ -181,7 +210,7 @@ class booking_vault implements booking_vault_interface {
      * @param int $isinstructor
      * @param int $userid
      */
-    public function get_last_booked_session(int $userid, bool $isinstructor = false) {
+    public static function get_last_booked_session(int $userid, bool $isinstructor = false) {
         global $DB;
 
         $sql = 'SELECT timemodified as lastbookedsession
@@ -199,7 +228,7 @@ class booking_vault implements booking_vault_interface {
      * @param booking $booking The booking in reference.
      * @return bool
      */
-    public function set_booking_inactive($booking) {
+    public static function set_booking_inactive($booking) {
         global $DB;
 
         $sql = 'UPDATE {' . static::DB_BOOKINGS . '}

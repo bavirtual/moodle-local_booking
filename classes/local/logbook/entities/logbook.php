@@ -71,8 +71,7 @@ class logbook implements logbook_interface {
      * @return bool true if the Logbook has entries
      */
     public function load() {
-        $vault = new logbook_vault();
-        $this->entries = $vault->get_logbook($this->courseid, $this->studentid, $this);
+        $this->entries = logbook_vault::get_logbook($this->courseid, $this->studentid, $this);
         return count($this->entries) > 0;
     }
 
@@ -91,8 +90,7 @@ class logbook implements logbook_interface {
      * @return int The id of the logbook entery inserted
      */
     public function add(logentry $logentry) {
-        $vault = new logbook_vault();
-        return $vault->insert_logentry($this->courseid, $this->studentid, $logentry);
+        return logbook_vault::insert_logentry($this->courseid, $this->studentid, $logentry);
     }
 
     /**
@@ -101,8 +99,7 @@ class logbook implements logbook_interface {
      * @return bool
      */
     public function update(logentry $logentry){
-        $vault = new logbook_vault();
-        return $vault->update_logentry($this->courseid, $this->studentid, $logentry);
+        return logbook_vault::update_logentry($this->courseid, $this->studentid, $logentry);
     }
 
     /**
@@ -111,15 +108,14 @@ class logbook implements logbook_interface {
      * @return bool
      */
     public function save(logentry $logentry) {
-        $vault = new logbook_vault();
         $result = false;
 
         if ($logentry->get_id() == 0) {
-            $logentryid = $vault->insert_logentry($this->courseid, $this->studentid, $logentry);
+            $logentryid = logbook_vault::insert_logentry($this->courseid, $this->studentid, $logentry);
             $logentry->set_id($logentryid);
             $result = true;
         } else {
-            $result = $vault->update_logentry($this->courseid, $this->studentid, $logentry);
+            $result = logbook_vault::update_logentry($this->courseid, $this->studentid, $logentry);
         }
 
         return $result;
@@ -131,9 +127,7 @@ class logbook implements logbook_interface {
      * @return bool
      */
     public function delete(int $logentryid) {
-        $vault = new logbook_vault();
-
-        return $vault->delete_logentry($logentryid);
+        return logbook_vault::delete_logentry($logentryid);
     }
 
     /**
@@ -151,16 +145,15 @@ class logbook implements logbook_interface {
      * @return logentry
      */
     public function get_logentry(int $logentryid = 0, int $exerciseid = 0, bool $reload = true) {
-        $vault = new logbook_vault();
         $logentry = null;
 
         if ($logentryid != 0) {
             $logentry = $reload ?
-                $vault->get_logentry($this->studentid, $this->courseid, $logentryid, 0, $this) :
+                logbook_vault::get_logentry($this->studentid, $this->courseid, $logentryid, 0, $this) :
                 $logentry = $this->entries[$logentryid];
         } else if ($exerciseid != 0) {
             $logentry = $reload ?
-                $vault->get_logentry($this->studentid, $this->courseid, 0, $exerciseid, $this) :
+                logbook_vault::get_logentry($this->studentid, $this->courseid, 0, $exerciseid, $this) :
                 $logentry = $this->get_logentry_by_exericseid($exerciseid);
         }
 
@@ -220,9 +213,7 @@ class logbook implements logbook_interface {
      * @return logentry $logentry The logbook entry db record
      */
     public function get_summary() {
-        $vault = new logbook_vault();
-
-        list($totalflighttime, $totalsessiontime, $totalsolotime) = $vault->get_logbook_summary($this->courseid, $this->studentid);
+        list($totalflighttime, $totalsessiontime, $totalsolotime) = logbook_vault::get_logbook_summary($this->courseid, $this->studentid);
 
         return [
             self::convert_duration($totalflighttime, 'text'),

@@ -491,12 +491,13 @@ function save_booking($params) {
 
     if ($result) {
         // send emails to both student and instructor
-        $sessiondate = new DateTime('@' . $slottobook['starttime']);
+        $sessionstart = new DateTime('@' . $slottobook['starttime']);
+        $sessionend = new DateTime('@' . $slottobook['endtime']);
         $message = new notification();
-        if ($message->send_booking_notification($studentid, $exerciseid, $sessiondate)) {
-            $message->send_instructor_confirmation($studentid, $exerciseid, $sessiondate);
+        if ($message->send_booking_notification($studentid, $exerciseid, $sessionstart, $sessionend)) {
+            $message->send_instructor_confirmation($studentid, $exerciseid, $sessionstart, $sessionend);
         }
-        $sessiondata['sessiondate'] = $sessiondate->format('D M j\, H:i');
+        $sessiondata['sessiondate'] = $sessionstart->format('D M j\, H:i');
         $sessiondata['studentname'] = student::get_fullname($studentid);
         \core\notification::success(get_string('bookingsavesuccess', 'local_booking', $sessiondata));
     } else {
@@ -634,7 +635,7 @@ function get_week_start($date) {
  * @return string   hex color
  */
 function random_color_part() {
-    return str_pad( dechex( mt_rand( 20, 235 ) ), 2, '0', STR_PAD_LEFT);
+    return str_pad(dechex(mt_rand(20, 235)), 2, '0', STR_PAD_LEFT);
 }
 
 /**

@@ -1,10 +1,23 @@
 # Change log
 
+## [0.04.81] BETA - UNRELEASED 2021-11-01
+
+### Added
+
+- add a Moodle calendar event when a session is booked for the same date/time
+- integration with Google and Windows Live calendars
+- links in booking confirmation emails to student and instructor to download calendar event ics file
+- links in booking confirmation emails add booked session to Google and Windows Live session calendars
+
+### Changed
+
+- session date tooltip in student progression to include time in zulu
+
 ## [0.03.80] BETA - UNRELEASED 2021-10-28
 
 ### Changed
 
-- moved transaction management (start, commit, and rollback) to vaults
+- moved delegated transaction management (start, commit, and rollback) to vaults
 - Fontawesome icon formatting
 - css slot and session buttons formatting
 

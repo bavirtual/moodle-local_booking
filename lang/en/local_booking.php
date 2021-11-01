@@ -9,22 +9,26 @@
  */
 
 // Booking
-$string['activestudents'] = 'Active Students Progression';
+$string['activestudents'] = 'Active students progression';
 $string['averagewaittime'] = 'Avg wait days';
 $string['book'] = 'Book';
-$string['bookings'] = 'Session booking';
 $string['bookingactive'] = 'My active bookings';
+$string['bookingcalics'] = 'Download .ics file';
+$string['bookingcalgoogle'] = 'Add to Google calendar';
+$string['bookingcalyahoo'] = 'Add to Yahoo calendar';
+$string['bookingcalwinlive'] = 'Add to Windows Live calendar';
 $string['bookingcancel'] = 'Cancel';
 $string['bookingcanceledsuccess'] = 'Booking with \'{$a->studentname}\' cancelled!';
 $string['bookingcanceledunable'] = 'Unable to cancel booking!';
 $string['bookingconfirmmsg'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
 $string['bookingconfirmsuccess'] = 'Booking confirmed for \'{$a->exercise}\' with {$a->instructor} on {$a->sessiondate} zulu';
 $string['bookingconfirmunable'] = 'Unable to confirm booking!';
+$string['bookingfooter'] = '<p style="font-family:sans-serif"><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href="{$a->bookingurl}">Session Booking</a></p>';
 $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
+$string['bookings'] = 'Session booking';
+$string['booksave'] = 'Save Booking';
 $string['bookingsavesuccess'] = 'Booking saved for \'{$a->exercise}\' with {$a->studentname} on {$a->sessiondate} zulu';
 $string['bookingsaveunable'] = 'Unable to save booking!';
-$string['bookingfooter'] = '<a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href="{$a->bookingurl}">Session Booking</a>';
-$string['booksave'] = 'Save Booking';
 $string['cancellationcomment'] = 'Please provide the student with a short comment on this cancellation:';
 $string['configmissing'] = 'Failed to open {$a}';
 $string['crontask'] = 'Background processing for session booking';
@@ -45,20 +49,21 @@ $string['sequencetooltip'] = 'Score: {$a->score}<br/>Last session: {$a->recency}
 <br/>Availability: {$a->slots} posts<br/>Completion: {$a->completion} lessons';
 $string['sessionaction'] = 'Action';
 $string['sessiondate'] = 'Session Date';
-$string['sessionbookedby'] = 'Session date: {$a->sessiondate}<br/>{$a->bookingstatus}: booked by<br/>\'{$a->instructor}\'';
+$string['sessionbookedby'] = '{$a->sessiondate}<br/>{$a->bookingstatus}: booked by<br/>\'{$a->instructor}\'';
 $string['sessiongradeddby'] = 'Graded date: {$a->sessiondate}<br/>Graded by \'{$a->instructor}\'';
 $string['sessiongradeexampass'] = 'Exam Results<br/>Grade: {$a->grade}<br/>Date: {$a->sessiondate}';
+$string['sessionvenue'] = 'Discord';
 $string['simulator'] = 'Sim';
 $string['statusbooked'] = 'confirmed';
 $string['statustentative'] = 'tentative';
 $string['students'] = 'Students';
-$string['studentavialability'] = 'Student Availability';
+$string['studentavialability'] = 'Student availability';
 $string['unknown'] = 'No grading record!';
 $string['zulutime'] = 'Zulu';
 
 // Availability posting
 $string['availability'] = 'My availability';
-$string['availabilityinst'] = 'Student Availability';
+$string['availabilityinst'] = 'Student availability';
 $string['availabilityallview'] = 'View everyone\'s availability';
 $string['buttonsave'] = 'Save';
 $string['buttoncopy'] = 'Copy';
@@ -151,17 +156,20 @@ $string['messageprovider:sessionoverdue_notification'] = 'Instructor session ove
 $string['emailnotify'] = '{$a->coursename} session booking notification: \'{$a->exercise}\'';
 $string['emailnotifymsg'] = '{$a->instructor} has booked a session for your availability on {$a->sessiondate} for \'{$a->exercise}\'.
 Please confirm this booking by clicking on this link: {$a->confirmurl}';
-$string['emailnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+$string['emailnotifyhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has booked a session for your availability on <strong>{$a->sessiondate}
-    </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p></font><hr />';
+    </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p><p style="font-size: .9em;">
+    Add a reminder to your calendar:<br />&nbsp;&nbsp;<a href=\'{$a->googleurl}\'>Google</a><br />&nbsp;&nbsp;<a href=\'{$a->liveurl}\'>Windows Live</a><br />
+    &nbsp;&nbsp;<a href=\'{$a->icsurl}\'>Download ics/iCal file</a><hr /></div>';
 
 // email to instructor: confirming session tentative by him/her
 $string['emailconfirm'] = 'Session booked';
 $string['emailconfirmsubject'] = '{$a->coursename} session booked: \'{$a->exercise}\'';
 $string['emailconfirmnmsg'] = '\'{$a->exercise}\' session booked with {$a->student} for \'{$a->exercise}\' on {$a->sessiondate}.';
-$string['emailconfirmhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+$string['emailconfirmhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>Session booked with <strong>{$a->student}</strong> for \'<i>{$a->exercise}</i>\' on
-    <strong>{$a->sessiondate}</strong>.</p></p><hr />';
+    <strong>{$a->sessiondate}</strong>.</p><p style="font-size: .9em;">Add a reminder to your calendar:<br />&nbsp;&nbsp;<a href=\'{$a->googleurl}\'>Google</a><br />
+    &nbsp;&nbsp;<a href=\'{$a->liveurl}\'>Windows Live</a><br />&nbsp;&nbsp;<a href=\'{$a->icsurl}\'>Download ics/iCal file</a></p><hr /></div>';
 
 // email to instructor: session confirmed by student
 $string['emailinstconfirm'] = 'Booked session confirmed by Student';
@@ -178,15 +186,15 @@ Instructor\'s comment: {$a->comment}.
 Please note you will have to post new availability as current availability posts were purged.';
 $string['emailcancelhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has cancelled your booked session scheduled for
-    <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\'.</p><p><strong>Instructor\'s comment:</strong></br>{$a->comment}</p><p>
-    Please note you will have to post new availability as current availability posts were purged.</p></p></font><hr />';
+    <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\'.</p><p><strong>Instructor\'s comment:</strong><br />{$a->comment}</p><p>
+    Please note you will have to post new availability as current availability posts were purged.</p></p><hr />';
 
 // email to student: on-hold warning
 $string['emailonholdwarning'] = '{$a->coursename}: Inactivity notification';
 $string['emailonholdwarningmsg'] = 'Please post an availability slot to avoid being automatically placed on-hold on \'{$a->onholddate}\'. You can post an availability slot for \'{$a->coursename}\' from the following link: {$a->slotsurl}';
 $string['emailonholdwarninghtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
     <p>Please post an availability slot to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong></p>.<p>You can post an availability slot for
-    \'{$a->coursename}\' <a href="{$a->slotsurl}">here</a>.</p></font><hr />';
+    \'{$a->coursename}\' <a href="{$a->slotsurl}">here</a>.</p><hr />';
 
 // email to student: on-hold notification
 $string['emailonholdnotify'] = '{$a->coursename}: Student placed on-hold';
@@ -194,21 +202,21 @@ $string['emailonholdnotifymsg'] = 'Due to inactivity since your last posting on 
 $string['emailonholdnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
     <p>Due to inactivity since your last posting on <strong>\'{$a->lastsessiondate}\'</strong>, you have been placed on-hold. Please contact your instructor if you are
     still interested in resuming \'{$a->coursename}\' course work.</p><p>Please note, if you are no longer interested in continuing course work, you will be automatically
-    unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p></font><hr />';
+    unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p><hr />';
 $string['emailonholdinstnotifymsg'] = 'Due to inactivity since last posting on \'{$a->lastsessiondate}\', {$a->studentname} has been placed on-hold.';
 $string['emailonholdinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
     <p>Due to inactivity since last posting on <strong>\'{$a->lastsessiondate}\'</strong>, {$a->studentname} has been placed on-hold.</p>
-    <p>Please note, {$a->studentname} will be automatically unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p></font><hr />';
+    <p>Please note, {$a->studentname} will be automatically unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p><hr />';
 
 // email to student: suspension notification
 $string['emailsuspendnotify'] = '{$a->coursename}: Suspension notification';
 $string['emailsuspendnotifymsg'] = 'Please note that you have been suspended from the \'{$a->coursename}\' course due to session booking inactivity since \'{$a->lastsessiondate}\'.  Please contact your instructor if you are still interested in being enrolled in this course.';
 $string['emailsuspendnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
     <p>Please note you have been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.</p>
-    <p>Please contact your instructor if you are still interested in being enrolled in this course.</p></font><hr />';
+    <p>Please contact your instructor if you are still interested in being enrolled in this course.</p><hr />';
 $string['emailsuspendinstnotifymsg'] = 'Please note that {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since \'{$a->lastsessiondate}\'.';
 $string['emailsuspendinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Please note {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.</p></font><hr />';
+    <p>Please note {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.</p><hr />';
 
 // email to instructor: session overdue notification
 $string['emailoverduenobooking'] = 'no booking on record';
@@ -217,7 +225,7 @@ $string['emailoverduenotifymsg'] = 'Please note that you have {$a->status}.  Ple
 You can book a session from the following view link: {$a->bookingurl}';
 $string['emailoverduenotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
     <p>Please note that you have {$a->status}.</p><p>Please book a session with your assigned student or any student from the <a href="{$a->bookingurl}">booking view</a>
-    as soon as possible. To stop receiving these messages, please ask the course administrator to remove you from the list of active instructors for this course.</p></font><hr />';
+    as soon as possible. To stop receiving these messages, please ask the course administrator to remove you from the list of active instructors for this course.</p><hr />';
 $string['emailoverduestatus'] = 'not booked a session since \'{$a}\'';
 
 // settings
@@ -237,3 +245,9 @@ $string['exercisetitles'] = 'Course exercise titles:';
 $string['exercisetitlesdesc'] = 'Session Booking column titles (one title per line, use &lt;br/&gt; tag to break a title)';
 $string['trainingaircraft'] = 'Training Aircraft ICAO';
 $string['trainingaircraftdesc'] = '(one per line)';
+
+// APIs
+$string['googleaccesstokenerror'] = 'Error: Failed to receieve access token';
+$string['googletimezoneerror'] = 'Error: Failed to get timezone';
+$string['googlecalendarlisterror'] = 'Error: Failed to get calendars list';
+$string['googlecreateeventerror'] = 'Error: Failed to create event';

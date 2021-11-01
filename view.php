@@ -27,8 +27,6 @@
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 
-global $USER, $DB;
-
 // Set up the page.
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
@@ -59,7 +57,6 @@ if ($iscourse && !empty($courseid)) {
 } else {
     $PAGE->set_context(context_system::instance());
 }
-
 
 $context = context_course::instance($courseid);
 

@@ -232,7 +232,7 @@ class booking_session_exporter extends exporter {
             $sessiondate = new DateTime('@' . $booking->get_slot()->get_starttime());
             $bookinginfo = [
                 'instructor'    => instructor::get_fullname($booking->get_instructorid()),
-                'sessiondate'   => !empty($sessiondate) ? $sessiondate->format('j M \'y') : 'null',
+                'sessiondate'   => !empty($sessiondate) ? $sessiondate->format('j M \'y \@Hi\z') : 'null',
                 'bookingstatus' => ucwords(get_string($infostatus, 'local_booking')),
             ];
             $sessiontooltip = get_string('sessionbookedby', 'local_booking', $bookinginfo);

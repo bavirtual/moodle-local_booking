@@ -61,30 +61,24 @@ class notification extends \core\message\message {
     /**
      * Sends an email notifying the student
      *
-     * @return bool  The notification message id.
+     * @param int       $studentid the student id receiving the message.
+     * @param int       $exerciseid the exercise id relating to the session.
+     * @param Datetime  $sessionstart the start date time object for the session.
+     * @param Datetime  $sessionend the end date time object for the session.
+     * @return bool     The notification message id.
      */
-    public function send_booking_notification($studentid, $exerciseid, $sessiondate) {
+    public function send_booking_notification($studentid, $exerciseid, $sessionstart, $sessionend) {
         global $USER, $COURSE;
 
         // notification message data
-        $data = (object) array(
-            'coursename'    => $COURSE->shortname,
-            'instructor'    => instructor::get_fullname($USER->id),
-            'sessiondate'   => $sessiondate->format('l M j \a\t H:i \z\u\l\u'),
-            'exercise'      => subscriber::get_exercise_name($exerciseid),
-            'courseurl'     => (new \moodle_url('/course/view.php', array(
-                'id'=> $COURSE->id)))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
-                'id'=> $COURSE->id)))->out(false),
-            'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array(
-                'id'=> $exerciseid)))->out(false),
-            'confirmurl'    => (new \moodle_url('/local/booking/confirm.php', array(
-                'courseid'  => $COURSE->id,
-                'exeid'     => $exerciseid,
-                'userid'    => $studentid,
-                'insid'     => $USER->id
-                )))->out(false),
-        );
+        $data = self::get_notification_data($COURSE->id,
+            $COURSE->shortname,
+            $USER->id,
+            $studentid,
+            $exerciseid,
+            $sessionstart->getTimestamp(),
+            $sessionend->getTimestamp(),
+            's');
 
         $this->name              = 'booking_notification';
         $this->userto            = $studentid;
@@ -100,25 +94,24 @@ class notification extends \core\message\message {
     /**
      * Sends an email confirming booking made by the instructor
      *
+     * @param int       $studentid the student id receiving the message.
+     * @param int       $exerciseid the exercise id relating to the session.
+     * @param Datetime  $sessionstart the start date time object for the session.
+     * @param Datetime  $sessionend the end date time object for the session.
      * @return bool  The notification message id.
      */
-    public function send_instructor_confirmation($studentid, $exerciseid, $sessiondate) {
+    public function send_instructor_confirmation($studentid, $exerciseid, $sessionstart, $sessionend) {
         global $USER, $COURSE;
 
         // confirmation message data
-        $data = (object) array(
-            'coursename'    => $COURSE->shortname,
-            'student'       => student::get_fullname($studentid),
-            'sessiondate'   => $sessiondate->format('l M j \a\t H:i \z\u\l\u'),
-            'exercise'      => subscriber::get_exercise_name($exerciseid),
-            'courseurl'     => (new \moodle_url('/course/view.php', array(
-                'id'        => $COURSE->id)))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
-                'id'        => $COURSE->id)))->out(false),
-            'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array(
-                'id'        => $exerciseid)))->out(false),
-            'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$COURSE->id)))->out(false),
-        );
+        $data = self::get_notification_data($COURSE->id,
+            $COURSE->shortname,
+            $USER->id,
+            $studentid,
+            $exerciseid,
+            $sessionstart->getTimestamp(),
+            $sessionend->getTimestamp(),
+            'i');
 
         $this->name              = 'booking_confirmation';
         $this->userto            = $USER->id;
@@ -137,6 +130,11 @@ class notification extends \core\message\message {
      * Sends an email notifying the instructor of
      * student confirmation of booked session
      *
+     * @param int       $courseid the course id.
+     * @param int       $studentid the student id sending the notification message.
+     * @param int       $exerciseid the exercise id relating to the session.
+     * @param Datetime  $sessiondatetime the date time object for the session.
+     * @param int       $instructorid the instructor id receiving the message.
      * @return bool  The notification message id.
      */
     public function send_instructor_notification($courseid, $studentid, $exerciseid, $sessiondatetime, $instructorid) {
@@ -174,6 +172,10 @@ class notification extends \core\message\message {
      * Sends an email notifying the student of
      * the cancelled session.
      *
+     * @param int       $studentid the student id sending the notification message.
+     * @param int       $exerciseid the exercise id relating to the session.
+     * @param Datetime  $sessiondatetime the date time object for the session.
+     * @param string    $comment the comment sent by the instructor to the student.
      * @return bool  The notification message id.
      */
     public function send_session_cancellation($studentid, $exerciseid, $sessiondate, $comment) {
@@ -200,11 +202,14 @@ class notification extends \core\message\message {
         return message_send($this) != 0;
     }
 
-
     /**
      * Sends an email warning to the student of
      * upcoming on-hold date.
      *
+     * @param int       $studentid the student id sending the notification message.
+     * @param Datetime  $sessiondatetime the date time object the student being put on hold.
+     * @param int       $courseid the course id.
+     * @param string    $coursename the course name.
      * @return bool  The notification message id.
      */
     public function send_onhold_warning($studentid, $onholddate, $courseid, $coursename) {
@@ -234,6 +239,11 @@ class notification extends \core\message\message {
      * Sends an email notifying the student
      * of being placed on-hold.
      *
+     * @param int       $studentid the student id sending the notification message.
+     * @param Datetime  $lastsessiondate the date time of the last session taken by the student.
+     * @param Datetime  $suspenddate the date time of the student will be suspended.
+     * @param string    $coursename the course name.
+     * @param array     $seniorinstructors the list of senior instructors to be copied.
      * @return bool  The notification message id.
      */
     public function send_onhold_notification($studentid, $lastsessiondate, $suspenddate, $coursename, $seniorinstructors) {
@@ -276,6 +286,10 @@ class notification extends \core\message\message {
      * Sends an email notifying the student
      * of being placed on-hold.
      *
+     * @param int       $studentid the student id sending the notification message.
+     * @param Datetime  $lastsessiondate the date time of the last session taken by the student.
+     * @param string    $coursename the course name.
+     * @param array     $seniorinstructors the list of senior instructors to be copied.
      * @return bool  The notification message id.
      */
     public function send_suspension_notification($studentid, $lastsessiondate, $coursename, $seniorinstructors) {
@@ -316,6 +330,10 @@ class notification extends \core\message\message {
      * Sends an email notifying the instructor
      * of overdue session.
      *
+     * @param int       $instructorid the instructor id receiving the notification.
+     * @param string    $status the status of instructor activity.
+     * @param int       $courseid the course id.
+     * @param string    $coursename the course name.
      * @return bool  The notification message id.
      */
     public function send_session_overdue_notification($instructorid, $status, $courseid, $coursename) {
@@ -340,4 +358,56 @@ class notification extends \core\message\message {
 
         return message_send($this) != 0;
     }
+
+    /**
+     * Returns an array of variables used in
+     * notification message to student and instructor.
+     *
+     * @param int       $courseid the course id.
+     * @param string    $coursename the course short name.
+     * @param int       $instructor the instructor user id.
+     * @param int       $studentid the studentid user id.
+     * @param int       $exerciseid the exercise id relating to the session.
+     * @param Datetime  $sessionstart the start date time of the session.
+     * @param Datetime  $sessionend the  end date time of the session.
+     * @return object   The array of data for the message.
+     */
+    public static function get_notification_data($courseid, $coursename, $instructorid, $studentid, $exerciseid, $sessionstart, $sessionend, $requester = 'i') {
+        // ics download file array
+        $actionurl = array(
+            'id'    => $courseid,
+            'name'  => $coursename,
+            'extid' => $exerciseid,
+            'inst'  => $instructorid,
+            'std'   => $studentid,
+            'req'   => $requester,
+            'tstart'=> $sessionstart,
+            'tend'  => $sessionend);
+
+        // notification message data
+        $data = (object) array(
+            'coursename'    => $coursename,
+            'instructor'    => instructor::get_fullname($instructorid),
+            'student'       => student::get_fullname($studentid),
+            'sessiondate'   => (new \DateTime('@'.$sessionstart))->format('l M j \a\t H:i \z\u\l\u'),
+            'sessionstart'  => $sessionstart,
+            'sessionend'    => $sessionend,
+            'exercise'      => subscriber::get_exercise_name($exerciseid),
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $courseid)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $courseid)))->out(false),
+            'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $exerciseid)))->out(false),
+            'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$courseid)))->out(false),
+            'confirmurl'    => (new \moodle_url('/local/booking/confirm.php', array(
+                'courseid'  => $courseid,
+                'exeid'     => $exerciseid,
+                'userid'    => $studentid,
+                'insid'     => $instructorid)))->out(false),
+            'icsurl'        => (new \moodle_url('/local/booking/calendar.php', array_merge($actionurl,['action'=>'i'])))->out(false),
+            'googleurl'     => (new \moodle_url('/local/booking/calendar.php', array_merge($actionurl,['action'=>'g'])))->out(false),
+            'appleurl'      => (new \moodle_url('/local/booking/calendar.php', array_merge($actionurl,['action'=>'a'])))->out(false),
+            'liveurl'       => (new \moodle_url('/local/booking/calendar.php', array_merge($actionurl,['action'=>'l'])))->out(false),
+        );
+
+        return $data;
+   }
 }

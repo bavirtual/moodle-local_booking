@@ -21,5 +21,17 @@
         "light cyan"  : "#b2ebf2",
         "dark purple" : "#4a148c",
         "light yellow": "#ffff00"
-    }
+    },
+    "google_client_id": "665457883640-3t61p4f3vp5sg5bnh5kgqcnm3332c145.apps.googleusercontent.com",
+    "google_client_secret": "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",
+    "google_auth_url": "https://accounts.google.com/o/oauth2/auth",
+    "google_auth_token_url": "https://accounts.google.com/o/oauth2/token",
+    "google_calendarlist_url": "https://www.googleapis.com/calendar/v3/users/me/calendarList?",
+    "google_calendars_url": "https://www.googleapis.com/calendar/v3/calendars/",
+    "google_calendar_url": "https://www.googleapis.com/auth/calendar",
+    "live_client_id": "69fb80a7-3199-4f89-a865-3cafafbdc0e1",
+    "live_client_secret": "92e09496-a8a1-4417-a6cc-4851078fd329",
+    "live_auth_url": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    "live_events_url": "https://apis.live.net/v5.0/me/events",
+    "live_scope": "openid%20offline_access%20"
 }

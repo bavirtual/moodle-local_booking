@@ -37,14 +37,17 @@ class google_calendar_api
      * Get the url required to get the code for
 	 * the token so the user can authorize access.
      *
-     * @return string $loginurl The login uri to get the authentication code.
+	 * @param string $redirecturi	The base redirect url
+	 * @param string $statestring	The return url parameters encoded
+     * @return string $loginurl 	The login uri to get the authentication code.
      */
-	public static function get_login_uri(string $redirecturi) {
+	public static function get_login_uri(string $redirecturi, string $statestring) {
 		$authurl = get_booking_config('google_auth_url');
-		$scope = urlencode(get_booking_config('google_calendar_url'));
+		$scope = urlencode(get_booking_config('google_scope_url'));
 		$clientid = get_booking_config('google_client_id');
 
-		$loginurl = $authurl . '?scope=' . $scope . '&redirecturi=' . urlencode($redirecturi) . '&response_type=code&client_id=' . $clientid . '&access_type=online';
+		$loginurl = $authurl . '?scope=' . $scope . '&redirect_uri=' . urlencode($redirecturi) . '&response_type=code&client_id=' .
+				$clientid . '&access_type=online' . '&state=' . $statestring;
 
 		return $loginurl;
 	}
@@ -61,7 +64,7 @@ class google_calendar_api
 		$clientid = get_booking_config('google_client_id');
 		$clientsecret = get_booking_config('google_client_secret');
 
-		$curlPost = 'clientid=' . $clientid . '&redirecturi=' . $redirecturi . '&clientsecret=' . $clientsecret . '&code='. $code . '&grant_type=authorization_code';
+		$curlPost = 'client_id=' . $clientid . '&redirect_uri=' . $redirecturi . '&client_secret=' . $clientsecret . '&code='. $code . '&grant_type=authorization_code';
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -73,7 +76,7 @@ class google_calendar_api
 		if($httpcode != 200)
 			throw new \Exception(get_string('googleaccesstokenerror', 'local_booking'));
 
-		return $data;
+		return $data['access_token'];
 	}
 
     /**
@@ -132,10 +135,13 @@ class google_calendar_api
 	public static function add_event($eventdata, $token) {
 		$eventsurl = get_booking_config('google_calendars_url') . $eventdata->calendarid . '/events';
 
-		$curlPost = array('summary' => $eventdata->eventname);
-		$curlPost = array('description' => $eventdata->description);
-		$curlPost['start'] = array('dateTime' => (new \DateTime('@' . $eventdata->eventstart))->format('Y-m-d\TH\:i\:s'), 'timeZone' => $eventdata->timezone);
-		$curlPost['end'] = array('dateTime' => (new \DateTime('@' . $eventdata->eventend))->format('Y-m-d\TH\:i\:s'), 'timeZone' => $eventdata->timezone);
+		// construct calendar event details and process cURL.
+		$eventstart = new \DateTime('@' . $eventdata->sessionstart);
+		$eventend = new \DateTime('@' . $eventdata->sessionend);
+		$curlPost['summary'] = $eventdata->eventname;
+		$curlPost['description'] = $eventdata->eventdescription;
+		$curlPost['start'] = array('dateTime' => $eventstart->format('Y-m-d\TH\:i\:s'), 'timeZone' => 'UTC');
+		$curlPost['end'] = array('dateTime' => $eventend->format('Y-m-d\TH\:i\:s'), 'timeZone' => 'UTC');
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $eventsurl);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -148,6 +154,7 @@ class google_calendar_api
 		if($httpcode != 200)
 			throw new \Exception(get_string('googlecreateeventerror', 'local_booking'));
 
+		redirect(get_booking_config('google_calendar_url') . $eventstart->format('Y\/m\/d'));
 		return $data['id'];
 	}
 }

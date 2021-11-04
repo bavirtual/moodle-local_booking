@@ -37,15 +37,18 @@ class live_calendar_api
      * Get the url required to get the code for
 	 * the token so the user can authorize access.
      *
-     * @return string $loginurl The login uri to get the authentication code.
+	 * @param string $redirecturi	The base redirect url
+	 * @param string $statestring	The return url parameters encoded
+     * @return string $loginurl 	The login uri to get the authentication code.
      */
-	public static function get_login_uri(string $redirecturi, int $state) {
+	public static function get_login_uri(string $redirecturi, string $statestring) {
 		$authurl = get_booking_config('live_auth_url');
 		$scope = urlencode(get_booking_config('live_scope'));
 		$clientid = get_booking_config('live_client_id');
+		$codechallenge = get_booking_config('live_code_challenge');
 
-		$loginurl = $authurl . '?client_id=' . $clientid . '&response_type=code&redirecturi=' . urlencode($redirecturi) .
-			'&response_mode=query&scope=' . $scope . '&state=' . $state;
+		$loginurl = $authurl . '?client_id=' . $clientid . '&response_type=code&redirect_uri=' . urlencode($redirecturi) .
+			'&response_mode=query&scope=' . $scope . '&state=' . $statestring . '&code_challenge=' . $codechallenge . '&code_challenge_method=plain';
 
 		return $loginurl;
 	}
@@ -56,14 +59,16 @@ class live_calendar_api
      *
      * @return array $data The access token data array.
      */
-	public static function get_token($redirecturi, $code, $state) {
+	public static function get_token(string $redirecturi, string $code) {
 
-		$authurl = get_booking_config('live_auth_token_url');
+		$authurl = get_booking_config('live_token_url');
 		$clientid = get_booking_config('live_client_id');
-		$scope = get_booking_config('live_scope');
+		$clientsecret = get_booking_config('live_client_secret');
+		$scope = urlencode(get_booking_config('live_scope'));
+		$codechallenge = get_booking_config('live_code_challenge');
 
-		$curlPost = 'clientid=' . $clientid . '&response_type=code%20id_token&redirect_uri=' . urlencode($redirecturi) . '&response_mode=fragment' .
-			'&scope=' . $scope . '&state=' . $state . '&nonce=abcde&code_challenge=' . $code . '&code_challenge_method=S256';
+		$curlPost = 'client_id=' . $clientid . '&code=' . $code . '&scope=' . $scope . '&redirect_uri=' . urlencode($redirecturi) .
+			'&client_secret=' . $clientsecret . '&grant_type=authorization_code&code_verifier=' . $codechallenge;
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $authurl);
@@ -76,7 +81,7 @@ class live_calendar_api
 		if($httpcode != 200)
 			throw new \Exception(get_string('liveaccesstokenerror', 'local_booking'));
 
-		return $data;
+		return $data['access_token'];
 	}
 
     /**
@@ -119,7 +124,7 @@ class live_calendar_api
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $token));
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		$data = json_decode(curl_exec($ch), true); //echo '<pre>';print_r($data);echo '</pre>';
+		$data = json_decode(curl_exec($ch), true);
 		$httpcode = curl_getinfo($ch,CURLINFO_HTTP_CODE);
 		if($httpcode != 200)
 			throw new \Exception(get_string('livecalendarlisterror', 'local_booking'));
@@ -133,26 +138,45 @@ class live_calendar_api
      * @return int $id The id for the created event.
      */
 	public static function add_event($eventdata, $token) {
-		$eventsurl = get_booking_config('live_calendars_url') . $eventdata->calendarid . '/events';
+		$eventsurl = get_booking_config('live_events_url');
+		$startdatetime = (new \DateTime('@' . $eventdata->sessionstart))->format('Y-m-d\TH\:i\:s');
+		$startdateend = (new \DateTime('@' . $eventdata->sessionend))->format('Y-m-d\TH\:i\:s');
+		$location = $eventdata->venue;
 
-		$curlPost = array('summary' => $eventdata->eventname);
-		$curlPost = array('description' => $eventdata->description);
-		$curlPost['start'] = array('dateTime' => (new \DateTime('@' . $eventdata->eventstart))->format('Y-m-d\TH\:i\:s'), 'timeZone' => $eventdata->timezone);
-		$curlPost['end'] = array('dateTime' => (new \DateTime('@' . $eventdata->eventend))->format('Y-m-d\TH\:i\:s'), 'timeZone' => $eventdata->timezone);
+		$data_json = '{
+			"subject": "'. $eventdata->eventname .'",
+			"body": {
+				"contentType":"HTML",
+				"content":"'. strtr($eventdata->eventdescription, '"', '\'') .'"
+			},
+			"start": {
+				"dateTime": "' . $startdatetime . '",
+				"timeZone":"UTC"
+			},
+			"end": {
+				"dateTime": "' . $startdateend . '",
+				"timeZone":"UTC"
+			},
+			"location": {"displayName": "' . $location . '"}
+		}';
+
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $eventsurl);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $token, 'Content-Type: application/json'));
-		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($curlPost));
-		$data = json_decode(curl_exec($ch), true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			"Content-Type: application/json",
+			"Authorization: Bearer " . $token,
+			"Content-length: ".strlen($data_json))
+			);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$data = json_decode(curl_exec($ch));
 		$httpcode = curl_getinfo($ch,CURLINFO_HTTP_CODE);
-		if($httpcode != 200)
-			throw new \Exception(get_string('livecreateeventerror', 'local_booking'));
+		if($httpcode != 200 && !empty($data->error))
+			throw new \Exception($data->error->message);
 
-		return $data['id'];
+		redirect(get_booking_config('live_calendar_url'));
+
+		return $data;
 	}
 }
-
-?>

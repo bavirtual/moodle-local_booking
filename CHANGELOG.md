@@ -1,19 +1,34 @@
 # Change log
 
-## [0.04.81] BETA - UNRELEASED 2021-11-01
+## [0.20.82] BETA - UNRELEASED 2021-11-04
 
 ### Added
 
-- add a Moodle calendar event when a session is booked for the same date/time
-- integration with Google and Windows Live calendars
+- session booked confirmation email html formatting and icons for Google, Outlook Live, and iCal links
+
+### Fixed
+
+- Moodle calendar event duration
+- integration with Google and Outlook Live calendars
+
+### Changed
+
+- Moodle calendar event from a course event to a user event
+- Tooltip formatting in Student progression view for Booked, Tentative, and Graded sessions
+
+## [0.20.81] BETA - UNRELEASED 2021-11-01
+
+### Added
+
+- integration with Google and Outlook Live calendars
 - links in booking confirmation emails to student and instructor to download calendar event ics file
-- links in booking confirmation emails add booked session to Google and Windows Live session calendars
+- links in booking confirmation emails add booked session to Google and Outlook Live session calendars
 
 ### Changed
 
 - session date tooltip in student progression to include time in zulu
 
-## [0.03.80] BETA - UNRELEASED 2021-10-28
+## [0.14.80] BETA - UNRELEASED 2021-10-28
 
 ### Changed
 
@@ -21,7 +36,7 @@
 - Fontawesome icon formatting
 - css slot and session buttons formatting
 
-## [0.03.79] BETA - UNRELEASED 2021-10-25
+## [0.13.79] BETA - UNRELEASED 2021-10-25
 
 ### Changed
 
@@ -34,7 +49,7 @@
 - Email notification edits matching Assignment Moodle notifications formatting
 - vault methods made static
 
-## [0.02.78] BETA - RELEASED 2021-10-19 - hotfix
+## [0.12.78] BETA - RELEASED 2021-10-19 - hotfix
 
 ### Fixed
 
@@ -48,20 +63,20 @@
 
 - Grade button link to assign.php vs direct feedback Moodle page
 
-## [0.02.77] BETA - RELEASED 2021-10-18 - hotfix
+## [0.12.77] BETA - RELEASED 2021-10-18 - hotfix
 
 ### Changed
 
 - get_student_assignment_grades to retrieve unique rows
 - version 2021101801
 
-## [0.02.76] BETA - UNRELEASED 2021-10-18
+## [0.12.76] BETA - UNRELEASED 2021-10-18
 
 ### Fixed
 
 - Lesson completion section passed correction
 
-## [0.02.75] BETA - UNRELEASED 2021-10-17
+## [0.12.75] BETA - UNRELEASED 2021-10-17
 
 ### Fixed
 
@@ -83,7 +98,7 @@
 
 - Clear in availability posting doesn't enable Save button and save doesn't delete slots for that week
 
-## [0.02.74] BETA - RELEASED 2021-10-11 - hotfix
+## [0.12.74] BETA - RELEASED 2021-10-11 - hotfix
 
 ### Changed
 
@@ -95,7 +110,7 @@
 - context id not being passed in Log entry edit view modal form resulting in WS error
 - Unable to post availability
 
-## [0.02.73] BETA - RELEASED 2021-10-10 - hotfix
+## [0.12.73] BETA - RELEASED 2021-10-10 - hotfix
 
 ### Added
 
@@ -111,7 +126,7 @@
 
 - context id not being passed correctly to js after last hotfix
 
-## [0.02.72] BETA - RELEASED 2021-10-07 - hotfix
+## [0.12.72] BETA - RELEASED 2021-10-07 - hotfix
 
 ### Changed
 

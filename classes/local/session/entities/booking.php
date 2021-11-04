@@ -30,6 +30,8 @@ use local_booking\local\participant\entities\student;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
 use \local_booking\local\slot\entities\slot;
+use \local_booking\local\message\calendar_event;
+use \local_booking\local\message\notification;
 use moodle_exception;
 use stdClass;
 
@@ -154,7 +156,7 @@ class booking implements booking_interface {
      * @return bool
      */
     public function save() {
-        global $DB;
+        global $DB, $COURSE;
 
         $transaction = $DB->start_delegated_transaction();
 
@@ -164,6 +166,18 @@ class booking implements booking_interface {
         if ($this->slot->save()) {
             if ($this->id = booking_vault::save_booking($this)) {
                 $result = slot_vault::delete_slots($this->courseid, $this->studentid, 0, 0, false);
+                $eventdata = notification::get_notification_data(null,
+                    $this->courseid,
+                    $COURSE->shortname,
+                    $this->instructorid,
+                    $this->studentid,
+                    $this->exerciseid,
+                    $this->slot->get_starttime(),
+                    $this->slot->get_endtime()
+                );
+                // create instructor and student calendar events
+                calendar_event::add_to_moodle_calendar($eventdata, 'i');
+                calendar_event::add_to_moodle_calendar($eventdata, 's');
             }
         }
 

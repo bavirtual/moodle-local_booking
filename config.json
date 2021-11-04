@@ -28,10 +28,15 @@
     "google_auth_token_url": "https://accounts.google.com/o/oauth2/token",
     "google_calendarlist_url": "https://www.googleapis.com/calendar/v3/users/me/calendarList?",
     "google_calendars_url": "https://www.googleapis.com/calendar/v3/calendars/",
-    "google_calendar_url": "https://www.googleapis.com/auth/calendar",
+    "google_calendar_url": "https://calendar.google.com/calendar/u/0/r/week/",
+    "google_scope_url": "https://www.googleapis.com/auth/calendar",
+    "google_timezone_url": "https://www.googleapis.com/calendar/v3/users/me/settings/timezone",
     "live_client_id": "69fb80a7-3199-4f89-a865-3cafafbdc0e1",
-    "live_client_secret": "92e09496-a8a1-4417-a6cc-4851078fd329",
-    "live_auth_url": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
-    "live_events_url": "https://apis.live.net/v5.0/me/events",
-    "live_scope": "openid%20offline_access%20"
+    "live_client_secret": "I1S7Q~ArTgbJiBNThnWl3CLL06~rJAEGlH.Dc",
+    "live_auth_url": "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize",
+    "live_token_url": "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
+    "live_events_url": "https://graph.microsoft.com/v1.0/me/events",
+    "live_calendar_url": "https://outlook.live.com/calendar/0/view/month",
+    "live_scope": "openid offline_access https://graph.microsoft.com/calendars.readwrite",
+    "live_code_challenge": "YTFjNjI1OWYzMzA3MTI4ZDY2Njg5M2RkNmVjNDE5YmEyZGRhOGYyM2IzNjdmZWFhMTQ1ODg3NDcxY2Nl"
 }

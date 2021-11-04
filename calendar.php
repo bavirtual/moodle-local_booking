@@ -29,45 +29,27 @@ require_once(__DIR__ . '/lib.php');
 use local_booking\local\message\calendar_event;
 use local_booking\local\message\notification;
 
-// Get URL parameters.
-$courseid   = optional_param('id', 0, PARAM_INT);
-$coursename = optional_param('name', '', PARAM_TEXT);
-$exerciseid = optional_param('extid', 0, PARAM_INT);
-$instructorid = optional_param('inst', 0, PARAM_INT);
-$studentid  = optional_param('std', 0, PARAM_INT);
-$requester  = optional_param('req', 'i', PARAM_TEXT);
-$eventstart = optional_param('tstart', 0, PARAM_INT);
-$eventend   = optional_param('tend', 0, PARAM_INT);
-$action     = optional_param('action', 'i', PARAM_TEXT);
-$code       = optional_param('code', '', PARAM_RAW);
-$state      = optional_param('state', '', PARAM_RAW);
+// get URL parameters.
+$code = optional_param('code', '', PARAM_RAW);
+$state = optional_param('state', '', PARAM_RAW);
 
-// check for a redirect from authentication provider
-$context = context_course::instance($courseid);
-
-require_login($courseid, false);
-require_capability('local/booking:availabilityview', $context);
-
-$eventdata = notification::get_notification_data(
-    $courseid,
-    $coursename,
-    $instructorid,
-    $studentid,
-    $exerciseid,
-    $eventstart,
-    $eventend,
-    $requester);
-
-$eventdata->courseid    = $courseid;
-$eventdata->instructorid= $instructorid;
-$eventdata->studentid   = $studentid;
-$eventdata->exerciseid  = $exerciseid;
-$eventdata->sessionend  = $eventdata->sessionend + 60*60;  // add an hour to the end
+// evaluate if the state has json query parameters
+if (empty($state)) {
+    // get event related URL parameters.
+    $eventdata = notification::get_notification_data($_GET);
+    $action = optional_param('action', 'i', PARAM_TEXT);
+}
+else {
+    $decodedstate = json_decode(calendar_event::base64_url_decode($state), true);
+    // get event related URL parameters.
+    $eventdata = notification::get_notification_data($decodedstate);
+    $action = $decodedstate['action'];
+}
+// additional required event data properties
 $eventdata->venue       = get_string('sessionvenue', 'local_booking');
-$eventdata->redirecturi = $CFG->httpswwwroot . '/local/booking/calendar.php?action=g&id=' . $courseid . '&name=' . $coursename .
-    '&extid=' . $exerciseid . '&inst=' . $instructorid . '&std=' . $studentid . '&req=' . $requester . '&tstart=' . $eventstart . '&tend=' . $eventend;
-
-calendar_event::set_event_content($eventdata, $requester);
+$eventdata->redirecturi = $CFG->httpswwwroot . '/local/booking/calendar.php';
+$eventdata->sessionend  = $eventdata->sessionend + (60*30);  // add an hour to the event end time
+$eventdata->statestring = calendar_event::get_state_string($eventdata, $action);
 
 // Process the action (i = download ics file, g = add to Google calendar, l = add to Windows Live calendar)
 switch ($action) {
@@ -76,6 +58,7 @@ switch ($action) {
         break;
     case 'g':
         calendar_event::add_to_google_calendar($eventdata, $code);
+        redirect($CFG->httpswwwroot);
         break;
     case 'l':
         calendar_event::add_to_live_calendar($eventdata, $code, $state);

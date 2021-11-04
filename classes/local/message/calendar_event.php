@@ -31,6 +31,7 @@ use local_booking\local\service\live_calendar_api;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
+require_once($CFG->dirroot . '/calendar/lib.php');
 
 /**
  * Class for adding session booking calendar events.
@@ -49,6 +50,7 @@ class calendar_event{
      * @param object $eventdata The object for the event data
      */
     public static function download_ics(object $eventdata) {
+        calendar_event::set_event_content($eventdata);
         // get event details
         $ato = get_booking_config('ATO');
         $location = $eventdata->venue;
@@ -80,8 +82,21 @@ class calendar_event{
      *
      * @param object $eventdata The object for the event data
      */
-    public static function add_to_moodle_calendar(object $eventdata) {
-        // send an event to create a moodle calendar event
+    public static function add_to_moodle_calendar(object $eventdata, string $requester = 'i') {
+        $eventdata->requester = $requester;
+        calendar_event::set_event_content($eventdata);
+        // create an event to create a moodle calendar event
+        $event = new \stdClass();
+        $event->userid = ($eventdata->requester == 'i' ? $eventdata->instructorid : $eventdata->studentid);
+        $event->type = CALENDAR_EVENT_TYPE_STANDARD; // This is used for events we only want to display on the calendar, and are not needed on the block_myoverview.
+        $event->name = substr($eventdata->eventname,0,20);
+        $event->description = array('format'=>FORMAT_HTML, 'text'=>$eventdata->eventdescription);
+        $event->format = FORMAT_HTML;
+        $event->timestart = $eventdata->sessionstart;
+        $event->visible = instance_is_visible('scorm', $eventdata->exercise);
+        $event->timeduration = ($eventdata->sessionend + (60*60)) - $eventdata->sessionstart; // add an hour to the end time
+
+        \calendar_event::create($event);
     }
 
     /**
@@ -90,22 +105,20 @@ class calendar_event{
      *
      * @param object $eventdata The event's data.
      * @param string $code      The code required to get a token to create the event.
-     * @return int $eventid     The code required created event id.
+     * @return int   $eventid   The calendar event id.
      */
     public static function add_to_google_calendar(object $eventdata, string $code) {
+        calendar_event::set_event_content($eventdata);
         // get the code if it's not there otherwise create the event
         if (empty($code)) {
-            redirect(google_calendar_api::get_login_uri($eventdata->redirecturi));
+            redirect(google_calendar_api::get_login_uri($eventdata->redirecturi, self::base64_url_encode($eventdata->statestring)));
         }
         else {
             // Get access token
             $token = google_calendar_api::get_token($eventdata->redirecturi, $code);
 
-            // Get user calendar timezone
-            $eventdata->calendarid = 'primary';
-            $eventdata->timezone = google_calendar_api::get_user_timezone($token);
-
             // Create event on primary calendar
+            $eventdata->calendarid = 'primary';
             $eventid = google_calendar_api::add_event($eventdata, $token);
 
             return $eventid;
@@ -119,50 +132,19 @@ class calendar_event{
      * @param object $eventdata The event's data.
      * @param string $code      The code required to get a token to create the event.
      * @param string $code      The code required to get a token to create the event.
-     * @return bool             The event message id.
+     * @return int   $eventid   The calendar event id.
      */
-    public static function add_to_live_calendar(object $eventdata, string $code, int $passedstate) {
-        // set a random 5 digit number for the state in user preferences
-        $state = get_user_preferences('local_booking_liveauthstate');
-        if (empty($state)) {
-            set_user_preference('local_booking_showlocaltime', mt_rand(10000, 99999));
-        }
-
+    public static function add_to_live_calendar(object $eventdata, string $code) {
+        calendar_event::set_event_content($eventdata);
         // get the code if it's not there otherwise create the event
         if (empty($code)) {
-            redirect(live_calendar_api::get_login_uri($eventdata->redirecturi, $state));
+            redirect(live_calendar_api::get_login_uri($eventdata->redirecturi, self::base64_url_encode($eventdata->statestring)));
         }
-        elseif ($passedstate == $state) {
-            $token = live_calendar_api::get_token($eventdata->redirecturi, $code, $state);
-            $eventsurl = get_booking_config('live_events_url');
-            $startdatetime = (new \DateTime('@' . $eventdata->sessionstart))->format('Y-m-d\TH\:i\:s');
-            $startdateend = (new \DateTime('@' . $eventdata->sessionend))->format('Y-m-d\TH\:i\:s');
-            $location = $eventdata->venue;
+        else {
+            $token = live_calendar_api::get_token($eventdata->redirecturi, $code);
+            $eventid = live_calendar_api::add_event($eventdata, $token);
 
-            $data_json = '{
-                "name": "'. $eventdata->eventname .'",
-                "description": "'. $eventdata->eventdescription .'",
-                "start_time": "' . $startdatetime . ':00",
-                "end_time": "' . $startdateend . ':00",
-                "location": "' . $location . '",
-                "is_all_day_event": false,
-                "availability": "busy",
-                "visibility": "public"
-            }';
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $eventsurl);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/json",
-            "Authorization: Bearer " . $token,
-            "Content-length: ".strlen($data_json))
-            );
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $result = curl_exec($ch);
-
-            return $result;
+            return $eventid;
         }
     }
 
@@ -173,15 +155,58 @@ class calendar_event{
      * @param object $eventdata The event's data.
      * @param string $requester The event calendar requester.
      */
-    public static function set_event_content(object $eventdata, string $requester) {
+    public static function set_event_content(object $eventdata) {
         // identify the requester being instructor 'i' or student 's' to customize the event description
-        if ($requester == 'i') {
+        if ($eventdata->requester == 'i') {
+            $eventdata->eventname = get_string('emailconfirmsubject', 'local_booking', $eventdata);
+            $eventdata->eventdescription = get_string('emailconfirmhtml', 'local_booking', $eventdata);
+        }
+        elseif ($eventdata->requester == 's') {
             $eventdata->eventname = get_string('emailnotify', 'local_booking', $eventdata);
-            $eventdata->eventdescription = get_string('emailconfirmnmsg', 'local_booking', $eventdata);
+            $eventdata->eventdescription = get_string('emailnotifyhtml', 'local_booking', $eventdata);
         }
-        elseif ($requester == 's') {
-            get_string('emailconfirmsubject', 'local_booking', $eventdata);
-            $eventdata->eventdescription = get_string('emailconfirmmsg', 'local_booking', $eventdata);
-        }
+    }
+
+    /**
+     * Returns a json string containing
+     * query parameters embeded in the state.
+     *
+     * @param object $eventdata The event data object containing query parameters.
+     * @return string           The json string containing query parameters.
+     */
+    public static function get_state_string(object $eventdata, string $action) {
+        $jsonstate = '{"action":"' . $action . '",
+            "id":' . $eventdata->courseid . ',
+            "name":"' . $eventdata->coursename . '",
+            "extid":' . $eventdata->exerciseid . ',
+            "inst":' . $eventdata->instructorid . ',
+            "std":' . $eventdata->studentid . ',
+            "req":"' . $eventdata->requester . '",
+            "tstart":' . $eventdata->sessionstart . ',
+            "tend":' . $eventdata->sessionend . '}';
+
+        return $jsonstate;
+    }
+
+    /**
+     * Replaces url query parameters to be
+     * encoded in the state paramter.
+     *
+     * @param string $statestring   The url query string to be encoded.
+     * @return string               The converted and encoded string.
+     */
+    public static function base64_url_encode(string $statestring) {
+        return strtr(base64_encode($statestring), '+/=', '-_,');
+    }
+
+    /**
+     * Decodes the encoded state string and converts it
+     * into a query string.
+     *
+     * @param string $statestring   The encoded state string to be decoded.
+     * @return string               The url query string encoded.
+     */
+    public static function base64_url_decode(string $statestring) {
+        return base64_decode(strtr($statestring, '-_,', '+/='));
     }
 }

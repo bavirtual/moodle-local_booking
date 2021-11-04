@@ -71,7 +71,8 @@ class notification extends \core\message\message {
         global $USER, $COURSE;
 
         // notification message data
-        $data = self::get_notification_data($COURSE->id,
+        $data = self::get_notification_data(null,
+            $COURSE->id,
             $COURSE->shortname,
             $USER->id,
             $studentid,
@@ -104,7 +105,8 @@ class notification extends \core\message\message {
         global $USER, $COURSE;
 
         // confirmation message data
-        $data = self::get_notification_data($COURSE->id,
+        $data = self::get_notification_data(null,
+            $COURSE->id,
             $COURSE->shortname,
             $USER->id,
             $studentid,
@@ -116,7 +118,7 @@ class notification extends \core\message\message {
         $this->name              = 'booking_confirmation';
         $this->userto            = $USER->id;
         $this->subject           = get_string('emailconfirmsubject', 'local_booking', $data);
-        $this->fullmessage       = get_string('emailconfirmnmsg', 'local_booking', $data);
+        $this->fullmessage       = get_string('emailconfirmmsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailconfirmhtml', 'local_booking', $data);
         $this->contexturl        = $data->bookingurl;
         $this->contexturlname    = get_booking_config('ATO') . ' ' . get_string('pluginname', 'local_booking');
@@ -372,9 +374,30 @@ class notification extends \core\message\message {
      * @param Datetime  $sessionend the  end date time of the session.
      * @return object   The array of data for the message.
      */
-    public static function get_notification_data($courseid, $coursename, $instructorid, $studentid, $exerciseid, $sessionstart, $sessionend, $requester = 'i') {
-        // ics download file array
-        $actionurl = array(
+    public static function get_notification_data($params = null,
+        $courseid = 0,
+        $coursename = '',
+        $instructorid = 0,
+        $studentid = 0,
+        $exerciseid = 0,
+        $sessionstart = 0,
+        $sessionend = 0,
+        $requester = 'i') {
+
+        // parse parameters if exists
+        if (!empty($params)) {
+            $courseid = $params['id'];
+            $coursename= $params['name'];
+            $instructorid = $params['inst'];
+            $studentid = $params['std'];
+            $exerciseid = $params['extid'];
+            $sessionstart = $params['tstart'];
+            $sessionend = $params['tend'];
+            $requester = $params['req'];
+        }
+        else {
+            // ics download file array
+            $params = array(
             'id'    => $courseid,
             'name'  => $coursename,
             'extid' => $exerciseid,
@@ -383,16 +406,22 @@ class notification extends \core\message\message {
             'req'   => $requester,
             'tstart'=> $sessionstart,
             'tend'  => $sessionend);
+        }
 
         // notification message data
         $data = (object) array(
+            'courseid'      => $courseid,
             'coursename'    => $coursename,
+            'instructorid'  => $instructorid,
             'instructor'    => instructor::get_fullname($instructorid),
+            'studentid'     => $studentid,
             'student'       => student::get_fullname($studentid),
             'sessiondate'   => (new \DateTime('@'.$sessionstart))->format('l M j \a\t H:i \z\u\l\u'),
             'sessionstart'  => $sessionstart,
             'sessionend'    => $sessionend,
+            'exerciseid'    => $exerciseid,
             'exercise'      => subscriber::get_exercise_name($exerciseid),
+            'requester'     => $requester,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $courseid)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $courseid)))->out(false),
             'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $exerciseid)))->out(false),
@@ -402,10 +431,9 @@ class notification extends \core\message\message {
                 'exeid'     => $exerciseid,
                 'userid'    => $studentid,
                 'insid'     => $instructorid)))->out(false),
-            'icsurl'        => (new \moodle_url('/local/booking/calendar.php', array_merge($actionurl,['action'=>'i'])))->out(false),
-            'googleurl'     => (new \moodle_url('/local/booking/calendar.php', array_merge($actionurl,['action'=>'g'])))->out(false),
-            'appleurl'      => (new \moodle_url('/local/booking/calendar.php', array_merge($actionurl,['action'=>'a'])))->out(false),
-            'liveurl'       => (new \moodle_url('/local/booking/calendar.php', array_merge($actionurl,['action'=>'l'])))->out(false),
+            'icsurl'        => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'i'])))->out(false),
+            'googleurl'     => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'g'])))->out(false),
+            'liveurl'       => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'l'])))->out(false),
         );
 
         return $data;

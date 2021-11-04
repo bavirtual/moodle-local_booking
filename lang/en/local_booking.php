@@ -49,8 +49,8 @@ $string['sequencetooltip'] = 'Score: {$a->score}<br/>Last session: {$a->recency}
 <br/>Availability: {$a->slots} posts<br/>Completion: {$a->completion} lessons';
 $string['sessionaction'] = 'Action';
 $string['sessiondate'] = 'Session Date';
-$string['sessionbookedby'] = '{$a->sessiondate}<br/>{$a->bookingstatus}: booked by<br/>\'{$a->instructor}\'';
-$string['sessiongradeddby'] = 'Graded date: {$a->sessiondate}<br/>Graded by \'{$a->instructor}\'';
+$string['sessionbookedby'] = '{$a->sessiondate}<br/>{$a->bookingstatus}<br/>{$a->instructor}';
+$string['sessiongradeddby'] = '{$a->sessiondate}<br/>Graded by:<br/>{$a->instructor}';
 $string['sessiongradeexampass'] = 'Exam Results<br/>Grade: {$a->grade}<br/>Date: {$a->sessiondate}';
 $string['sessionvenue'] = 'Discord';
 $string['simulator'] = 'Sim';
@@ -158,18 +158,49 @@ $string['emailnotifymsg'] = '{$a->instructor} has booked a session for your avai
 Please confirm this booking by clicking on this link: {$a->confirmurl}';
 $string['emailnotifyhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has booked a session for your availability on <strong>{$a->sessiondate}
-    </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p><p style="font-size: .9em;">
-    Add a reminder to your calendar:<br />&nbsp;&nbsp;<a href=\'{$a->googleurl}\'>Google</a><br />&nbsp;&nbsp;<a href=\'{$a->liveurl}\'>Windows Live</a><br />
-    &nbsp;&nbsp;<a href=\'{$a->icsurl}\'>Download ics/iCal file</a><hr /></div>';
+    </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p><p style="font-size: .9em;">Add a reminder to your calendar:<br />
+    <table style="border-collapse: collapse; width: 100%;">
+    <tbody>
+    <tr>
+    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/0/09/IOS_Google_icon.png" alt="Add to Google calendar" width="25" height="25" /></td>
+    <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google</span></a></td>
+    </tr>
+    <tr>
+    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Outlook.com_icon_%282012-2019%29.svg/1200px-Outlook.com_icon_%282012-2019%29.svg.png" alt="Add to Outlook Live calendar" width="25" height="25" /></td>
+    <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live</span></a></td>
+    </tr>
+    <tr>
+    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Apple_Calendar_Icon.png/120px-Apple_Calendar_Icon.png" alt="Add to Outlook Live calendar" width="28" height="28" /></td>
+    <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td>
+    </tr>
+    </tbody>
+    </table>
+    <hr /></div>';
 
 // email to instructor: confirming session tentative by him/her
 $string['emailconfirm'] = 'Session booked';
 $string['emailconfirmsubject'] = '{$a->coursename} session booked: \'{$a->exercise}\'';
-$string['emailconfirmnmsg'] = '\'{$a->exercise}\' session booked with {$a->student} for \'{$a->exercise}\' on {$a->sessiondate}.';
+$string['emailconfirmmsg'] = '\'{$a->exercise}\' session booked with {$a->student} for \'{$a->exercise}\' on {$a->sessiondate}.';
 $string['emailconfirmhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>Session booked with <strong>{$a->student}</strong> for \'<i>{$a->exercise}</i>\' on
-    <strong>{$a->sessiondate}</strong>.</p><p style="font-size: .9em;">Add a reminder to your calendar:<br />&nbsp;&nbsp;<a href=\'{$a->googleurl}\'>Google</a><br />
-    &nbsp;&nbsp;<a href=\'{$a->liveurl}\'>Windows Live</a><br />&nbsp;&nbsp;<a href=\'{$a->icsurl}\'>Download ics/iCal file</a></p><hr /></div>';
+    <strong>{$a->sessiondate}</strong>.</p><p style="font-size: .9em;">Add a reminder to your calendar:<br />
+    <table style="border-collapse: collapse; width: 100%;">
+    <tbody>
+    <tr>
+    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/0/09/IOS_Google_icon.png" alt="Add to Google calendar" width="25" height="25" /></td>
+    <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google</span></a></td>
+    </tr>
+    <tr>
+    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Outlook.com_icon_%282012-2019%29.svg/1200px-Outlook.com_icon_%282012-2019%29.svg.png" alt="Add to Outlook Live calendar" width="25" height="25" /></td>
+    <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live</span></a></td>
+    </tr>
+    <tr>
+    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Apple_Calendar_Icon.png/120px-Apple_Calendar_Icon.png" alt="Add to Outlook Live calendar" width="28" height="28" /></td>
+    <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td>
+    </tr>
+    </tbody>
+    </table>
+    <hr /></div>';
 
 // email to instructor: session confirmed by student
 $string['emailinstconfirm'] = 'Booked session confirmed by Student';
@@ -247,7 +278,11 @@ $string['trainingaircraft'] = 'Training Aircraft ICAO';
 $string['trainingaircraftdesc'] = '(one per line)';
 
 // APIs
-$string['googleaccesstokenerror'] = 'Error: Failed to receieve access token';
-$string['googletimezoneerror'] = 'Error: Failed to get timezone';
-$string['googlecalendarlisterror'] = 'Error: Failed to get calendars list';
-$string['googlecreateeventerror'] = 'Error: Failed to create event';
+$string['googleaccesstokenerror'] = 'Error: Failed to receieve Google access token';
+$string['googletimezoneerror'] = 'Error: Failed to get Google user timezone';
+$string['googlecalendarlisterror'] = 'Error: Failed to get Google calendars list';
+$string['googlecreateeventerror'] = 'Error: Failed to create Google calendar event';
+$string['liveaccesstokenerror'] = 'Error: Failed to receieve Outlook Live access token';
+$string['livetimezoneerror'] = 'Error: Failed to get Outlook Live user timezone';
+$string['livecalendarlisterror'] = 'Error: Failed to get Outlook Live calendars list';
+$string['livecreateeventerror'] = 'Error: Failed to create Outlook Live calendar event';

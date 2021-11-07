@@ -310,6 +310,10 @@ class week_exporter extends exporter {
         // notify student if wait period restriction since last session is not up yet
         if ($this->actiondata['action'] != 'book' & $this->view == 'user') {
             $student = new student($this->courseid, $this->studentid);
+            // show a notification if the user is on-hold
+            if ($student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP)) {
+                \core\notification::ERROR(get_string('studentonhold', 'local_booking'));
+            }
             if (!$student->has_completed_lessons()) {
                 \core\notification::WARNING(get_string('lessonsincomplete', 'local_booking'));
             }

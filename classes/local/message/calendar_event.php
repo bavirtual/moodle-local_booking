@@ -50,7 +50,7 @@ class calendar_event{
      * @param object $eventdata The object for the event data
      */
     public static function download_ics(object $eventdata) {
-        calendar_event::set_event_content($eventdata);
+        calendar_event::set_event_content($eventdata, false);
         // get event details
         $ato = get_booking_config('ATO');
         $location = $eventdata->venue;
@@ -155,15 +155,15 @@ class calendar_event{
      * @param object $eventdata The event's data.
      * @param string $requester The event calendar requester.
      */
-    public static function set_event_content(object $eventdata) {
+    public static function set_event_content(object $eventdata, bool $html = true) {
         // identify the requester being instructor 'i' or student 's' to customize the event description
         if ($eventdata->requester == 'i') {
             $eventdata->eventname = get_string('emailconfirmsubject', 'local_booking', $eventdata);
-            $eventdata->eventdescription = get_string('emailconfirmhtml', 'local_booking', $eventdata);
+            $eventdata->eventdescription = get_string(($html?'emailconfirmhtml':'emailconfirmmsg'), 'local_booking', $eventdata);
         }
         elseif ($eventdata->requester == 's') {
             $eventdata->eventname = get_string('emailnotify', 'local_booking', $eventdata);
-            $eventdata->eventdescription = get_string('emailnotifyhtml', 'local_booking', $eventdata);
+            $eventdata->eventdescription = get_string(($html?'emailnotifyhtml':'emailnotifymsg'), 'local_booking', $eventdata);
         }
     }
 

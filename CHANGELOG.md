@@ -1,15 +1,34 @@
 # Change log
 
-## [0.20.82] BETA - UNRELEASED 2021-11-04
+## [0.20.83] BETA - UNRELEASED 2021-11-05
+
+### Fixed
+
+- iCal description formatting to exclude html (iCal only supports text descriptions)
+- cancellation error: access to protected property 'slot'
 
 ### Added
 
-- session booked confirmation email html formatting and icons for Google, Outlook Live, and iCal links
+- is_member_of method to participant class
+- notification message to Availability postsing view when a student is on-hold
+- error handling of confirmation without a booking
+- more descriptive messages for cron job log output
+- senior instructors copy on instructor inactivity
+
+### Changed
+
+- instructor inactive notification to exclude newly enrolled instructors
+
+## [0.20.82] BETA - UNRELEASED 2021-11-04
 
 ### Fixed
 
 - Moodle calendar event duration
 - integration with Google and Outlook Live calendars
+
+### Added
+
+- session booked confirmation email html formatting and icons for Google, Outlook Live, and iCal links
 
 ### Changed
 

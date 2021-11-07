@@ -107,7 +107,7 @@ class booking_vault implements booking_vault_interface {
         $transaction = $DB->start_delegated_transaction();
 
         if ($result = $DB->delete_records(static::DB_BOOKINGS, $conditions)) {
-            if ($result = ($booking->slot)->delete()) {
+            if ($result = ($booking->get_slot())->delete()) {
                 $transaction->allow_commit();
             }
         }

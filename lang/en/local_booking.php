@@ -44,6 +44,7 @@ $string['pluginname'] = 'Session Booking';
 $string['progression'] = 'Students Progression';
 $string['mystudents'] = 'My assigned students';
 $string['nextlesson'] = 'Next Lesson';
+$string['nobookingtoconfirm'] = 'You have no booking to confirm.';
 $string['role'] = 'Role';
 $string['sequencetooltip'] = 'Score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
 <br/>Availability: {$a->slots} posts<br/>Completion: {$a->completion} lessons';
@@ -76,7 +77,7 @@ $string['firstsessiondesc'] = 'first allowable session time';
 $string['flightsim'] = 'Flight Simulation';
 $string['lastsession'] = 'Last session time';
 $string['lastsessiondesc'] = 'last allowable session time';
-$string['lessonsincomplete'] = 'Lesson incomplete: Please complete pending lessons, otherwise instructors will not see your availability.';
+$string['lessonsincomplete'] = 'Incomplete lessons(s): Please complete pending lessons, otherwise instructors will not see your availability.';
 $string['nextsessionwaitdays'] = 'Wait period:';
 $string['nextsessionwaitdaysdesc'] = 'waiting period used to restrict availability posting before x days had passed since student\'s last session';
 $string['local'] = 'Local';
@@ -90,6 +91,7 @@ $string['slotssaveunable'] = 'Unable to save slots!';
 $string['slotsstatusbooked'] = 'Booked';
 $string['slotsstatustentative'] = 'Tentative';
 $string['strftimeweekinyear'] = 'Week %W';
+$string['studentonhold'] = 'You are currently on-hold and instructors will NOT see your postings. Please contact your instructor to be activated.';
 $string['wait'] = 'Wait Days';
 $string['week'] = 'Week';
 $string['weeklytitle'] = 'Weekly Availability';
@@ -218,14 +220,15 @@ Please note you will have to post new availability as current availability posts
 $string['emailcancelhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has cancelled your booked session scheduled for
     <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\'.</p><p><strong>Instructor\'s comment:</strong><br />{$a->comment}</p><p>
-    Please note you will have to post new availability as current availability posts were purged.</p></p><hr />';
+    <span style=\'color: red\'>Please note you will have to post new availability as current availability posts were purged.</span></p></p><hr />';
 
 // email to student: on-hold warning
 $string['emailonholdwarning'] = '{$a->coursename}: Inactivity notification';
-$string['emailonholdwarningmsg'] = 'Please post an availability slot to avoid being automatically placed on-hold on \'{$a->onholddate}\'. You can post an availability slot for \'{$a->coursename}\' from the following link: {$a->slotsurl}';
+$string['emailonholdwarningmsg'] = 'Please post an availability slot to avoid being automatically placed on-hold on \'{$a->onholddate}\'. You can post an availability slot for
+    the \'{$a->coursename}\' from the following link: {$a->slotsurl}';
 $string['emailonholdwarninghtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Please post an availability slot to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong></p>.<p>You can post an availability slot for
-    \'{$a->coursename}\' <a href="{$a->slotsurl}">here</a>.</p><hr />';
+    <p>Please post an availability slot to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong>.</p><p>You can post an availability slot for
+    the \'{$a->coursename}\' course <a href="{$a->slotsurl}">here</a>.</p><hr />';
 
 // email to student: on-hold notification
 $string['emailonholdnotify'] = '{$a->coursename}: Student placed on-hold';

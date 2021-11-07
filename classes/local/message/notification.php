@@ -272,16 +272,7 @@ class notification extends \core\message\message {
 
         $result = message_send($this) != 0;
 
-        // get senior instructor role users and send them notifications regarding
-        foreach ($seniorinstructors as $seniorinstructor) {
-            $this->userto            = $seniorinstructor->id;
-            $this->subject           = get_string('emailonholdnotify', 'local_booking', $data);
-            $this->fullmessage       = get_string('emailonholdinstnotifymsg', 'local_booking', $data);
-            $this->fullmessagehtml   = get_string('emailonholdinstnotifyhtml', 'local_booking', $data);
-
-            $result = $result && message_send($this) != 0;
-        }
-        return $result;
+        return $result && $this->copy_senior_instructors('emailonholdnotify', 'emailonholdinstnotifymsg', 'emailonholdinstnotifyhtml', $data, $seniorinstructors);
     }
 
     /**
@@ -316,16 +307,7 @@ class notification extends \core\message\message {
 
         $result = message_send($this) != 0;
 
-        // get senior instructor role users and send them notifications regardin
-        foreach ($seniorinstructors as $seniorinstructor) {
-            $this->userto            = $seniorinstructor->get_id();
-            $this->subject           = get_string('emailonholdnotify', 'local_booking', $data);
-            $this->fullmessage       = get_string('emailsuspendinstnotifymsg', 'local_booking', $data);
-            $this->fullmessagehtml   = get_string('emailsuspendinstnotifyhtml', 'local_booking', $data);
-
-            $result = $result && message_send($this) != 0;
-        }
-        return $result;
+        return $result && $this->copy_senior_instructors('emailonholdnotify', 'emailsuspendinstnotifymsg', 'emailsuspendinstnotifyhtml', $data, $seniorinstructors);
     }
 
     /**
@@ -338,7 +320,7 @@ class notification extends \core\message\message {
      * @param string    $coursename the course name.
      * @return bool  The notification message id.
      */
-    public function send_session_overdue_notification($instructorid, $status, $courseid, $coursename) {
+    public function send_session_overdue_notification($instructorid, $status, $courseid, $coursename, $seniorinstructors) {
         // notification message data
         $data = (object) array(
             'coursename'    => $coursename,
@@ -358,20 +340,45 @@ class notification extends \core\message\message {
         $this->contexturl        = $data->bookingurl;
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
 
-        return message_send($this) != 0;
+        $result = message_send($this) != 0;
+
+        return $result && $this->copy_senior_instructors('emailoverduenotify', 'emailoverduenotifymsg', 'emailoverduenotifyhtml', $data, $seniorinstructors);
+    }
+
+    /**
+     * Copies the instructor on communications.
+     *
+     * @param string    $msgid the message id string.
+     * @param string    $msgtext the text body of the message.
+     * @param string    $msghtml the HTML body of the message
+     * @param array     $msgdata the message parameters.
+     * @param array     $seniorinstructors the list of senior instructors.
+     * @return int      The copied message id
+     */
+    public function copy_senior_instructors($msgid, $msgtext, $msghtml, $msgdata, $seniorinstructors){
+        // get senior instructor role users and send them notifications regardin
+        foreach ($seniorinstructors as $seniorinstructor) {
+            $this->userto            = $seniorinstructor->get_id();
+            $this->subject           = get_string($msgid, 'local_booking', $msgdata);
+            $this->fullmessage       = get_string($msgtext, 'local_booking', $msgdata);
+            $this->fullmessagehtml   = get_string($msghtml, 'local_booking', $msgdata);
+
+            return message_send($this) != 0;
+        }
     }
 
     /**
      * Returns an array of variables used in
      * notification message to student and instructor.
      *
+     * @param array     $params the list of parameters.
      * @param int       $courseid the course id.
      * @param string    $coursename the course short name.
-     * @param int       $instructor the instructor user id.
+     * @param int       $instructorid the instructor user id.
      * @param int       $studentid the studentid user id.
      * @param int       $exerciseid the exercise id relating to the session.
-     * @param Datetime  $sessionstart the start date time of the session.
-     * @param Datetime  $sessionend the  end date time of the session.
+     * @param int       $sessionstart the start date time of the session.
+     * @param int       $sessionend the  end date time of the session.
      * @return object   The array of data for the message.
      */
     public static function get_notification_data($params = null,

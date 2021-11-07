@@ -65,4 +65,12 @@ interface participant_interface {
      * @return string   The participant callsign
      */
     public function get_callsign();
+
+    /**
+     * verifies whether the participant is part of a course group
+     *
+     * @param string $groupname The group name to verify membership.
+     * @return bool             The result of the suspension action.
+     */
+    public function is_member_of(string $groupname);
 }

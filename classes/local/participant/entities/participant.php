@@ -133,15 +133,6 @@ class participant implements participant_interface {
     }
 
     /**
-     * Suspends the student's enrolment to a course.
-     *
-     * @return bool             The result of the suspension action.
-     */
-    public function set_suspend_status() {
-        return $this->vault->set_suspend_status($this->courseid, $this->studentid);
-    }
-
-    /**
      * Returns full username
      *
      * @param int       $participantid The user id.
@@ -183,5 +174,25 @@ class participant implements participant_interface {
         $this->enroldate = $record->enroldate;
         $this->lastlogin = $record->lastlogin;
         $this->simulator = $record->simulator;
+    }
+
+    /**
+     * Suspends the student's enrolment to a course.
+     *
+     * @return bool The result of the suspension action.
+     */
+    public function set_suspend_status() {
+        return $this->vault->set_suspend_status($this->courseid, $this->studentid);
+    }
+
+    /**
+     * verifies whether the participant is part of a course group
+     *
+     * @param string $groupname The group name to verify membership.
+     * @return bool             The result of the suspension action.
+     */
+    public function is_member_of(string $groupname) {
+        $groupid = groups_get_group_by_name($this->courseid, $groupname);
+        return groups_is_member($groupid, $this->userid);
     }
 }

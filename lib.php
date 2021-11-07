@@ -517,7 +517,9 @@ function save_booking($params) {
  * @return  array An array containing the result and confirmation message string.
  */
 function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
-    $result = false;
+    $result = -1;
+    $time = time();
+    $week = (int) date('W', time());
 
     // Get the student slot
     $booking = new booking(0, $courseid, $studentid, $exerciseid);
@@ -537,15 +539,19 @@ function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
             $message = new notification();
             $result = $message->send_instructor_notification($courseid, $studentid, $exerciseid, $sessiondatetime, $instructorid);
         }
+        $time = ($booking->get_slot())->get_starttime();
+        $week = ($booking->get_slot())->get_week();
     }
 
-    if ($result) {
+    if ($result == 1) {
         \core\notification::success(get_string('bookingconfirmsuccess', 'local_booking', $strdata));
-    } else {
+    } elseif ($result == 0) {
         \core\notification::ERROR(get_string('bookingconfirmunable', 'local_booking'));
+    } elseif ($result == -1) {
+        \core\notification::success(get_string('nobookingtoconfirm', 'local_booking'));
     }
 
-    return [$result, ($booking->get_slot())->get_starttime(), ($booking->get_slot())->get_week()];
+    return [$result, $time, $week];
 }
 
 /**

@@ -87,6 +87,7 @@ class cron_task extends \core\task\scheduled_task {
                     mtrace('    Active students evaluation: ' . count($activestudents));
                     foreach ($activestudents as $student) {
                         $studentname = participant::get_fullname($student->get_id());
+                        mtrace('        ' . $studentname);
 
                         // get on-hold date, otherwise use last login for on-hold comparison
                         $lastsession = slot::get_last_posting($sitecourse->id, $student->get_id());
@@ -108,7 +109,6 @@ class cron_task extends \core\task\scheduled_task {
 
                             // ON HOLD WARNING NOTIFICATION
                             // notify student a week before being placed
-                            mtrace('        ' . $studentname);
                             mtrace('            on-hold date: ' . $onholddate->format('M d, Y'));
                             mtrace('            on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
                             mtrace('            suspension date: ' . $suspenddate->format('M d, Y'));
@@ -147,7 +147,7 @@ class cron_task extends \core\task\scheduled_task {
                             }
                         }
                         else {
-                            mtrace('        ' . $studentname . ': no last session date!');
+                            mtrace('            last session: NONE ON RECORD!');
                         }
                     }
 

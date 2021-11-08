@@ -1,5 +1,15 @@
 # Change log
 
+## [0.20.84] BETA - RELEASED 2021-11-07
+
+### Fixed
+
+- cron task date conversions and formatting
+
+### Changed
+
+- changed version for release
+
 ## [0.20.83] BETA - UNRELEASED 2021-11-05
 
 ### Fixed

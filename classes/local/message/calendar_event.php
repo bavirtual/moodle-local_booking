@@ -96,7 +96,7 @@ class calendar_event{
         $event->visible = instance_is_visible('scorm', $eventdata->exercise);
         $event->timeduration = ($eventdata->sessionend + (60*60)) - $eventdata->sessionstart; // add an hour to the end time
 
-        \calendar_event::create($event);
+        \calendar_event::create($event, false);
     }
 
     /**

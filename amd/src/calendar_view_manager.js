@@ -39,6 +39,7 @@ import * as Selectors from 'local_booking/selectors';
  const registerEventListeners = (root) => {
     root = $(root);
 
+    // Process previous/next week navigation links
     root.on('click', Selectors.links.navLink, (e) => {
         const wrapper = root.find(Selectors.calendarwrapper);
         const courseId = wrapper.data('courseid');
@@ -73,6 +74,7 @@ import * as Selectors from 'local_booking/selectors';
                 }).fail(Notification.exception);
         }
     );
+
 };
 
 /**

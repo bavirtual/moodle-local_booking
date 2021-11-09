@@ -1,5 +1,15 @@
 # Change log
 
+## [0.20.85] BETA - RELEASED 2021-11-09 - hotfix
+
+### Fixed
+
+- 'permission denied' in moodle calendar for session booking by instructors
+
+### Added
+
+- availability posting mouse drag for multiple slots vs mouse click only
+
 ## [0.20.84] BETA - RELEASED 2021-11-07
 
 ### Fixed

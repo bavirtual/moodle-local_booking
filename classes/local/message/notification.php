@@ -270,9 +270,9 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailonholdnotifyhtml', 'local_booking', $data);
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
 
-        $result = message_send($this) != 0;
+        // $result = $this->copy_senior_instructors('emailonholdnotify', 'emailonholdinstnotifymsg', 'emailonholdinstnotifyhtml', $data, $seniorinstructors);
 
-        return $result && $this->copy_senior_instructors('emailonholdnotify', 'emailonholdinstnotifymsg', 'emailonholdinstnotifyhtml', $data, $seniorinstructors);
+        return message_send($this) != 0;
     }
 
     /**
@@ -305,9 +305,9 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailsuspendnotifyhtml', 'local_booking', $data);
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
 
-        $result = message_send($this) != 0;
+        // return $result && $this->copy_senior_instructors('emailonholdnotify', 'emailsuspendinstnotifymsg', 'emailsuspendinstnotifyhtml', $data, $seniorinstructors);
 
-        return $result && $this->copy_senior_instructors('emailonholdnotify', 'emailsuspendinstnotifymsg', 'emailsuspendinstnotifyhtml', $data, $seniorinstructors);
+        return message_send($this) != 0;
     }
 
     /**
@@ -340,9 +340,9 @@ class notification extends \core\message\message {
         $this->contexturl        = $data->bookingurl;
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
 
-        $result = message_send($this) != 0;
+        // return $result && $this->copy_senior_instructors('emailoverduenotify', 'emailoverduenotifymsg', 'emailoverduenotifyhtml', $data, $seniorinstructors);
 
-        return $result && $this->copy_senior_instructors('emailoverduenotify', 'emailoverduenotifymsg', 'emailoverduenotifyhtml', $data, $seniorinstructors);
+        return message_send($this) != 0;
     }
 
     /**

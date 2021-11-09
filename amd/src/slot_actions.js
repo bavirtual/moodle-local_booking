@@ -42,12 +42,14 @@ define([
         SAVE_BUTTON: '[data-region="save-button"]',
         PASTE_BUTTON: "[data-region='paste-button']",
         BOOK_BUTTON: "[data-region='book-button']",
+        DAY_TIME_SLOT: "[data-action='day-time-slot']",
         LOADING_ICON_CONTAINER: '[data-region="loading-icon-container"]',
     };
 
     var Slots = [];
     var BookedSlot;
     var SlotIndexes = [];
+    var postActive = false;
 
     /**
      * Save marked availability posts.
@@ -56,7 +58,7 @@ define([
      * @param {object} root The calendar root element
      * @return {object} The create modal promise
      */
-     function saveWeekSlots(root) {
+    function saveWeekSlots(root) {
 
         CalendarViewManager.startLoading(root);
 
@@ -99,7 +101,7 @@ define([
      * @param {object} root The calendar root element
      * @return {object} The create modal promise
      */
-     function saveBookedSlot(root) {
+    function saveBookedSlot(root) {
 
         CalendarViewManager.startLoading(root);
 
@@ -131,7 +133,7 @@ define([
             .fail(Notification.exception);
     }
 
-     /**
+    /**
      * Update Slots & BookedSlots with marked availability
      * posts in the calendar view.
      *
@@ -139,7 +141,7 @@ define([
      * @param {object} root     The calendar root element
      * @param {String} action   The action for display view/book
      */
-     function getUISlots(root, action) {
+    function getUISlots(root, action) {
 
         const slottype = action == 'book' ? 'slot-booked' : 'slot-marked';
         const year = root.find(SELECTORS.CALENDAR_WRAPPER).data('year');
@@ -235,14 +237,14 @@ define([
         return;
     }
 
-     /**
+    /**
      * Set the cells from the copied SlotIndexes
      * to the calendar
      *
      * @method pasteSlots
      * @param {object} root The calendar root element
      */
-      function pasteSlots(root) {
+    function pasteSlots(root) {
         const table = document.getElementById(root.find(SELECTORS.SLOTS_TABLE).attr('id'));
         SlotIndexes.forEach((idx) => {
             let slot = table.rows[idx[0]].cells[idx[1]];
@@ -261,7 +263,7 @@ define([
      * @method clearWeekSlots
      * @param {object} root The week calendar root element
      */
-     function clearWeekSlots(root) {
+    function clearWeekSlots(root) {
         $('td').filter(function() {
             if ($(this).data('slot-booked') == 0) {
                 $(this).data('slot-marked', 0);
@@ -273,13 +275,13 @@ define([
         return;
     }
 
-     /**
+    /**
      * Set the cells from the copied SlotIndexes to the current table
      *
      * @method setPasteState
      * @param {object} root The week calendar root element
      */
-      function setPasteState(root) {
+    function setPasteState(root) {
         if (SlotIndexes.length > 0) {
             root.find(SELECTORS.PASTE_BUTTON).addClass('slot-button-blue').removeClass('slot-button-gray');
         } else {
@@ -289,7 +291,7 @@ define([
         return;
      }
 
-     /**
+    /**
      * Set the save buttons state to enabled/disabled based
      * on user calendar time slot selection (cells) in
      * the week calendar
@@ -299,7 +301,7 @@ define([
      * @param {string} action    The action behind the view
      * @param {bool} forceenable Enable save button
      */
-      function setSaveButtonState(root, action, forceenable) {
+    function setSaveButtonState(root, action, forceenable) {
         getUISlots(root, action);
 
         const enabled = 'slot-button-blue';
@@ -316,7 +318,7 @@ define([
         return;
      }
 
-     /**
+    /**
      * Set the cells from the CopiedSlotsIndexes to the current table
      *
      * @method setSlot
@@ -324,7 +326,7 @@ define([
      * @param {object} root     The calendar root element
      * @param {String} action   The target event to the clicked slot element
      */
-      function setSlot(cell, root, action) {
+    function setSlot(cell, root, action) {
         const slotaction = action == 'book' ? 'slot-booked' : 'slot-marked';
         const slotactionclass = action == 'book' ? 'slot-booked' : 'slot-selected';
 
@@ -338,6 +340,37 @@ define([
         return;
     }
 
+    /**
+     * Set cells selected and save buttons state
+     *
+     * @method setPosting
+     * @param {bool} state  The posting state
+     */
+    function setPosting(state) {
+        postActive = state;
+    }
+
+    /**
+     * Set cells selected and save buttons state
+     *
+     * @method postSlot
+     * @param {object} root     The calendar root element
+     * @param {String} action   The action behind the active view
+     * @param {object} target   The target event object (cell)
+     * @param {String} overridePost The override flag for posting state
+     */
+    function postSlots(root, action, target, overridePost = false) {
+        // Change marked state
+        if (typeof target !== 'undefined' && (postActive || overridePost)) {
+            if (!target.is(SELECTORS.DAY_TIME_SLOT) && action !== 'all') {
+                setSlot(target, root, action);
+                setSaveButtonState(root, action);
+            }
+        }
+
+        return;
+    }
+
     return {
         saveWeekSlots: saveWeekSlots,
         saveBookedSlot: saveBookedSlot,
@@ -346,7 +379,8 @@ define([
         setPasteState: setPasteState,
         setSaveButtonState: setSaveButtonState,
         copySlots: copySlots,
-        setSlot: setSlot,
+        postSlots: postSlots,
+        setPosting: setPosting,
         Slots: Slots,
         SlotIndexes: SlotIndexes
     };

@@ -127,7 +127,9 @@ class cron_task extends \core\task\scheduled_task {
 
                                 // send notification of upcoming placement on-hold to student and senior instructor roles
                                 if ($message->send_onhold_notification($student->get_id(), $lastsessiondate, $suspenddate, $sitecourse->shortname, $seniorinstructors)) {
-                                mtrace('                Placed \'' . $studentname . '\' on-hold (notified)...');
+                                    $ccmessage = new notification();
+                                    $ccmessage->send_onhold_notification($student->get_id(), $lastsessiondate, $suspenddate, $sitecourse->shortname, $seniorinstructors);
+                                    mtrace('                Placed \'' . $studentname . '\' on-hold (notified)...');
                                 }
                             }
 

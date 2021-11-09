@@ -33,6 +33,7 @@ define([
             'local_booking/calendar_view_manager',
             'local_booking/slot_actions',
             'core_calendar/selectors',
+            'local_booking/events',
         ],
         function(
             $,
@@ -50,7 +51,6 @@ define([
         PASTE_BUTTON: "[data-region='paste-button']",
         CLEAR_BUTTON: "[data-region='clear-button']",
         LOADING_ICON: '.loading-icon',
-        DAY_TIME_SLOT: "[data-action='day-time-slot']",
         CALENDAR_WEEK_WRAPPER: ".calendarwrapper",
         TODAY: '.today',
     };
@@ -63,6 +63,7 @@ define([
     var registerEventListeners = function(root) {
         // Get action type of the current week view or booking
         const action = $(SELECTORS.CALENDAR_WEEK_WRAPPER).data('action');
+        var contextId = $(SELECTORS.CALENDAR_WEEK_WRAPPER).data('contextid');
 
         // Listen the click on the Save button.
         root.on('click', SELECTORS.SAVE_BUTTON, function() {
@@ -90,20 +91,23 @@ define([
         });
 
         // Listen to click on the clickable slot areas/cells
-        var contextId = $(SELECTORS.CALENDAR_WEEK_WRAPPER).data('contextid');
         if (contextId) {
-            // Bind click events to week calendar days.
-            root.on('click', SELECTORS.DAY, function(e) {
-                var target = $(e.target);
-                // Change marked state
-                if (typeof target !== 'undefined') {
-                    if (!target.is(SELECTORS.DAY_TIME_SLOT) && action !== 'all') {
-                        SlotActions.setSlot(this, root, action);
-                        SlotActions.setSaveButtonState(root, action);
-                    }
-                }
-
+            // Listen the mouse down on the calendar grid posting.
+            root.on('mousedown', SELECTORS.DAY, function(e) {
+                SlotActions.setPosting(true);
+                SlotActions.postSlots(root, action, $(e.target));
                 e.preventDefault();
+            });
+
+            // Listen the mouse down on the calendar grid posting.
+            root.on('mouseover', SELECTORS.DAY, function(e) {
+                SlotActions.postSlots(root, action, $(e.target));
+                e.preventDefault();
+            });
+
+            // Listen the mouse down on the calendar grid posting.
+            root.on('mouseup', SELECTORS.DAY, function() {
+                SlotActions.setPosting(false);
             });
         }
 

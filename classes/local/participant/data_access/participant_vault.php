@@ -263,6 +263,7 @@ class participant_vault implements participant_vault_interface {
                 INNER JOIN {' . self::DB_USER . '} u ON ag.grader = u.id
                 WHERE m.name = :assign
                     AND ag.userid = :studentid
+                    AND ag.grade > 0
                 GROUP BY exerciseid, assignid, exercisetype
                 ORDER BY cs.section';
 

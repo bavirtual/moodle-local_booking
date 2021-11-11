@@ -1,5 +1,11 @@
 # Change log
 
+## [0.20.87] BETA - RELEASED 2021-11-11
+
+### Fixed
+
+- legacy grades falsely marking sessions completed (grade>0)
+
 ## [0.20.86] BETA - UNRELEASED 2021-11-11
 
 ### Fixed

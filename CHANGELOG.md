@@ -1,5 +1,11 @@
 # Change log
 
+## [0.20.86] BETA - UNRELEASED 2021-11-11
+
+### Fixed
+
+- cron task CC senior instructors thowing permissions exception
+
 ## [0.20.85] BETA - RELEASED 2021-11-09 - hotfix
 
 ### Fixed

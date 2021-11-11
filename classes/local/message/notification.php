@@ -270,9 +270,12 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailonholdnotifyhtml', 'local_booking', $data);
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
 
-        // $result = $this->copy_senior_instructors('emailonholdnotify', 'emailonholdinstnotifymsg', 'emailonholdinstnotifyhtml', $data, $seniorinstructors);
+        // send notification then copy senior instructors
+        $result = message_send($this) != 0;
+        $result = $result && $this->copy_senior_instructors('onhold_notification', 'emailonholdnotify',
+            'emailonholdinstnotifymsg', 'emailonholdinstnotifyhtml', $data, $seniorinstructors);
 
-        return message_send($this) != 0;
+        return $result;
     }
 
     /**
@@ -291,6 +294,7 @@ class notification extends \core\message\message {
         // notification message data
         $data = (object) array(
             'coursename'        => $coursename,
+            'studentname'       => student::get_fullname($studentid),
             'lastsessiondate'   => $lastsessiondate->format('M d, Y'),
             'courseurl'         => (new \moodle_url('/course/view.php', array(
                 'id'            => $COURSE->id)))->out(false),
@@ -305,9 +309,12 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailsuspendnotifyhtml', 'local_booking', $data);
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
 
-        // return $result && $this->copy_senior_instructors('emailonholdnotify', 'emailsuspendinstnotifymsg', 'emailsuspendinstnotifyhtml', $data, $seniorinstructors);
+        // send notification then copy senior instructors
+        $result = message_send($this) != 0;
+        $result = $result && $this->copy_senior_instructors('suspension_notification', 'emailonholdnotify',
+            'emailsuspendinstnotifymsg', 'emailsuspendinstnotifyhtml', $data, $seniorinstructors);
 
-        return message_send($this) != 0;
+        return $result;
     }
 
     /**
@@ -324,6 +331,7 @@ class notification extends \core\message\message {
         // notification message data
         $data = (object) array(
             'coursename'    => $coursename,
+            'instructorname'=> instructor::get_fullname($instructorid),
             'status'        => $status,
             'courseurl'     => (new \moodle_url('/course/view.php', array(
                 'id'        => $courseid)))->out(false),
@@ -340,9 +348,12 @@ class notification extends \core\message\message {
         $this->contexturl        = $data->bookingurl;
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
 
-        // return $result && $this->copy_senior_instructors('emailoverduenotify', 'emailoverduenotifymsg', 'emailoverduenotifyhtml', $data, $seniorinstructors);
+        // send notification then copy senior instructors
+        $result = message_send($this) != 0;
+        $result = $result && $this->copy_senior_instructors('sessionoverdue_notification', 'emailoverduenotify',
+            'emailoverduenotifyinstmsg', 'emailoverduenotifyinsthtml', $data, $seniorinstructors);
 
-        return message_send($this) != 0;
+        return $result;
     }
 
     /**
@@ -355,16 +366,20 @@ class notification extends \core\message\message {
      * @param array     $seniorinstructors the list of senior instructors.
      * @return int      The copied message id
      */
-    public function copy_senior_instructors($msgid, $msgtext, $msghtml, $msgdata, $seniorinstructors){
+    public function copy_senior_instructors($msgid, $msgsubject, $msgtext, $msghtml, $msgdata, $seniorinstructors){
+        $result = true;
         // get senior instructor role users and send them notifications regardin
         foreach ($seniorinstructors as $seniorinstructor) {
-            $this->userto            = $seniorinstructor->get_id();
-            $this->subject           = get_string($msgid, 'local_booking', $msgdata);
-            $this->fullmessage       = get_string($msgtext, 'local_booking', $msgdata);
-            $this->fullmessagehtml   = get_string($msghtml, 'local_booking', $msgdata);
+            $ccstaffmsg = new notification();
+            $ccstaffmsg->name              = $msgid;
+            $ccstaffmsg->userto            = $seniorinstructor->get_id();
+            $ccstaffmsg->subject           = get_string($msgsubject, 'local_booking', $msgdata);
+            $ccstaffmsg->fullmessage       = get_string($msgtext, 'local_booking', $msgdata);
+            $ccstaffmsg->fullmessagehtml   = get_string($msghtml, 'local_booking', $msgdata);
 
-            return message_send($this) != 0;
+            $result = $result && (message_send($ccstaffmsg) != 0);
         }
+        return $result;
     }
 
     /**

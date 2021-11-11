@@ -182,7 +182,7 @@ class participant implements participant_interface {
      * @return bool The result of the suspension action.
      */
     public function set_suspend_status() {
-        return $this->vault->set_suspend_status($this->courseid, $this->studentid);
+        return $this->vault->set_suspend_status($this->courseid, $this->userid);
     }
 
     /**

@@ -232,7 +232,7 @@ $string['emailonholdwarninghtml'] = '<font face="sans-serif"><p><a href=\'{$a->c
 
 // email to student: on-hold notification
 $string['emailonholdnotify'] = '{$a->coursename}: Student placed on-hold';
-$string['emailonholdnotifymsg'] = 'Due to inactivity since your last posting on \'{$a->lastsessiondate}\', you have been placed on-hold. Please contact your instructor if you are still interested in resuming \'{$a->coursename}\' course work.';
+$string['emailonholdnotifymsg'] = 'Due to inactivity since your last posting on \'{$a->lastsessiondate}\', you have been placed on-hold. Please contact your instructor if you are still interested in resuming the \'{$a->coursename}\' course work.';
 $string['emailonholdnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
     <p>Due to inactivity since your last posting on <strong>\'{$a->lastsessiondate}\'</strong>, you have been placed on-hold. Please contact your instructor if you are
     still interested in resuming \'{$a->coursename}\' course work.</p><p>Please note, if you are no longer interested in continuing course work, you will be automatically
@@ -255,11 +255,16 @@ $string['emailsuspendinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$
 // email to instructor: session overdue notification
 $string['emailoverduenobooking'] = 'no booking on record';
 $string['emailoverduenotify'] = '{$a->coursename}: Session overdue notification';
-$string['emailoverduenotifymsg'] = 'Please note that you have {$a->status}.  Please book a session with your assigned student or any student from the booking view. Otherwise, please ask the course administrator to remove you from the list of active instructors for this course.
+$string['emailoverduenotifymsg'] = 'Please note that you have {$a->status}.  Please book a session with your assigned student or any student from the booking view. Otherwise, please ask the course administrator to remove you from the list of active instructors of this course.
 You can book a session from the following view link: {$a->bookingurl}';
 $string['emailoverduenotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
     <p>Please note that you have {$a->status}.</p><p>Please book a session with your assigned student or any student from the <a href="{$a->bookingurl}">booking view</a>
-    as soon as possible. To stop receiving these messages, please ask the course administrator to remove you from the list of active instructors for this course.</p><hr />';
+    as soon as possible. To stop receiving these messages, please ask the course administrator to remove you from the list of active instructors of this course.</p><hr />';
+$string['emailoverduenotifyinstmsg'] = 'Please note that {$a->instructorname} has {$a->status}.  The instructor has been notified to book a session with assigned
+    student or any student from the list, otherwise request removal from the list of active instructors of this course.';
+$string['emailoverduenotifyinsthtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
+    <p>Please note that {$a->instructorname} has {$a->status}.</p><p>The instructor has been notified to book a session with assigned student or any student from the list,
+    otherwise request removal from the list of active instructors of this course.</p><hr />';
 $string['emailoverduestatus'] = 'not booked a session since \'{$a}\'';
 
 // settings

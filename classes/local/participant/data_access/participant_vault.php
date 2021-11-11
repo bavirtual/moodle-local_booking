@@ -115,11 +115,20 @@ class participant_vault implements participant_vault_interface {
     /**
      * Get all active students from the database.
      *
-     * @param int $courseid The course id.
-     * @return {Object}[]   Array of database records.
+     * @param int $courseid         The course id.
+     * @param bool $includeonhold   Whether to include on-hold students as well
+     * @return {Object}[]           Array of database records.
      */
-    public static function get_active_students(int $courseid) {
+    public static function get_active_students(int $courseid, bool $includeonhold = false) {
         global $DB;
+
+        $onhold_clause = $includeonhold ? '' : ' AND u.id NOT IN (
+                SELECT userid
+                FROM {' . self::DB_GROUPS_MEM . '} gm
+                INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                WHERE g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"
+                OR g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
+                )';
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
@@ -136,14 +145,7 @@ class participant_vault implements participant_vault_interface {
                     AND ra.contextid = :contextid
                     AND r.shortname = :role
                     AND uf.shortname = :customfield
-                    AND ue.status = 0
-                    AND u.id NOT IN (
-                        SELECT userid
-                        FROM {' . self::DB_GROUPS_MEM . '} gm
-                        INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                        WHERE g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"
-                        OR g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
-                        )';
+                    AND ue.status = 0' . $onhold_clause;
 
         $params = [
             'courseid'  => $courseid,

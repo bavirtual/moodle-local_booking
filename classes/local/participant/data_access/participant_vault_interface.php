@@ -32,10 +32,11 @@ interface participant_vault_interface {
     /**
      * Get all active students from the database.
      *
-     * @param int $courseid The course id.
-     * @return {Object}[]   Array of database records.
+     * @param int $courseid         The course id.
+     * @param bool $includeonhold   Whether to include on-hold students as well
+     * @return {Object}[]           Array of database records.
      */
-    public static function get_active_students(int $courseid);
+    public static function get_active_students(int $courseid, bool $includeonhold = false);
 
     /**
      * Get all active instructors for the course from the database.

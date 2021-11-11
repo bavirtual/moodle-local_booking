@@ -80,12 +80,12 @@ class cron_task extends \core\task\scheduled_task {
                         LOCAL_BOOKING_DAYSFROMLASTSESSION;
 
                     // get active students
-                    $activestudents = $course->get_active_students($sitecourse->id);
+                    $students = $course->get_active_students(true);
                     $seniorinstructors = $course->get_senior_instructors();
 
                     // consider on-hold and suspension candidates
-                    mtrace('    Active students evaluation: ' . count($activestudents));
-                    foreach ($activestudents as $student) {
+                    mtrace('    Students to evaluate: ' . count($students));
+                    foreach ($students as $student) {
                         $studentname = participant::get_fullname($student->get_id());
                         mtrace('        ' . $studentname);
 
@@ -111,7 +111,6 @@ class cron_task extends \core\task\scheduled_task {
                             // notify student a week before being placed
                             mtrace('            on-hold date: ' . $onholddate->format('M d, Y'));
                             mtrace('            on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
-                            mtrace('            suspension date: ' . $suspenddate->format('M d, Y'));
                             if ($onholdwarningyday == $today['yday']) {
                                 mtrace('                Notifying student becoming on-hold in a week...');
                                 $message->send_onhold_warning($student->get_id(), $onholddate, $sitecourse->id, $sitecourse->shortname);
@@ -127,23 +126,21 @@ class cron_task extends \core\task\scheduled_task {
 
                                 // send notification of upcoming placement on-hold to student and senior instructor roles
                                 if ($message->send_onhold_notification($student->get_id(), $lastsessiondate, $suspenddate, $sitecourse->shortname, $seniorinstructors)) {
-                                    $ccmessage = new notification();
-                                    $ccmessage->send_onhold_notification($student->get_id(), $lastsessiondate, $suspenddate, $sitecourse->shortname, $seniorinstructors);
                                     mtrace('                Placed \'' . $studentname . '\' on-hold (notified)...');
                                 }
                             }
 
                             // SUSPENSION NOTIFICATION
                             // suspend when passed on-hold by 9x wait days process suspension and notify student and senior instructor roles
+                            mtrace('            suspension date: ' . $suspenddate->format('M d, Y'));
                             if ($suspenddateyday == $today['yday']) {
-
-                                // send notification of unenrolment from the course and senior instructor roles
-                                if ($message->send_suspension_notification($student->get_id(), $lastsessiondate, $sitecourse->shortname, $seniorinstructors)) {
-                                    mtrace('        Suspended \'' . $studentname . '\' (notified)...');
-                                    // unenrol the student from the course
-                                    $participant = new participant($sitecourse->id, $student->get_id());
-                                    if ($participant->set_suspend_status()) {
-                                        mtrace('        Notifying student of being suspended...');
+                                // unenrol the student from the course
+                                $participant = new participant($sitecourse->id, $student->get_id());
+                                if ($participant->set_suspend_status()) {
+                                    mtrace('                Suspended!');
+                                    // send notification of unenrolment from the course and senior instructor roles
+                                    if ($message->send_suspension_notification($student->get_id(), $lastsessiondate, $sitecourse->shortname, $seniorinstructors)) {
+                                        mtrace('                Student notified of suspension');
                                     }
                                 }
                             }
@@ -170,14 +167,14 @@ class cron_task extends \core\task\scheduled_task {
                             $dayssincelast = $interval->format('%d');
 
                             // check if 3x waitdays has past without a booking and send a notification each time this interval passes
-                            $sendnotification = $dayssincelast % ($waitdays * LOCAL_BOOKING_INSTRUCTORINACTIVEMULTIPLIER) == 0 &&
+                            $sendnotification = ($dayssincelast % ($waitdays * LOCAL_BOOKING_INSTRUCTORINACTIVEMULTIPLIER)) == 0 &&
                                 $dayssincelast >= ($waitdays * LOCAL_BOOKING_INSTRUCTORINACTIVEMULTIPLIER);
-                            $status = get_string('emailoverduestatus', 'local_booking', $lastsession);
+                            $status = get_string('emailoverduestatus', 'local_booking', $lastsession->format('M d, Y'));
                             mtrace('            last session: ' . $lastsession->format('M d, Y'));
 
-                            // notify the instructors on Sunday! if overdue on Sundays!
+                            // notify the instructors of overdue status
                             if ($sendnotification) {
-                                mtrace('            Notifying instructor \'' . $instructorname . '\' of inactivity (retry=' . ($dayssincelast / $waitdays) . ')...');
+                                mtrace('                inactivity notification sent (retry=' . round($dayssincelast / $waitdays) . ')...');
                                 $message->send_session_overdue_notification($instructor->get_id(), $status, $sitecourse->id, $sitecourse->shortname, $seniorinstructors);
                             }
                         }

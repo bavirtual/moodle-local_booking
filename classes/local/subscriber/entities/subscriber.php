@@ -90,11 +90,12 @@ class subscriber implements subscriber_interface {
     /**
      * Get all active students.
      *
+     * @param bool $includeonhold   Whether to include on-hold students as well
      * @return {Object}[]   Array of active students.
      */
-    public function get_active_students() {
+    public function get_active_students(bool $includeonhold = false) {
         $activestudents = [];
-        $studentrecs = participant_vault::get_active_students($this->courseid);
+        $studentrecs = participant_vault::get_active_students($this->courseid, $includeonhold);
         $colors = (array) get_booking_config('colors', true);
 
         // add a color for the student slots from the config.json file for each student

@@ -509,7 +509,7 @@ class participant_vault implements participant_vault_interface {
                     AND cm.instance NOT IN (SELECT ag.assignment
                                             FROM {' . self::DB_GRADES . '} ag
                                             WHERE ag.userid = :studentid
-                                            AND ag.grader != -1)
+                                            AND ag.grade != -1)
                 ORDER BY cs.section asc
                 LIMIT 1';
 

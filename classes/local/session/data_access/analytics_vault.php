@@ -64,7 +64,8 @@ class analytics_vault implements analytics_vault_interface {
             $lastsessiondate = new DateTime('@' . $rs->lastsessiondate);
         } else {
             $student = new student($courseid, $studentid);
-            $lastsessiondate = $student->get_enrol_date($studentid);
+            $lastgraded = $student->get_last_graded_date();
+            $lastsessiondate = empty($lastgraded) ? $student->get_enrol_date($studentid) : $lastgraded;
         }
 
         $today = new DateTime('@' . time());

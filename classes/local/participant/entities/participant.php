@@ -73,6 +73,11 @@ class participant implements participant_interface {
     protected $simulator;
 
     /**
+     * @var bool $is_student The participant is a student.
+     */
+    protected $is_student;
+
+    /**
      * Constructor.
      *
      * @param int $courseid The course id.
@@ -107,7 +112,7 @@ class participant implements participant_interface {
      *
      * @param string $fullname;
      */
-    public function set_name($fullname) {
+    public function set_name(string $fullname) {
         $this->fullname = $fullname;
     }
 
@@ -130,6 +135,20 @@ class participant implements participant_interface {
     public function get_last_login_date() {
         $lastlogindate = !empty($this->lastlogin) ? new DateTime('@' . $this->lastlogin) : null;
         return $lastlogindate;
+    }
+
+    /**
+     * Returns the date of the last
+     * graded session.
+     *
+     * @return  DateTime    The timestamp of the last grading
+     */
+    public function get_last_graded_date() {
+        $lastgraded = $this->vault->get_last_graded_date($this->userid, $this->courseid, $this->is_student);
+
+        $lastgradeddate = !empty($lastgraded) ? new DateTime('@' . $lastgraded->timemodified) : null;
+
+        return $lastgradeddate;
     }
 
     /**
@@ -163,6 +182,15 @@ class participant implements participant_interface {
     }
 
     /**
+     * Suspends the student's enrolment to a course.
+     *
+     * @return bool The result of the suspension action.
+     */
+    public function set_suspend_status() {
+        return $this->vault->set_suspend_status($this->courseid, $this->userid);
+    }
+
+    /**
      * Loads participant's date from a table record
      *
      * @param string   The participant callsign
@@ -177,15 +205,6 @@ class participant implements participant_interface {
     }
 
     /**
-     * Suspends the student's enrolment to a course.
-     *
-     * @return bool The result of the suspension action.
-     */
-    public function set_suspend_status() {
-        return $this->vault->set_suspend_status($this->courseid, $this->userid);
-    }
-
-    /**
      * verifies whether the participant is part of a course group
      *
      * @param string $groupname The group name to verify membership.
@@ -194,5 +213,14 @@ class participant implements participant_interface {
     public function is_member_of(string $groupname) {
         $groupid = groups_get_group_by_name($this->courseid, $groupname);
         return groups_is_member($groupid, $this->userid);
+    }
+
+    /**
+     * verifies whether the participant is a student or not
+     *
+     * @return bool The result of the is_student boolean.
+     */
+    protected function is_student() {
+        return $this->is_student;
     }
 }

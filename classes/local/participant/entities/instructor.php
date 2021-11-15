@@ -39,6 +39,7 @@ class instructor extends participant {
      */
     public function __construct(int $courseid, int $instructorid) {
         parent::__construct($courseid, $instructorid);
+        $this->is_student = false;
     }
 
     /**
@@ -72,19 +73,5 @@ class instructor extends participant {
             $bookings[] = $booking;
         }
         return $bookings;
-    }
-
-    /**
-     * Returns the date of the last
-     * graded session.
-     *
-     * @return  DateTime    The timestamp of the last grading
-     */
-    public function get_last_graded_date() {
-        $lastgraded = $this->vault->get_last_graded_date($this->userid, $this->courseid);
-
-        $lastgradeddate = !empty($lastgraded) ? new DateTime('@' . $lastgraded->timemodified) : null;
-
-        return $lastgradeddate;
     }
 }

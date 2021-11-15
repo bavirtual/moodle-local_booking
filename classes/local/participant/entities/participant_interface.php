@@ -30,6 +30,27 @@ defined('MOODLE_INTERNAL') || die();
 interface participant_interface {
 
     /**
+     * Get user id.
+     *
+     * @return int $userid
+     */
+    public function get_id();
+
+    /**
+     * Get fullname.
+     *
+     * @return string $fullname;
+     */
+    public function get_name();
+
+    /**
+     * Set user name.
+     *
+     * @param string $fullname;
+     */
+    public function set_name(string $fullname);
+
+    /**
      * Get student's enrolment date.
      *
      * @return DateTime $enroldate  The enrolment date of the student.
@@ -37,11 +58,19 @@ interface participant_interface {
     public function get_enrol_date();
 
     /**
-     * Suspends the student's enrolment to a course.
+     * Get student's last login date.
      *
-     * @return bool             The result of the suspension action.
+     * @return DateTime $lastlogindate  The participant's last login date.
      */
-    public function set_suspend_status();
+    public function get_last_login_date();
+
+    /**
+     * Returns the date of the last
+     * graded session.
+     *
+     * @return  DateTime    The timestamp of the last grading
+     */
+    public function get_last_graded_date();
 
     /**
      * Returns full username
@@ -65,6 +94,20 @@ interface participant_interface {
      * @return string   The participant callsign
      */
     public function get_callsign();
+
+    /**
+     * Suspends the student's enrolment to a course.
+     *
+     * @return bool             The result of the suspension action.
+     */
+    public function set_suspend_status();
+
+    /**
+     * Loads participant's date from a table record
+     *
+     * @param string   The participant callsign
+     */
+    public function populate($record);
 
     /**
      * verifies whether the participant is part of a course group

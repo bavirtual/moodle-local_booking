@@ -112,11 +112,12 @@ interface participant_vault_interface {
      * Returns the timestamp of the last
      * graded session.
      *
-     * @param   int The user id
-     * @param   int The course id
+     * @param int $userid       The user id
+     * @param int $courseid     The course id
+     * @param bool $is_student  The participant is a student?
      * @return  stdClass The record containing timestamp of the last grading
      */
-    public function get_last_graded_date(int $userid, int $courseid);
+    public function get_last_graded_date(int $userid, int $courseid, bool $is_student);
 
     /**
      * Returns whether the student complete

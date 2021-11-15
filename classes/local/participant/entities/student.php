@@ -69,6 +69,7 @@ class student extends participant {
         $this->username = $studentname;
         $this->enroldate = $enroldate;
         $this->slotcolor = self::SLOT_COLOR;
+        $this->is_student = true;
     }
 
     /**

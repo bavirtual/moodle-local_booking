@@ -86,15 +86,15 @@ class priority implements priority_interface {
         $this->recencydays = analytics_vault::get_session_recency($courseid, $studentid);
         $recencydaysweight = get_config('local_booking', 'recencydaysweight') ? get_config('local_booking', 'recencydaysweight') : LOCAL_BOOKING_RECENCYWEIGHT;
 
-        $this->slotcount = analytics_vault::get_slot_count($studentid);
+        $this->slotcount = analytics_vault::get_slot_count($courseid, $studentid);
         $slotcountweight = get_config('local_booking', 'slotcountweight') ? get_config('local_booking', 'slotcountweight') : LOCAL_BOOKING_SLOTSWEIGHT;
 
-        $activity = analytics_vault::get_activity_count($studentid);
+        $activity = analytics_vault::get_activity_count($courseid, $studentid);
         $this->activitycount = floor($activity/ self::NORMALIZER);
         $this->activitycountraw = $activity;
         $activitycountweight = get_config('local_booking', 'activitycountweight') ? get_config('local_booking', 'activitycountweight') : LOCAL_BOOKING_ACTIVITYWEIGHT;
 
-        $this->completions = analytics_vault::get_lesson_completions($studentid);
+        $this->completions = analytics_vault::get_lesson_completions($courseid, $studentid);
         $completionsweight = get_config('local_booking', 'completionweight') ? get_config('local_booking', 'completionweight') : LOCAL_BOOKING_COMPLETIONWEIGHT;
 
         $this->score = ( $this->recencydays * $recencydaysweight ) + ( $this->slotcount * $slotcountweight ) +

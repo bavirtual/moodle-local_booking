@@ -40,6 +40,9 @@ class analytics_vault implements analytics_vault_interface {
     const DB_LOGSTORE = 'logstore_standard_log';
 
     // lesson_timer table name for querying
+    const DB_LESSON = 'lesson';
+
+    // lesson_timer table name for querying
     const DB_LESSONCOMPLETION = 'lesson_timer';
 
     /**
@@ -78,13 +81,14 @@ class analytics_vault implements analytics_vault_interface {
     /**
      * Get the number of Availability slots marked by the student.
      *
+     * @param int   $courseid   The course id in reference
      * @param int   $studentid  The student id in reference
      * @return int  $slotcount  The number of availability slots marked by the student.
      */
-    public static function get_slot_count(int $studentid) {
+    public static function get_slot_count(int $courseid, int $studentid) {
         global $DB;
 
-        $slotcount = $DB->count_records(self::DB_SLOTS, ['userid' => $studentid]);
+        $slotcount = $DB->count_records(self::DB_SLOTS, ['courseid' => $courseid, 'userid' => $studentid, 'slotstatus' => '']);
 
         return $slotcount;
     }
@@ -92,10 +96,11 @@ class analytics_vault implements analytics_vault_interface {
     /**
      * Get course activity for a student from the logs.
      *
+     * @param int   $courseid   The course id in reference
      * @param int   $studentid      The student id in reference
      * @return int  $activitycount  The number of activity events in the log.
      */
-    public static function get_activity_count(int $studentid) {
+    public static function get_activity_count(int $courseid, int $studentid) {
         global $DB, $COURSE;
 
         $activitycount = $DB->count_records(self::DB_LOGSTORE, ['userid' => $studentid, 'courseid' => $COURSE->id]);
@@ -106,14 +111,22 @@ class analytics_vault implements analytics_vault_interface {
     /**
      * Get course activity for a student from the logs.
      *
+     * @param int   $courseid   The course id in reference
      * @param int   $studentid      The student id in reference
      * @return int  $completions    The number of lesson completions.
      */
-    public static function get_lesson_completions(int $studentid) {
+    public static function get_lesson_completions(int $courseid, int $studentid) {
         global $DB;
 
-        $completions = $DB->count_records(self::DB_LESSONCOMPLETION, ['userid' => $studentid, 'completed' => '1']);
+        $sql = 'SELECT COUNT(DISTINCT l.id) AS lessons
+                FROM {' . self::DB_LESSONCOMPLETION . '} lt
+        INNER JOIN {' . self::DB_LESSON . '} l ON l.id = lt.lessonid
+        WHERE l.course= :courseid
+            AND lt.userid= :studentid
+            AND lt.completed= :completed';
 
-        return $completions;
+        $completions = $DB->get_record_sql($sql, ['courseid' => $courseid, 'studentid'=>$studentid, 'completed' => '1']);
+
+        return $completions->lessons;
     }
 }

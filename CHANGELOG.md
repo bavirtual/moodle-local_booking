@@ -1,5 +1,12 @@
 # Change log
 
+## [0.20.90] BETA - RELEASED 2021-11-16
+
+### Changed
+
+- analytics to select slots that are not a booking slot
+- analytics completion lessons to select unique completed lessons
+
 ## [0.20.89] BETA - RELEASED 2021-11-15
 
 ### Changed

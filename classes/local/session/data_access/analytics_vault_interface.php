@@ -41,24 +41,27 @@ interface analytics_vault_interface {
     /**
      * Get the number of Availability slots marked by the student.
      *
+     * @param int   $courseid   The course id in reference
      * @param int   $studentid  The student id in reference
      * @return int  $slotcount  The number of availability slots marked by the student.
      */
-    public static function get_slot_count(int $studentid);
+    public static function get_slot_count(int $courseid, int $studentid);
 
     /**
      * Get course activity for a student from the logs.
      *
+     * @param int   $courseid   The course id in reference
      * @param int   $studentid      The student id in reference
      * @return int  $activitycount  The number of activity events in the log.
      */
-    public static function get_activity_count(int $studentid);
+    public static function get_activity_count(int $courseid, int $studentid);
 
     /**
      * Get course activity for a student from the logs.
      *
+     * @param int   $courseid   The course id in reference
      * @param int   $studentid      The student id in reference
      * @return int  $completions    The number of lesson completions.
      */
-    public static function get_lesson_completions(int $studentid);
+    public static function get_lesson_completions(int $courseid, int $studentid);
 }

@@ -421,6 +421,57 @@ class local_booking_external extends external_api {
      *
      * @return external_function_parameters.
      */
+    public static function override_wait_restriction_parameters() {
+        return new external_function_parameters(array(
+                'studentid' => new external_value(PARAM_INT, 'The booking id', VALUE_DEFAULT),
+            )
+        );
+    }
+
+    /**
+     * Overrides the wait time restriction for a student
+     *
+     * @param int $studentid    The student id the restriciton waiver is for.
+     * @return bool $result     The result of the availability override operation.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function override_wait_restriction($studentid) {
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::override_wait_restriction_parameters(), array(
+            'studentid' => $studentid,
+            )
+        );
+
+        $warnings = array();
+        $result = override_availability_restriction($studentid);
+
+        return array(
+            'result' => $result,
+            'warnings' => $warnings
+        );
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function override_wait_restriction_returns() {
+        return new external_single_structure(
+            array(
+                'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters.
+     */
     public static function save_slots_parameters() {
         // Userid is always current user, so no need to get it from client.
         return new external_function_parameters(
@@ -469,7 +520,7 @@ class local_booking_external extends external_api {
         if ($result) {
             \core\notification::success(get_string('slotssavesuccess', 'local_booking'));
         } else {
-            \core\notification::warning(get_string('slotssaveunable', 'local_booking'));
+            \core\notification::error(get_string('slotssaveunable', 'local_booking'));
         }
 
         return array(
@@ -537,7 +588,7 @@ class local_booking_external extends external_api {
         if ($result) {
             \core\notification::success(get_string('slotsdeletesuccess', 'local_booking'));
         } else {
-            \core\notification::warning(get_string('slotsdeleteunable', 'local_booking'));
+            \core\notification::error(get_string('slotsdeleteunable', 'local_booking'));
         }
 
         return array(
@@ -632,8 +683,10 @@ class local_booking_external extends external_api {
             $exporter = new logentry_exporter($data, $logentry, $relatedobjects);
             $renderer = $PAGE->get_renderer('local_booking');
 
+            \core\notification::success(get_string('logentrysavesuccess', 'local_booking'));
             return [ 'logentry' => $exporter->export($renderer) ];
         } else {
+            \core\notification::error(get_string('logentrysaveunable', 'local_booking'));
             return [ 'validationerror' => true ];
         }
     }

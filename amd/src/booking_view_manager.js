@@ -35,69 +35,21 @@ import * as Repository from 'local_booking/repository';
 import * as Selectors from 'local_booking/selectors';
 
 /**
- * Register event listeners for the module.
- *
- * @param {object} root The root element.
- */
- const registerEventListeners = (root) => {
-    root = $(root);
-
-    // Bind click events to logentry exercise session.
-    root.on('click', Selectors.logentrySession, (e) => {
-        const target = e.target;
-        let logentrySession = null;
-        let logentryId = null;
-        let courseId = null;
-        let studentId = null;
-        const pendingPromise = new Pending('local_booking/booking_view_manager:logentrySession:click');
-
-        if (target.matches(Selectors.actions.viewEvent)) {
-            logentrySession = target;
-        } else {
-            logentrySession = target.closest(Selectors.actions.viewEvent);
-        }
-
-        if (logentrySession) {
-            logentryId = logentrySession.dataset.logentryId;
-            courseId = logentrySession.dataset.courseId;
-            studentId = logentrySession.dataset.studentId;
-        } else {
-            logentryId = target.querySelector(Selectors.actions.viewEvent).dataset.logentryId;
-            courseId = target.querySelector(Selectors.actions.viewEvent).dataset.courseId;
-            studentId = target.querySelector(Selectors.actions.viewEvent).dataset.studentId;
-        }
-
-        if (logentryId != 0) {
-            // A link was found. Show the modal.
-            e.preventDefault();
-            // We've handled the event so stop it from bubbling
-            // and causing the day click handler to fire.
-            e.stopPropagation();
-
-            renderLogentrySummaryModal(logentryId, courseId, studentId)
-            .then(pendingPromise.resolve)
-            .catch();
-        } else {
-            pendingPromise.resolve();
-        }
-    });
-};
-
-/**
  * Refresh student progression content.
  *
- * @param {object} root The root element.
- * @param {number} courseId The id of the course associated with the progression view shown
- * @param {number} categoryId The id of the category associated with the progression view shown
- * @param {object} target The element being replaced. If not specified, the bookingwrapper is used.
- * @return {promise}
+ * @method  refreshProgressionContent
+ * @param   {object} root The root element.
+ * @param   {number} courseId The id of the course associated with the progression view shown
+ * @param   {number} categoryId The id of the category associated with the progression view shown
+ * @param   {object} target The element being replaced. If not specified, the bookingwrapper is used.
+ * @return  {promise}
  */
 export const refreshProgressionContent = (root, courseId, categoryId, target = null) => {
     startLoading(root);
 
     const template = root.attr('data-template');
-    target = target || root.find(Selectors.progressionwrapper);
-    courseId = courseId || root.find(Selectors.progressionwrapper).data('courseid');
+    target = target || root.find(Selectors.bookingwrapper);
+    courseId = courseId || root.find(Selectors.bookingwrapper).data('courseid');
     M.util.js_pending([root.get('id'), courseId, categoryId].join('-'));
     return Repository.getBookingsData(courseId)
         .then((context) => {
@@ -117,18 +69,19 @@ export const refreshProgressionContent = (root, courseId, categoryId, target = n
 /**
  * Refresh my bookings content.
  *
- * @param {object} root The root element.
- * @param {number} courseId The id of the course associated with the progression view shown
- * @param {number} categoryId The id of the category associated with the progression view shown
- * @param {object} target The element being replaced. If not specified, the bookingwrapper is used.
- * @param {string} template The template to be rendered.
- * @return {promise}
+ * @method  refreshMyBookingsContent
+ * @param   {object} root The root element.
+ * @param   {number} courseId The id of the course associated with the progression view shown
+ * @param   {number} categoryId The id of the category associated with the progression view shown
+ * @param   {object} target The element being replaced. If not specified, the bookingwrapper is used.
+ * @param   {string} template The template to be rendered.
+ * @return  {promise}
  */
  export const refreshMyBookingsContent = (root, courseId) => {
     startLoading(root);
 
     const target = root.find(Selectors.mybookingswrapper);
-    courseId = courseId || root.find(Selectors.progressionwrapper).data('courseid');
+    courseId = courseId || root.find(Selectors.bookingwrapper).data('courseid');
     M.util.js_pending([root.get('id'), courseId].join('-'));
     return Repository.getBookingsData(courseId)
         .then((context) => {
@@ -148,9 +101,10 @@ export const refreshProgressionContent = (root, courseId, categoryId, target = n
 /**
  * Render the logentry summary modal.
  *
- * @param {Number} logentryId The graded session logbook entry id.
- * @param {Number} courseId The graded session course id.
- * @param {Number} studentId The graded session student id.
+ * @method  renderLogentrySummaryModal
+ * @param   {Number} logentryId The graded session logbook entry id.
+ * @param   {Number} courseId The graded session course id.
+ * @param   {Number} studentId The graded session student id.
  * @returns {Promise}
  */
  export const renderLogentrySummaryModal = (logentryId, courseId, studentId) => {
@@ -206,8 +160,8 @@ export const refreshProgressionContent = (root, courseId, categoryId, target = n
 /**
  * Set the element state to loading.
  *
- * @param {object} root The container element
- * @method startLoading
+ * @method  startLoading
+ * @param   {object} root The container element
  */
  export const startLoading = (root) => {
     const loadingIconContainer = root.find(Selectors.containers.loadingIcon);
@@ -221,8 +175,8 @@ export const refreshProgressionContent = (root, courseId, categoryId, target = n
 /**
  * Remove the loading state from the element.
  *
- * @param {object} root The container element
- * @method stopLoading
+ * @method  startLoading
+ * @param   {object} root The container element
  */
 export const stopLoading = (root) => {
     const loadingIconContainer = root.find(Selectors.containers.loadingIcon);
@@ -231,8 +185,4 @@ export const stopLoading = (root) => {
     $(root).one('submit', function() {
         $(this).find('input[type="submit"]').attr('enabled', 'enabled');
     });
-};
-
-export const init = (root, view) => {
-    registerEventListeners(root, view);
 };

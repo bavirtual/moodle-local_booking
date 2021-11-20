@@ -55,6 +55,11 @@ class bookings_exporter extends exporter {
     const LATEWARNING = 2;
 
     /**
+     * @var string $viewtype The view type requested: session booking or session confirmation
+     */
+    protected $viewtype;
+
+    /**
      * @var array $exercises An array of excersice ids and names for the course.
      */
     protected $exercises = [];
@@ -63,6 +68,11 @@ class bookings_exporter extends exporter {
      * @var array $activestudents An array of active student info for the course.
      */
     protected $activestudents = [];
+
+    /**
+     * @var int $bookingstudentid the user id of the student being booked, applicable in confirmation only.
+     */
+    protected $bookingstudentid = 0;
 
     /**
      * @var subscriber $subscribedcourse The subscribing course.
@@ -79,8 +89,9 @@ class bookings_exporter extends exporter {
      *
      * @param mixed $data An array of student progress data.
      * @param array $related Related objects.
+     * @param int   $studentid optional parameter for confirming a student booking.
      */
-    public function __construct($data, $related) {
+    public function __construct($data, $related, $studentid = 0) {
 
         $url = new moodle_url('/local/booking/view.php', [
                 'courseid' => $data['courseid'],
@@ -89,8 +100,11 @@ class bookings_exporter extends exporter {
 
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
+        $this->viewtype = $data['view'];
         $this->subscribedcourse = new subscriber($data['courseid']);
         $this->exercises = $this->subscribedcourse->get_exercises();
+        if ($this->viewtype == 'confirm')
+            $this->bookingstudentid = $studentid;
 
         parent::__construct($data, $related);
     }
@@ -202,7 +216,12 @@ class bookings_exporter extends exporter {
     protected function get_students($output) {
         $activestudentsexports = [];
 
-        $this->activestudents = $this->prioritze($this->subscribedcourse->get_active_students());
+        // get all active students or student to be confirmed (session booking or booking confirmation)
+        if ($this->viewtype == 'sessions') {
+            $this->activestudents = $this->prioritize($this->subscribedcourse->get_active_students());
+        } elseif ($this->viewtype == 'confirm') {
+            $this->activestudents[] = $this->subscribedcourse->get_active_student($this->bookingstudentid);
+        }
 
         $i = 0;
         $totaldays = 0;
@@ -217,7 +236,6 @@ class bookings_exporter extends exporter {
             ];
 
             $waringflag = $this->get_warning($student->get_priority()->get_recency_days());
-            $data = [];
             $data = [
                 'sequence'        => $i,
                 'sequencetooltip' => get_string('sequencetooltip', 'local_booking', $sequencetooltip),
@@ -227,6 +245,7 @@ class bookings_exporter extends exporter {
                 'overduewarning'  => $waringflag == self::OVERDUEWARNING,
                 'latewarning'     => $waringflag == self::LATEWARNING,
                 'simulator'       => $student->get_simulator(),
+                'view'            => $this->viewtype,
             ];
             $studentexporter = new booking_student_exporter($data, $this->data['courseid'], [
                 'context' => \context_system::instance(),
@@ -246,7 +265,7 @@ class bookings_exporter extends exporter {
      *
      * @param   array   $activestudents
      */
-    protected function prioritze($activestudents) {
+    protected function prioritize($activestudents) {
         // Get student booking priority
         usort($activestudents, function($st1, $st2) {
             return $st1->get_priority()->get_score() < $st2->get_priority()->get_score();
@@ -266,11 +285,14 @@ class bookings_exporter extends exporter {
         global $USER;
         $bookingexports = [];
 
-        $instructor = new instructor($this->data['courseid'], $USER->id);
-        $bookings = $instructor->get_bookings(0, true);
-        foreach ($bookings as $booking) {
-            $bookingexport = new booking_mybookings_exporter(['booking'=>$booking], $this->related);
-            $bookingexports[] = $bookingexport->export($output);
+        // get active bookings if the view is session booking
+        if ($this->viewtype == 'sessions') {
+            $instructor = new instructor($this->data['courseid'], $USER->id);
+            $bookings = $instructor->get_bookings(0, true);
+            foreach ($bookings as $booking) {
+                $bookingexport = new booking_mybookings_exporter(['booking'=>$booking], $this->related);
+                $bookingexports[] = $bookingexport->export($output);
+            }
         }
 
         return $bookingexports;

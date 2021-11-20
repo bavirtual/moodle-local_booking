@@ -98,10 +98,19 @@ interface slot_vault_interface {
     public static function get_first_posted_slot(int $studentid);
 
     /**
-     * Get the date of the last posted availability slot
+     * Get the date of the last booked availability slot
      *
      * @param int $courseid
      * @param int $studentid
      */
-    public static function get_last_posted_slot(int $courseid, int $studentid);
+    public static function get_last_booked_slot(int $courseid, int $studentid);
+
+    /**
+     * Returns the total number of active posts.
+     *
+     * @param   int     The course id
+     * @param   int     The student id
+     * @return  int     The number of active posts
+     */
+    public static function get_slot_count($courseid, $studentid);
 }

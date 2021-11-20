@@ -164,12 +164,12 @@ class slot_vault implements slot_vault_interface {
     }
 
     /**
-     * Get the date of the last posted availability slot
+     * Get the date of the last booked availability slot
      *
      * @param int $courseid
      * @param int $studentid
      */
-    public static function get_last_posted_slot(int $courseid, int $studentid) {
+    public static function get_last_booked_slot(int $courseid, int $studentid) {
         global $DB;
 
         $sql = 'SELECT starttime
@@ -186,5 +186,24 @@ class slot_vault implements slot_vault_interface {
         ];
 
         return $DB->get_record_sql($sql, $params);
+    }
+
+    /**
+     * Returns the total number of active posts.
+     *
+     * @param   int     The course id
+     * @param   int     The student id
+     * @return  int     The number of active posts
+     */
+    public static function get_slot_count($courseid, $studentid) {
+        global $DB;
+
+        $condition = [
+            'courseid'  => $courseid,
+            'userid'    => $studentid,
+            'slotstatus'=> ''
+        ];
+
+        return $DB->count_records(self::DB_SLOTS, $condition);
     }
 }

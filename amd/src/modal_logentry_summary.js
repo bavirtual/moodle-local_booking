@@ -50,6 +50,7 @@ function(
     var registered = false;
     var SELECTORS = {
         ROOT: "[data-region='summary-modal-container']",
+        ADD_BUTTON: '[data-action="add"]',
         EDIT_BUTTON: '[data-action="edit"]',
         DELETE_BUTTON: '[data-action="delete"]',
         FEEDBACK_BUTTON: '[data-action="feedback"]',
@@ -81,6 +82,21 @@ function(
         }
 
         return this.feedbackButton;
+    };
+
+    /**
+     * Get the add logentry button element from the footer. The button is cached
+     * as it's not expected to change.
+     *
+     * @method getAddButton
+     * @return {object} button element
+     */
+    ModalLogentrySummary.prototype.getAddButton = function() {
+        if (typeof this.addButton == 'undefined') {
+            this.addButton = this.getFooter().find(SELECTORS.ADD_BUTTON);
+        }
+
+        return this.addButton;
     };
 
     /**
@@ -138,6 +154,26 @@ function(
     };
 
     /**
+     * Get the exercise id for the logbook entry being shown in this modal.
+     *
+     * @method getExerciseId
+     * @return {int}
+     */
+     ModalLogentrySummary.prototype.getExerciseId = function() {
+        return this.getBody().find(SELECTORS.ROOT).attr('data-exercise-id');
+    };
+
+    /**
+     * Get the exercise id for the logbook entry being shown in this modal.
+     *
+     * @method getSessionDate
+     * @return {int}
+     */
+     ModalLogentrySummary.prototype.getSessionDate = function() {
+        return this.getBody().find(SELECTORS.ROOT).attr('data-session-date');
+    };
+
+    /**
      * Get the title for the logentry being shown in this modal. This value is
      * not cached because it will change depending on which logentry is
      * being displayed.
@@ -182,13 +218,31 @@ function(
             this.hide();
         }.bind(this));
 
+        CustomEvents.define(this.getAddButton(), [
+            CustomEvents.events.activate
+        ]);
+
         CustomEvents.define(this.getEditButton(), [
             CustomEvents.events.activate
         ]);
 
+        this.getAddButton().on(CustomEvents.events.activate, function(e, data) {
+            // When the edit button is clicked we fire an event for the booking UI to handle edit.
+            $('body').trigger(BookingEvents.addLogentry, [this.getExerciseId(), this.getStudentId(), this.getSessionDate()]);
+
+            // There is nothing else for us to do so let's hide.
+            this.hide();
+
+            // We've handled this event so no need to propagate it.
+            e.preventDefault();
+            e.stopPropagation();
+            data.originalEvent.preventDefault();
+            data.originalEvent.stopPropagation();
+        }.bind(this));
+
         this.getEditButton().on(CustomEvents.events.activate, function(e, data) {
             // When the edit button is clicked we fire an event for the booking UI to handle edit.
-            $('body').trigger(BookingEvents.editLogentry, [this.getLogentryId(), this.getStudentId()]);
+            $('body').trigger(BookingEvents.editLogentry, [this.getLogentryId(), this.getStudentId(), this.getSessionDate()]);
 
             // There is nothing else for us to do so let's hide.
             this.hide();

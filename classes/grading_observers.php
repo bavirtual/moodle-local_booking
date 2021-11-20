@@ -48,6 +48,6 @@ class grading_observers {
      * @return void
      */
     public static function submission_graded($event) {
-        process_submission_graded($event->courseid, $event->relateduserid, $event->contextinstanceid);
+        process_submission_graded_event($event->courseid, $event->relateduserid, $event->contextinstanceid);
     }
 }

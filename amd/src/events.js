@@ -28,6 +28,7 @@ define([], function() {
         created: 'booking-events:created',
         deleted: 'booking-events:deleted',
         updated: 'booking-events:updated',
+        addLogentry: 'booking-events:add_logentry',
         editLogentry: 'booking-events:edit_logentry',
         viewUpdated: 'booking-events:view_updated',
         gotoFeedback: 'booking-events:goto_feedback',

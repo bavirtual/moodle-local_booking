@@ -1,0 +1,177 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_booking/booking
+
+    The interim page for booking a student's session.
+
+    The purpose of this template is to render the main, detailed weekly view.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+    }
+}}
+<div id="booking-confirm-{{uniqid}}" data-template="local_booking/booking"
+    class="bookingwrapper">
+    <form id="booking">
+        {{#activestudents}}
+        <input type="hidden" id="course" name="course" value="{{courseid}}">
+        <input type="hidden" id="userid" name="userid" value="{{studentid}}">
+        <input type="hidden" id="action" name="action" value="book">
+        <input type="hidden" id="time" name="time" value="{{week}}">
+        <table id="booking-detail-{{uniqid}}"
+            data-region="session-booking-confirmation"
+            class="table-bordered"
+            data-studentid="{{studentid}}">
+            <thead>
+                <tr>
+                    <th class="header booking-header booking-xsmall text-xs-center ">
+                        <span class="media-body" aria-hidden="true">#</span>
+                    </th>
+                    <th class="header booking-header text-xs-center">
+                        <span class="media-body" aria-hidden="true">{{#str}}students,local_booking{{/str}}</span>
+                    </th>
+                    <th class="header booking-header booking-small text-xs-center">
+                        <span class="media-body" aria-hidden="true">{{#str}}wait,local_booking{{/str}}</span>
+                    </th>
+                    <th class="header booking-header booking-med text-xs-center">
+                        <span class="media-body" aria-hidden="true">{{#str}}simulator,local_booking{{/str}}</span>
+                    </th>
+                    {{#exercises}}
+                    <th class="header booking-header booking-xbig text-xs-center"
+                        data-toggle="tooltip"
+                        title="{{{exercisename}}}"
+                        data-html="true"
+                        data-region="lesson-exercise">
+                        <span class="media-body small" aria-hidden="true">{{#shortentext}} 15, {{{exercisetitle}}} {{/shortentext}}</span>
+                    </th>
+                    {{/exercises}}
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-region="student" style="height: 50px;">
+                    <td class="text-sm-center"
+                        data-toggle="tooltip"
+                        title="{{{sequencetooltip}}}"
+                        data-html="true">
+                        <span class="media-body small" aria-hidden="true">{{sequence}}</span>
+                    </td>
+                    <td class="booking-truncate">
+                        <span>{{studentname}}</span><br/>
+                    </td>
+                    <td class="day text-sm-center">
+                        <span class="media-body small{{#overduewarning}} session-overdue{{/overduewarning}}{{#latewarning}} session-late{{/latewarning}}"
+                        aria-hidden="true">{{dayssincelast}}</span>
+                    </td>
+                    <td class="day text-sm-center">
+                        <span class="media-body small" aria-hidden="true">{{simulator}}</span>
+                    </td>
+                    {{#sessionoptions}}
+                    <td class="text-sm-center"
+                        {{!}}{{#bordered}}style="border: 2px double cornflowerblue!important;"{{/bordered}}{{!}}
+                        data-type="session-options"
+                        data-exercise-id="{{exerciseid}}">
+                            <input type="radio" {{nextsession}} value={{exerciseid}} name="exid">
+                    </td>
+                    {{/sessionoptions}}
+                </tr>
+                <tr style="height: 50px;">
+                    <td colspan="4" style="text-align: right;"><h6>{{#str}}newlogentryadd,local_booking{{/str}}:&nbsp;</h6></td>
+                    {{#exercises}}
+                    <td class="text-sm-center"
+                        data-region="session-entry"
+                        data-action="view-logentry"
+                        data-student-id="{{studentid}}"
+                        data-exercise-id="{{exerciseid}}"
+                        data-session-date="{{sessionts}}"
+                        data-logentry-id="{{logentryid}}"
+                        data-is-additional="true">
+                        <div id="exercise-session" class="d-md-block text-xs-center clickable">
+                                {{#pix}}plus-square,local_booking,{{#str}}add{{/str}}{{/pix}}
+                        </div>
+                    </td>
+                    {{/exercises}}
+                </tr>
+            </tbody>
+        </table>
+        <p>
+        <table class="booking-override">
+            <tr style="height: 80px;">
+                <td
+                    data-toggle="tooltip"
+                    data-html="true"
+                    title="{{#str}}bookingoverridetooltip,local_booking{{/str}}">
+                    <h4>{{#str}}bookingoverridelabel,local_booking{{/str}}:</h4>
+                </td>
+                <td class="mdl-right">
+                    <div class="singlebutton">
+                        <button type="button" class="session-button-confirm"
+                            data-region="override-button"
+                            id="override_button"
+                            title="override">
+                            {{#str}}bookingoverride,local_booking{{/str}}
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr style="height: 80px;">
+                <td
+                    data-toggle="tooltip"
+                    data-html="true"
+                    title="{{#str}}bookingoverridetooltip,local_booking{{/str}}">
+                    <h4>{{#str}}bookingavailabilityposts,local_booking{{/str}}:</h4>
+                </td>
+                <td class="mdl-right">
+                    <div style="text-align: left; text-indent: 22px; font-weight: bolder; font-size: x-large;">
+                        <span>{{posts}}&nbsp;{{#str}}slots,local_booking{{/str}}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        </p>
+        <div class="bottom" style="text-align: center;">
+            <div class="singlebutton">
+                <button onclick="window.history.back()"
+                    class="session-button-confirm"
+                    data-region="back-button"
+                    id="back_button"
+                    title="">
+                    {{#str}}back{{/str}}
+                </button>
+                <button type="submit"
+                    class="session-button-confirm"
+                    id="continue_button"
+                    formaction="{{formaction}}">
+                    {{#str}}continue{{/str}}
+                </button>
+            </div>
+        </div>
+        {{/activestudents}}
+    </form>
+</div>
+
+{{#js}}
+require(['jquery', 'local_booking/booking'], function($, Booking) {
+    Booking.init($("#booking-confirm-{{uniqid}}"));
+});
+{{/js}}

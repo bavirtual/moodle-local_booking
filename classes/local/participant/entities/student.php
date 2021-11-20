@@ -212,16 +212,22 @@ class student extends participant {
      * @return  DateTime
      */
     public function get_next_allowed_session_date() {
-        $daysfromlast = (get_config('local_booking', 'nextsessionwaitdays')) ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
+        // get wait time restriction waiver if exists
+        $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $this->userid);
+        $sessiondate = new DateTime('@' . time());
 
-        $lastsession = slot::get_last_posting($this->courseid, $this->userid);
-        $sessiondatets = !empty($lastsession) ? $lastsession->starttime : time();
-        $sessiondate = new DateTime('@' . $sessiondatets);
-        date_add($sessiondate, date_interval_create_from_date_string($daysfromlast . ' days'));
+        if (!$hasrestrictionwaiver) {
+            $daysfromlast = (get_config('local_booking', 'nextsessionwaitdays')) ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
 
-        // advance by one day if it is Sunday to avoid showing a restricted week
-        if ((getdate($sessiondate->getTimestamp()))['wday'] == 0) {
-            date_add($sessiondate, date_interval_create_from_date_string('1 days'));
+            $lastsession = slot::get_last_booking($this->courseid, $this->userid);
+            $sessiondatets = !empty($lastsession) ? $lastsession->starttime : time();
+            $sessiondate = new DateTime('@' . $sessiondatets);
+            date_add($sessiondate, date_interval_create_from_date_string($daysfromlast . ' days'));
+
+            // advance by one day if it is Sunday to avoid showing a restricted week
+            if ((getdate($sessiondate->getTimestamp()))['wday'] == 0) {
+                date_add($sessiondate, date_interval_create_from_date_string('1 days'));
+            }
         }
 
         // return today's date if the last next allowed session is in the past
@@ -265,6 +271,15 @@ class student extends participant {
             $this->priority = new priority($this->courseid, $this->userid);
         }
         return $this->priority;
+    }
+
+    /**
+     * Returns the total number of active posts.
+     *
+     * @return int The number of active posts
+     */
+    public function get_total_posts() {
+        return slot_vault::get_slot_count($this->courseid, $this->userid);
     }
 
     /**

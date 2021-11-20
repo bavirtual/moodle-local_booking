@@ -32,6 +32,15 @@ interface participant_vault_interface {
     /**
      * Get all active students from the database.
      *
+     * @param int $courseid     The course id.
+     * @param bool $studentid   A specific student for booking confirmation
+     * @return {Object}         Array of database records.
+     */
+    public static function get_active_student(int $courseid, int $studentid = 0);
+
+    /**
+     * Get all active students from the database.
+     *
      * @param int $courseid         The course id.
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @return {Object}[]           Array of database records.
@@ -41,9 +50,9 @@ interface participant_vault_interface {
     /**
      * Get all active instructors for the course from the database.
      *
-     * @param int $courseid The course id.
+     * @param int $courseid      The course id.
      * @param bool $courseadmins Indicates whether the instructor is an admin or not.
-     * @return {Object}[]   Array of database records.
+     * @return {Object}[]        Array of database records.
      */
     public static function get_active_instructors(int $courseid, bool $courseadmins = false);
 
@@ -59,23 +68,23 @@ interface participant_vault_interface {
     /**
      * Get grades for a specific student.
      *
-     * @param int       $studentid  The student id.
-     * @return grade[]              A student booking.
+     * @param int $studentid    The student id.
+     * @return grade[]          A student booking.
      */
     public function get_student_assignment_grades($studentid);
 
     /**
      * Get grades for a specific student.
      *
-     * @param int       $studentid  The student id.
-     * @return grade[]  A student quizes.
+     * @param int $studentid  The student id.
+     * @return grade[]        A student quizes.
      */
     public function get_student_quizes_grades($studentid);
 
     /**
      * Get student's enrolment date.
      *
-     * @param int       $studentid  The student id in reference
+     * @param int $studentid        The student id in reference
      * @return DateTime $enroldate  The enrolment date of the student.
      */
     public function get_enrol_date(int $courseid, int $studentid);
@@ -92,9 +101,9 @@ interface participant_vault_interface {
     /**
      * Returns full username
      *
-     * @param int       $userid The user id.
-     * @param bool      $includealternate Whether to include the user's alternate name.
-     * @return string   $fullusername The full participant username
+     * @param int $userid            The user id.
+     * @param bool $includealternate Whether to include the user's alternate name.
+     * @return string $fullusername  The full participant username
      */
     public static function get_participant_name(int $userid, bool $includealternate = true);
 

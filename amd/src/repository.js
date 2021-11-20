@@ -120,6 +120,23 @@ import Ajax from 'core/ajax';
 };
 
 /**
+ * Overrides wait time restriction for a student.
+ *
+ * @param {int} studentId   The student id to waive restiction for.
+ * @return {promise}
+ */
+ export const overrideWaitRestriction = (studentId) => {
+    const request = {
+        methodname: 'local_booking_override_restriction',
+        args: {
+            studentid: studentId,
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
  * Send marked availability posts (time slots)
  * to the server to be persisted
  *

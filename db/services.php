@@ -71,6 +71,18 @@ $functions = array(
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
 
+    'local_booking_override_restriction' => array(
+        'classname' => 'local_booking_external',
+        'classpath' => '/local/booking/externallib.php',
+        'methodname' => 'override_wait_restriction',
+        'description' => 'Overrides wait restriction for a student',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => '',
+        'loginrequired' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
+
     'local_booking_get_weekly_view' => array(
         'classname' => 'local_booking_external',
         'classpath' => '/local/booking/externallib.php',
@@ -168,6 +180,15 @@ $services = array(
         'enabled' => 1,         // if 0, then token linked to this service won't work
         'restrictedusers' => 0,
         'shortname' => 'cancel_booking',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
+    'Overrides wait restriction for a student web service'  => array(
+        'functions' => array('local_booking_override_restriction'), // Unused as we add the service in each function definition, third party services would use this.
+        'enabled' => 1,         // if 0, then token linked to this service won't work
+        'restrictedusers' => 0,
+        'shortname' => 'override_wait_restriction',
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),

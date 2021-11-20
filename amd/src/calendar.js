@@ -58,7 +58,8 @@ define([
     /**
      * Register event listeners for the module.
      *
-     * @param {object} root The calendar root element
+     * @method  registerEventListeners
+     * @param   {object} root The calendar root element
      */
     var registerEventListeners = function(root) {
         // Get action type of the current week view or booking

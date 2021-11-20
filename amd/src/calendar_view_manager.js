@@ -34,7 +34,8 @@ import * as Selectors from 'local_booking/selectors';
 /**
  * Register event listeners for the module.
  *
- * @param {object} root The root element.
+ * @method  registerEventListeners
+ * @param   {object} root The root element.
  */
  const registerEventListeners = (root) => {
     root = $(root);
@@ -80,15 +81,16 @@ import * as Selectors from 'local_booking/selectors';
 /**
  * Refresh the week content.
  *
- * @param {object} root The root element.
- * @param {number} year Year
- * @param {number} week week
- * @param {number} time The timestamp of the begining current week
- * @param {number} courseId The id of the course associated with the calendar shown
- * @param {number} categoryId The id of the category associated with the calendar shown
- * @param {object} target The element being replaced. If not specified, the calendarwrapper is used.
- * @param {string} template The template to be rendered.
- * @return {promise}
+ * @method  refreshWeekContent
+ * @param   {object} root The root element.
+ * @param   {number} year Year
+ * @param   {number} week week
+ * @param   {number} time The timestamp of the begining current week
+ * @param   {number} courseId The id of the course associated with the calendar shown
+ * @param   {number} categoryId The id of the category associated with the calendar shown
+ * @param   {object} target The element being replaced. If not specified, the calendarwrapper is used.
+ * @param   {string} template The template to be rendered.
+ * @return  {promise}
  */
  export const refreshWeekContent = (root, year, week, time, courseId, categoryId, target = null, template = '') => {
     startLoading(root);
@@ -123,14 +125,15 @@ import * as Selectors from 'local_booking/selectors';
 /**
  * Handle changes to the current calendar view.
  *
- * @param {object} root The container element
- * @param {string} url The calendar url to be shown
- * @param {number} year Year
- * @param {number} week week
- * @param {number} time The timestamp of the begining current week
- * @param {number} courseId The id of the course associated with the calendar shown
- * @param {number} categoryId The id of the category associated with the calendar shown
- * @return {promise}
+ * @method  changeWeek
+ * @param   {object} root The container element
+ * @param   {string} url The calendar url to be shown
+ * @param   {number} year Year
+ * @param   {number} week week
+ * @param   {number} time The timestamp of the begining current week
+ * @param   {number} courseId The id of the course associated with the calendar shown
+ * @param   {number} categoryId The id of the category associated with the calendar shown
+ * @return  {promise}
  */
 export const changeWeek = (root, url, year, week, time, courseId, categoryId) => {
     return refreshWeekContent(root, year, week, time, courseId, categoryId, null, '')
@@ -145,10 +148,11 @@ export const changeWeek = (root, url, year, week, time, courseId, categoryId) =>
 /**
  * Reload the current month view data.
  *
- * @param {object} root The container element.
- * @param {number} courseId The id of the course associated with the calendar shown
- * @param {number} categoryId The id of the category associated with the calendar shown
- * @return {promise}
+ * @method  reloadCurrentMonth
+ * @param   {object} root The container element.
+ * @param   {number} courseId The id of the course associated with the calendar shown
+ * @param   {number} categoryId The id of the category associated with the calendar shown
+ * @return  {promise}
  */
 export const reloadCurrentMonth = (root, courseId = 0, categoryId = 0) => {
     const year = root.find(Selectors.calendarwrapper).data('year');
@@ -164,8 +168,8 @@ export const reloadCurrentMonth = (root, courseId = 0, categoryId = 0) => {
 /**
  * Set the element state to loading.
  *
- * @param {object} root The container element
- * @method startLoading
+ * @method  startLoading
+ * @param   {object} root The container element
  */
  export const startLoading = (root) => {
     const loadingIconContainer = root.find(Selectors.containers.loadingIcon);
@@ -179,8 +183,8 @@ export const reloadCurrentMonth = (root, courseId = 0, categoryId = 0) => {
 /**
  * Remove the loading state from the element.
  *
- * @param {object} root The container element
- * @method stopLoading
+ * @method  stopLoading
+ * @param   {object} root The container element
  */
 export const stopLoading = (root) => {
     const loadingIconContainer = root.find(Selectors.containers.loadingIcon);

@@ -134,18 +134,38 @@ class booking_student_exporter extends exporter {
             ],
             'actionurl' => [
                 'type' => PARAM_URL,
+                'default' => NULL,
             ],
             'actiontype' => [
                 'type' => PARAM_RAW,
+                'default' => NULL,
             ],
             'actionname' => [
                 'type' => PARAM_RAW,
+                'default' => NULL,
             ],
             'actionbook' => [
                 'type' => PARAM_BOOL,
+                'default' => false,
             ],
             'lessonincomplete' => [
                 'type' => PARAM_BOOL,
+                'default' => false,
+            ],
+            'sessionoptions' => [
+                'type' => PARAM_BOOL,
+                'multiple' => true,
+            ],
+            'posts' => [
+                'type' => PARAM_INT,
+                'default' => 0,
+            ],
+            'week' => [
+                'type' => PARAM_INT,
+                'default' => 0,
+            ],
+            'formaction' => [
+                'type' => PARAM_RAW,
             ],
         ];
     }
@@ -157,9 +177,11 @@ class booking_student_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
+        global $CFG;
         $hasincompletelessons = false;
         $sessions = $this->get_sessions($output);
         $action = $this->get_next_action();
+        $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;
 
         // check if the student to be book has incomplete lessons
         if ($action->get_type() == 'book') {
@@ -167,16 +189,18 @@ class booking_student_exporter extends exporter {
             if ($hasincompletelessons) { $action->set_type('disabled'); }
         }
 
-        $return = [
+        return [
             'sessions'         => $sessions,
             'actionurl'        => $action->get_url()->out(false),
             'actiontype'       => $action->get_type(),
             'actionname'       => $action->get_name(),
             'actionbook'       => $action->get_name() == 'Book',
             'lessonincomplete' => $hasincompletelessons,
+            'sessionoptions'   => $this->get_session_options($action),
+            'posts'            => $posts,
+            'week'             => $this->get_booking_week(),
+            'formaction'       => $CFG->httpswwwroot . '/local/booking/availability.php',
         ];
-
-        return $return;
     }
 
     /**
@@ -192,11 +216,14 @@ class booking_student_exporter extends exporter {
     }
 
     /**
-     * Get the list of sessions for the course.
+     * Get the list of conducted sessions for the student.
      *
+     * @param   $output  The output to be rendered
      * @return  $sessions[]
      */
     protected function get_sessions($output) {
+        $sessions = [];
+
         // get student grades
         $this->studentgrades = $this->student->get_grades();
 
@@ -227,7 +254,7 @@ class booking_student_exporter extends exporter {
      * Retrieves the action object containing
      * action name and url. Next action for
      * students with booked session is a grading
-     * action, otherwise it is a booking action
+     * action, otherwise it is a booking action.
      *
      * @param  bool  $disable create a disabled action
      * @return {Object}
@@ -243,5 +270,47 @@ class booking_student_exporter extends exporter {
         $action = new action($actiontype, $this->courseid, $this->student->get_id(), $nextexerciseid);
 
         return $action;
+    }
+
+    /**
+     * Returns an array of option default selected values
+     * for session confirmation view.
+     *
+     * @param {object} $action  The next action for the student
+     * @return {object} $sessionoptions
+     */
+    protected function get_session_options($action) {
+        $sessionoptions = [];
+
+        if ($this->data['view'] == 'confirm') {
+            foreach ($this->courseexercises as $exercise) {
+                $sessionoptions[] = [
+                    'nextsession' => ($action->get_exerciseid() == $exercise->exerciseid ? "checked" : ""),
+                    'bordered' => $action->get_exerciseid() == $exercise->exerciseid,
+                    'exerciseid'  => $exercise->exerciseid
+                ];
+            }
+        }
+
+        return $sessionoptions;
+    }
+
+    /**
+     * Returns a timestamp of the first day of the week
+     * to show the student's availability view during
+     * booking confirmation process.
+     *
+     * @return int $week
+     */
+    protected function get_booking_week() {
+        $week = 0;
+
+        if ($this->data['view'] == 'confirm') {
+            $nextslotdate = ($this->student->get_first_slot_date())->getTimestamp();
+            $waitenddate = ($this->student->get_next_allowed_session_date())->getTimestamp();
+            $week = $nextslotdate > time() ? $nextslotdate : $waitenddate;
+        }
+
+        return $week;
     }
 }

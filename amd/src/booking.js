@@ -49,8 +49,9 @@ define([
         ) {
 
     var SELECTORS = {
-        PROGRESSION_WRAPPER: ".progressionwrapper",
+        BOOKING_WRAPPER: ".bookingwrapper",
         CANCEL_BUTTON: "[data-region='cancel-button']",
+        OVERRIDE_BUTTON: "[data-region='override-button']",
         SESSION_ENTRY: "[data-region='session-entry']",
     };
 
@@ -58,8 +59,8 @@ define([
      * Listen to and handle any calendar events fired by the calendar UI.
      *
      * @method registerBookingEventListeners
-     * @param {object} root The calendar root element
-     * @param {object} logentryFormModalPromise A promise reolved with the event form modal
+     * @param  {object} root The calendar root element
+     * @param  {object} logentryFormModalPromise A promise reolved with the event form modal
      */
      var registerBookingEventListeners = function(root, logentryFormModalPromise) {
         var body = $('body');
@@ -78,19 +79,20 @@ define([
             ViewManager.refreshProgressionContent(root);
         });
 
-        BookingActions.registerEditListeners(root, logentryFormModalPromise);
+        BookingActions.registerActionListeners(root, logentryFormModalPromise);
     };
 
     /**
      * Register event listeners for the module.
      *
-     * @param {object} root The calendar root element
+     * @method  registerEventListeners
+     * @param   {object} root The calendar root element
      */
      var registerEventListeners = function(root) {
 
         var logentryFormPromise = BookingActions.registerLogentryFormModal(root),
-            contextId = $(SELECTORS.PROGRESSION_WRAPPER).data('contextid'),
-            courseId = $(SELECTORS.PROGRESSION_WRAPPER).data('courseid');
+            contextId = $(SELECTORS.BOOKING_WRAPPER).data('contextid'),
+            courseId = $(SELECTORS.BOOKING_WRAPPER).data('courseid');
         registerBookingEventListeners(root, logentryFormPromise);
 
         if (contextId) {
@@ -100,6 +102,7 @@ define([
                 var studentId = $(this).attr('data-student-id');
                 var exerciseId = $(this).attr('data-exercise-id');
                 var logentryId = $(this).attr('data-logentry-id');
+                var additionalEntry = $(this).attr('data-is-additional') !== undefined;
 
                 if (logentryId == 0) {
                     logentryFormPromise.then(function(modal) {
@@ -109,6 +112,7 @@ define([
                         modal.setExerciseId(exerciseId);
                         modal.setLogentryId(logentryId);
                         modal.setSessionDate(sessionDate);
+                        modal.setAdditionalEntry(additionalEntry);
                         modal.show();
                         return;
                     })
@@ -163,12 +167,16 @@ define([
                 return;
             }).catch(Notification.exception);
         });
+
+        // Listen the click on the Override button in the booking confirmation page.
+        root.on('click', SELECTORS.OVERRIDE_BUTTON, function() {
+            return BookingActions.overrideRestriction(root);
+        });
     };
 
     return {
         init: function(root) {
             root = $(root);
-            ViewManager.init(root);
             registerEventListeners(root);
         }
     };

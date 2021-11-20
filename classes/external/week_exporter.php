@@ -126,13 +126,8 @@ class week_exporter extends exporter {
         $this->actiondata = $actiondata;
         $this->view = $view;
 
-        // Get user preference to show local time column
-        set_user_preference('local_booking_showlocaltime', 'yes');
-        $showlocaltime = get_user_preferences('local_booking_showlocaltime');
-        if (empty($showlocaltime)) {
-            set_user_preference('local_booking_showlocaltime', 'yes');
-        }
-        $this->showlocaltime = (bool)$showlocaltime;
+        // Get user preference to show local time column ## future feature ##
+        $this->showlocaltime = true;
 
         // Get current week of the year and GMT date
         $this->weekofyear = strftime('%W', $this->calendar->time);

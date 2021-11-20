@@ -90,7 +90,7 @@ class cron_task extends \core\task\scheduled_task {
                         mtrace('        ' . $studentname);
 
                         // get on-hold date, otherwise use last login for on-hold comparison
-                        $lastsession = slot::get_last_posting($sitecourse->id, $student->get_id());
+                        $lastsession = slot::get_last_booking($sitecourse->id, $student->get_id());
                         if (!empty($lastsession)) {
                             $lastsessiondate = !empty($lastsession->starttime) ? new DateTime('@' . $lastsession->starttime) : $student->get_last_login_date();
                             $onholddate = new DateTime('@' . $lastsessiondate->getTimestamp());

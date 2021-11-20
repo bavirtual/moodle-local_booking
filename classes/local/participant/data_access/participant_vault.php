@@ -115,6 +115,45 @@ class participant_vault implements participant_vault_interface {
     /**
      * Get all active students from the database.
      *
+     * @param int $courseid     The course id.
+     * @param bool $studentid   A specific student for booking confirmation
+     * @return {Object}         Array of database records.
+     */
+    public static function get_active_student(int $courseid, int $studentid = 0) {
+        global $DB;
+
+        $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
+                    'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
+                    ud.data AS simulator, ue.timemodified AS enroldate,
+                    en.courseid AS courseid, u.lastlogin AS lastlogin
+                FROM {' . self::DB_USER . '} u
+                INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
+                INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
+                INNER JOIN {' . self::DB_USER_DATA . '} ud on ra.userid = ud.userid
+                INNER JOIN {' . self::DB_USER_FIELD . '} uf on uf.id = ud.fieldid
+                INNER JOIN {' . self::DB_USER_ENROL . '} ue on ud.userid = ue.userid
+                INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
+                WHERE en.courseid = :courseid
+                    AND u.id = :studentid
+                    AND ra.contextid = :contextid
+                    AND r.shortname = :role
+                    AND uf.shortname = :customfield
+                    AND ue.status = 0';
+
+        $params = [
+            'courseid'  => $courseid,
+            'studentid' => $studentid,
+            'contextid' => \context_course::instance($courseid)->id,
+            'role'      => 'student',
+            'customfield' => 'simulator',
+        ];
+
+        return $DB->get_record_sql($sql, $params);
+    }
+
+    /**
+     * Get all active students from the database.
+     *
      * @param int $courseid         The course id.
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @return {Object}[]           Array of database records.
@@ -137,15 +176,16 @@ class participant_vault implements participant_vault_interface {
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                 INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
-                INNER JOIN {' . self::DB_USER_DATA . '} ud on ra.userid = ud.userid
-                INNER JOIN {' . self::DB_USER_FIELD . '} uf on uf.id = ud.fieldid
-                INNER JOIN {' . self::DB_USER_ENROL . '} ue on ud.userid = ue.userid
+                INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
                 INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
+                LEFT JOIN {' . self::DB_USER_DATA . '} ud on ra.userid = ud.userid
+                LEFT JOIN {' . self::DB_USER_FIELD . '} uf on uf.id = ud.fieldid
                 WHERE en.courseid = :courseid
                     AND ra.contextid = :contextid
                     AND r.shortname = :role
-                    AND uf.shortname = :customfield
-                    AND ue.status = 0' . $onhold_clause;
+                    AND (uf.shortname = :customfield OR uf.shortname IS NULL)
+                    AND ue.status = 0
+                    AND u.deleted != 1' . $onhold_clause;
 
         $params = [
             'courseid'  => $courseid,
@@ -179,13 +219,20 @@ class participant_vault implements participant_vault_interface {
                 INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
                 INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
                 INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
-                INNER JOIN {' . self::DB_USER_DATA . '} ud on u.id = ud.userid
-                INNER JOIN {' . self::DB_USER_FIELD . '} uf on uf.id = ud.fieldid
+                LEFT JOIN {' . self::DB_USER_DATA . '} ud on u.id = ud.userid
+                LEFT JOIN {' . self::DB_USER_FIELD . '} uf on uf.id = ud.fieldid
                 WHERE en.courseid = :courseid
                     AND ra.contextid = :contextid
                     AND r.shortname IN (' . $roles . ')
-                    AND uf.shortname = :customfield
-                    AND ue.status = :status';
+                    AND (uf.shortname = :customfield OR uf.shortname IS NULL)
+                    AND ue.status = :status
+                    AND u.deleted != 1
+                    AND u.id NOT IN (
+                        SELECT userid
+                        FROM {' . self::DB_GROUPS_MEM . '} gm
+                        INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                        WHERE g.name = "' . LOCAL_BOOKING_INACTIVEGROUP . '"
+                        )';
 
         $params = [
             'courseid'  => $courseid,

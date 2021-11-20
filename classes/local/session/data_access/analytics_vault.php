@@ -27,6 +27,7 @@ namespace local_booking\local\session\data_access;
 
 use DateTime;
 use local_booking\local\participant\entities\student;
+use local_booking\local\slot\data_access\slot_vault;
 
 class analytics_vault implements analytics_vault_interface {
 
@@ -86,11 +87,7 @@ class analytics_vault implements analytics_vault_interface {
      * @return int  $slotcount  The number of availability slots marked by the student.
      */
     public static function get_slot_count(int $courseid, int $studentid) {
-        global $DB;
-
-        $slotcount = $DB->count_records(self::DB_SLOTS, ['courseid' => $courseid, 'userid' => $studentid, 'slotstatus' => '']);
-
-        return $slotcount;
+        return slot_vault::get_slot_count($courseid, $studentid);
     }
 
     /**

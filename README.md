@@ -16,7 +16,7 @@ Session Booking provides a workflow for posting availability slots, booking agai
 - Manages email communication between students and instructors
 - Provides a dashboard for instructors and course administrators to visualize student progression throughout the course
 - Provides a custom student prioritization mechanism for booking sessions based on student's session recency, course activity, availability posting, and lesson completion
-- Session calendar ics file download and integration with Google and Outlook Live calendars
+- Session calendar integration with Moodle, Google, and Outlook Live calendars, including (ics) standard iCal calendar file download
 
 ## Setup
 
@@ -47,8 +47,7 @@ There are three areas of configurations:
 1. Plugin configuration (moodle administrators)
 
    - User custom fields (primary & secondary simulators, and callsign)
-   - Session Booking Configurations:
-     -
+   - ## Session Booking Configurations:
    - Capability and role assignment: the plugin should have the same configuration as what is shown below. Note that the `Beta User` role is meant for beta rollout, afterwhich the `student` role should have the same capability as the `Beta User`:
      <img src="pix/capability.png" alt="capabilities">
 

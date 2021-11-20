@@ -32,8 +32,16 @@ interface subscriber_interface {
     /**
      * Get all active students.
      *
+     * @param int $studentid    A specific student for booking confirmation
+     * @return {Object}         Array of active students.
+     */
+    public function get_active_student(int $studentid = 0);
+
+    /**
+     * Get all active students.
+     *
      * @param bool $includeonhold   Whether to include on-hold students as well
-     * @return {Object}[]   Array of active students.
+     * @return {Object}[]           Array of active students.
      */
     public function get_active_students(bool $includeonhold = false);
 

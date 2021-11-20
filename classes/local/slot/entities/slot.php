@@ -245,12 +245,12 @@ class slot implements slot_interface {
     }
 
     /**
-     * Get the date of the last posted availability slot
+     * Get the date of the last booked availability slot
      *
      * @param int $courseid
      * @param int $studentid
      */
-    public static function get_last_posting(int $courseid, int $studentid) {
-        return slot_vault::get_last_posted_slot($courseid, $studentid);
+    public static function get_last_booking(int $courseid, int $studentid) {
+        return slot_vault::get_last_booked_slot($courseid, $studentid);
     }
 }

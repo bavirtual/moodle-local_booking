@@ -130,6 +130,10 @@ class booking_session_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
+            'checked' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
             'canlogentry' => [
                 'type' => PARAM_BOOL,
                 'default' => true,
@@ -179,7 +183,8 @@ class booking_session_exporter extends exporter {
     /**
      * Returns the grade matching the passed data exercise id.
      *
-     * @return grade
+     * @param array $data   The data array containing session information
+     * @return grade $grade The grade object for the student
      */
     protected function get_grade($data) {
         $type = \core_calendar\type_factory::get_calendar_instance();
@@ -205,7 +210,8 @@ class booking_session_exporter extends exporter {
     /**
      * Returns a new session from the passed data exercise id.
      *
-     * @return session
+     * @param array $data       The data array containing session information
+     * @return session $session The current booking session
      */
     protected function get_session($data) {
         $grade = $this->get_grade($data);

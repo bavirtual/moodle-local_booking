@@ -69,6 +69,7 @@ define([
         this.courseId = null;
         this.contextId = null;
         this.studentId = null;
+        this.isAdditional = null;
         this.reloadingBody = false;
         this.reloadingTitle = false;
         this.saveButton = this.getFooter().find(SELECTORS.SAVE_BUTTON);
@@ -246,6 +247,28 @@ define([
      */
     ModalLogEntryForm.prototype.hasSessionDate = function() {
         return this.sessionDate !== null;
+    };
+
+    /**
+     * Set the modal isAdditional variable for new logbook
+     * entry triggered from the booking confrimation view.
+     *
+     * @method setAdditionalEntry
+     * @param {bool} additionalEntry Indicates additional logbook entry.
+     */
+    ModalLogEntryForm.prototype.setAdditionalEntry = function(additionalEntry) {
+        this.isAdditional = additionalEntry;
+    };
+
+    /**
+     * Check if the logbook entery is an additional entry
+     * triggered from the booking confirmation view.
+     *
+     * @method isAdditionalEntry
+     * @return {bool}
+     */
+    ModalLogEntryForm.prototype.isAdditionalEntry = function() {
+        return this.isAdditional;
     };
 
     /**
@@ -487,8 +510,11 @@ define([
                     return;
                 } else {
                     // Check whether this was a new logbook entry or not.
+                    // check if the logentry is from the prgression view or an additional
+                    // logentry from the confirmation view
                     // The hide function unsets the form data so grab this before the hide.
                     var isExisting = this.hasLogentryId();
+                    var isAddedEntry = this.isAdditionalEntry();
 
                     // No problemo! Our work here is done.
                     this.hide();
@@ -496,7 +522,7 @@ define([
                     // Trigger the appropriate logbook event so that the view can be updated.
                     if (isExisting) {
                         $('body').trigger(LogbookEvents.updated, [response.logentry]);
-                    } else {
+                    } else if (!isAddedEntry) {
                         $('body').trigger(LogbookEvents.created, [response.logentry]);
                     }
                 }
@@ -507,6 +533,7 @@ define([
                 // Regardless of success or error we should always stop
                 // the loading icon and re-enable the buttons.
                 loadingContainer.addClass('hidden');
+                Notification.fetchNotifications();
                 this.enableButtons();
 
                 return;

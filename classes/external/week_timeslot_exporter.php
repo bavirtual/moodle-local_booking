@@ -185,7 +185,7 @@ class week_timeslot_exporter extends exporter {
                 $slotdaydata['isweekend']   = $this->is_weekend($daydata);
                 $slotdaydata['daytitle']    = get_string('dayeventsnone', 'calendar', userdate($daydata[0], get_string('strftimedayshort')));
                 $slotdata['slotavailable']  = !$resticted;
-                $slotdata['slot']           = $this->getSlotinfo($laneslots, $slotdaydata);
+                $slotdata['slot']           = $this->get_slot_info($laneslots, $slotdaydata);
 
                 $day = new week_day_exporter($this->calendar, $this->groupview, $slotdaydata, $slotdata, $this->related);
 
@@ -201,7 +201,7 @@ class week_timeslot_exporter extends exporter {
      *
      * @return  {object}    Database record representing the slot record
      */
-    protected function getSlotinfo($studentslots, $weekdate) {
+    protected function get_slot_info($studentslots, $weekdate) {
         $slot = null;
         // loop through week's timeslots to see if the slot marked by student
         if (!empty($studentslots)) {
@@ -226,21 +226,27 @@ class week_timeslot_exporter extends exporter {
         $now = $this->related['type']->timestamp_to_date_array(time());
         $today = $this->related['type']->timestamp_to_date_array(gmmktime(0, 0, 0, $now['mon'], $now['mday'], $now['year']));
 
-        // can't mark in the past, the day had passed
+        // can't mark in the past, the day had passed i.e. yesterday
         $datepassed = true;
         $datepassed = $datepassed && $today['year'] >= $date['year'];
         $datepassed = $datepassed && $today['yday'] >= $date['yday'];
 
         // can't mark before x days from last booked session (durnig wait days) for student view
         $lastsessionwait = true;
+        $hasrestrictionwaiver = false;
         if ($this->groupview || $this->bookview) {
             $lastsessionwait = false;
         } else {
             $student = new student($this->courseid, $this->studentid);
-            $nextsessiondt = $student->get_next_allowed_session_date();
-            $nextsessiondate = $this->related['type']->timestamp_to_date_array($nextsessiondt->getTimestamp());
-            $lastsessionwait = $lastsessionwait && $nextsessiondate['year'] >= $date['year'];
-            $lastsessionwait = $lastsessionwait && $nextsessiondate['yday'] >= $date['yday'];
+            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $student->get_id());
+            if (!$hasrestrictionwaiver) {
+                $nextsessiondt = $student->get_next_allowed_session_date();
+                $nextsessiondate = $this->related['type']->timestamp_to_date_array($nextsessiondt->getTimestamp());
+                $lastsessionwait = $lastsessionwait && $nextsessiondate['year'] >= $date['year'];
+                $lastsessionwait = $lastsessionwait && $nextsessiondate['yday'] >= $date['yday'];
+            } else {
+                $lastsessionwait = !$hasrestrictionwaiver;
+            }
         }
 
         // future week is not beyond the set lookahead number of weeks

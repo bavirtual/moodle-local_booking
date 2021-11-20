@@ -82,9 +82,13 @@ define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);
  */
 define('LOCAL_BOOKING_DAYSFROMLASTSESSION', 12);
 /**
- * LOCAL_BOOKING_ONHOLDGROUP - constant string value for On-hold students for group quering purposes
+ * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students planced on-hold for group quering purposes
  */
 define('LOCAL_BOOKING_ONHOLDGROUP', 'OnHold');
+/**
+ * LOCAL_BOOKING_INACTIVEGROUP - constant string value for inactive instructors for group quering purposes
+ */
+define('LOCAL_BOOKING_INACTIVEGROUP', 'Inactive');
 /**
  * LOCAL_BOOKING_GRADUATESGROUP - constant string value for graduated students for group quering purposes
  */
@@ -279,20 +283,21 @@ function local_booking_get_fontawesome_icon_map() {
     return [
         'local_booking:availability' => 'fa-calendar-plus-o',
         'local_booking:booking' => 'fa-plane',
+        'local_booking:check' => 'fa-check',
+        'local_booking:copy' => 'fa-copy',
+        'local_booking:info-circle' => 'fa-info-circle',
         'local_booking:logbook' => 'fa-address-book-o',
-        'local_booking:subscribed' => 'fa-envelope-o',
-        'local_booking:unsubscribed' => 'fa-envelope-open-o',
+        'local_booking:paste' => 'fa-paste',
+        'local_booking:pencil-square' => 'fa-pencil-square',
+        'local_booking:plane' => 'fa-plane',
+        'local_booking:plus-square' => 'fa-plus-square',
         'local_booking:question-circle' => 'fa-question-circle',
+        'local_booking:save' => 'fa-save',
+        'local_booking:subscribed' => 'fa-envelope-o',
+        'local_booking:trash' => 'fa-trash',
+        'local_booking:unsubscribed' => 'fa-envelope-open-o',
         'local_booking:user' => 'fa-user',
         'local_booking:window-close' => 'fa-window-close',
-        'local_booking:info-circle' => 'fa-info-circle',
-        'local_booking:check' => 'fa-check',
-        'local_booking:plane' => 'fa-plane',
-        'local_booking:pencil-square' => 'fa-pencil-square',
-        'local_booking:copy' => 'fa-copy',
-        'local_booking:paste' => 'fa-paste',
-        'local_booking:trash' => 'fa-trash',
-        'local_booking:save' => 'fa-save',
     ];
 }
 
@@ -327,7 +332,6 @@ function get_weekly_view(\calendar_information $calendar, $actiondata, $view = '
  * Get the student's progression view output.
  *
  * @param   int     $courseid the associated course.
- * @param   int     $categoryid the course's category.
  * @return  array[array, string]
  */
 function get_bookings_view($courseid) {
@@ -337,10 +341,41 @@ function get_bookings_view($courseid) {
 
     $template = 'local_booking/bookings';
     $data = [
-        'courseid'  => $courseid,
+        'courseid'=>$courseid,
+        'view'      => 'sessions'
+    ];
+    $related = [
+        'context'   => \context_course::instance($courseid),
     ];
 
-    $bookings = new bookings_exporter($data, ['context' => \context_course::instance($courseid)]);
+    $bookings = new bookings_exporter($data, $related);
+    $data = $bookings->export($renderer);
+
+    return [$data, $template];
+}
+
+/**
+ * Get the booking confirmation output view.
+ *
+ * @param   int     $courseid the associated course.
+ * @param   int     $studentid the student user id being confirmed.
+ * @return  array[array, string]
+ */
+function get_booking_confirm_view($courseid, $studentid) {
+    global $PAGE;
+
+    $renderer = $PAGE->get_renderer('local_booking');
+
+    $template = 'local_booking/booking';
+    $data = [
+        'courseid'=>$courseid,
+        'view'      => 'confirm'
+    ];
+    $related = [
+        'context'   => \context_course::instance($courseid),
+    ];
+
+    $bookings = new bookings_exporter($data, $related, $studentid);
     $data = $bookings->export($renderer);
 
     return [$data, $template];
@@ -490,6 +525,9 @@ function save_booking($params) {
     $result = $newbooking->save();
 
     if ($result) {
+        // remove restriciton override for the user
+        set_user_preference('local_booking_availabilityoverride', false, $studentid);
+
         // send emails to both student and instructor
         $sessionstart = new DateTime('@' . $slottobook['starttime']);
         $sessionend = new DateTime('@' . $slottobook['endtime']);
@@ -556,6 +594,7 @@ function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
 
 /**
  * Cancel an instructor's existing booking
+ *
  * @param   int   $booking  The booking id being cancelled.
  * @return  bool  $resut    The cancellation result.
  */
@@ -591,10 +630,33 @@ function cancel_booking($bookingid, $comment) {
 }
 
 /**
+ * Overrides wait time restriction for a student, where the
+ * restriction is waived until the instructor books a session
+ * with that student.
+ *
+ * @param   int   $studentid  The student id being waived.
+ * @return  bool  $resut      The override operation result.
+ */
+function override_availability_restriction($studentid) {
+    $result = false;
+
+    // Get user preference to show local time column
+    $result = set_user_preference('local_booking_availabilityoverride', true, $studentid);
+
+    if ($result) {
+        \core\notification::success(get_string('bookingavailabilityoverridesuccess', 'local_booking'));
+    } else {
+        \core\notification::warning(get_string('bookingavailabilityoverrideunable', 'local_booking'));
+    }
+
+    return $result;
+}
+
+/**
  * Respond to submission graded events
  *
  */
-function process_submission_graded($courseid, $studentid, $exerciseid) {
+function process_submission_graded_event($courseid, $studentid, $exerciseid) {
     $booking = new booking(0, $courseid, $studentid, $exerciseid);
     $booking->load();
     // update the booking status from active to inactive

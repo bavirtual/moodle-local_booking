@@ -54,37 +54,37 @@ class action implements action_interface {
     protected $name;
 
     /**
+     * @var int $exerciseid The exerciseid id associated with the action.
+     */
+    protected $exerciseid;
+
+    /**
      * Constructor.
      *
      * @param event_interface  $event  The event to delegate to.
      * @param action_interface $action The action associated with this event.
      */
-    public function __construct(string $actiontype, $courseid, int $studentid, int $refid) {
-        $student = new student($courseid, $studentid);
-
+    public function __construct(string $actiontype, $courseid, int $studentid, int $exerciseid) {
         $actionurl = null;
         $name = '';
+
         // Load student(s) availability slots
         switch ($actiontype) {
             case 'grade':
                 $actionurl = new moodle_url('/local/booking/assign.php', [
                     'courseid' => $courseid,
-                    'exeid' => $refid,
+                    'exeid' => $exerciseid,
                     'userid' => $studentid,
                 ]);
                 $name = get_string('grade', 'grades');
                 break;
             case 'book':
                 // Book action takes the instructor to the week of the firs slot or after waiting period
-                $nextslotdate = ($student->get_first_slot_date())->getTimestamp();
-                $waitenddate = ($student->get_next_allowed_session_date())->getTimestamp();
-                $week = $nextslotdate > time() ? $nextslotdate : $waitenddate;
-                $actionurl = new moodle_url('/local/booking/availability.php', [
-                    'course' => $courseid,
-                    'exid'   => $refid,
+                $actionurl = new moodle_url('/local/booking/view.php', [
+                    'courseid' => $courseid,
+                    'exid'   => $exerciseid,
                     'userid' => $studentid,
-                    'action' => 'book',
-                    'time'   => $week,
+                    'action' => 'confirm',
                     'view'   => 'user',
                 ]);
                 $name = get_string('book', 'local_booking');
@@ -100,6 +100,7 @@ class action implements action_interface {
         $this->type = $actiontype;
         $this->url = $actionurl;
         $this->name = $name;
+        $this->exerciseid = $exerciseid;
     }
 
     /**
@@ -127,6 +128,15 @@ class action implements action_interface {
      */
     public function get_name() {
         return $this->name;
+    }
+
+    /**
+     * Get the exercise id of the action.
+     *
+     * @return int
+     */
+    public function get_exerciseid() {
+        return $this->exerciseid;
     }
 
     /**

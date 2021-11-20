@@ -31,6 +31,8 @@ require_once(__DIR__ . '/lib.php');
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
+$studentid = optional_param('userid', 0, PARAM_INT);
+$action = optional_param('action', 'book', PARAM_ALPHA);
 $title = $course->shortname . ' ' . get_string('pluginname', 'local_booking');
 $title = get_string('pluginname', 'local_booking');
 
@@ -81,14 +83,20 @@ echo $OUTPUT->header();
 echo $renderer->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
 
-list($data, $template) = get_bookings_view($courseid);
-echo $renderer->render_from_template($template, $data);
+// select the student progression booking view or the booking confirmation view
+if ($action=='book') {
+    list($data, $template) = get_bookings_view($courseid);
+    echo $renderer->render_from_template($template, $data);
 
-list($data, $template) = get_students_view($courseid);
-echo $renderer->render_from_template($template, $data);
+    list($data, $template) = get_students_view($courseid);
+    echo $renderer->render_from_template($template, $data);
 
-if (has_capability('local/booking:participationview', $context)) {
-    list($data, $template) = get_participation_view($courseid);
+    if (has_capability('local/booking:participationview', $context)) {
+        list($data, $template) = get_participation_view($courseid);
+        echo $renderer->render_from_template($template, $data);
+    }
+} elseif ($action=='confirm') {
+    list($data, $template) = get_booking_confirm_view($courseid, $studentid);
     echo $renderer->render_from_template($template, $data);
 }
 

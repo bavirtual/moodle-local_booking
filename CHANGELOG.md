@@ -1,5 +1,21 @@
 # Change log
 
+## [1.00.91] - UNRELEASED 2021-11-20
+
+### Fixed
+
+- Newly enrolled students not showing in 'Students progression'
+
+### Added
+
+- interim booking page to force booked exercise and override restriction
+- inactive group to exlude from active instructors list
+- add an additional new logbook entry for the same exercise
+
+### Changed
+
+- instructors without custom field data (i.e. simulator) to show in active instructors list
+
 ## [0.20.90] BETA - RELEASED 2021-11-16
 
 ### Changed

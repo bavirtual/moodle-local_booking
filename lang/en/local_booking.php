@@ -13,6 +13,9 @@ $string['activestudents'] = 'Active students progression';
 $string['averagewaittime'] = 'Avg wait days';
 $string['book'] = 'Book';
 $string['bookingactive'] = 'My active bookings';
+$string['bookingavailabilityposts'] = 'Availability posted';
+$string['bookingavailabilityoverridesuccess'] = 'Wait restriction override saved.';
+$string['bookingavailabilityoverrideunable'] = 'Unable to process wait restriction override.';
 $string['bookingcalics'] = 'Download .ics file';
 $string['bookingcalgoogle'] = 'Add to Google calendar';
 $string['bookingcalyahoo'] = 'Add to Yahoo calendar';
@@ -25,10 +28,13 @@ $string['bookingconfirmsuccess'] = 'Booking confirmed for \'{$a->exercise}\' wit
 $string['bookingconfirmunable'] = 'Unable to confirm booking!';
 $string['bookingfooter'] = '<p style="font-family:sans-serif"><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href="{$a->bookingurl}">Session Booking</a></p>';
 $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
+$string['bookingoverride'] = 'Override';
+$string['bookingoverridelabel'] = 'Restriction period override';
+$string['bookingoverridetooltip'] = 'Allows the student to post availability and override the restriction period';
 $string['bookings'] = 'Session booking';
-$string['booksave'] = 'Save Booking';
 $string['bookingsavesuccess'] = 'Booking saved for \'{$a->exercise}\' with {$a->studentname} on {$a->sessiondate} zulu';
 $string['bookingsaveunable'] = 'Unable to save booking!';
+$string['booksave'] = 'Save Booking';
 $string['cancellationcomment'] = 'Please provide the student with a short comment on this cancellation:';
 $string['configmissing'] = 'Failed to open {$a}';
 $string['crontask'] = 'Background processing for session booking';
@@ -39,11 +45,12 @@ $string['grade'] = 'Grade';
 $string['incompletelessontooltip'] = 'The student has not completed ground lesson';
 $string['instructors'] = 'Instructors';
 $string['lastsessiondate'] = 'Last VFC Flight/Lesson';
-$string['participation'] = 'Instructor Participation';
+$string['participation'] = 'Instructor participation';
 $string['pluginname'] = 'Session Booking';
 $string['progression'] = 'Students Progression';
 $string['mystudents'] = 'My assigned students';
 $string['nextlesson'] = 'Next Lesson';
+$string['newlogentryadd'] = 'Add a new logbook entry';
 $string['nobookingtoconfirm'] = 'You have no booking to confirm.';
 $string['role'] = 'Role';
 $string['sequencetooltip'] = 'Score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
@@ -55,6 +62,7 @@ $string['sessiongradeddby'] = '{$a->sessiondate}<br/>Graded by:<br/>{$a->instruc
 $string['sessiongradeexampass'] = 'Exam Results<br/>Grade: {$a->grade}<br/>Date: {$a->sessiondate}';
 $string['sessionvenue'] = 'Discord';
 $string['simulator'] = 'Sim';
+$string['slots'] = 'slots';
 $string['statusbooked'] = 'confirmed';
 $string['statustentative'] = 'tentative';
 $string['students'] = 'Students';
@@ -120,6 +128,8 @@ $string['logbooksummary'] = 'LOGBOOK SUMMARY';
 $string['logentry'] = 'Logbook Entry';
 $string['logentry2'] = 'Log entry';
 $string['logentrymissing'] = 'No logbook entry!';
+$string['logentrysavesuccess'] = 'Logbook entry saved.';
+$string['logentrysaveunable'] = 'Unable to save logbook entry.';
 $string['newlogentry'] = 'New Logbook entry';
 $string['pic'] = 'Pilot in command';
 $string['pic2'] = 'PIC';
@@ -168,7 +178,9 @@ $string['emailnotifyhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{
     <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google</span></a></td>
     </tr>
     <tr>
-    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Outlook.com_icon_%282012-2019%29.svg/1200px-Outlook.com_icon_%282012-2019%29.svg.png" alt="Add to Outlook Live calendar" width="25" height="25" /></td>
+    <td style="width: 50px; text-align: center;"><img src=
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Outlook.com_icon_%282012-2019%29.svg/1200px-Outlook.com_icon_%282012-2019%29.svg.png"
+    alt="Add to Outlook Live calendar" width="25" height="25" /></td>
     <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live</span></a></td>
     </tr>
     <tr>
@@ -255,16 +267,16 @@ $string['emailsuspendinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$
 // email to instructor: session overdue notification
 $string['emailoverduenobooking'] = 'no booking on record';
 $string['emailoverduenotify'] = '{$a->coursename}: Session overdue notification';
-$string['emailoverduenotifymsg'] = 'Please note that you have {$a->status}.  Please book a session with your assigned student or any student from the booking view. Otherwise, please ask the course administrator to remove you from the list of active instructors of this course.
+$string['emailoverduenotifymsg'] = 'Please note that you have {$a->status}.  Please book a session with your assigned student or any student from the booking view. Otherwise, please ask the course administrator to remove you from the list of active instructors.
 You can book a session from the following view link: {$a->bookingurl}';
 $string['emailoverduenotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
     <p>Please note that you have {$a->status}.</p><p>Please book a session with your assigned student or any student from the <a href="{$a->bookingurl}">booking view</a>
-    as soon as possible. To stop receiving these messages, please ask the course administrator to remove you from the list of active instructors of this course.</p><hr />';
+    as soon as possible. To stop receiving these messages, please ask the course administrator to remove you from the list of active instructors.</p><hr />';
 $string['emailoverduenotifyinstmsg'] = 'Please note that {$a->instructorname} has {$a->status}.  The instructor has been notified to book a session with assigned
-    student or any student from the list, otherwise request removal from the list of active instructors of this course.';
+    student or any student from the list, otherwise to request removal from the list of active instructors.';
 $string['emailoverduenotifyinsthtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
     <p>Please note that {$a->instructorname} has {$a->status}.</p><p>The instructor has been notified to book a session with assigned student or any student from the list,
-    otherwise request removal from the list of active instructors of this course.</p><hr />';
+    otherwise to request removal from the list of active instructors.</p><hr />';
 $string['emailoverduestatus'] = 'not booked a session since \'{$a}\'';
 
 // settings

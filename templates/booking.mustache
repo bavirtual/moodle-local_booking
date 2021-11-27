@@ -32,14 +32,17 @@
     }
 }}
 <div id="booking-confirm-{{uniqid}}" data-template="local_booking/booking"
-    class="bookingwrapper">
+    class="bookingwrapper"{{!
+    }}{{#courseid}} data-courseid="{{courseid}}"{{/courseid}}{{!
+    }} data-contextid="{{contextid}}"{{!
+    }}>
     <form id="booking">
         {{#activestudents}}
         <input type="hidden" id="course" name="course" value="{{courseid}}">
         <input type="hidden" id="userid" name="userid" value="{{studentid}}">
         <input type="hidden" id="action" name="action" value="book">
         <input type="hidden" id="time" name="time" value="{{week}}">
-        <table id="booking-detail-{{uniqid}}"
+        <table
             data-region="session-booking-confirmation"
             class="table-bordered"
             data-studentid="{{studentid}}">
@@ -135,10 +138,7 @@
                 </td>
             </tr>
             <tr style="height: 80px;">
-                <td
-                    data-toggle="tooltip"
-                    data-html="true"
-                    title="{{#str}}bookingoverridetooltip,local_booking{{/str}}">
+                <td>
                     <h4>{{#str}}bookingavailabilityposts,local_booking{{/str}}:</h4>
                 </td>
                 <td class="mdl-right">
@@ -151,7 +151,7 @@
         </p>
         <div class="bottom" style="text-align: center;">
             <div class="singlebutton">
-                <button onclick="window.history.back()"
+                <button type="button" onclick="window.history.back()"
                     class="session-button-confirm"
                     data-region="back-button"
                     id="back_button"

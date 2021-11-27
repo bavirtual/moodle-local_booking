@@ -83,7 +83,8 @@ define([
     };
 
     /**
-     * Register event listeners for the module.
+     * Register event listeners for logbook entry,
+     * session cancellation, and restriction override actions.
      *
      * @method  registerEventListeners
      * @param   {object} root The calendar root element

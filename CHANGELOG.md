@@ -1,5 +1,12 @@
 # Change log
 
+## [1.00.92] - RELEASED 2021-11-27
+
+### Fixed
+
+- Back button on Booking confirmation page
+- Logbook entry addition in Booking confirmation page
+
 ## [1.00.91] - UNRELEASED 2021-11-20
 
 ### Fixed

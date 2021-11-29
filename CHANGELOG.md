@@ -1,5 +1,11 @@
 # Change log
 
+## [1.00.93] - RELEASED 2021-11-29
+
+### Added
+
+- ‘No post’ indication for students with no availability posted for sessions ready to book.
+
 ## [1.00.92] - RELEASED 2021-11-27
 
 ### Fixed

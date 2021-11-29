@@ -28,6 +28,7 @@ $string['bookingconfirmsuccess'] = 'Booking confirmed for \'{$a->exercise}\' wit
 $string['bookingconfirmunable'] = 'Unable to confirm booking!';
 $string['bookingfooter'] = '<p style="font-family:sans-serif"><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href="{$a->bookingurl}">Session Booking</a></p>';
 $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
+$string['bookingnoposts'] = 'No posts';
 $string['bookingoverride'] = 'Override';
 $string['bookingoverridelabel'] = 'Restriction period override';
 $string['bookingoverridetooltip'] = 'Allows the student to post availability and override the restriction period';

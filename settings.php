@@ -69,7 +69,7 @@ if ($hassiteconfig) {
         // slot count weight multiplier
         $settingspage->add(new admin_setting_configtext('local_booking/slotcountweight',
             new lang_string('slotcountweight', 'local_booking'), new lang_string('slotcountweightdesc', 'local_booking'),
-            10, PARAM_INT)
+            50, PARAM_INT)
         );
 
         // activity count weight multiplier

@@ -33,7 +33,6 @@ use \local_booking\local\slot\entities\slot;
 use \local_booking\local\message\calendar_event;
 use \local_booking\local\message\notification;
 use moodle_exception;
-use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 

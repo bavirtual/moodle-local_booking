@@ -107,7 +107,7 @@
                     </div>
                 </td>
             {{#sessions}}
-                <td class="text-sm-center"
+                <td class="text-sm-center" style="max-width: 20px;"
                     data-action="view-logentry"
                     data-exercise-status="{{sessionstatus}}"
                     {{#graded}}{{^isquiz}}data-region="session-entry"
@@ -126,13 +126,14 @@
                             }}{{#graded}} session-graded{{/graded}}{{!
                             }}{{#booked}} session-booked{{/booked}}{{!
                             }}{{#tentative}} session-tentative{{/tentative}}{{!
-                            }}">{{^isquiz}}{{^logentrymissing}}&nbsp;{{/logentrymissing}}{{/isquiz}}
+                            }}">{{^isquiz}}{{^logentrymissing}}{{^marknoposts}}&nbsp;{{/marknoposts}}{{/logentrymissing}}{{/isquiz}}
                             {{#logentrymissing}}
                             {{#pix}}info-circle,local_booking,{{#str}}logentrymissing,local_booking{{/str}}{{/pix}}
                             {{/logentrymissing}}
                             {{#isquiz}}
                             {{#pix}}check,local_booking{{/pix}}
                             {{/isquiz}}
+                            {{#marknoposts}}<span class="d-md-block session-posts">{{noposts}}</span>{{/marknoposts}}
                         </span>
                     </div>
                 </td>

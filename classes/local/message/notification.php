@@ -59,7 +59,7 @@ class notification extends \core\message\message {
     }
 
     /**
-     * Sends an email notifying the student
+     * Sends an email notifying the student of the instructor's booking
      *
      * @param int       $studentid the student id receiving the message.
      * @param int       $exerciseid the exercise id relating to the session.
@@ -149,12 +149,12 @@ class notification extends \core\message\message {
             'sessiondate'   => $sessiondatetime,
             'exercise'      => subscriber::get_exercise_name($exerciseid),
             'courseurl'     => (new \moodle_url('/course/view.php', array(
-                'id'        => $COURSE->id)))->out(false),
+                'id'        => $courseid)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
-                'id'        => $COURSE->id)))->out(false),
+                'id'        => $courseid)))->out(false),
             'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array(
                 'id'        => $exerciseid)))->out(false),
-            'bookingurl'        => (new \moodle_url('/local/booking/view.php', array('courseid'=>$COURSE->id)))->out(false),
+            'bookingurl'        => (new \moodle_url('/local/booking/view.php', array('courseid'=>$courseid)))->out(false),
         );
 
         $this->name              = 'instructor_notification';

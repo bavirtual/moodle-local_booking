@@ -49,9 +49,24 @@ class student extends participant {
     protected $slotcolor;
 
     /**
-     * @var string $nextlesson The student's next upcoming lesson.
+     * @var int $total_posts The student's total number of availability posted.
+     */
+    protected $total_posts;
+
+    /**
+     * @var int $nextlesson The student's next upcoming lesson.
      */
     protected $nextlesson;
+
+    /**
+     * @var array $nextexercise The student's next exercise and section.
+     */
+    protected $nextexercise;
+
+    /**
+     * @var DateTime $restrictiondate The student's end of restriction period date.
+     */
+    protected $restrictiondate;
 
     /**
      * @var priority $priority The student's priority object.
@@ -163,12 +178,15 @@ class student extends participant {
      * @return array array of days
      */
     public function get_slots($weekno, $year) {
-        $this->slots = slot_vault::get_slots($this->userid, $weekno, $year);
+        if (empty($this->slots)) {
+            $this->slots = slot_vault::get_slots($this->userid, $weekno, $year);
 
-        // add student's slot color to each slot
-        foreach ($this->slots as $slot) {
-            $slot->slotcolor = $this->slotcolor;
+            // add student's slot color to each slot
+            foreach ($this->slots as $slot) {
+                $slot->slotcolor = $this->slotcolor;
+            }
         }
+
         return $this->slots;
     }
 
@@ -212,30 +230,33 @@ class student extends participant {
      * @return  DateTime
      */
     public function get_next_allowed_session_date() {
-        // get wait time restriction waiver if exists
-        $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $this->userid);
-        $sessiondate = new DateTime('@' . time());
-
-        if (!$hasrestrictionwaiver) {
-            $daysfromlast = (get_config('local_booking', 'nextsessionwaitdays')) ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
-
-            $lastsession = slot::get_last_booking($this->courseid, $this->userid);
-            $sessiondatets = !empty($lastsession) ? $lastsession->starttime : time();
-            $sessiondate = new DateTime('@' . $sessiondatets);
-            date_add($sessiondate, date_interval_create_from_date_string($daysfromlast . ' days'));
-
-            // advance by one day if it is Sunday to avoid showing a restricted week
-            if ((getdate($sessiondate->getTimestamp()))['wday'] == 0) {
-                date_add($sessiondate, date_interval_create_from_date_string('1 days'));
-            }
-        }
-
-        // return today's date if the last next allowed session is in the past
-        if ($sessiondate->getTimestamp() < time()) {
+        if (empty($this->restrictiondate)) {
+            // get wait time restriction waiver if exists
+            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $this->userid);
             $sessiondate = new DateTime('@' . time());
+
+            if (!$hasrestrictionwaiver) {
+                $daysfromlast = (get_config('local_booking', 'nextsessionwaitdays')) ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
+
+                $lastsession = slot::get_last_booking($this->courseid, $this->userid);
+                $sessiondatets = !empty($lastsession) ? $lastsession->starttime : time();
+                $sessiondate = new DateTime('@' . $sessiondatets);
+                date_add($sessiondate, date_interval_create_from_date_string($daysfromlast . ' days'));
+
+                // advance by one day if it is Sunday to avoid showing a restricted week
+                if ((getdate($sessiondate->getTimestamp()))['wday'] == 0) {
+                    date_add($sessiondate, date_interval_create_from_date_string('1 days'));
+                }
+            }
+
+            // return today's date if the last next allowed session is in the past
+            if ($sessiondate->getTimestamp() < time()) {
+                $sessiondate = new DateTime('@' . time());
+            }
+            $this->restrictiondate = $sessiondate;
         }
 
-        return $sessiondate;
+        return $this->restrictiondate;
     }
 
     /**
@@ -247,8 +268,10 @@ class student extends participant {
      * @return  bool    Whether the lessones were completed or not.
      */
     public function has_completed_lessons() {
-        list($nextexercise, $exercisesection) = $this->get_next_exercise();
-        return $this->vault->get_student_lessons_complete($this->userid, $this->courseid, $exercisesection);
+        if (empty($this->nextexercise))
+            $this->nextexercise = $this->get_next_exercise();
+        list($exerciseid, $section) = $this->nextexercise;
+        return $this->vault->get_student_lessons_complete($this->userid, $this->courseid, $section);
     }
 
     /**
@@ -258,7 +281,9 @@ class student extends participant {
      * @return int The next exercise id and associated course section
      */
     public function get_next_exercise() {
-        return $this->vault->get_next_student_exercise($this->courseid, $this->userid);
+        if (empty($this->next_exercise))
+            $this->next_exercise = $this->vault->get_next_student_exercise($this->courseid, $this->userid);
+        return $this->next_exercise;
     }
 
     /**
@@ -279,7 +304,9 @@ class student extends participant {
      * @return int The number of active posts
      */
     public function get_total_posts() {
-        return slot_vault::get_slot_count($this->courseid, $this->userid);
+        if (empty($this->total_posts))
+            $this->total_posts = slot_vault::get_slot_count($this->courseid, $this->userid);
+        return $this->total_posts;
     }
 
     /**

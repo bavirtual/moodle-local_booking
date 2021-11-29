@@ -235,7 +235,7 @@ class booking_student_exporter extends exporter {
         foreach ($this->courseexercises as $exercise) {
             $studentinfo = [];
             $studentinfo = [
-                'studentid'   => $this->student->get_id(),
+                'student'     => $this->student,
                 'studentname' => $this->data['studentname'],
                 'courseid'    => $this->courseid,
                 'exerciseid'  => $exercise->exerciseid,

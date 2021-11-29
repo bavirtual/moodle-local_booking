@@ -48,7 +48,7 @@ define('LOCAL_BOOKING_RECENCYWEIGHT', 10);
 /**
  * LOCAL_BOOKING_SLOTSWEIGHT - constant value for session availability slots weight multipler
  */
-define('LOCAL_BOOKING_SLOTSWEIGHT', 10);
+define('LOCAL_BOOKING_SLOTSWEIGHT', 50);
 /**
  * LOCAL_BOOKING_ACTIVITYWEIGHT - constant value for course activity weight multipler
  */

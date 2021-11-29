@@ -45,6 +45,11 @@ use local_booking\local\session\entities\grade;
 class booking_session_exporter extends exporter {
 
     /**
+     * @var student $student An object representing the student.
+     */
+    protected $student;
+
+    /**
      * @var session $session An object containing session info.
      */
     protected $session;
@@ -56,10 +61,11 @@ class booking_session_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($data, $related) {
+        $this->student = $data['student'];
         $this->session = $this->get_session($data);
 
         $data = [
-            'studentid'     => $data['studentid'],
+            'studentid'     => $this->student->get_id(),
             'exerciseid'    => $data['exerciseid'],
             'sessionstatus' => $this->session->get_status(),
             'sessiondate'   => !$this->session->empty() ? (!empty($this->session->get_sessiondate()) ? $this->session->get_sessiondate()->format('j M \'y') : 'null') : '',
@@ -146,6 +152,13 @@ class booking_session_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
+            'marknoposts' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
+            'noposts' => [
+                'type' => PARAM_RAW,
+            ],
         ];
     }
 
@@ -156,14 +169,20 @@ class booking_session_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
+        list($nextexercise, $exercisesection) = $this->student->get_next_exercise();
+        $booked = $this->session->hasbooking() && $this->session->get_booking()->confirmed();
+        $tentative = $this->session->hasbooking() && !$this->session->get_booking()->confirmed();
+        $noposts = $nextexercise == $this->data['exerciseid'] && $this->student->get_total_posts() == 0 && $this->student->has_completed_lessons() ? get_string('bookingnoposts', 'local_booking') : '';
 
         $return = [
             'graded'        => $this->session->hasgrade(),
-            'booked'        => $this->session->hasbooking() && $this->session->get_booking()->confirmed(),
-            'tentative'     => $this->session->hasbooking() && !$this->session->get_booking()->confirmed(),
+            'booked'        => $booked,
+            'tentative'     => $tentative,
             'canlogentry'   => $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() != 'quiz',
             'logentrymissing' => empty($this->data['logentryid']) && $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() != 'quiz',
-            'isquiz'        => $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() == 'quiz'
+            'isquiz'        => $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() == 'quiz',
+            'marknoposts'   => !empty($noposts) && !($booked || $tentative),
+            'noposts'       => $noposts
         ];
 
         return $return;
@@ -197,8 +216,8 @@ class booking_session_exporter extends exporter {
                         $data['grades'][$data['exerciseid']]->exercisetype,
                         $data['grades'][$data['exerciseid']]->instructorid,
                         $data['grades'][$data['exerciseid']]->instructorname,
-                        $data['studentid'],
-                        $data['studentname'],
+                        $this->student->get_id(),
+                        $this->student->get_name(),
                         $type->timestamp_to_date_array($data['grades'][$data['exerciseid']]->gradedate),
                         $data['grades'][$data['exerciseid']]->grade,
                         $data['grades'][$data['exerciseid']]->totalgrade);

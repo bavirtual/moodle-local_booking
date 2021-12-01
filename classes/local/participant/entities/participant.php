@@ -201,7 +201,7 @@ class participant implements participant_interface {
         $this->fullname = $record->fullname;
         $this->enroldate = $record->enroldate;
         $this->lastlogin = $record->lastlogin;
-        $this->simulator = $record->simulator;
+        $this->simulator = empty($record->simulator) ? '' : $record->simulator;
     }
 
     /**

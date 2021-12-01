@@ -1,5 +1,11 @@
 # Change log
 
+## [1.00.94] - RELEASED 2021-11-30
+
+### Fixed
+
+- Issue[#23]: Error during add/delete a logentry.
+
 ## [1.00.93] - RELEASED 2021-11-29
 
 ### Added

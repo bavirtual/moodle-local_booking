@@ -130,7 +130,7 @@ class week_exporter extends exporter {
         $this->showlocaltime = true;
 
         // Get current week of the year and GMT date
-        $this->weekofyear = strftime('%W', $this->calendar->time);
+        $this->weekofyear = intval(strftime('%W', $this->calendar->time));
         $this->firstdayofweek = $type->get_starting_weekday();
         $calendarday = $type->timestamp_to_date_array($this->calendar->time);
         $this->GMTdate = $type->timestamp_to_date_array(gmmktime(0, 0, 0, $calendarday['mon'], $calendarday['mday'], $calendarday['year']));
@@ -325,7 +325,7 @@ class week_exporter extends exporter {
             'courseid' => $this->courseid,
             // week data
             'daynames' => $this->get_day_names($output),
-            'weekofyear' => $this->weekofyear,
+            'weekofyear' => intval($this->weekofyear),
             'timeslots' => $this->get_time_slots($output),
             // day slots data
             'maxlanes' => $this->maxlanes <= LOCAL_BOOKING_MAXLANES ? $this->maxlanes : LOCAL_BOOKING_MAXLANES,
@@ -334,12 +334,12 @@ class week_exporter extends exporter {
             // navigation data
             'periodname' => strftime(get_string('strftimeweekinyear','local_booking'), $this->calendar->time),
             'previousperiod' => (new date_exporter($previousperiod))->export($output),
-            'previousweek' => strftime('%W', $previousperiod[0]),
+            'previousweek' => intval(strftime('%W', $previousperiod[0])),
             'previousweekts' => $previousperiod[0],
             'previousperiodname' => strftime(get_string('strftimeweekinyear','local_booking'), $previousperiod[0]),
             'previousperiodlink' => $previousperiodlink->out(false),
             'nextperiod' => (new date_exporter($nextperiod))->export($output),
-            'nextweek' => strftime('%W', $nextperiod[0]),
+            'nextweek' => intval(strftime('%W', $nextperiod[0])),
             'nextweekts' => $nextperiod[0],
             'nextperiodname' => strftime(get_string('strftimeweekinyear','local_booking'), $nextperiod[0]),
             'nextperiodlink' => $nextperiodlink->out(false),
@@ -526,7 +526,7 @@ class week_exporter extends exporter {
 
         $periodlink = new moodle_url($this->url);
         $periodlink->param('time', $newperioddate[0]);
-        $periodlink->param('week', strftime('%W', $newperioddate[0]));
+        $periodlink->param('week', intval(strftime('%W', $newperioddate[0])));
         $periodlink->param('view', $this->view);
 
         // Pass the user and exercise ids for booking actions

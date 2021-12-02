@@ -218,7 +218,14 @@ class bookings_exporter extends exporter {
 
         // get all active students or student to be confirmed (session booking or booking confirmation)
         if ($this->viewtype == 'sessions') {
-            $this->activestudents = $this->prioritize($this->subscribedcourse->get_active_students());
+            // get the user preference for the student progression sort type by s = score or a = availability
+            $sorttype = $this->data['sorttype'];
+            if (empty($sorttype)) {
+                $sorttype = get_user_preferences('local_booking_sorttype', 'a');
+            } else {
+                set_user_preferences(array('local_booking_sorttype'=>$sorttype));
+            }
+            $this->activestudents = $this->prioritize($this->subscribedcourse->get_active_students(), $sorttype);
         } elseif ($this->viewtype == 'confirm') {
             $this->activestudents[] = $this->subscribedcourse->get_active_student($this->bookingstudentid);
         }
@@ -260,18 +267,60 @@ class bookings_exporter extends exporter {
     }
 
     /**
-     * Prioritize the list of active students
-     * based on highest scores.
+     * Prioritize the list of active students depending on
+     * sortying type requested, either by ordered segments or
+     * student priority score.  The scored type sorts the list
+     * by highest to loest priority score, where by availability
+     * type orderes the list by recency days then number of posts
+     * into three sequential segments:
+     *  1. students that have posted slots and completed lessons
+     *  2. students that have no posted slots but completed lessons
+     *  3. students that have not completed lessons
      *
-     * @param   array   $activestudents
+     * @param   string  $sorttype       The sort type 'score' vs 'availability'
+     * @param   array   $activestudents The ordered list of active students
      */
-    protected function prioritize($activestudents) {
-        // Get student booking priority
-        usort($activestudents, function($st1, $st2) {
-            return $st1->get_priority()->get_score() < $st2->get_priority()->get_score();
-        });
+    protected function prioritize($activestudents, $sorttype) {
+        $postedcompleted = [];
+        $nopostcompleted = [];
+        $notcompleted = [];
+        $finallist = [];
 
-        return $activestudents;
+        if ($sorttype == 'a') {
+            // order active students by: price ASC the inStock DESC s
+            usort($activestudents, function($st1, $st2) {
+                return ;
+                if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
+                    return $st1->get_priority()->get_slot_count() === $st2->get_priority()->get_slot_count();
+                }
+                return $st1->get_priority()->get_recency_days() <=> $st2->get_priority()->get_recency_days();
+            });
+
+            // filtering students that have posted slots and completed lessons
+            $postedcompleted = array_filter($activestudents, function($std) {
+                return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0;
+            });
+
+            // filtering students that have no posted slots but completed lessons
+            $nopostcompleted = array_filter($activestudents, function($std) {
+                return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0;
+            });
+
+            // filtering students that have not completed lessons
+            $notcompleted = array_filter($activestudents, function($std) {
+                return !$std->has_completed_lessons();
+            });
+
+            $finallist = $postedcompleted + $nopostcompleted + $notcompleted;
+        } elseif ($sorttype == 's') {
+            // Get student booking priority
+            usort($activestudents, function($st1, $st2) {
+                return $st1->get_priority()->get_score() < $st2->get_priority()->get_score();
+            });
+            $finallist = $activestudents;
+        }
+
+        return $finallist;
     }
 
     /**

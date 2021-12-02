@@ -334,7 +334,7 @@ function get_weekly_view(\calendar_information $calendar, $actiondata, $view = '
  * @param   int     $courseid the associated course.
  * @return  array[array, string]
  */
-function get_bookings_view($courseid) {
+function get_bookings_view($courseid, $sorttype) {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
@@ -342,7 +342,8 @@ function get_bookings_view($courseid) {
     $template = 'local_booking/bookings';
     $data = [
         'courseid'=>$courseid,
-        'view'      => 'sessions'
+        'view'      => 'sessions',
+        'sorttype'  => $sorttype
     ];
     $related = [
         'context'   => \context_course::instance($courseid),

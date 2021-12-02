@@ -258,7 +258,7 @@ class week_timeslot_exporter extends exporter {
         $yearweeks = ($yeardate->format("W") === "53" ? 53 : 52);
         $beyondlookahead = (($futureyearweekno + (($date['year'] - $today['year']) * $yearweeks)) - $currentyearweekno ) > $weekslookahead;
 
-        // lookaahead setting is not unlimited
+        // lookahead setting is not unlimited
         $unlimited = $weekslookahead == 0;
 
         return $datepassed || $lastsessionwait || ($beyondlookahead && !$unlimited);

@@ -1,6 +1,16 @@
 # Change log
 
-## [1.00.94] - RELEASED 2021-11-30
+## [1.00.95] - RELEASED 2021-11-30
+
+### Fixed
+
+- weekofyear, nextweek, and previousweek evaluating to string where response expected value is int.
+
+### Added
+
+- sorting student progression list by score or availability. Availability sorting splits into 3 segments each sorted by recency then posts.
+
+## [1.00.94] - RELEASED 2021-11-30 - hotfix
 
 ### Fixed
 

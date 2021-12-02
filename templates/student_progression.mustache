@@ -41,6 +41,14 @@
             <td><h3>{{#str}}activestudents,local_booking{{/str}}</h3></td>
             <td class="mdl-right"><h5>{{#str}}averagewaittime,local_booking{{/str}}: <strong>{{avgwait}}</strong></h5></td>
         </tr>
+        <tr>
+            <td colspan="2" class="mdl-right">
+                <span style="font-size: small;">{{#str}}bookingsortby,local_booking{{/str}}:
+                    <a href="{{url}}&sort=a" data-toggle="tooltip" title="{{#str}}bookingsortbyavailabilitytooltip,local_booking{{/str}}">{{#str}}bookingsortbyavailability,local_booking{{/str}}</a>,
+                    <a href="{{url}}&sort=s" data-toggle="tooltip" title="{{#str}}bookingsortbyscoretooltip, local_booking{{/str}}">{{#str}}bookingsortbyscore, local_booking{{/str}}</a>
+                </span>
+            </td>
+        </tr>
     </table>
     </table><table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover table-bordered">
         <thead>

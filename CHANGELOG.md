@@ -1,5 +1,11 @@
 # Change log
 
+## [1.00.97] - RELEASED 2021-12-03 - hotfix
+
+### Fixed
+
+- sorttype is not passed from webservices, now defaulting to empty.
+
 ## [1.00.96] - RELEASED 2021-12-03 - hotfix
 
 ### Fixed

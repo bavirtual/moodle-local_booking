@@ -1,6 +1,13 @@
 # Change log
 
-## [1.00.95] - RELEASED 2021-11-30
+## [1.00.96] - RELEASED 2021-12-03 - hotfix
+
+### Fixed
+
+- next exercise id in next action returning null in the last exercise in the course (boungry condition).
+- sorting active students.
+
+## [1.00.95] - RELEASED 2021-12-02
 
 ### Fixed
 

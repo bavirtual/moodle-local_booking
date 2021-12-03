@@ -287,31 +287,47 @@ class bookings_exporter extends exporter {
         $finallist = [];
 
         if ($sorttype == 'a') {
-            // order active students by: price ASC the inStock DESC s
-            usort($activestudents, function($st1, $st2) {
-                return ;
-                if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
-                    return $st1->get_priority()->get_slot_count() === $st2->get_priority()->get_slot_count();
-                }
-                return $st1->get_priority()->get_recency_days() <=> $st2->get_priority()->get_recency_days();
-            });
+            // // order active students by: price ASC the inStock DESC s
+            // usort($activestudents, function($st1, $st2) {
+            //     return ;
+            //     if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
+            //         return $st1->get_priority()->get_slot_count() === $st2->get_priority()->get_slot_count();
+            //     }
+            //     return $st1->get_priority()->get_recency_days() <=> $st2->get_priority()->get_recency_days();
+            // });
 
             // filtering students that have posted slots and completed lessons
             $postedcompleted = array_filter($activestudents, function($std) {
                 return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0;
+            });
+            // order active students by: price ASC the inStock DESC s
+            usort($postedcompleted, function($st1, $st2) {
+                if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
+                    return $st2->get_priority()->get_slot_count() <=> $st1->get_priority()->get_slot_count();
+                }
+                return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
             });
 
             // filtering students that have no posted slots but completed lessons
             $nopostcompleted = array_filter($activestudents, function($std) {
                 return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0;
             });
+            // order active students by: price ASC the inStock DESC s
+            usort($nopostcompleted, function($st1, $st2) {
+                return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
+            });
 
             // filtering students that have not completed lessons
             $notcompleted = array_filter($activestudents, function($std) {
                 return !$std->has_completed_lessons();
             });
+            // order active students by: price ASC the inStock DESC s
+            usort($notcompleted, function($st1, $st2) {
+                return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
+            });
 
-            $finallist = $postedcompleted + $nopostcompleted + $notcompleted;
+            $finallist = array_merge($postedcompleted, $nopostcompleted, $notcompleted);
+
         } elseif ($sorttype == 's') {
             // Get student booking priority
             usort($activestudents, function($st1, $st2) {

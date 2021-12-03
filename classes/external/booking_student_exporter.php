@@ -267,6 +267,7 @@ class booking_student_exporter extends exporter {
         } else {
             $nextexerciseid = $this->booking->get_exerciseid();
         }
+        $nextexerciseid = empty($nextexerciseid) ? 0 : $nextexerciseid;
         $action = new action($actiontype, $this->courseid, $this->student->get_id(), $nextexerciseid);
 
         return $action;

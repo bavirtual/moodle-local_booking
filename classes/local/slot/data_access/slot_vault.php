@@ -164,28 +164,36 @@ class slot_vault implements slot_vault_interface {
     }
 
     /**
-     * Get the date of the last booked availability slot
+     * Returns the slot dates of the last two booked availability slot
      *
      * @param int $courseid
      * @param int $studentid
+     * @return array $lastslotdate, $beforelastslotdate
      */
     public static function get_last_booked_slot(int $courseid, int $studentid) {
         global $DB;
+        $lastslotdate = 0;
+        $beforelastslotdate = 0;
 
-        $sql = 'SELECT starttime
+        $sql = 'SELECT id, starttime
                 FROM {' . static::DB_SLOTS. '}
                 WHERE courseid = :courseid
                 AND userid = :studentid
                 AND slotstatus != ""
                 ORDER BY starttime DESC
-                LIMIT 1';
+                LIMIT 2';
 
         $params = [
             'courseid' => $courseid,
             'studentid'  => $studentid
         ];
 
-        return $DB->get_record_sql($sql, $params);
+        $slotstimes = $DB->get_records_sql($sql, $params);
+        if (!empty($slotstimes)) {
+            $lastslotdate = array_values($slotstimes)[0]->starttime;
+            $beforelastslotdate = !empty(count($slotstimes) > 1) ? array_values($slotstimes)[1]->starttime : 0;
+        }
+        return [$lastslotdate, $beforelastslotdate];
     }
 
     /**

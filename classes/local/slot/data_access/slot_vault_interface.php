@@ -102,6 +102,7 @@ interface slot_vault_interface {
      *
      * @param int $courseid
      * @param int $studentid
+     * @return array $lastslotdate, $beforelastslotdate
      */
     public static function get_last_booked_slot(int $courseid, int $studentid);
 

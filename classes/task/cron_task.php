@@ -92,7 +92,7 @@ class cron_task extends \core\task\scheduled_task {
                         // get on-hold date, otherwise use last login for on-hold comparison
                         $lastsession = slot::get_last_booking($sitecourse->id, $student->get_id());
                         if (!empty($lastsession)) {
-                            $lastsessiondate = !empty($lastsession->starttime) ? new DateTime('@' . $lastsession->starttime) : $student->get_last_login_date();
+                            $lastsessiondate = !empty($lastsession) ? new DateTime('@' . $lastsession) : $student->get_last_login_date();
                             $onholddate = new DateTime('@' . $lastsessiondate->getTimestamp());
                             // on-hold date is 3x wait period from last session
                             date_add($onholddate, date_interval_create_from_date_string(($waitdays * LOCAL_BOOKING_ONHOLDWAITMULTIPLIER) . ' days'));

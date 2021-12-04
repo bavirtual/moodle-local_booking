@@ -239,7 +239,7 @@ class student extends participant {
                 $daysfromlast = (get_config('local_booking', 'nextsessionwaitdays')) ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
 
                 $lastsession = slot::get_last_booking($this->courseid, $this->userid);
-                $sessiondatets = !empty($lastsession) ? $lastsession->starttime : time();
+                $sessiondatets = !empty($lastsession) ? $lastsession : time();
                 $sessiondate = new DateTime('@' . $sessiondatets);
                 date_add($sessiondate, date_interval_create_from_date_string($daysfromlast . ' days'));
 

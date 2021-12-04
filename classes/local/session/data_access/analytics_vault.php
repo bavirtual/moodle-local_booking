@@ -47,34 +47,33 @@ class analytics_vault implements analytics_vault_interface {
     const DB_LESSONCOMPLETION = 'lesson_timer';
 
     /**
-     * Get Session Recency in days for a particular student
+     * Returns the session recency in days for a particular student.
+     * If there is no record of a booking, the grade is returned, and
+     * in the case of new students, the enrolment date is returned.
      *
      * @param int   $courseid   The course id in reference
      * @param int   $studentid  The student id in reference
      * @return int  $days       The number of days since last session
      */
     public static function get_session_recency(int $courseid, int $studentid) {
-        global $DB;
+        list($lastsession, $beforelastsession) = slot_vault::get_last_booked_slot($courseid, $studentid);
+        $today = new DateTime('@' . time());
 
-        $sql = 'SELECT endtime AS lastsessiondate
-                FROM {' . self::DB_SLOTS . '}
-                WHERE courseid = :courseid
-                AND userid = :studentid
-                AND slotstatus != ""
-                ORDER BY endtime desc LIMIT 1';
-
-        $rs = $DB->get_record_sql($sql, ['courseid'=>$courseid, 'studentid'=>$studentid]);
-
-        if (!empty($rs)) {
-            $lastsessiondate = new DateTime('@' . $rs->lastsessiondate);
+        // check for sessions booked but not conducted yet, and if so revert to previous session, otherwise
+        // use the last session booked date. If neither are available revert to last graded, then enrol date
+        // for the newly enrolled.
+        if (!empty($lastsession) && !empty($beforelastsession)) {
+            $lastsessiondate = new DateTime('@' . ($lastsession < time() ? $lastsession : $beforelastsession));
+        } elseif (!empty($lastsession) && $lastsession < time()) {
+            $lastsessiondate = new DateTime('@' . $lastsession);
         } else {
             $student = new student($courseid, $studentid);
             $lastgraded = $student->get_last_graded_date();
             $lastsessiondate = empty($lastgraded) ? $student->get_enrol_date($studentid) : $lastgraded;
         }
 
-        $today = new DateTime('@' . time());
-        $days =  $today > $lastsessiondate ? (date_diff($lastsessiondate, $today))->days : 0;
+        // get the difference between today and the date of the last booked or graded slot
+        $days =  (date_diff($lastsessiondate, $today))->days;
 
         return $days;
     }

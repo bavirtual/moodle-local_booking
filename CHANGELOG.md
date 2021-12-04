@@ -1,5 +1,11 @@
 # Change log
 
+## [1.00.101] - RELEASED 2021-12-04
+
+### Changed
+
+- recency days looking at last and before last slots, then reverting to graded then enrolled dates in unavailable.
+
 ## [1.00.100] - RELEASED 2021-12-04
 
 ### Changed

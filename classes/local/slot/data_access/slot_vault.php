@@ -198,12 +198,20 @@ class slot_vault implements slot_vault_interface {
     public static function get_slot_count(int $courseid, int $studentid) {
         global $DB;
 
-        $condition = [
+        $sql = 'SELECT COUNT(id) AS slotcount
+                FROM {' . static::DB_SLOTS. '}
+                WHERE courseid = :courseid
+                AND userid = :userid
+                AND slotstatus = :slotstatus
+                AND starttime > :slottime';
+        $params = array(
             'courseid'  => $courseid,
             'userid'    => $studentid,
-            'slotstatus'=> ''
-        ];
+            'slotstatus'=> '',
+            'slottime'  => time()
+        );
 
-        return $DB->count_records(self::DB_SLOTS, $condition);
+        $rc = $DB->get_record_sql($sql, $params);
+        return $rc->slotcount;
     }
 }

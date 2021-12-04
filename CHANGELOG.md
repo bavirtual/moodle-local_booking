@@ -1,5 +1,11 @@
 # Change log
 
+## [1.00.100] - RELEASED 2021-12-04
+
+### Changed
+
+- slot count to take into consideration current slots only.
+
 ## [1.00.99] - RELEASED 2021-12-04
 
 ### Added

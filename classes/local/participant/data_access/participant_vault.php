@@ -113,6 +113,20 @@ class participant_vault implements participant_vault_interface {
     const DB_LESSON_TIMER = 'lesson_timer';
 
     /**
+     * @int $pastdatacutoff timestamp of past data in the system for a student.
+     */
+    protected $pastdatacutoff;
+
+    /**
+     * Constructor.
+     *
+     */
+    public function __construct() {
+        // get the past data cutoff timestamp (seconds)
+        $this->pastdatacutoff = time() - LOCAL_BOOKING_PASTDATACUTOFF * 60 * 60 * 24;
+    }
+
+    /**
      * Get all active students from the database.
      *
      * @param int $courseid     The course id.
@@ -307,6 +321,7 @@ class participant_vault implements participant_vault_interface {
                 WHERE m.name = :assign
                     AND ag.userid = :studentid
                     AND ag.grade > 0
+                    AND ag.timemodified > ' . $this->pastdatacutoff . '
                 GROUP BY exerciseid, assignid, exercisetype
                 ORDER BY cs.section';
 
@@ -482,6 +497,7 @@ class participant_vault implements participant_vault_interface {
                 INNER JOIN {' . self::DB_COURSE_MODS . '} cm ON cm.instance = ag.assignment
                 WHERE cm.course = :courseid
                 AND ' . $usertypesql . ' = :userid
+                AND ag.timemodified > ' . $this->pastdatacutoff . '
                 ORDER BY timemodified DESC
                 LIMIT 1';
 
@@ -553,7 +569,8 @@ class participant_vault implements participant_vault_interface {
                     AND cm.instance NOT IN (SELECT ag.assignment
                                             FROM {' . self::DB_GRADES . '} ag
                                             WHERE ag.userid = :studentid
-                                            AND ag.grade != -1)
+                                            AND ag.grade != -1
+                                            AND ag.timemodified > ' . $this->pastdatacutoff . ')
                 ORDER BY cs.section asc
                 LIMIT 1';
 

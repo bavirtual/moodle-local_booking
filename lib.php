@@ -82,6 +82,10 @@ define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);
  */
 define('LOCAL_BOOKING_DAYSFROMLASTSESSION', 12);
 /**
+ * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades)
+ */
+define('LOCAL_BOOKING_PASTDATACUTOFF', 365);
+/**
  * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students planced on-hold for group quering purposes
  */
 define('LOCAL_BOOKING_ONHOLDGROUP', 'OnHold');

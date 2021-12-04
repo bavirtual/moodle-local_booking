@@ -249,7 +249,7 @@ class booking_session_exporter extends exporter {
             $gradeinfo = [
                 'instructor'  => $grade->get_gradername(),
                 'sessiondate' => $sessiondate->format('j M \'y'),
-                'bookingdate' => !empty($bookingdate) ? (new DateTime('@'.$bookingdate))->format('j M \'y') : '',
+                'bookingdate' => !empty($bookingdate) ? (new DateTime('@'.$bookingdate))->format('j M \'y') . '<br/>' : '',
                 'grade'       => intval($grade->get_finalgrade()) . (!empty($grade->get_total_grade()) ? '/' . intval($grade->get_total_grade()) : '')
             ];
             $sessiontooltip = $grade->get_exercisetype() == 'assign' ? get_string('sessiongradedby', 'local_booking', $gradeinfo) :

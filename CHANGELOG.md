@@ -1,5 +1,15 @@
 # Change log
 
+## [1.00.99] - RELEASED 2021-12-04
+
+### Added
+
+- past data cutoff to excluded returning student's past grades from before 365 days.
+
+### Changed
+
+- removed session date from the session tooltip if doesn't exist.
+
 ## [1.00.98] - RELEASED 2021-12-04
 
 ### Fixed

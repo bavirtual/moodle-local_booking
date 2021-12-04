@@ -112,5 +112,5 @@ interface slot_vault_interface {
      * @param   int     The student id
      * @return  int     The number of active posts
      */
-    public static function get_slot_count($courseid, $studentid);
+    public static function get_slot_count(int $courseid, int $studentid);
 }

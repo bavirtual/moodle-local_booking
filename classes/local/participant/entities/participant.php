@@ -168,6 +168,7 @@ class participant implements participant_interface {
      * @return string   The participant callsign
      */
     public function get_simulator() {
+        $this->simulator = empty($this->simulator) ? participant_vault::get_customfield_data($this->courseid, $this->userid, 'simulator') : $this->simulator;
         return $this->simulator;
     }
 
@@ -177,7 +178,7 @@ class participant implements participant_interface {
      * @return string   The participant callsign
      */
     public function get_callsign() {
-        $this->callsign = empty($this->callsign) ? $this->vault->get_customfield_data($this->courseid, $this->userid, 'callsign') : $this->callsign;
+        $this->callsign = empty($this->callsign) ? participant_vault::get_customfield_data($this->courseid, $this->userid, 'callsign') : $this->callsign;
         return $this->callsign;
     }
 
@@ -201,7 +202,7 @@ class participant implements participant_interface {
         $this->fullname = $record->fullname;
         $this->enroldate = $record->enroldate;
         $this->lastlogin = $record->lastlogin;
-        $this->simulator = empty($record->simulator) ? '' : $record->simulator;
+        $this->simulator = $this->get_simulator();
     }
 
     /**
@@ -213,14 +214,5 @@ class participant implements participant_interface {
     public function is_member_of(string $groupname) {
         $groupid = groups_get_group_by_name($this->courseid, $groupname);
         return groups_is_member($groupid, $this->userid);
-    }
-
-    /**
-     * verifies whether the participant is a student or not
-     *
-     * @return bool The result of the is_student boolean.
-     */
-    protected function is_student() {
-        return $this->is_student;
     }
 }

@@ -338,15 +338,15 @@ class booking implements booking_interface {
     }
 
     /**
-     * Get the booking date associated
-     * with the exercise id.
+     * Get the last booking date associated
+     * with the course and exercise id for the student.
      *
-     * @return int
-     */
-    public function get_exercise_date() {
-        $bookeddate = booking_vault::get_booked_exercise_date($this->studentid, $this->exerciseid);
-
-        return $bookeddate;
+     * @param int $courseid      The associated course
+     * @param int $studentid     The student id conducted the session
+     * @param int $exerciseid    The exercise id for the session
+     * @return DateTime $exercisedate The date of last session for that exercise     */
+    public static function get_exercise_date(int $courseid, int $studentid, int $exerciseid) {
+        return booking_vault::get_booked_exercise_date($courseid, $studentid, $exerciseid);
     }
 
     /**
@@ -355,8 +355,8 @@ class booking implements booking_interface {
      * @param int $isinstructor
      * @param int $userid
      */
-    public static function get_last_session(int $userid, bool $isinstructor = false) {
-        return booking_vault::get_last_booked_session($userid, $isinstructor);
+    public static function get_last_session(int $courseid, int $userid, bool $isinstructor = false) {
+        return booking_vault::get_last_booked_session($courseid, $userid, $isinstructor);
     }
 
     // Setter functions

@@ -183,21 +183,26 @@ class booking_vault implements booking_vault_interface {
     /**
      * Get the date of the booked exercise
      *
-     * @param int $studentid
-     * @param int $exerciseid
-     * @return int $exercisedate
+     * @param int $courseid      The associated course
+     * @param int $studentid     The student id conducted the session
+     * @param int $exerciseid    The exercise id for the session
+     * @return DateTime $exercisedate The date of last session for that exercise
      */
-    public static function get_booked_exercise_date(int $studentid, int $exerciseid) {
+    public static function get_booked_exercise_date(int $courseid, int $studentid, int $exerciseid) {
         global $DB;
 
-        $sql = 'SELECT timemodified as exercisedate
-                FROM {' . static::DB_BOOKINGS. '}
-                WHERE studentid = :studentid
-                AND exerciseid = :exerciseid';
+        $sql = 'SELECT s.endtime as exercisedate
+                FROM {' . static::DB_BOOKINGS. '} b
+                INNER JOIN {' . static::DB_SLOTS. '} s ON s.id = b.slotid
+                WHERE b.courseid = :courseid
+                AND b.studentid = :studentid
+                AND b.exerciseid = :exerciseid
+                ORDER BY b.timemodified DESC LIMIT 1';
 
         $params = [
+            'courseid'   => $courseid,
             'studentid'  => $studentid,
-            'exerciseid'  => $exerciseid
+            'exerciseid' => $exerciseid
         ];
 
         $booking = $DB->get_record_sql($sql, $params);
@@ -210,16 +215,16 @@ class booking_vault implements booking_vault_interface {
      * @param int $isinstructor
      * @param int $userid
      */
-    public static function get_last_booked_session(int $userid, bool $isinstructor = false) {
+    public static function get_last_booked_session(int $courseid, int $userid, bool $isinstructor = false) {
         global $DB;
 
         $sql = 'SELECT timemodified as lastbookedsession
                 FROM {' . static::DB_BOOKINGS. '}
-                WHERE ' . ($isinstructor ? 'userid = :userid' : 'studentid = :userid') . '
+                WHERE courseid = :courseid AND ' . ($isinstructor ? 'userid = :userid' : 'studentid = :userid') . '
                 ORDER BY timemodified DESC
                 LIMIT 1';
 
-        return $DB->get_record_sql($sql, ['userid'=>$userid]);
+        return $DB->get_record_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
     }
 
     /**

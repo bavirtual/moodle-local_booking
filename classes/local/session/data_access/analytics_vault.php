@@ -58,11 +58,12 @@ class analytics_vault implements analytics_vault_interface {
 
         $sql = 'SELECT endtime AS lastsessiondate
                 FROM {' . self::DB_SLOTS . '}
-                WHERE userid = :studentid
+                WHERE courseid = :courseid
+                AND userid = :studentid
                 AND slotstatus != ""
                 ORDER BY endtime desc LIMIT 1';
 
-        $rs = $DB->get_record_sql($sql, ['studentid'=>$studentid]);
+        $rs = $DB->get_record_sql($sql, ['courseid'=>$courseid, 'studentid'=>$studentid]);
 
         if (!empty($rs)) {
             $lastsessiondate = new DateTime('@' . $rs->lastsessiondate);
@@ -73,8 +74,7 @@ class analytics_vault implements analytics_vault_interface {
         }
 
         $today = new DateTime('@' . time());
-        $interval = date_diff($lastsessiondate, $today);
-        $days = $interval->days;
+        $days =  $today > $lastsessiondate ? (date_diff($lastsessiondate, $today))->days : 0;
 
         return $days;
     }

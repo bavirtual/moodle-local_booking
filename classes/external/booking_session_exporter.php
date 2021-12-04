@@ -33,6 +33,7 @@ use core\external\exporter;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\session\entities\session;
 use local_booking\local\session\entities\grade;
+use local_booking\local\session\entities\booking;
 
 /**
  * Class for displaying each session in progression view.
@@ -235,6 +236,7 @@ class booking_session_exporter extends exporter {
     protected function get_session($data) {
         $grade = $this->get_grade($data);
         $booking = !empty($data['booking']->get_id()) && $data['booking']->get_exerciseid()==$data['exerciseid'] ? $data['booking'] : null;
+        $bookingdate = booking::get_exercise_date($data['courseid'], ($data['student'])->get_id(), $data['exerciseid']);
 
         // collect session information
         $sessionstatus = '';
@@ -243,12 +245,14 @@ class booking_session_exporter extends exporter {
         if ($grade !== null) {
             $sessionstatus = 'graded';
             $sessiondate = new \DateTime('@' . $grade->get_gradedate()[0]);
+
             $gradeinfo = [
                 'instructor'  => $grade->get_gradername(),
                 'sessiondate' => $sessiondate->format('j M \'y'),
+                'bookingdate' => !empty($bookingdate) ? (new DateTime('@'.$bookingdate))->format('j M \'y') : '',
                 'grade'       => intval($grade->get_finalgrade()) . (!empty($grade->get_total_grade()) ? '/' . intval($grade->get_total_grade()) : '')
             ];
-            $sessiontooltip = $grade->get_exercisetype() == 'assign' ? get_string('sessiongradeddby', 'local_booking', $gradeinfo) :
+            $sessiontooltip = $grade->get_exercisetype() == 'assign' ? get_string('sessiongradedby', 'local_booking', $gradeinfo) :
                 get_string('sessiongradeexampass', 'local_booking', $gradeinfo);
         // get booking info of this session if a booking is available
         } else if (!empty($booking)) {

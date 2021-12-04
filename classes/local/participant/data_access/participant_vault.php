@@ -161,37 +161,33 @@ class participant_vault implements participant_vault_interface {
     public static function get_active_students(int $courseid, bool $includeonhold = false) {
         global $DB;
 
+        // return $DB->get_records_sql($sql, $params);
         $onhold_clause = $includeonhold ? '' : ' AND u.id NOT IN (
-                SELECT userid
-                FROM {' . self::DB_GROUPS_MEM . '} gm
-                INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                WHERE g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"
-                OR g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
-                )';
+            SELECT userid
+            FROM {' . self::DB_GROUPS_MEM . '} gm
+            INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+            WHERE g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"
+            OR g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
+            )';
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
-                    'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ud.data AS simulator, ue.timemodified AS enroldate,
-                    en.courseid AS courseid, u.lastlogin AS lastlogin
-                FROM {' . self::DB_USER . '} u
-                INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
-                INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
-                INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
-                INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
-                LEFT JOIN {' . self::DB_USER_DATA . '} ud on ra.userid = ud.userid
-                LEFT JOIN {' . self::DB_USER_FIELD . '} uf on uf.id = ud.fieldid
-                WHERE en.courseid = :courseid
-                    AND ra.contextid = :contextid
-                    AND r.shortname = :role
-                    AND (uf.shortname = :customfield OR uf.shortname IS NULL)
-                    AND ue.status = 0
-                    AND u.deleted != 1' . $onhold_clause;
+                        'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
+                        ue.timemodified AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
+                    FROM {' . self::DB_USER . '} u
+                    INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
+                    INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
+                    INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
+                    INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
+                    WHERE en.courseid = :courseid
+                        AND ra.contextid = :contextid
+                        AND r.shortname = :role
+                        AND ue.status = 0
+                        AND u.deleted != 1' . $onhold_clause;
 
         $params = [
             'courseid'  => $courseid,
             'contextid' => \context_course::instance($courseid)->id,
-            'role'      => 'student',
-            'customfield' => 'simulator',
+            'role'      => 'student'
         ];
 
         return $DB->get_records_sql($sql, $params);
@@ -437,7 +433,7 @@ class participant_vault implements participant_vault_interface {
      * @param string $field         The field name associated with the rquested data
      * @return string               The full participatn username
      */
-    public function get_customfield_data(int $courseid, int $userid, string $field) {
+    public static function get_customfield_data(int $courseid, int $userid, string $field) {
         global $DB;
 
         // Look for ATO category
@@ -465,7 +461,7 @@ class participant_vault implements participant_vault_interface {
 
         $customfieldobj = $DB->get_record_sql($sql, $params);
 
-        return $customfieldobj->data;
+        return empty($customfieldobj->data) ? '' : $customfieldobj->data;
     }
 
     /**

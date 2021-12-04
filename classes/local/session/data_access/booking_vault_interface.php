@@ -80,17 +80,19 @@ interface booking_vault_interface {
     /**
      * Get the date of the booked exercise
      *
-     * @param int $studentid
-     * @param int $exerciseid
+     * @param int $courseid      The associated course
+     * @param int $studentid     The student id conducted the session
+     * @param int $exerciseid    The exercise id for the session
+     * @return DateTime $exercisedate The date of last session for that exercise
      */
-    public static function get_booked_exercise_date(int $studentid, int $exerciseid);
+    public static function get_booked_exercise_date(int $courseid, int $studentid, int $exerciseid);
 
     /**
      * Get the date of the last booked session
      *
      * @param int $instructorid
      */
-    public static function get_last_booked_session(int $userid, bool $isinstructor = false);
+    public static function get_last_booked_session(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
      * set active flag to false to deactive the booking.

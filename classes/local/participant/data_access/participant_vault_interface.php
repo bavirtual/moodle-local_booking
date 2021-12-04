@@ -115,7 +115,7 @@ interface participant_vault_interface {
      * @param string $field         The field name associated with the rquested data
      * @return string               The full participatn username
      */
-    public function get_customfield_data(int $courseid, int $participantid, string $field);
+    public static function get_customfield_data(int $courseid, int $participantid, string $field);
 
     /**
      * Returns the timestamp of the last

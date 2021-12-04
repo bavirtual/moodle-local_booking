@@ -1,5 +1,15 @@
 # Change log
 
+## [1.00.98] - RELEASED 2021-12-04
+
+### Fixed
+
+- students without simulator record but other user custom field data are not showing.
+
+### Added
+
+- booked slot endtime date to clarify confusion with graded date indicating recency days since last session.
+
 ## [1.00.97] - RELEASED 2021-12-03 - hotfix
 
 ### Fixed

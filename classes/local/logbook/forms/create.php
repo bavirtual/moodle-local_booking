@@ -148,13 +148,11 @@ class create extends \moodleform {
      * @return array
      */
     public function validation($data, $files) {
-        $booking = new booking(0, $data['courseid'], $data['studentid'], $data['exerciseid']);
-
         $errors = parent::validation($data, $files);
 
         // validate the flight date is not before the booking date
-        $exercisedate = $booking->get_exercise_date();
-        if ($exercisedate != 0) {
+        $exercisedate = booking::get_exercise_date($data['courseid'], $data['studentid'], $data['exerciseid']);
+        if (!empty($exercisedate)) {
             if ($data['sessiondate'] < $exercisedate) {
                 $errors['sessiondate'] = get_string('errorinvaliddate', 'local_booking');
             }

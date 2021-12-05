@@ -53,29 +53,34 @@ class analytics_vault implements analytics_vault_interface {
      *
      * @param int   $courseid   The course id in reference
      * @param int   $studentid  The student id in reference
-     * @return int  $days       The number of days since last session
+     * @return array            The number of days since last session and recency source information
      */
     public static function get_session_recency(int $courseid, int $studentid) {
         list($lastsession, $beforelastsession) = slot_vault::get_last_booked_slot($courseid, $studentid);
         $today = new DateTime('@' . time());
+        $info = [];
 
         // check for sessions booked but not conducted yet, and if so revert to previous session, otherwise
         // use the last session booked date. If neither are available revert to last graded, then enrol date
         // for the newly enrolled.
         if (!empty($lastsession) && !empty($beforelastsession)) {
             $lastsessiondate = new DateTime('@' . ($lastsession < time() ? $lastsession : $beforelastsession));
+            $info['source'] = 'booking';
         } elseif (!empty($lastsession) && $lastsession < time()) {
             $lastsessiondate = new DateTime('@' . $lastsession);
+            $info['source'] = 'booking';
         } else {
             $student = new student($courseid, $studentid);
             $lastgraded = $student->get_last_graded_date();
             $lastsessiondate = empty($lastgraded) ? $student->get_enrol_date($studentid) : $lastgraded;
+            $info['source'] = empty($lastgraded) ? 'enrol' : 'grade';
         }
+        $info['date'] = $lastsessiondate;
 
         // get the difference between today and the date of the last booked or graded slot
         $days =  (date_diff($lastsessiondate, $today))->days;
 
-        return $days;
+        return [$days, $info];
     }
 
     /**

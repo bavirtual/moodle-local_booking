@@ -1,5 +1,15 @@
 # Change log
 
+## [1.00.102] - RELEASED 2021-12-05
+
+### Fixed
+
+- Navigation bar highlight selection for My logbook, My availability, and Session booking links
+
+### Changed
+
+- Wait Days tooltip exlaining source of wait days in the Session Booking page.
+
 ## [1.00.101] - RELEASED 2021-12-04
 
 ### Changed

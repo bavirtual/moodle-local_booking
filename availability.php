@@ -29,11 +29,15 @@ require_once(__DIR__ . '/lib.php');
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
 
+defined('MOODLE_INTERNAL') || die();
+
+use local_booking\local\participant\entities\student;
+
 global $USER;
 
 // Set up the page.
 $categoryid = optional_param('category', null, PARAM_INT);
-$courseid = optional_param('course', SITEID, PARAM_INT);
+$courseid = optional_param('courseid', SITEID, PARAM_INT);
 $action =  optional_param('action', null, PARAM_RAW);
 $view =  optional_param('view', 'user', PARAM_RAW);
 $studentid = optional_param('userid', $USER->id, PARAM_INT);
@@ -43,8 +47,21 @@ $pluginname = $course->shortname . ' ' . get_booking_config('ATO') . ' ' . get_s
 $title = get_string('weeklytitle', 'local_booking');
 $week = get_string('week', 'local_booking');
 $time = optional_param('time', 0, PARAM_INT);
+$course = get_course($courseid);
+$context = context_course::instance($courseid);
 
 $url = new moodle_url('/local/booking/availability.php');
+$url->param('courseid', $courseid);
+// view all capability for instructors
+if (has_capability('local/booking:view', $context)) {
+    $url->param('view', 'all');
+} else {
+    $student = new student($courseid, $USER->id);
+    $params['time'] = $student->get_next_allowed_session_date()->getTimestamp();
+    $params['action'] = 'post';
+}
+
+$PAGE->set_url($url);
 
 // If a day, month and year were passed then convert it to a timestamp. If these were passed
 // then we can assume the day, month and year are passed as Gregorian, as no where in core
@@ -59,38 +76,8 @@ if (empty($time)) {
     $time = time();
 }
 
-$iscoursecalendar = $courseid != SITEID;
-
-if ($iscoursecalendar) {
-    $url->param('course', $courseid);
-}
-
-if ($categoryid) {
-    $url->param('categoryid', $categoryid);
-}
-
-$url->param('view', 'user');
-$url->param('time', $time);
-
-$PAGE->set_url($url);
-
-$course = get_course($courseid);
-
-if ($iscoursecalendar && !empty($courseid)) {
-    navigation_node::override_active_url(new moodle_url('/course/view.php', array('id' => $course->id)));
-} else if (!empty($categoryid)) {
-    core_course_category::get($categoryid); // Check that category exists and can be accessed.
-    $PAGE->set_category_by_id($categoryid);
-    navigation_node::override_active_url(new moodle_url('/course/index.php', array('categoryid' => $categoryid)));
-} else {
-    $PAGE->set_context(context_system::instance());
-}
-$context = context_course::instance($courseid);
-
 require_login($course, false);
 require_capability('local/booking:availabilityview', $context);
-
-$url->param('course', $courseid);
 
 $calendar = calendar_information::create($time, $courseid, $categoryid);
 

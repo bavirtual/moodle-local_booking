@@ -249,6 +249,7 @@ class bookings_exporter extends exporter {
                 'studentid'       => $student->get_id(),
                 'studentname'     => $student->get_name(),
                 'dayssincelast'   => $student->get_priority()->get_recency_days(),
+                'recencytooltip'  => $student->get_priority()->get_recency_info(),
                 'overduewarning'  => $waringflag == self::OVERDUEWARNING,
                 'latewarning'     => $waringflag == self::LATEWARNING,
                 'simulator'       => $student->get_simulator(),

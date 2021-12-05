@@ -153,7 +153,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
             $node = $navigation->find('logbook', navigation_node::NODETYPE_LEAF);
             if (!$node && $courseid!==SITEID) {
                 // form URL and parameters
-                $params = array('course'=>$courseid);
+                $params = array('courseid'=>$courseid);
                 $url = new moodle_url('/local/booking/logbook.php', $params);
 
                 $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
@@ -172,7 +172,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
             $node = $navigation->find('availability', navigation_node::NODETYPE_LEAF);
             if (!$node && $courseid!==SITEID) {
                 // form URL and parameters
-                $params = array('course'=>$courseid);
+                $params = array('courseid'=>$courseid);
                 // view all capability for instructors
                 if (has_capability('local/booking:view', $context)) {
                     $params['view'] = 'all';
@@ -205,7 +205,6 @@ function local_booking_extend_navigation(global_navigation $navigation) {
                 $node->type = navigation_node::NODETYPE_LEAF;
                 $node->forceopen = true;
                 $node->icon = new  pix_icon('booking', '', 'local_booking');
-
                 $parent->add_node($node);
             }
         }

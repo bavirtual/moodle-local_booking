@@ -38,35 +38,14 @@ $title = $course->shortname . ' ' . get_string('pluginname', 'local_booking');
 $title = get_string('pluginname', 'local_booking');
 
 $url = new moodle_url('/local/booking/view.php');
-
-$iscourse = $courseid != SITEID;
-
-if ($iscourse) {
-    $url->param('courseid', $courseid);
-}
-
-if ($categoryid) {
-    $url->param('categoryid', $categoryid);
-}
+$url->param('courseid', $courseid);
 
 $PAGE->set_url($url);
-
-if ($iscourse && !empty($courseid)) {
-    navigation_node::override_active_url(new moodle_url('/course/view.php', array('id' => $courseid)));
-} else if (!empty($categoryid)) {
-    core_course_category::get($categoryid); // Check that category exists and can be accessed.
-    $PAGE->set_category_by_id($categoryid);
-    navigation_node::override_active_url(new moodle_url('/course/index.php', array('categoryid' => $categoryid)));
-} else {
-    $PAGE->set_context(context_system::instance());
-}
 
 $context = context_course::instance($courseid);
 
 require_login($course, false);
 require_capability('local/booking:view', $context);
-
-$url->param('courseid', $courseid);
 
 // RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
 $PAGE->requires->jquery();

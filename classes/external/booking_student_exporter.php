@@ -109,6 +109,9 @@ class booking_student_exporter extends exporter {
             'dayssincelast' => [
                 'type' => PARAM_INT,
             ],
+            'recencytooltip' => [
+                'type' => PARAM_RAW,
+            ],
             'overduewarning' => [
                 'type' => PARAM_BOOL,
             ],

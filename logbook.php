@@ -27,45 +27,24 @@
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 
-global $USER, $DB;
+defined('MOODLE_INTERNAL') || die();
 
 // Set up the page.
 $categoryid = optional_param('categoryid', null, PARAM_INT);
-$courseid = optional_param('course', SITEID, PARAM_INT);
+$courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $title = $course->shortname . ' ' . get_string('logbook', 'local_booking');
 $title = get_string('logbook', 'local_booking');
 
-$url = new moodle_url('/local/booking/logbook.php');
-
-$iscourse = $courseid != SITEID;
-
-if ($iscourse) {
-    $url->param('courseid', $courseid);
-}
-
-if ($categoryid) {
-    $url->param('categoryid', $categoryid);
-}
+$params = array('courseid'=>$courseid);
+$url = new moodle_url('/local/booking/logbook.php', $params);
 
 $PAGE->set_url($url);
-
-if ($iscourse && !empty($courseid)) {
-    navigation_node::override_active_url(new moodle_url('/course/view.php', array('id' => $courseid)));
-} else if (!empty($categoryid)) {
-    core_course_category::get($categoryid); // Check that category exists and can be accessed.
-    $PAGE->set_category_by_id($categoryid);
-    navigation_node::override_active_url(new moodle_url('/course/index.php', array('categoryid' => $categoryid)));
-} else {
-    $PAGE->set_context(context_system::instance());
-}
 
 $context = context_course::instance($courseid);
 
 require_login($course, false);
 require_capability('local/booking:logbookview', $context);
-
-$url->param('courseid', $courseid);
 
 $PAGE->navbar->add(get_string('logbook', 'local_booking'));
 $PAGE->set_pagelayout('standard');  // otherwise use 'standard' layout

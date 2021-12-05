@@ -91,7 +91,10 @@
                 <td class="booking-truncate">
                     <span>{{studentname}}</span><br/>
                 </td>
-                <td class="day text-sm-center">
+                <td class="day text-sm-center"
+                    data-toggle="tooltip"
+                    title="{{{recencytooltip}}}"
+                    data-html="true">
                     <span class="media-body small{{#overduewarning}} session-overdue{{/overduewarning}}{{#latewarning}} session-late{{/latewarning}}"
                     aria-hidden="true">{{dayssincelast}}</span>
                 </td>

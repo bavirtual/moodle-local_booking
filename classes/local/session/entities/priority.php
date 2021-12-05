@@ -57,6 +57,11 @@ class priority implements priority_interface {
     protected $recencydays;
 
     /**
+     * @var array  $recencyinfo  An array containing the source of the recency information
+     */
+    protected $recencyinfo;
+
+    /**
      * @var int  $slotcount      The number of availability slots marked by the student.
      */
     protected $slotcount;
@@ -83,7 +88,7 @@ class priority implements priority_interface {
      * @param array $related Related objects.
      */
     public function __construct(int $courseid, int $studentid) {
-        $this->recencydays = analytics_vault::get_session_recency($courseid, $studentid);
+        list($this->recencydays, $this->recencyinfo) = analytics_vault::get_session_recency($courseid, $studentid);
         $recencydaysweight = get_config('local_booking', 'recencydaysweight') ? get_config('local_booking', 'recencydaysweight') : LOCAL_BOOKING_RECENCYWEIGHT;
 
         $this->slotcount = analytics_vault::get_slot_count($courseid, $studentid);
@@ -108,6 +113,29 @@ class priority implements priority_interface {
      */
     public function get_recency_days() {
         return $this->recencydays;
+    }
+
+    /**
+     * Returns an array containing the source of the recency information
+     * The array contains the source and date information.
+     *
+     * @return array  $recencyinfo    Explains the source of the recency information
+     */
+    public function get_recency_info() {
+        $info = '';
+
+        switch ($this->recencyinfo['source']) {
+            case 'booking':
+                $info = get_string('bookingrecencyfrombooktooltip', 'local_booking', ($this->recencyinfo['date'])->format('j M \'y'));
+                break;
+            case 'grade':
+                $info = get_string('bookingrecencyfromgradetooltip', 'local_booking', ($this->recencyinfo['date'])->format('j M \'y'));
+                break;
+            case 'enrol':
+                $info = get_string('bookingrecencyfromenroltooltip', 'local_booking', ($this->recencyinfo['date'])->format('j M \'y'));
+                break;
+        }
+        return $info;
     }
 
     /**

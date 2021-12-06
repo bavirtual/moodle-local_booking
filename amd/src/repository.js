@@ -209,17 +209,17 @@ import Ajax from 'core/ajax';
  * @method getLogentryById
  * @param {number} logentryId The logbook entry id.
  * @param {number} courseId The associated course id.
- * @param {number} studentId The student id of entry.
+ * @param {number} userId The user id of entry.
  * @return {promise} Resolved with requested calendar event
  */
- export const getLogentryById = (logentryId, courseId, studentId) => {
+ export const getLogentryById = (logentryId, courseId, userId) => {
 
     const request = {
         methodname: 'local_booking_get_logentry_by_id',
         args: {
             logentryid: logentryId,
             courseid: courseId,
-            studentid: studentId
+            userid: userId
         }
     };
 
@@ -231,17 +231,17 @@ import Ajax from 'core/ajax';
  *
  * @method deleteLogentry
  * @param {number} logentryId The logbook entry id to delete.
- * @param {number} studentId The logbook entry course id.
- * @param {number} courseId The logbook entry student id.
+ * @param {number} userId The logbook entry course id.
+ * @param {number} courseId The logbook entry user id.
  * @return {promise} Resolved with requested calendar event
  */
- export const deleteLogentry = (logentryId, studentId, courseId) => {
+ export const deleteLogentry = (logentryId, userId, courseId) => {
 
     const request = {
         methodname: 'local_booking_delete_logentry',
         args: {
             logentryid: logentryId,
-            studentid: studentId,
+            userid: userId,
             courseid: courseId
         }
     };

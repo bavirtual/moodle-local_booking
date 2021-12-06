@@ -108,7 +108,7 @@ class local_booking_external extends external_api {
             array(
                 'logentryid'  => new external_value(PARAM_INT, 'The logbook entry id', VALUE_DEFAULT),
                 'courseid'  => new external_value(PARAM_INT, 'The course id in context', VALUE_DEFAULT),
-                'studentid'  => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
+                'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
             )
         );
     }
@@ -118,18 +118,18 @@ class local_booking_external extends external_api {
      *
      * @param int $logentryid The logbook entry id.
      * @param int $courseid The course id in context.
-     * @param int $studentid The student user id in context.
+     * @param int $userid The user user id in context.
      * @return array array of slots created.
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
-    public static function get_logentry_by_id($logentryid, $courseid, $studentid) {
+    public static function get_logentry_by_id($logentryid, $courseid, $userid) {
         global $PAGE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_logentry_by_id_parameters(), array(
                 'logentryid' => $logentryid,
                 'courseid' => $courseid,
-                'studentid' => $studentid,
+                'userid' => $userid,
                 )
             );
 
@@ -138,7 +138,7 @@ class local_booking_external extends external_api {
         self::validate_context($context);
         $PAGE->set_url('/local/booking/');
 
-        list($data, $template) = get_logentry_output($logentryid, $courseid, $studentid);
+        list($data, $template) = get_logentry_output($logentryid, $courseid, $userid);
 
         return array('logentry' => $data, 'warnings' => $warnings);
     }
@@ -169,7 +169,7 @@ class local_booking_external extends external_api {
         return new external_function_parameters(
             array(
                 'logentryid'  => new external_value(PARAM_INT, 'The logbook entry id', VALUE_DEFAULT),
-                'studentid'  => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
+                'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
                 'courseid'  => new external_value(PARAM_INT, 'The course id in context', VALUE_DEFAULT),
             )
         );
@@ -179,19 +179,19 @@ class local_booking_external extends external_api {
      * Delete a logbook entry.
      *
      * @param int $logentryid The logbook entry id.
-     * @param int $studentid The student user id in context.
+     * @param int $userid The user user id in context.
      * @param int $courseid The course id in context.
      * @return array array of slots created.
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
-    public static function delete_logentry($logentryid, $studentid, $courseid) {
+    public static function delete_logentry($logentryid, $userid, $courseid) {
         global $PAGE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::delete_logentry_parameters(), array(
                 'logentryid' => $logentryid,
                 'courseid' => $courseid,
-                'studentid' => $studentid,
+                'userid' => $userid,
                 )
             );
 
@@ -199,7 +199,7 @@ class local_booking_external extends external_api {
         self::validate_context($context);
         $PAGE->set_url('/local/booking/');
 
-        $logbook = new logbook($courseid, $studentid);
+        $logbook = new logbook($courseid, $userid);
         $logbook->delete($logentryid);
 
         return null;
@@ -652,7 +652,7 @@ class local_booking_external extends external_api {
         $contextid = $args['contextid'];
         $courseid = $args['courseid'];
         $exerciseid = $args['exerciseid'];
-        $studentid = $args['studentid'];
+        $userid = $args['userid'];
 
         $context = \context_course::instance($courseid);
         self::validate_context($context);
@@ -662,22 +662,37 @@ class local_booking_external extends external_api {
             'exerciseid' => $exerciseid,
         ];
 
-        $logbook = new logbook($courseid, $studentid);
-
+        // if the operation is an update, get the logentry
         if (!empty($data['id'])) {
+            $logbook = new logbook($courseid, $userid);
             $logentryid = clean_param($data['id'], PARAM_INT);
             $logentry = $logbook->get_logentry($logentryid);
             $formoptions['logentry'] = $logentry;
             $data = array_merge($logentry->__toArray(), $data);
-            $mform = new update_logentry_form(null, $formoptions, 'post', '', null, true, $data);
-        } else {
-            $mform = new create_logentry_form(null, $formoptions, 'post', '', null, true, $data);
-            $logentry = new logentry($logbook);
         }
 
+        // get the form data and persist the new entry(s)
+        $mform = new update_logentry_form(null, $formoptions, 'post', '', null, true, $data);
         if ($validateddata = $mform->get_data()) {
-            $logentry->populate($validateddata);
-            $logbook->save($logentry);
+            // for entry update, populate logentry then save
+            if (!empty($data['id'])) {
+                $logentry->populate($validateddata);
+                $logentry->save();
+            // for new entries, populate instructor and student logentries then save
+            } else {
+                // add instructor logentry, the user creating the entry is always the instructor
+                $instructorlogbook = new logbook($courseid, $USER->id);
+                $instructorlogentry = $instructorlogbook->create_logentry();
+                $instructorlogentry->populate($validateddata);
+                $instructorlogentry->save();
+                // add student logentry
+                $studentlogbook = new logbook($courseid, $userid);
+                $studentlogentry = $studentlogbook->create_logentry();
+                $studentlogentry->populate($validateddata);
+                $studentlogentry->save();
+                // logentry for the exporter either is good
+                $logentry = $instructorlogentry;
+            }
 
             $relatedobjects = ['context' => $context];
             $exporter = new logentry_exporter($data, $logentry, $relatedobjects);

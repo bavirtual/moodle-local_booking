@@ -37,7 +37,7 @@ use local_booking\local\logbook\forms\create as create_logentry_form;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\external\week_exporter;
 use local_booking\local\logbook\entities\logbook;
-use local_booking\local\logbook\entities\logentry;
+use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 
@@ -235,18 +235,18 @@ function local_booking_output_fragment_logentry_form($args) {
 
     $courseid = (!empty($args['courseid'])) ? $args['courseid'] : 0;
     $exerciseid = (!empty($args['exerciseid'])) ? $args['exerciseid'] : 0;
-    $studentid = (!empty($args['studentid'])) ? $args['studentid'] : 0;
+    $userid = (!empty($args['userid'])) ? $args['userid'] : 0;
     $sessiondate = (!empty($args['sessiondate'])) ? $args['sessiondate'] : 0;
 
     $formoptions = [
         'context'   => $context,
         'courseid'  => $courseid,
         'exerciseid'=> $exerciseid,
-        'studentid' => $studentid,
+        'userid' => $userid,
         'sessiondate' => $sessiondate,
     ];
 
-    $logbook = new logbook($courseid, $studentid);
+    $logbook = new logbook($courseid, $userid);
 
     if (!empty($logentryid)) {
         $logentry = $logbook->get_logentry($logentryid);
@@ -256,14 +256,14 @@ function local_booking_output_fragment_logentry_form($args) {
         $data['sessiondate'] = $logentry->get_sessiondate();
         $mform = new update_logentry_form(null, $formoptions, 'post', '', null, true, $formdata);
     } else {
-        $logentry = new logentry($logbook);
-        $logentry->set_picid($studentid);
+        $logentry = $logbook->create_logentry();
+        $logentry->set_picid($userid);
         $logentry->set_sicid($USER->id);
         $formoptions['logentry'] = $logentry;
         $mform = new create_logentry_form(null, $formoptions, 'post', '', null, true, $formdata);
         // copy over additional data needed for setting the form
         $data['courseid'] = $courseid;
-        $data['studentid'] = $studentid;
+        $data['userid'] = $userid;
         $data['exerciseid'] = $exerciseid;
     }
 
@@ -386,7 +386,7 @@ function get_booking_confirm_view($courseid, $studentid) {
 }
 
 /**
- * Get the student's log book view output.
+ * Get the user's log book view output.
  *
  * @param   int     $courseid the associated course.
  * @return  array[array, string]
@@ -394,16 +394,16 @@ function get_booking_confirm_view($courseid, $studentid) {
 function get_logbook_view($courseid) {
     global $PAGE, $USER;
 
-    $studentid = $USER->id;
-    $logbook = new logbook($courseid, $studentid);
+    $userid = $USER->id;
+    $logbook = new logbook($courseid, $userid);
     list($totalflighthours, $totalsessionhours, $totalsolohours) = $logbook->get_summary();
     $renderer = $PAGE->get_renderer('local_booking');
 
     $template = 'local_booking/logbook';
     $data = [
         'courseid'  => $courseid,
-        'studentid'  => $studentid,
-        'studentname'  => student::get_fullname($studentid),
+        'userid'  => $userid,
+        'username'  => participant::get_fullname($userid),
         'totalflighttime'  => $totalflighthours,
         'totalsessiontime'  => $totalsessionhours,
         'totalsolotime'  => $totalsolohours,
@@ -420,10 +420,10 @@ function get_logbook_view($courseid) {
  *
  * @param   int     $logentryid the logbook entry id.
  * @param   int     $courseid
- * @param   int     $studentid
+ * @param   int     $userid
  * @return  array[array, string]
  */
-function get_logentry_output($logentryid, $courseid, $studentid) {
+function get_logentry_output($logentryid, $courseid, $userid) {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
@@ -432,7 +432,7 @@ function get_logentry_output($logentryid, $courseid, $studentid) {
     $data = [
         'logentryid'  => $logentryid,
         'courseid'  => $courseid,
-        'studentid'  => $studentid,
+        'userid'  => $userid,
     ];
 
     $logbook = new logbook($courseid);

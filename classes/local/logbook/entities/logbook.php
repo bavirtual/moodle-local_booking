@@ -27,7 +27,7 @@ namespace local_booking\local\logbook\entities;
 
 use DateTime;
 use local_booking\local\logbook\data_access\logbook_vault;
-use local_booking\local\participant\entities\student;
+use local_booking\local\participant\entities\participant;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -45,9 +45,9 @@ class logbook implements logbook_interface {
     protected $courseid;
 
     /**
-     * @var int $studentid The student user id of this logbook.
+     * @var int $userid The user user id of this logbook.
      */
-    protected $studentid;
+    protected $userid;
 
     /**
      * @var array $entries The list of logbook entries.
@@ -58,20 +58,20 @@ class logbook implements logbook_interface {
      * Constructor.
      *
      * @param int   $courseid   The course id associated with this logbook.
-     * @param int   $studentid  The student id associated with this logbook.
+     * @param int   $userid  The user id associated with this logbook.
      */
-    public function __construct($courseid, $studentid = 0) {
+    public function __construct($courseid, $userid = 0) {
         $this->courseid = $courseid;
-        $this->studentid = $studentid;
+        $this->userid = $userid;
     }
 
     /**
-     * Load and retrieve the logbook of a student.
+     * Load and retrieve the logbook of a user.
      *
      * @return bool true if the Logbook has entries
      */
     public function load() {
-        $this->entries = logbook_vault::get_logbook($this->courseid, $this->studentid, $this);
+        $this->entries = logbook_vault::get_logbook($this->courseid, $this->userid, $this);
         return count($this->entries) > 0;
     }
 
@@ -85,12 +85,24 @@ class logbook implements logbook_interface {
     }
 
     /**
+     * Creates a logbook entry.
+     *
+     * @return logentry
+     */
+    public function create_logentry() {
+        $logentry = new logentry();
+        $logentry->set_parent($this);
+        return $logentry;
+    }
+
+    /**
      * Save a logbook entry.
      *
      * @return int The id of the logbook entery inserted
      */
     public function add(logentry $logentry) {
-        return logbook_vault::insert_logentry($this->courseid, $this->studentid, $logentry);
+        $logentry->set_parent($this);
+        return logbook_vault::insert_logentry($this->courseid, $this->userid, $logentry);
     }
 
     /**
@@ -99,26 +111,8 @@ class logbook implements logbook_interface {
      * @return bool
      */
     public function update(logentry $logentry){
-        return logbook_vault::update_logentry($this->courseid, $this->studentid, $logentry);
-    }
-
-    /**
-     * Saves a logbook entry (create or update).
-     *
-     * @return bool
-     */
-    public function save(logentry $logentry) {
-        $result = false;
-
-        if ($logentry->get_id() == 0) {
-            $logentryid = logbook_vault::insert_logentry($this->courseid, $this->studentid, $logentry);
-            $logentry->set_id($logentryid);
-            $result = true;
-        } else {
-            $result = logbook_vault::update_logentry($this->courseid, $this->studentid, $logentry);
-        }
-
-        return $result;
+        $logentry->set_parent($this);
+        return logbook_vault::update_logentry($this->courseid, $this->userid, $logentry);
     }
 
     /**
@@ -131,7 +125,7 @@ class logbook implements logbook_interface {
     }
 
     /**
-     * Get the logbook of a student.
+     * Get the logbook of a user.
      *
      * @return logentry[]
      */
@@ -149,13 +143,15 @@ class logbook implements logbook_interface {
 
         if ($logentryid != 0) {
             $logentry = $reload ?
-                logbook_vault::get_logentry($this->studentid, $this->courseid, $logentryid, 0, $this) :
+                logbook_vault::get_logentry($this->userid, $this->courseid, $logentryid, 0, $this) :
                 $logentry = $this->entries[$logentryid];
         } else if ($exerciseid != 0) {
             $logentry = $reload ?
-                logbook_vault::get_logentry($this->studentid, $this->courseid, 0, $exerciseid, $this) :
+                logbook_vault::get_logentry($this->userid, $this->courseid, 0, $exerciseid, $this) :
                 $logentry = $this->get_logentry_by_exericseid($exerciseid);
         }
+        if (!empty($logentry))
+            $logentry->set_parent($this);
 
         return $logentry;
     }
@@ -170,21 +166,21 @@ class logbook implements logbook_interface {
     }
 
     /**
-     * Get the student user id of the log entry.
+     * Get the user user id of the log entry.
      *
      * @return int
      */
-    public function get_studentid() {
-        return $this->studentid;
+    public function get_userid() {
+        return $this->userid;
     }
 
     /**
-     * Get the student name of the log entry.
+     * Get the user name of the log entry.
      *
      * @return string
      */
-    public function get_studentname() {
-        return student::get_fullname($this->studentid);
+    public function get_username() {
+        return participant::get_fullname($this->userid);
     }
 
     /**
@@ -213,7 +209,7 @@ class logbook implements logbook_interface {
      * @return logentry $logentry The logbook entry db record
      */
     public function get_summary() {
-        list($totalflighttime, $totalsessiontime, $totalsolotime) = logbook_vault::get_logbook_summary($this->courseid, $this->studentid);
+        list($totalflighttime, $totalsessiontime, $totalsolotime) = logbook_vault::get_logbook_summary($this->courseid, $this->userid);
 
         return [
             self::convert_duration($totalflighttime, 'text'),
@@ -234,10 +230,10 @@ class logbook implements logbook_interface {
     /**
      * Set the studnet user id of the log entry.
      *
-     * @param int $studentid
+     * @param int $userid
      */
-    public function set_studentid(int $studentid) {
-        $this->studentid = $studentid;
+    public function set_userid(int $userid) {
+        $this->userid = $userid;
     }
 
     /**

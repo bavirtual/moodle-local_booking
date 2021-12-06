@@ -1,5 +1,16 @@
 # Change log
 
+## [1.00.103] - RELEASED 2021-12-06
+
+### Added
+
+- Instructors Logbook. Data for instructors' logbook migrated from students' logbook entries.
+
+### Changed
+
+- Logbook cards ordering by latest date vs course sections.
+- Logbook entry New Entry session date to date-time and default to booked session vs graded date.
+
 ## [1.00.102] - RELEASED 2021-12-05
 
 ### Fixed

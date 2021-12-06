@@ -43,14 +43,14 @@ class logbook_vault implements logbook_vault_interface {
     const DB_COURSE_SECTIONS = 'course_sections';
 
     /**
-     * Get a student's logbook.
+     * Get a user's logbook.
      *
      * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $studentid  The student id associated with the logbook.
+     * @param int       $userid     The user id associated with the logbook.
      * @param logbook   $logbook    The logbook_interface of for all entries.
      * @return logentries[]     Array of logentry_interfaces.
      */
-    public static function get_logbook(int $courseid, int $studentid, $logbook = null) {
+    public static function get_logbook(int $courseid, int $userid, $logbook = null) {
         global $DB;
 
         $logbook = [];
@@ -60,10 +60,10 @@ class logbook_vault implements logbook_vault_interface {
                 FROM {' . self::DB_LOGBOOKS . '} lb
                 INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.id = lb.exerciseid
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
-                WHERE userid = :studentid
-                ORDER BY cs.section';
+                WHERE userid = :userid
+                ORDER BY lb.timemodified DESC';
 
-        $param = ['studentid'=>$studentid];
+        $param = ['userid'=>$userid];
         $logentryrecs = $DB->get_records_sql($sql, $param);
         foreach ($logentryrecs as $logentryrec) {
             $logbook[] = self::get_logentry_instance($logentryrec, $logbook);
@@ -75,20 +75,20 @@ class logbook_vault implements logbook_vault_interface {
     /**
      * Get a specific logbook entry.
      *
-     * @param int $studentid    The logentry student id.
+     * @param int $userid       The logentry user id.
      * @param int $courseid     The id of the course in context.
      * @param int $logentryid   The logentry id.
      * @param int $exerciseid   The logentry with exericse id.
      * @param logbook   $logbook    The logbook_interface of for all entries.
      * @return logentry         A logentry_insterface.
      */
-    public static function get_logentry(int $studentid, int $courseid, int $logentryid = 0, int $exerciseid = 0, $logbook) {
+    public static function get_logentry(int $userid, int $courseid, int $logentryid = 0, int $exerciseid = 0, $logbook) {
         global $DB;
 
         $conditions = $logentryid!=0 ? ['id'=>$logentryid] : [
             'courseid'=>$courseid,
             'exerciseid'=>$exerciseid,
-            'userid'=>$studentid
+            'userid'=>$userid
         ];
         $logentryrec = $DB->get_record(static::DB_LOGBOOKS, $conditions);
 
@@ -96,45 +96,45 @@ class logbook_vault implements logbook_vault_interface {
     }
 
     /**
-     * Create a student's logbook entry
+     * Create a user's logbook entry
      *
      * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $studentid  The student id associated with the logbook.
-     * @param logentry  $logentry   A logbook entry of the student.
+     * @param int       $userid     The user id associated with the logbook.
+     * @param logentry  $logentry   A logbook entry of the user.
      * @return int      The log entry id.
      */
-    public static function insert_logentry(int $courseid, int $studentid, logentry $logentry) {
+    public static function insert_logentry(int $courseid, int $userid, logentry $logentry) {
         global $DB;
 
-        $logentryobj = self::get_logentryrecobj($courseid, $studentid, $logentry);
+        $logentryobj = self::get_logentryrecobj($courseid, $userid, $logentry);
 
         return $DB->insert_record(static::DB_LOGBOOKS, $logentryobj);
     }
 
     /**
-     * Update a student's logbook entry
+     * Update a user's logbook entry
      *
      * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $studentid  The student id associated with the logbook.
-     * @param logentry  $logentry A logbook entry of the student.
+     * @param int       $userid     The user id associated with the logbook.
+     * @param logentry  $logentry   A logbook entry of the user.
      * @return bool     result of the database update operation.
      */
-    public static function update_logentry(int $courseid, int $studentid, logentry $logentry){
+    public static function update_logentry(int $courseid, int $userid, logentry $logentry){
         global $DB;
 
-        $logentryobj = self::get_logentryrecobj($courseid, $studentid, $logentry);
+        $logentryobj = self::get_logentryrecobj($courseid, $userid, $logentry);
 
         return $DB->update_record(static::DB_LOGBOOKS, $logentryobj);
     }
 
     /**
-     * Update a student's logbook entry
+     * Update a user's logbook entry
      *
      * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $studentid  The student id associated with the logbook.
+     * @param int       $userid     The user id associated with the logbook.
      * @return array    $totalflighttime, $totalsessiontime, $totalsolotime
      */
-    public static function get_logbook_summary(int $courseid, int $studentid) {
+    public static function get_logbook_summary(int $courseid, int $userid) {
         global $DB;
 
         $sql = 'SELECT SUM(flighttimemins) as totalflighttime,
@@ -142,11 +142,11 @@ class logbook_vault implements logbook_vault_interface {
                     SUM(soloflighttimemins) as totalsolotime
                 FROM {' . self::DB_LOGBOOKS .'}
                 WHERE courseid = :courseid
-                AND userid = :studentid';
+                AND userid = :userid';
 
         $params = [
             'courseid' => $courseid,
-            'studentid' => $studentid
+            'userid' => $userid
         ];
         $summary = $DB->get_record_sql($sql, $params);
         $totalflighttime = $summary->totalflighttime;
@@ -171,16 +171,16 @@ class logbook_vault implements logbook_vault_interface {
     /**
      * Create an object to be persisted
      *
-     * @param logentry  $logentry       A logbook entry of the student.
+     * @param logentry  $logentry       A logbook entry of the user.
      * @return stdClass $logentryobj    The log entry object for persistence.
      */
-    protected static function get_logentryrecobj(int $courseid, int $studentid, logentry $logentry) {
+    protected static function get_logentryrecobj(int $courseid, int $userid, logentry $logentry) {
         $logentryobj = new stdClass();
 
         $logentryobj->id = $logentry->get_id();
         $logentryobj->courseid = $courseid;
         $logentryobj->exerciseid = $logentry->get_exerciseid();
-        $logentryobj->userid = $studentid;
+        $logentryobj->userid = $userid;
         $logentryobj->flighttimemins = $logentry->get_flighttimemins();
         $logentryobj->soloflighttimemins = $logentry->get_soloflighttimemins();
         $logentryobj->sessiontimemins = $logentry->get_sessiontimemins();

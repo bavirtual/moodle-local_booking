@@ -29,9 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use renderer_base;
 use core\external\exporter;
-use DateTime;
 use local_booking\local\logbook\entities\logbook;
-use moodle_url;
 
 /**
  * Class for displaying a logbook entry.
@@ -49,9 +47,9 @@ class logbook_exporter extends exporter {
     protected $courseid;
 
     /**
-     * @var int $studentid
+     * @var int $userid
      */
-    protected $studentid;
+    protected $userid;
 
     /**
      * Constructor.
@@ -61,7 +59,7 @@ class logbook_exporter extends exporter {
      */
     public function __construct($data, $related = []) {
         $this->courseid = $data['courseid'];
-        $this->studentid = $data['studentid'];
+        $this->userid = $data['userid'];
 
         parent::__construct($data, $related);
     }
@@ -73,7 +71,7 @@ class logbook_exporter extends exporter {
      */
     protected static function define_properties() {
         return [
-            'studentname' => [
+            'username' => [
                 'type' => PARAM_RAW
             ],
             'totalflighttime' => [
@@ -110,7 +108,7 @@ class logbook_exporter extends exporter {
      */
     protected function get_other_values(renderer_base $output) {
         return [
-            'entries' => $this->get_logbook_entries($this->courseid, $this->studentid, $output),
+            'entries' => $this->get_logbook_entries($this->courseid, $this->userid, $output),
         ];
     }
 
@@ -120,9 +118,9 @@ class logbook_exporter extends exporter {
      * @param renderer_base $output The renderer.
      * @return array Keys are the property names, values are their values.
      */
-    protected function get_logbook_entries($courseid, $studentid, renderer_base $output) {
-        // get the the logbook of a student
-        $logbook = new logbook($courseid, $studentid);
+    protected function get_logbook_entries($courseid, $userid, renderer_base $output) {
+        // get the the logbook of a user
+        $logbook = new logbook($courseid, $userid);
         $logbook->load();
         $logbookentries = $logbook->get_logentries();
         $entries = [];
@@ -131,7 +129,7 @@ class logbook_exporter extends exporter {
         foreach ($logbookentries as $logbookentry) {
             $data = $logbookentry->__toArray(true);
             $data['courseid'] = $courseid;
-            $data['studentid'] = $studentid;
+            $data['userid'] = $userid;
             $entry = new logentry_exporter($data, null, $this->related);
             $entries[] = $entry->export($output);
         }

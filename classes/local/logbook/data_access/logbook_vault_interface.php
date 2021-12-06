@@ -32,55 +32,55 @@ use local_booking\local\logbook\entities\logentry;
 interface logbook_vault_interface {
 
     /**
-     * Get a student's logbook.
+     * Get a user's logbook.
      *
      * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $studentid  The student id associated with the logbook.
+     * @param int       $userid     The user id associated with the logbook.
      * @param logbook   $logbook    The logbook_interface of for all entries.
      * @return logentries[]     Array of logentry_interfaces.
      */
-    public static function get_logbook(int $courseid, int $studentid, $logbook = null);
+    public static function get_logbook(int $courseid, int $userid, $logbook = null);
 
     /**
      * Get a specific logbook entry.
      *
-     * @param int $studentid    The logentry student id.
+     * @param int $userid       The logentry user id.
      * @param int $courseid     The id of the course in context.
      * @param int $logentryid   The logentry id.
      * @param int $exerciseid   The logentry with exericse id.
-     * @param logbook   $logbook    The logbook_interface of for all entries.
+     * @param logbook $logbook  The logbook_interface of for all entries.
      * @return logentry         A logentry_insterface.
      */
-    public static function get_logentry(int $studentid, int $courseid, int $logentryid = 0, int $exerciseid = 0, $logbook);
+    public static function get_logentry(int $userid, int $courseid, int $logentryid = 0, int $exerciseid = 0, $logbook);
 
     /**
-     * Update a student's logbook entry
+     * Update a user's logbook entry
      *
      * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $studentid  The student id associated with the logbook.
+     * @param int       $userid     The user id associated with the logbook.
      * @return array    $totalflighttime, $totalsessiontime, $totalsolotime
      */
-    public static function get_logbook_summary(int $courseid, int $studentid);
+    public static function get_logbook_summary(int $courseid, int $userid);
 
     /**
-     * Create a student's logbook entry
+     * Create a user's logbook entry
      *
      * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $studentid  The student id associated with the logbook.
-     * @param logentry  $logentry A logbook entry of the student.
+     * @param int       $userid     The user id associated with the logbook.
+     * @param logentry  $logentry   A logbook entry of the user.
      * @return bool     $result of the database add operation.
      */
-    public static function insert_logentry(int $courseid, int $studentid, logentry $logentry);
+    public static function insert_logentry(int $courseid, int $userid, logentry $logentry);
 
     /**
-     * Update a student's logbook entry
+     * Update a user's logbook entry
      *
      * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $studentid  The student id associated with the logbook.
-     * @param logentry  $logentry A logbook entry of the student.
+     * @param int       $userid     The user id associated with the logbook.
+     * @param logentry  $logentry   A logbook entry of the user.
      * @return bool     $result of the database update operation.
      */
-    public static function update_logentry(int $courseid, int $studentid, logentry $logentry);
+    public static function update_logentry(int $courseid, int $userid, logentry $logentry);
 
     /**
      * Delete a logbook entry by id

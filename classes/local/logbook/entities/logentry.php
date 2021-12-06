@@ -26,6 +26,7 @@
 namespace local_booking\local\logbook\entities;
 
 use DateTime;
+use local_booking\local\logbook\data_access\logbook_vault;
 use local_booking\local\participant\entities\participant;
 
 defined('MOODLE_INTERNAL') || die();
@@ -114,16 +115,6 @@ class logentry implements logentry_interface {
      * @param bool  $formattostring: whether to return some values in string format
      * @return array
      */
-    public function __construct($parent = null) {
-        $this->parent = $parent;
-    }
-
-    /**
-     * Converts the object to array through casting.
-     *
-     * @param bool  $formattostring: whether to return some values in string format
-     * @return array
-     */
     public function __toArray(bool $formattostring = false) {
         return [
             'id' => $this->id,
@@ -140,6 +131,33 @@ class logentry implements logentry_interface {
             'toicao' => $this->toicao,
             'sessiondate' => $formattostring ? $this->get_sessiondate(true) : $this->sessiondate,
         ];
+    }
+
+    /**
+     * Saves a logbook entry (create or update).
+     *
+     * @return bool
+     */
+    public function save() {
+        $result = false;
+
+        if ($this->id == 0) {
+            $this->id = logbook_vault::insert_logentry($this->parent->get_courseid(), $this->parent->get_userid(), $this);
+            $result = true;
+        } else {
+            $result = logbook_vault::update_logentry($this->parent->get_courseid(), $this->parent->get_userid(), $this);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get the parent logbook.
+     *
+     * @return logbook
+     */
+    public function get_parent() {
+        return $this->parent;
     }
 
     /**
@@ -281,6 +299,15 @@ class logentry implements logentry_interface {
         $sessiondate = $formatted ? (new DateTime('@'.$this->sessiondate))->format('l M d, Y') : $this->sessiondate;
 
         return $sessiondate;
+    }
+
+    /**
+     * Set the parent logbook.
+     *
+     * @param logbook
+     */
+    public function set_parent(logbook $logbook) {
+        $this->parent = $logbook;
     }
 
     /**

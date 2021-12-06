@@ -73,7 +73,7 @@ class create extends \moodleform {
         $this->add_default_hidden_elements($mform);
 
         // Logbook entry date field.
-        $mform->addElement('date_selector', 'sessiondate', get_string('sessiondate', 'local_booking'), array('timezone'=>0));
+        $mform->addElement('date_time_selector', 'sessiondate', get_string('sessiondate', 'local_booking'), array('timezone'=>0));
         $mform->addRule('sessiondate', get_string('required'), 'required', null, 'client');
         $mform->setType('sessiondate', PARAM_TEXT);
         $mform->setDefault('sessiondate', $sessiondate);
@@ -151,7 +151,7 @@ class create extends \moodleform {
         $errors = parent::validation($data, $files);
 
         // validate the flight date is not before the booking date
-        $exercisedate = booking::get_exercise_date($data['courseid'], $data['studentid'], $data['exerciseid']);
+        $exercisedate = booking::get_exercise_date($data['courseid'], $data['userid'], $data['exerciseid']);
         if (!empty($exercisedate)) {
             if ($data['sessiondate'] < $exercisedate) {
                 $errors['sessiondate'] = get_string('errorinvaliddate', 'local_booking');
@@ -179,9 +179,9 @@ class create extends \moodleform {
         // $mform->setType('logentryid', PARAM_INT);
         // $mform->setDefault('logentryid', 0);
 
-        $mform->addElement('hidden', 'studentid');
-        $mform->setType('studentid', PARAM_INT);
-        $mform->setDefault('studentid', 0);
+        $mform->addElement('hidden', 'userid');
+        $mform->setType('userid', PARAM_INT);
+        $mform->setDefault('userid', 0);
 
         $mform->addElement('hidden', 'exerciseid');
         $mform->setType('exerciseid', PARAM_INT);
@@ -201,7 +201,7 @@ class create extends \moodleform {
     }
 
     /**
-     * Get the list of active student pilot ids.
+     * Get the list of active user pilot ids.
      *
      * @return array $activepilots List of user ids for PIC & SIC pilots
      */

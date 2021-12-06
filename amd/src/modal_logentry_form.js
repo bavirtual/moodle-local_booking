@@ -68,7 +68,7 @@ define([
         this.exerciseId = null;
         this.courseId = null;
         this.contextId = null;
-        this.studentId = null;
+        this.userId = null;
         this.isAdditional = null;
         this.reloadingBody = false;
         this.reloadingTitle = false;
@@ -160,33 +160,33 @@ define([
     };
 
     /**
-     * Set the student id to the given value.
+     * Set the user id to the given value.
      *
-     * @method setStudentId
-     * @param {int} id The student id
+     * @method setUserId
+     * @param {int} id The user id
      */
-     ModalLogEntryForm.prototype.setStudentId = function(id) {
-        this.studentId = id;
+     ModalLogEntryForm.prototype.setUserId = function(id) {
+        this.userId = id;
     };
 
     /**
-     * Retrieve the current student id, if any.
+     * Retrieve the current user id, if any.
      *
-     * @method getStudentId
-     * @return {int|null} The student id
+     * @method getUserId
+     * @return {int|null} The user id
      */
-    ModalLogEntryForm.prototype.getStudentId = function() {
-        return this.studentId;
+    ModalLogEntryForm.prototype.getUserId = function() {
+        return this.userId;
     };
 
     /**
-     * Check if the modal has an student id.
+     * Check if the modal has an user id.
      *
-     * @method hasStudentId
+     * @method hasUserId
      * @return {bool}
      */
-     ModalLogEntryForm.prototype.hasStudentId = function() {
-        return this.studentId !== null;
+     ModalLogEntryForm.prototype.hasUserId = function() {
+        return this.userId !== null;
     };
 
     /**
@@ -356,8 +356,8 @@ define([
 
         var args = {};
 
-        if (this.hasStudentId()) {
-            args.studentid = this.getStudentId();
+        if (this.hasUserId()) {
+            args.userid = this.getUserId();
         }
 
         if (this.hasLogentryId()) {
@@ -473,7 +473,7 @@ define([
      * server side errors to display.
      *
      * On success the modal is hidden and the page is reloaded so that the
-     * new log book entry will display in the booking view student tooltip.
+     * new log book entry will display in the booking view user tooltip.
      *
      * @method save
      * @return {object} A promise
@@ -496,7 +496,7 @@ define([
 
         var formData = this.getFormData();
         var formArgs = 'contextid=' + this.contextId + '&courseid=' + this.courseId
-            + '&exerciseid=' + this.exerciseId + '&studentid=' + this.studentId;
+            + '&exerciseid=' + this.exerciseId + '&userid=' + this.userId;
 
         // Send the form data to the server for processing.
         // eslint-disable-next-line consistent-return

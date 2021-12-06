@@ -100,7 +100,7 @@ class logentry_exporter extends exporter {
             'exerciseid' => [
                 'type' => PARAM_INT
             ],
-            'studentid' => [
+            'userid' => [
                 'type' => PARAM_INT
             ],
             'sessiondate' => [

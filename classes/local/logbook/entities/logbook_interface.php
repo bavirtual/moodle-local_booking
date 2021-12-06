@@ -37,7 +37,7 @@ defined('MOODLE_INTERNAL') || die();
 interface logbook_interface {
 
     /**
-     * Loads the logbook of entries for a student.
+     * Loads the logbook of entries for a user.
      *
      * @return bool true if the Logbook has entries
      */
@@ -49,6 +49,13 @@ interface logbook_interface {
      * @return bool true if the Logbook has entries
      */
     public function has_entries();
+
+    /**
+     * Creates a logbook entry.
+     *
+     * @return logentry
+     */
+    public function create_logentry();
 
     /**
      * Save a logbook entry.
@@ -63,13 +70,6 @@ interface logbook_interface {
      * @return bool
      */
     public function update(logentry $logentry);
-
-    /**
-     * Saves a logbook entry (create or update).
-     *
-     * @return bool
-     */
-    public function save(logentry $logentry);
 
     /**
      * Deletes a logbook entry.
@@ -93,18 +93,18 @@ interface logbook_interface {
     public function get_courseid();
 
     /**
-     * Get the student user id of the log entry.
+     * Get the user user id of the log entry.
      *
      * @return int
      */
-    public function get_studentid();
+    public function get_userid();
 
     /**
-     * Get the student name of the log entry.
+     * Get the user name of the log entry.
      *
      * @return string
      */
-    public function get_studentname();
+    public function get_username();
 
     /**
      * Set the course  id for the log entry.
@@ -116,7 +116,7 @@ interface logbook_interface {
     /**
      * Set the studnet user id of the log entry.
      *
-     * @param int $studentid
+     * @param int $userid
      */
-    public function set_studentid(int $studentid);
+    public function set_userid(int $userid);
 }

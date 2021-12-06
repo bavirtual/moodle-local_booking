@@ -146,11 +146,11 @@ function(
      * not cached because it will change depending on which logbook entry is
      * being displayed.
      *
-     * @method getStudentId
+     * @method getUserId
      * @return {int}
      */
-     ModalLogentrySummary.prototype.getStudentId = function() {
-        return this.getBody().find(SELECTORS.ROOT).attr('data-student-id');
+     ModalLogentrySummary.prototype.getUserId = function() {
+        return this.getBody().find(SELECTORS.ROOT).attr('data-user-id');
     };
 
     /**
@@ -228,7 +228,7 @@ function(
 
         this.getAddButton().on(CustomEvents.events.activate, function(e, data) {
             // When the edit button is clicked we fire an event for the booking UI to handle edit.
-            $('body').trigger(BookingEvents.addLogentry, [this.getExerciseId(), this.getStudentId(), this.getSessionDate()]);
+            $('body').trigger(BookingEvents.addLogentry, [this.getExerciseId(), this.getUserId(), this.getSessionDate()]);
 
             // There is nothing else for us to do so let's hide.
             this.hide();
@@ -242,7 +242,7 @@ function(
 
         this.getEditButton().on(CustomEvents.events.activate, function(e, data) {
             // When the edit button is clicked we fire an event for the booking UI to handle edit.
-            $('body').trigger(BookingEvents.editLogentry, [this.getLogentryId(), this.getStudentId(), this.getSessionDate()]);
+            $('body').trigger(BookingEvents.editLogentry, [this.getLogentryId(), this.getUserId(), this.getSessionDate()]);
 
             // There is nothing else for us to do so let's hide.
             this.hide();

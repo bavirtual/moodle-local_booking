@@ -191,7 +191,7 @@ class booking_vault implements booking_vault_interface {
     public static function get_booked_exercise_date(int $courseid, int $studentid, int $exerciseid) {
         global $DB;
 
-        $sql = 'SELECT s.endtime as exercisedate
+        $sql = 'SELECT s.starttime as exercisedate
                 FROM {' . static::DB_BOOKINGS. '} b
                 INNER JOIN {' . static::DB_SLOTS. '} s ON s.id = b.slotid
                 WHERE b.courseid = :courseid

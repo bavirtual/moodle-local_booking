@@ -99,7 +99,7 @@ define([
         if (contextId) {
             // Listen the click on the progression table of sessions.
             root.on('click', SELECTORS.SESSION_ENTRY, function(e) {
-                var sessionDate = $(this).attr('data-session-date');
+                var sessionDate = $(this).attr('data-booking-date');
                 var studentId = $(this).attr('data-student-id');
                 var exerciseId = $(this).attr('data-exercise-id');
                 var logentryId = $(this).attr('data-logentry-id');
@@ -109,7 +109,7 @@ define([
                     logentryFormPromise.then(function(modal) {
                         modal.setContextId(contextId);
                         modal.setCourseId(courseId);
-                        modal.setStudentId(studentId);
+                        modal.setUserId(studentId);
                         modal.setExerciseId(exerciseId);
                         modal.setLogentryId(logentryId);
                         modal.setSessionDate(sessionDate);

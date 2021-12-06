@@ -125,11 +125,11 @@ function(
      *
      * @method  confirmDeletion
      * @param   {Number} logentryId The ID of the logentry.
-     * @param   {Number} studentId The student of the logentry.
+     * @param   {Number} userId The user of the logentry.
      * @param   {Number} courseId The course of the logentry.
      * @return  {Promise}
      */
-    var confirmDeletion = (logentryId, studentId, courseId) => {
+    var confirmDeletion = (logentryId, userId, courseId) => {
         var pendingPromise = new Pending('local_booking/booking_actions:confirmDeletion');
         var deleteStrings = [
             {
@@ -163,7 +163,7 @@ function(
 
             deleteModal.getRoot().on(ModalEvents.save, function() {
                 var pendingPromise = new Pending('local_booking/booking_actions:initModal:deletedlogentry');
-                Repository.deleteLogentry(logentryId, studentId, courseId)
+                Repository.deleteLogentry(logentryId, userId, courseId)
                     .then(function() {
                         $('body').trigger(BookingEvents.deleted, [logentryId, false]);
                         return;
@@ -202,7 +202,7 @@ function(
     };
 
     /**
-     * Register the listeners required to edit the logentry.
+     * Register the listeners required for editing the logentry.
      *
      * @method  registerActionListeners
      * @param   {jQuery} root
@@ -216,11 +216,11 @@ function(
         .then(function(modal) {
             // Show the logentry form modal form when the user clicks
             // on a session in the progression booking view to edit a logentry
-            $('body').on(BookingEvents.addLogentry, function(e, exerciseId, studentId, sessionDate) {
+            $('body').on(BookingEvents.addLogentry, function(e, exerciseId, userId, sessionDate) {
                 var bookingWrapper = root.find(BookingSelectors.bookingwrapper);
                 modal.setSessionDate(sessionDate);
                 modal.setExerciseId(exerciseId);
-                modal.setStudentId(studentId);
+                modal.setUserId(userId);
                 modal.setCourseId(bookingWrapper.data('courseid'));
                 modal.setContextId(bookingWrapper.data('contextid'));
                 modal.show();
@@ -229,11 +229,11 @@ function(
             });
             // Show the logentry form modal form when the user clicks
             // on a session in the progression booking view to edit a logentry
-            $('body').on(BookingEvents.editLogentry, function(e, logentryId, studentId, sessionDate) {
+            $('body').on(BookingEvents.editLogentry, function(e, logentryId, userId, sessionDate) {
                 var bookingWrapper = root.find(BookingSelectors.bookingwrapper);
                 modal.setSessionDate(sessionDate);
                 modal.setLogentryId(logentryId);
-                modal.setStudentId(studentId);
+                modal.setUserId(userId);
                 modal.setCourseId(bookingWrapper.data('courseid'));
                 modal.setContextId(bookingWrapper.data('contextid'));
                 modal.show();
@@ -261,9 +261,9 @@ function(
             // Fetch the logentry title, and pass them into the new dialogue.
             var logentrySource = root.find(BookingSelectors.logentryItem),
                 logentryId = logentrySource.data('logentryId'),
-                studentId = logentrySource.data('studentId'),
+                userId = logentrySource.data('userId'),
                 courseId = logentrySource.data('courseId');
-            confirmDeletion(logentryId, studentId, courseId);
+            confirmDeletion(logentryId, userId, courseId);
 
             e.preventDefault();
         });

@@ -104,14 +104,14 @@ export const refreshProgressionContent = (root, courseId, categoryId, target = n
  * @method  renderLogentrySummaryModal
  * @param   {Number} logentryId The graded session logbook entry id.
  * @param   {Number} courseId The graded session course id.
- * @param   {Number} studentId The graded session student id.
+ * @param   {Number} userId The graded session user id.
  * @returns {Promise}
  */
- export const renderLogentrySummaryModal = (logentryId, courseId, studentId) => {
+ export const renderLogentrySummaryModal = (logentryId, courseId, userId) => {
     const pendingPromise = new Pending('local_booking/booking_view_manager:renderLogentrySummaryModal');
 
     // Calendar repository promise.
-    return Repository.getLogentryById(logentryId, courseId, studentId)
+    return Repository.getLogentryById(logentryId, courseId, userId)
     .then((getEventResponse) => {
         if (!getEventResponse.logentry) {
             throw new Error(Str.get_string('errorlogentryfetch', 'local_booking') + logentryId);

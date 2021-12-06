@@ -34,6 +34,7 @@ use local_booking\local\participant\entities\instructor;
 use local_booking\local\session\entities\session;
 use local_booking\local\session\entities\grade;
 use local_booking\local\session\entities\booking;
+use local_booking\local\slot\entities\slot;
 
 /**
  * Class for displaying each session in progression view.
@@ -66,6 +67,7 @@ class booking_session_exporter extends exporter {
         $this->session = $this->get_session($data);
 
         $data = [
+            'courseid'      => $data['courseid'],
             'studentid'     => $this->student->get_id(),
             'exerciseid'    => $data['exerciseid'],
             'sessionstatus' => $this->session->get_status(),
@@ -153,6 +155,10 @@ class booking_session_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
+            'lastbookingts' => [
+                'type' => PARAM_INT,
+                'default' => 0,
+            ],
             'marknoposts' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
@@ -173,15 +179,19 @@ class booking_session_exporter extends exporter {
         list($nextexercise, $exercisesection) = $this->student->get_next_exercise();
         $booked = $this->session->hasbooking() && $this->session->get_booking()->confirmed();
         $tentative = $this->session->hasbooking() && !$this->session->get_booking()->confirmed();
-        $noposts = $nextexercise == $this->data['exerciseid'] && $this->student->get_total_posts() == 0 && $this->student->has_completed_lessons() ? get_string('bookingnoposts', 'local_booking') : '';
+        $logentrymissing = empty($this->data['logentryid']) && $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() != 'quiz';
+        $noposts = $nextexercise == $this->data['exerciseid'] && $this->student->get_total_posts() == 0 &&
+            $this->student->has_completed_lessons() ? get_string('bookingnoposts', 'local_booking') : '';
+        $lastbookingdate = $logentrymissing ? slot::get_last_booking($this->data['courseid'], $this->student->get_id()) : 0;
 
         $return = [
             'graded'        => $this->session->hasgrade(),
             'booked'        => $booked,
             'tentative'     => $tentative,
             'canlogentry'   => $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() != 'quiz',
-            'logentrymissing' => empty($this->data['logentryid']) && $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() != 'quiz',
+            'logentrymissing' => $logentrymissing,
             'isquiz'        => $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() == 'quiz',
+            'lastbookingts' => $lastbookingdate,
             'marknoposts'   => !empty($noposts) && !($booked || $tentative),
             'noposts'       => $noposts
         ];

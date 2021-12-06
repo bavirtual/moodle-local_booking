@@ -38,6 +38,20 @@ defined('MOODLE_INTERNAL') || die();
 interface logentry_interface {
 
     /**
+     * Saves a logbook entry (create or update).
+     *
+     * @return bool
+     */
+    public function save();
+
+    /**
+     * Get the parent logbook.
+     *
+     * @param logbook
+     */
+    public function get_parent();
+
+    /**
      * Get the id for the logbook entry.
      *
      * @return int
@@ -145,6 +159,13 @@ interface logentry_interface {
      * @return mixed
      */
     public function get_sessiondate(bool $formatted = false);
+
+    /**
+     * Set the parent logbook.
+     *
+     * @param logbook
+     */
+    public function set_parent(logbook $logbook);
 
     /**
      * Set the id for the logbook entry.

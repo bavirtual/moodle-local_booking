@@ -1,5 +1,11 @@
 # Change log
 
+## [1.00.104] - RELEASED 2021-12-06 - hotfix
+
+### Fixed
+
+- Course context not passed by interim and confirm pages to Availability calendar page resulting in permissions denied.
+
 ## [1.00.103] - RELEASED 2021-12-06
 
 ### Added

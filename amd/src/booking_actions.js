@@ -286,7 +286,7 @@ function(
             const time = root.find(BookingSelectors.bookingwrapper).data('week');
 
             // Redirect to the grading and feedback page
-            location.href = `${M.cfg.wwwroot}/local/booking/availability.php?course=
+            location.href = `${M.cfg.wwwroot}/local/booking/availability.php?courseid=
                 ${courseId}&exid=${exerciseId}&userid=${userId}&action=book&time=${time}&view=user`;
 
             e.preventDefault();

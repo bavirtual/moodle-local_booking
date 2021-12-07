@@ -57,8 +57,8 @@ if (has_capability('local/booking:view', $context)) {
     $url->param('view', 'all');
 } else {
     $student = new student($courseid, $USER->id);
-    $params['time'] = $student->get_next_allowed_session_date()->getTimestamp();
-    $params['action'] = 'post';
+    $url->param('time', $student->get_next_allowed_session_date()->getTimestamp());
+    $url->param('action', 'post');
 }
 
 $PAGE->set_url($url);
@@ -106,10 +106,5 @@ list($data, $template) = get_weekly_view($calendar, $actiondata, $view);
 echo $renderer->render_from_template($template, $data);
 
 echo html_writer::end_tag('div');
-
-// list($data, $template) = calendar_get_footer_buttons($calendar);
-// echo $renderer->render_from_template($template, $data);
-// echo $OUTPUT->addElement('submit', 'savebutton', get_string('savebutton', 'local_booking'));
-
 echo $renderer->complete_layout();
 echo $OUTPUT->footer();

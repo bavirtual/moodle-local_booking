@@ -253,6 +253,7 @@ class student extends participant {
             if ($sessiondate->getTimestamp() < time()) {
                 $sessiondate = new DateTime('@' . time());
             }
+            $sessiondate->settime(0,0);
             $this->restrictiondate = $sessiondate;
         }
 

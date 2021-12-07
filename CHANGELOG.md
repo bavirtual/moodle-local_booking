@@ -1,6 +1,16 @@
 # Change log
 
-## [1.00.105] - RELEASED 2021-12-07 - hotfix
+## [1.01.107] - RELEASED 2021-12-07
+
+### Fixed
+
+- 'My availaiblity' navigation link highlight for students.
+
+### Changed
+
+- Next allowed session date to start at midnight to eliminate descripancies each time the function is called.
+
+## [1.00.106] - RELEASED 2021-12-07 - hotfix
 
 ### Fixed
 

@@ -1,5 +1,11 @@
 # Change log
 
+## [1.00.105] - RELEASED 2021-12-07 - hotfix
+
+### Fixed
+
+- 'View everyone's availability' link permissions due to incorrect course parameter name passed.
+
 ## [1.00.104] - RELEASED 2021-12-06 - hotfix
 
 ### Fixed

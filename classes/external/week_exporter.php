@@ -167,7 +167,7 @@ class week_exporter extends exporter {
             'exerciseid'  => $this->actiondata['exerciseid'],
             'editing'     => $this->view == 'user' && $this->actiondata['action'] != 'book',    // Editing is not allowed if user id is passed for booking
             'groupview'   => $this->view == 'all',                                              // Group view no editing or booking buttons
-            'viewalllink' => $CFG->httpswwwroot . '/local/booking/availability.php?course=' . $this->calendar->courseid . '&view=all',
+            'viewalllink' => $CFG->httpswwwroot . '/local/booking/availability.php?courseid=' . $this->calendar->courseid . '&view=all',
             'hiddenclass' => $this->actiondata['action'] != 'book' && $this->view == 'user',
             'visible'     => $this->actiondata['action'] != 'book' && $this->view == 'user',
         ];

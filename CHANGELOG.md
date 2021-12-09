@@ -9,6 +9,7 @@
 ### Changed
 
 - Next allowed session date to start at midnight to eliminate descripancies each time the function is called.
+- Started using Moodle versioning scheme yyyymmddxx.
 
 ## [1.00.106] - RELEASED 2021-12-07 - hotfix
 

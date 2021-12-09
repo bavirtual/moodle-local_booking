@@ -1,6 +1,6 @@
 # Session booking
 
-Copyright (c) 2021 Mustafa Hajjar Licensed under the GNU GPL v3 or later license (<http://www.gnu.org/copyleft/gpl.html>)
+Copyright (c) 2021 BAVirtual.co.uk © 2021 Licensed under the GNU GPL v3 or later license (<http://www.gnu.org/copyleft/gpl.html>)
 
 Session Booking is a [Moodle](https://moodle.org/) plugin that allows Aviation Training Organizations (ATO) manage instructor-led training sessions. It allows students to post their availability and instructors to book sessions according to student availability.
 

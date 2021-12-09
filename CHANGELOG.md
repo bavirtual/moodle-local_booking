@@ -1,5 +1,17 @@
 # Change log
 
+## [2021121001] - UNRELEASED 2021-12-10
+
+### Changed
+
+- Further took out additional unncessary Google scope to create a Google calendar event.
+
+## [2021121000] - RELEASED 2021-12-10
+
+### Changed
+
+- Took out unncessary Google scopes to create a Google calendar event.
+
 ## [1.01.107] - RELEASED 2021-12-07
 
 ### Fixed

@@ -119,7 +119,7 @@ class google_calendar_api
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $token));
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		$data = json_decode(curl_exec($ch), true); //echo '<pre>';print_r($data);echo '</pre>';
+		$data = json_decode(curl_exec($ch), true);
 		$httpcode = curl_getinfo($ch,CURLINFO_HTTP_CODE);
 		if($httpcode != 200)
 			throw new \Exception(get_string('googlecalendarlisterror', 'local_booking'));

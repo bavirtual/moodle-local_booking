@@ -288,15 +288,6 @@ class bookings_exporter extends exporter {
         $finallist = [];
 
         if ($sorttype == 'a') {
-            // // order active students by: price ASC the inStock DESC s
-            // usort($activestudents, function($st1, $st2) {
-            //     return ;
-            //     if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
-            //         return $st1->get_priority()->get_slot_count() === $st2->get_priority()->get_slot_count();
-            //     }
-            //     return $st1->get_priority()->get_recency_days() <=> $st2->get_priority()->get_recency_days();
-            // });
-
             // filtering students that have posted slots and completed lessons
             $postedcompleted = array_filter($activestudents, function($std) {
                 return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0;

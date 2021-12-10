@@ -304,13 +304,14 @@ function(
         root.on('click', BookingSelectors.actions.gotoFeedback, function(e) {
             // Fetch the exercise and user id and redirect to assignment submission & grading
             var logentrySource = root.find(BookingSelectors.logentryItem),
-                modId = logentrySource.data('exerciseId'),
-                userId = logentrySource.data('studentId');
-                $('body').trigger(BookingEvents.gotoFeedback, [modId]);
+                courseId = logentrySource.data('courseId'),
+                exerciseId = logentrySource.data('exerciseId'),
+                userId = logentrySource.data('userId');
+                $('body').trigger(BookingEvents.gotoFeedback, [exerciseId]);
 
                 // Redirect to the grading and feedback page
-                location.href = M.cfg.wwwroot + '/mod/assign/view.php?id=' + modId +
-                    '&rownum=0&userid=' + userId + '&action=grader';
+                location.href = M.cfg.wwwroot + '/local/booking/assign.php?courseid=' + courseId +
+                    '&exeid=' + exerciseId + '&rownum=0&userid=' + userId;
 
             e.preventDefault();
         });

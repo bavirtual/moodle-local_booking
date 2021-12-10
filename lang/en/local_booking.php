@@ -26,6 +26,7 @@ $string['bookingcanceledunable'] = 'Unable to cancel booking!';
 $string['bookingconfirmmsg'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
 $string['bookingconfirmsuccess'] = 'Booking confirmed for \'{$a->exercise}\' with {$a->instructor} on {$a->sessiondate} zulu';
 $string['bookingconfirmunable'] = 'Unable to confirm booking!';
+$string['bookingdashboard'] = 'Instructor dashboard';
 $string['bookingfooter'] = '<p style="font-family:sans-serif"><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href="{$a->bookingurl}">Session Booking</a></p>';
 $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
 $string['bookingnoposts'] = 'No posts';
@@ -38,6 +39,7 @@ $string['bookingrecencyfromgradetooltip'] = 'No booking<br/>days since last grad
 $string['bookings'] = 'Session booking';
 $string['bookingsavesuccess'] = 'Booking saved for \'{$a->exercise}\' with {$a->studentname} on {$a->sessiondate} zulu';
 $string['bookingsaveunable'] = 'Unable to save booking!';
+$string['bookingsessionselection'] = 'Session selection';
 $string['bookingsortby'] = 'Sort by';
 $string['bookingsortbyscore'] = 'score';
 $string['bookingsortbyscoretooltip'] = 'Sorts by student score';

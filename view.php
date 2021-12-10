@@ -51,7 +51,8 @@ require_capability('local/booking:view', $context);
 $PAGE->requires->jquery();
 $PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask-5/dist/jquery.inputmask.min.js'), true);
 
-$PAGE->navbar->add(userdate(time(), get_string('strftimedate')));
+$navbartext = $action == 'book' ? get_string('bookingdashboard', 'local_booking') : get_string('bookingsessionselection', 'local_booking');
+$PAGE->navbar->add($navbartext); //userdate(time(), get_string('strftimedate')));
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title($title, 'local_booking');
 $PAGE->set_heading($title, 'local_booking');

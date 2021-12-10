@@ -1,5 +1,11 @@
 # Change log
 
+## [2021121100] - RELEASED 2021-12-11
+
+### Fixed
+
+- Logbook summary popup Feedback page to redirect to the correct student regardless of set submission filter
+
 ## [2021121001] - UNRELEASED 2021-12-10
 
 ### Changed

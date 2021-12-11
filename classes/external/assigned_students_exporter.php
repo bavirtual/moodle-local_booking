@@ -27,7 +27,6 @@ namespace local_booking\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-use local_booking\local\participant\entities\participant;
 use core\external\exporter;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\subscriber\entities\subscriber;

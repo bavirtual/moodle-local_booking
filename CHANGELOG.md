@@ -1,5 +1,11 @@
 # Change log
 
+## [2021121101] - RELEASED 2021-12-11 - hotfix
+
+### Fixed
+
+- Error in 'Session booking' page when instructor has a student in the On-Hold or Graduates groups
+
 ## [2021121100] - RELEASED 2021-12-11
 
 ### Fixed

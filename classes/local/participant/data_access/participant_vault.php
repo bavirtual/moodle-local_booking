@@ -138,28 +138,23 @@ class participant_vault implements participant_vault_interface {
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ud.data AS simulator, ue.timemodified AS enroldate,
-                    en.courseid AS courseid, u.lastlogin AS lastlogin
+                    ue.timemodified AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                 INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
-                INNER JOIN {' . self::DB_USER_DATA . '} ud on ra.userid = ud.userid
-                INNER JOIN {' . self::DB_USER_FIELD . '} uf on uf.id = ud.fieldid
-                INNER JOIN {' . self::DB_USER_ENROL . '} ue on ud.userid = ue.userid
+                INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
                 INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
                 WHERE en.courseid = :courseid
                     AND u.id = :studentid
                     AND ra.contextid = :contextid
                     AND r.shortname = :role
-                    AND uf.shortname = :customfield
                     AND ue.status = 0';
 
         $params = [
             'courseid'  => $courseid,
             'studentid' => $studentid,
             'contextid' => \context_course::instance($courseid)->id,
-            'role'      => 'student',
-            'customfield' => 'simulator',
+            'role'      => 'student'
         ];
 
         return $DB->get_record_sql($sql, $params);
@@ -220,22 +215,18 @@ class participant_vault implements participant_vault_interface {
                 LOCAL_BOOKING_SENIORINSTRUCTORROLE . '", "' .
                 LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE . '"';
 
-        $sql = 'SELECT DISTINCT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
+        $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ud.data AS simulator, ue.timemodified AS enroldate,
-                    en.courseid AS courseid, u.lastlogin AS lastlogin
+                    ue.timemodified AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                 INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
                 INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
                 INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
-                LEFT JOIN {' . self::DB_USER_DATA . '} ud on u.id = ud.userid
-                LEFT JOIN {' . self::DB_USER_FIELD . '} uf on uf.id = ud.fieldid
                 WHERE en.courseid = :courseid
                     AND ra.contextid = :contextid
                     AND r.shortname IN (' . $roles . ')
-                    AND (uf.shortname = :customfield OR uf.shortname IS NULL)
-                    AND ue.status = :status
+                    AND ue.status = 0
                     AND u.deleted != 1
                     AND u.id NOT IN (
                         SELECT userid
@@ -246,9 +237,7 @@ class participant_vault implements participant_vault_interface {
 
         $params = [
             'courseid'  => $courseid,
-            'contextid' => \context_course::instance($courseid)->id,
-            'customfield' => 'simulator',
-            'status'    => 0
+            'contextid' => \context_course::instance($courseid)->id
         ];
 
         return $DB->get_records_sql($sql, $params);
@@ -263,33 +252,34 @@ class participant_vault implements participant_vault_interface {
      */
     public function get_assigned_students(int $courseid, int $userid) {
         global $DB;
-
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ud.data AS simulator, ue.timemodified AS enroldate,
-                    en.courseid AS courseid, u.lastlogin AS lastlogin
+                    ue.timemodified AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                 INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
-                INNER JOIN {' . self::DB_USER_DATA . '} ud on ra.userid = ud.userid
-                INNER JOIN {' . self::DB_USER_FIELD . '} uf on uf.id = ud.fieldid
-                INNER JOIN {' . self::DB_USER_ENROL . '} ue on ud.userid = ue.userid
+                INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
                 INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
                 INNER JOIN {' . self::DB_GROUPS_MEM . '} gm on ue.userid = gm.userid
                 INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
                 WHERE en.courseid = :courseid
                     AND ra.contextid = :contextid
                     AND r.shortname = :role
-                    AND uf.shortname = :customfield
                     AND ue.status = :status
                     AND g.courseid = :gcourseid
-                    AND g.name= :instructorname';
+                    AND g.name = :instructorname
+                    AND u.id NOT IN (
+                        SELECT userid
+                        FROM {' . self::DB_GROUPS_MEM . '} gm
+                        INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                        WHERE g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"
+                        OR g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
+                        )';
 
         $params = [
             'courseid'  => $courseid,
             'contextid' => \context_course::instance($courseid)->id,
             'role' => 'student',
-            'customfield' => 'simulator',
             'status'    => 0,
             'gcourseid'  => $courseid,
             'instructorname' => instructor::get_fullname($userid, false)

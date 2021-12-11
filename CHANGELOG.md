@@ -1,6 +1,12 @@
 # Change log
 
-## [2021121101] - RELEASED 2021-12-11 - hotfix
+## [2021121102] - RELEASED 2021-12-11 - hotfix
+
+### Fixed
+
+- Distinct instructors in get_active_instructors
+
+## [2021121101] - UNRELEASED 2021-12-11 - hotfix
 
 ### Fixed
 

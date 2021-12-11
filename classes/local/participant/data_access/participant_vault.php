@@ -215,7 +215,7 @@ class participant_vault implements participant_vault_interface {
                 LOCAL_BOOKING_SENIORINSTRUCTORROLE . '", "' .
                 LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE . '"';
 
-        $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
+        $sql = 'SELECT DISTINCT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
                     ue.timemodified AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u

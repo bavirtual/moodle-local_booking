@@ -46,8 +46,8 @@ class google_calendar_api
 		$scope = urlencode(get_booking_config('google_scope_url'));
 		$clientid = get_booking_config('google_client_id');
 
-		$loginurl = $authurl . '?scope=' . $scope . '&redirect_uri=' . urlencode($redirecturi) . '&response_type=code&client_id=' .
-				$clientid . '&access_type=online' . '&state=' . $statestring;
+		$loginurl = $authurl . '?scope=' . $scope . '&client_id=' . $clientid . '&redirect_uri=' . urlencode($redirecturi) .
+				'&response_type=code&access_type=online' . '&state=' . $statestring;
 
 		return $loginurl;
 	}
@@ -77,54 +77,6 @@ class google_calendar_api
 			throw new \Exception(get_string('googleaccesstokenerror', 'local_booking'));
 
 		return $data['access_token'];
-	}
-
-    /**
-     * Get the user's calendar timezone.
-     *
-     * @return string $value The calendar timezone.
-     */
-	public static function get_user_timezone($token) {
-		$url_settings = get_booking_config('google_timezone_url');
-
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url_settings);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $token));
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		$data = json_decode(curl_exec($ch), true);
-		$httpcode = curl_getinfo($ch,CURLINFO_HTTP_CODE);
-		if($httpcode != 200)
-			throw new \Exception(get_string('googletimezoneerror', 'local_booking'));
-
-		return $data['value'];
-	}
-
-    /**
-     * Get the user's calendars to pick
-	 * the calendar to add the event to.
-     *
-     * @return array $items The list of user calendars.
-     */
-	public static function get_calendar_list($token) {
-		$params = array();
-
-		$params['fields'] = 'items(id,summary,timeZone)';
-		$params['minAccessRole'] = 'owner';
-
-		$url = get_booking_config('google_calendarlist_url') . http_build_query($params);
-
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $token));
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		$data = json_decode(curl_exec($ch), true);
-		$httpcode = curl_getinfo($ch,CURLINFO_HTTP_CODE);
-		if($httpcode != 200)
-			throw new \Exception(get_string('googlecalendarlisterror', 'local_booking'));
-
-		return $data['items'];
 	}
 
     /**

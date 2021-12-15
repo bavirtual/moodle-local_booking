@@ -181,18 +181,19 @@ $string['emailnotifymsg'] = '{$a->instructor} has booked a session for your avai
 Please confirm this booking by clicking on this link: {$a->confirmurl}';
 $string['emailnotifyhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has booked a session for your availability on <strong>{$a->sessiondate}
-    </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p><p style="font-size: .9em;">Add a reminder to your calendar:<br />
+    </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p>';
+$string['emailnotifycalendarshtml'] = '<p style="font-size: .9em;">Add a reminder to your calendar:<br />
     <table style="border-collapse: collapse; width: 100%;">
     <tbody>
     <tr>
-    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/0/09/IOS_Google_icon.png" alt="Add to Google calendar" width="25" height="25" /></td>
-    <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google</span></a></td>
+    <td style="width: 50px; text-align: center;"><img src="{$a->googlelogourl}/btn_google_dark_normal_ios.svg" alt="Add to Google calendar"/></td>
+    <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
     </tr>
     <tr>
     <td style="width: 50px; text-align: center;"><img src=
     "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Outlook.com_icon_%282012-2019%29.svg/1200px-Outlook.com_icon_%282012-2019%29.svg.png"
     alt="Add to Outlook Live calendar" width="25" height="25" /></td>
-    <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live</span></a></td>
+    <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td>
     </tr>
     <tr>
     <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Apple_Calendar_Icon.png/120px-Apple_Calendar_Icon.png" alt="Add to Outlook Live calendar" width="28" height="28" /></td>
@@ -208,16 +209,17 @@ $string['emailconfirmsubject'] = '{$a->coursename} session booked: \'{$a->exerci
 $string['emailconfirmmsg'] = '\'{$a->exercise}\' session booked with {$a->student} for \'{$a->exercise}\' on {$a->sessiondate}.';
 $string['emailconfirmhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>Session booked with <strong>{$a->student}</strong> for \'<i>{$a->exercise}</i>\' on
-    <strong>{$a->sessiondate}</strong>.</p><p style="font-size: .9em;">Add a reminder to your calendar:<br />
+    <strong>{$a->sessiondate}</strong>.</p>';
+$string['emailconfirmcalendarshtml'] = '<p style="font-size: .9em;">Add a reminder to your calendar:<br />
     <table style="border-collapse: collapse; width: 100%;">
     <tbody>
     <tr>
-    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/0/09/IOS_Google_icon.png" alt="Add to Google calendar" width="25" height="25" /></td>
-    <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google</span></a></td>
+    <td style="width: 50px; text-align: center;"><img src="{$a->googlelogourl}/btn_google_dark_normal_ios.svg" alt="Add to Google calendar"/></td>
+    <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
     </tr>
     <tr>
     <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Outlook.com_icon_%282012-2019%29.svg/1200px-Outlook.com_icon_%282012-2019%29.svg.png" alt="Add to Outlook Live calendar" width="25" height="25" /></td>
-    <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live</span></a></td>
+    <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td>
     </tr>
     <tr>
     <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Apple_Calendar_Icon.png/120px-Apple_Calendar_Icon.png" alt="Add to Outlook Live calendar" width="28" height="28" /></td>

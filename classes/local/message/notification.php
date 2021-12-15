@@ -85,7 +85,7 @@ class notification extends \core\message\message {
         $this->userto            = $studentid;
         $this->subject           = get_string('emailnotify', 'local_booking', $data);
         $this->fullmessage       = get_string('emailnotifymsg', 'local_booking', $data);
-        $this->fullmessagehtml   = get_string('emailnotifyhtml', 'local_booking', $data);
+        $this->fullmessagehtml   = get_string('emailnotifyhtml', 'local_booking', $data) . get_string('emailnotifycalendarshtml', 'local_booking', $data);
         $this->contexturl        = $data->confirmurl;
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
 
@@ -119,7 +119,7 @@ class notification extends \core\message\message {
         $this->userto            = $USER->id;
         $this->subject           = get_string('emailconfirmsubject', 'local_booking', $data);
         $this->fullmessage       = get_string('emailconfirmmsg', 'local_booking', $data);
-        $this->fullmessagehtml   = get_string('emailconfirmhtml', 'local_booking', $data);
+        $this->fullmessagehtml   = get_string('emailconfirmhtml', 'local_booking', $data) . get_string('emailconfirmcalendarshtml', 'local_booking', $data) ;
         $this->contexturl        = $data->bookingurl;
         $this->contexturlname    = get_booking_config('ATO') . ' ' . get_string('pluginname', 'local_booking');
         $this->set_additional_content('email', array('*' => array(
@@ -455,6 +455,7 @@ class notification extends \core\message\message {
                 'insid'     => $instructorid)))->out(false),
             'icsurl'        => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'i'])))->out(false),
             'googleurl'     => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'g'])))->out(false),
+            'googlelogourl' => (new \moodle_url('/local/booking/pix'))->out(false),
             'liveurl'       => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'l'])))->out(false),
         );
 

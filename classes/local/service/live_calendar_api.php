@@ -33,6 +33,8 @@ namespace local_booking\local\service;
  */
 class live_calendar_api
 {
+	const LIVE_CODE_CHALLENGE = 'YTFjNjI1OWYzMzA3MTI4ZDY2Njg5M2RkNmVjNDE5YmEyZGRhOGYyM2IzNjdmZWFhMTQ1ODg3NDcxY2Nl';
+
     /**
      * Get the url required to get the code for
 	 * the token so the user can authorize access.
@@ -45,10 +47,9 @@ class live_calendar_api
 		$authurl = get_booking_config('live_auth_url');
 		$scope = urlencode(get_booking_config('live_scope'));
 		$clientid = get_booking_config('live_client_id');
-		$codechallenge = get_booking_config('live_code_challenge');
 
 		$loginurl = $authurl . '?client_id=' . $clientid . '&response_type=code&redirect_uri=' . urlencode($redirecturi) .
-			'&response_mode=query&scope=' . $scope . '&state=' . $statestring . '&code_challenge=' . $codechallenge . '&code_challenge_method=plain';
+			'&response_mode=query&scope=' . $scope . '&state=' . $statestring . '&code_challenge=' . self::LIVE_CODE_CHALLENGE . '&code_challenge_method=plain';
 
 		return $loginurl;
 	}
@@ -65,10 +66,9 @@ class live_calendar_api
 		$clientid = get_booking_config('live_client_id');
 		$clientsecret = get_booking_config('live_client_secret');
 		$scope = urlencode(get_booking_config('live_scope'));
-		$codechallenge = get_booking_config('live_code_challenge');
 
 		$curlPost = 'client_id=' . $clientid . '&code=' . $code . '&scope=' . $scope . '&redirect_uri=' . urlencode($redirecturi) .
-			'&client_secret=' . $clientsecret . '&grant_type=authorization_code&code_verifier=' . $codechallenge;
+			'&client_secret=' . $clientsecret . '&grant_type=authorization_code&code_verifier=' . self::LIVE_CODE_CHALLENGE;
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $authurl);
@@ -82,54 +82,6 @@ class live_calendar_api
 			throw new \Exception(get_string('liveaccesstokenerror', 'local_booking'));
 
 		return $data['access_token'];
-	}
-
-    /**
-     * Get the user's calendar timezone.
-     *
-     * @return string $value The calendar timezone.
-     */
-	public static function get_user_timezone($token) {
-		$url_settings = get_booking_config('live_timezone_url');
-
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url_settings);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $token));
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		$data = json_decode(curl_exec($ch), true);
-		$httpcode = curl_getinfo($ch,CURLINFO_HTTP_CODE);
-		if($httpcode != 200)
-			throw new \Exception(get_string('livetimezoneerror', 'local_booking'));
-
-		return $data['value'];
-	}
-
-    /**
-     * Get the user's calendars to pick
-	 * the calendar to add the event to.
-     *
-     * @return array $items The list of user calendars.
-     */
-	public static function get_calendar_list($token) {
-		$params = array();
-
-		$params['fields'] = 'items(id,summary,timeZone)';
-		$params['minAccessRole'] = 'owner';
-
-		$url = get_booking_config('live_calendarlist_url') . http_build_query($params);
-
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $token));
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		$data = json_decode(curl_exec($ch), true);
-		$httpcode = curl_getinfo($ch,CURLINFO_HTTP_CODE);
-		if($httpcode != 200)
-			throw new \Exception(get_string('livecalendarlisterror', 'local_booking'));
-
-		return $data['items'];
 	}
 
     /**

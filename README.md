@@ -24,7 +24,7 @@ The plugin can be installed either directly from Moodle or through CLI.
 
 ### Moodle plugins install
 
-1. Download [SessionBooking](https://github.com/zcodemonkeyz/SessionBooking/archive/refs/heads/main.zip) zip
+1. Download [SessionBooking](https://github.com/bavirtual/session-booking/archive/refs/heads/main.zip) zip
 2. Site administration > Plugins > Install plugins
 3. Drop or upload the zip file
 
@@ -33,7 +33,7 @@ The plugin can be installed either directly from Moodle or through CLI.
 1. `$ cd [path-to-moodle]\local`
 2. `$ mkdir booking`
 3. `$ cd booking`
-4. `$ git clone https://github.com/zcodemonkeyz/SessionBooking.git`
+4. `$ git clone https://github.com/bavirtual/session-booking.git`
 
 ### Dependencies
 
@@ -54,14 +54,9 @@ There are three areas of configurations:
 2. Course configuration (course administrators)
 
 3. User configuration (users)
-   - Notifications
    - Primary Simulator
    - Secondary Simulator
-   -
-
-## Troubleshooting
-
--
+   - Callsign
 
 ## FAQ
 
@@ -70,10 +65,3 @@ There are three areas of configurations:
 
 - Q: What happens when the plugin is uninstalled?
 - A: The plugin follows Moodle standard for plugins and it is uninstalled completely from Moodle including associated data and configurations. The only addition that is left is the ATO category and simulators & callsign custom fields. If desired these can be removed from [Site administration > Users > User profile fields]
-
-## Known Issues
-
-- [BR00268]: Active Students does not show students after initial plugin install. Interim fix is to update user profile [SAVE] to persist added custom fields.
-- [BR00254]: A user can copy slots and paste them into restricted period.
-
-## Maintainers

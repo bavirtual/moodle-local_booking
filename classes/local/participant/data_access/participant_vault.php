@@ -171,13 +171,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // return $DB->get_records_sql($sql, $params);
-        $onhold_clause = $includeonhold ? '' : ' AND u.id NOT IN (
-            SELECT userid
-            FROM {' . self::DB_GROUPS_MEM . '} gm
-            INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-            WHERE g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"
-            OR g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
-            )';
+        $onhold_clause = $includeonhold ? '' : ' AND g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                         'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
@@ -191,7 +185,13 @@ class participant_vault implements participant_vault_interface {
                         AND ra.contextid = :contextid
                         AND r.shortname = :role
                         AND ue.status = 0
-                        AND u.deleted != 1' . $onhold_clause;
+                        AND u.deleted != 1
+                        AND u.id NOT IN (
+                            SELECT userid
+                            FROM {' . self::DB_GROUPS_MEM . '} gm
+                            INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                            WHERE g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
+                            ' . $onhold_clause . ')';
 
         $params = [
             'courseid'  => $courseid,

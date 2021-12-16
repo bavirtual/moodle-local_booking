@@ -60,10 +60,11 @@ class logbook_vault implements logbook_vault_interface {
                 FROM {' . self::DB_LOGBOOKS . '} lb
                 INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.id = lb.exerciseid
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
-                WHERE userid = :userid
+                WHERE courseid = :courseid
+                    AND userid = :userid
                 ORDER BY lb.timemodified DESC';
 
-        $param = ['userid'=>$userid];
+        $param = ['courseid'=>$courseid, 'userid'=>$userid];
         $logentryrecs = $DB->get_records_sql($sql, $param);
         foreach ($logentryrecs as $logentryrec) {
             $logbook[] = self::get_logentry_instance($logentryrec, $logbook);

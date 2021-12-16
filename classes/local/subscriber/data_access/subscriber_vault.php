@@ -93,18 +93,17 @@ class subscriber_vault implements subscriber_vault_interface {
                 LEFT JOIN {' . self::DB_ASSIGN . '} a ON a.id = cm.instance
                 LEFT JOIN {' . self::DB_QUIZ . '} q ON q.id = cm.instance
                 WHERE cm.course = :courseid
-                    AND (
-                        m.name = :assign
+                    AND (m.name = :assign
                         OR m.name = :quiz)
-                ORDER BY cs.section;';
+                ORDER BY cs.section, cm.id;';
 
         $params = [
             'courseid'  => $courseid,
             'assign'    => 'assign',
             'quiz'      => 'quiz'
         ];
-        return $DB->get_records_sql($sql, $params);
-
+        $recs = $DB->get_records_sql($sql, $params);
+        return $recs;
     }
 
     /**

@@ -1,5 +1,15 @@
 # Change log
 
+## [2021121700] - RELEASED 2021-12-17
+
+### Fixed
+
+- cron task on-hold and suspension date evaluation of timestamp <= today.
+
+### Changed
+
+- made logbook display course specific logbook entries.
+
 ## [2021121600] - RELEASED 2021-12-16 - hotfix
 
 ### Fixed

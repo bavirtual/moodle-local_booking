@@ -111,14 +111,14 @@ class cron_task extends \core\task\scheduled_task {
                             // notify student a week before being placed
                             mtrace('            on-hold date: ' . $onholddate->format('M d, Y'));
                             mtrace('            on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
-                            if ($onholdwarningyday == $today['yday']) {
+                            if ($onholdwarningyday <= $today['yday']) {
                                 mtrace('                Notifying student becoming on-hold in a week...');
                                 $message->send_onhold_warning($student->get_id(), $onholddate, $sitecourse->id, $sitecourse->shortname);
                             }
 
                             // ON-HOLD PLACEMENT NOTIFICATION
                             // place student on-hold and send notification
-                            if (getdate($onholddate->getTimestamp())['yday'] == $today['yday']) {
+                            if (getdate($onholddate->getTimestamp())['yday'] <= $today['yday']) {
 
                                 // add student to on-hold group
                                 $onholdgroupid = groups_get_group_by_name($sitecourse->id, LOCAL_BOOKING_ONHOLDGROUP);
@@ -133,7 +133,7 @@ class cron_task extends \core\task\scheduled_task {
                             // SUSPENSION NOTIFICATION
                             // suspend when passed on-hold by 9x wait days process suspension and notify student and senior instructor roles
                             mtrace('            suspension date: ' . $suspenddate->format('M d, Y'));
-                            if ($suspenddateyday == $today['yday']) {
+                            if ($suspenddateyday <= $today['yday']) {
                                 // unenrol the student from the course
                                 $participant = new participant($sitecourse->id, $student->get_id());
                                 if ($participant->set_suspend_status()) {

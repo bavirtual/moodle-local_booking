@@ -171,7 +171,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // return $DB->get_records_sql($sql, $params);
-        $onhold_clause = $includeonhold ? '' : ' AND g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
+        $onhold_clause = $includeonhold ? '' : ' OR g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                         'u.lastname', '" "', 'u.alternatename') . ' AS fullname,

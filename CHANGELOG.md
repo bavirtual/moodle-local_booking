@@ -1,5 +1,11 @@
 # Change log
 
+## [2021121600] - RELEASED 2021-12-16 - hotfix
+
+### Fixed
+
+- get_active_students to exclude groups 'OnHold' OR 'Graduate' not AND.
+
 ## [2021121500] - RELEASED 2021-12-15
 
 ### Changed

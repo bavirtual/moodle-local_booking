@@ -86,13 +86,17 @@ define('LOCAL_BOOKING_DAYSFROMLASTSESSION', 12);
  */
 define('LOCAL_BOOKING_PASTDATACUTOFF', 365);
 /**
- * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students planced on-hold for group quering purposes
+ * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group quering purposes
  */
 define('LOCAL_BOOKING_ONHOLDGROUP', 'OnHold');
 /**
+ * LOCAL_BOOKING_KEEPACTIVE - constant string value for students to stay active even if they match on-hold criteria
+ */
+define('LOCAL_BOOKING_KEEPACTIVE', 'Keep Active');
+/**
  * LOCAL_BOOKING_INACTIVEGROUP - constant string value for inactive instructors for group quering purposes
  */
-define('LOCAL_BOOKING_INACTIVEGROUP', 'Inactive');
+define('LOCAL_BOOKING_INACTIVEGROUP', 'Inactive Instructors');
 /**
  * LOCAL_BOOKING_GRADUATESGROUP - constant string value for graduated students for group quering purposes
  */

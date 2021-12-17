@@ -70,11 +70,11 @@ class cron_task extends \core\task\scheduled_task {
                 // check if the course is using Session Booking
                 $course = new subscriber($sitecourse->id);
                 if (!empty($course->subscribed) && $course->subscribed) {
+                    mtrace('');
                     mtrace('    Course id: ' . $sitecourse->id);
                     $message = new notification();
 
                     // get wait days
-                    $today = getdate(time());
                     $waitdays = get_config('local_booking', 'nextsessionwaitdays') ?
                         get_config('local_booking', 'nextsessionwaitdays') :
                         LOCAL_BOOKING_DAYSFROMLASTSESSION;
@@ -87,38 +87,45 @@ class cron_task extends \core\task\scheduled_task {
                     mtrace('    Students to evaluate: ' . count($students));
                     foreach ($students as $student) {
                         $studentname = participant::get_fullname($student->get_id());
+                        $alreayonhold = $student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP);
+                        $keepactive =  $student->is_member_of(LOCAL_BOOKING_KEEPACTIVE);
                         mtrace('        ' . $studentname);
 
-                        // get on-hold date, otherwise use last login for on-hold comparison
-                        $lastsession = slot::get_last_booking($sitecourse->id, $student->get_id());
-                        if (!empty($lastsession)) {
-                            $lastsessiondate = !empty($lastsession) ? new DateTime('@' . $lastsession) : $student->get_last_login_date();
+                        // get on-hold date, otherwise use last graded date for on-hold comparison
+                        $lastsessionts = slot::get_last_booking($sitecourse->id, $student->get_id());
+                        if (empty($lastsessionts)) {
+                            $lastgradeddate = $student->get_last_graded_date();
+                            $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
+                        }
+
+                        if (!empty($lastsessionts)) {
+                            $lastsessiondate = new DateTime('@' . $lastsessionts);
                             $onholddate = new DateTime('@' . $lastsessiondate->getTimestamp());
                             // on-hold date is 3x wait period from last session
                             date_add($onholddate, date_interval_create_from_date_string(($waitdays * LOCAL_BOOKING_ONHOLDWAITMULTIPLIER) . ' days'));
 
                             // on-hold warning date: 7 days before on-hold date
                             $onholdwarningdate = new DateTime('@' . $lastsessiondate->getTimestamp());
+                            $today = getdate(time());
                             date_add($onholdwarningdate, date_interval_create_from_date_string((($waitdays * LOCAL_BOOKING_ONHOLDWAITMULTIPLIER) -  7) . ' days'));
-                            $onholdwarningyday = getdate($onholdwarningdate->getTimestamp())['yday'];
 
                             // Suspension (unenrolment) date is 9x wait period from last session
                             $suspenddate = new DateTime('@' . $onholddate->getTimestamp());
                             date_add($suspenddate, date_interval_create_from_date_string(($waitdays * LOCAL_BOOKING_SUSPENDWAITMULTIPLIER) . ' days'));
-                            $suspenddateyday = getdate($suspenddate->getTimestamp())['yday'];
 
                             // ON HOLD WARNING NOTIFICATION
                             // notify student a week before being placed
                             mtrace('            on-hold date: ' . $onholddate->format('M d, Y'));
                             mtrace('            on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
-                            if ($onholdwarningyday <= $today['yday']) {
+                            mtrace('            keep active status: ' . $keepactive);
+                            if (getdate($onholdwarningdate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$keepactive) {
                                 mtrace('                Notifying student becoming on-hold in a week...');
                                 $message->send_onhold_warning($student->get_id(), $onholddate, $sitecourse->id, $sitecourse->shortname);
                             }
 
                             // ON-HOLD PLACEMENT NOTIFICATION
                             // place student on-hold and send notification
-                            if (getdate($onholddate->getTimestamp())['yday'] <= $today['yday']) {
+                            if ($onholddate->getTimestamp() <= time() && !$alreayonhold && !$keepactive) {
 
                                 // add student to on-hold group
                                 $onholdgroupid = groups_get_group_by_name($sitecourse->id, LOCAL_BOOKING_ONHOLDGROUP);
@@ -133,7 +140,7 @@ class cron_task extends \core\task\scheduled_task {
                             // SUSPENSION NOTIFICATION
                             // suspend when passed on-hold by 9x wait days process suspension and notify student and senior instructor roles
                             mtrace('            suspension date: ' . $suspenddate->format('M d, Y'));
-                            if ($suspenddateyday <= $today['yday']) {
+                            if ($suspenddate->getTimestamp() <= time()) {
                                 // unenrol the student from the course
                                 $participant = new participant($sitecourse->id, $student->get_id());
                                 if ($participant->set_suspend_status()) {
@@ -160,17 +167,17 @@ class cron_task extends \core\task\scheduled_task {
                         mtrace('        ' . $instructorname);
 
                         // get instructor last booked session, otherwise use the last login for date compare
-                        $lastsession = $instructor->get_last_graded_date();
-                        if (!empty($lastsession)) {
+                        $lastsessiondate = $instructor->get_last_graded_date();
+                        if (!empty($lastsessiondate)) {
                             // get days since last session
-                            $interval = $lastsession->diff(new DateTime('@' . $today[0]));
+                            $interval = $lastsessiondate->diff(new DateTime('@' . time()));
                             $dayssincelast = $interval->format('%d');
 
                             // check if 3x waitdays has past without a booking and send a notification each time this interval passes
                             $sendnotification = ($dayssincelast % ($waitdays * LOCAL_BOOKING_INSTRUCTORINACTIVEMULTIPLIER)) == 0 &&
                                 $dayssincelast >= ($waitdays * LOCAL_BOOKING_INSTRUCTORINACTIVEMULTIPLIER);
-                            $status = get_string('emailoverduestatus', 'local_booking', $lastsession->format('M d, Y'));
-                            mtrace('            last session: ' . $lastsession->format('M d, Y'));
+                            $status = get_string('emailoverduestatus', 'local_booking', $lastsessiondate->format('M d, Y'));
+                            mtrace('            last session: ' . $lastsessiondate->format('M d, Y'));
 
                             // notify the instructors of overdue status
                             if ($sendnotification) {

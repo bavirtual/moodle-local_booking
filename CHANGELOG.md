@@ -1,5 +1,11 @@
 # Change log
 
+## [2021121701] - RELEASED 2021-12-17 - hotfix
+
+### Fixed
+
+- cron task placing students on-hold and suspended.
+
 ## [2021121700] - RELEASED 2021-12-17
 
 ### Fixed

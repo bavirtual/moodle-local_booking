@@ -67,7 +67,7 @@ class slot_vault implements slot_vault_interface {
     /**
      * save a slot
      *
-     * @param string $slot
+     * @param slot $slot
      * @return bool
      */
     public static function save_slot(slot $slot) {

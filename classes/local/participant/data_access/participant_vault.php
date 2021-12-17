@@ -138,7 +138,7 @@ class participant_vault implements participant_vault_interface {
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ue.timemodified AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
+                    ue.timecreated AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                 INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
@@ -175,7 +175,7 @@ class participant_vault implements participant_vault_interface {
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                         'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                        ue.timemodified AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
+                        ue.timecreated AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
                     FROM {' . self::DB_USER . '} u
                     INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                     INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid

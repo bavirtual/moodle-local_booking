@@ -79,7 +79,7 @@ class week_timeslot_exporter extends exporter {
     protected $maxlanes;
 
     /**
-     * @var array $hour - A timeslot hour for the work_exporter objects.
+     * @var int $hour - A timeslot hour for the work_exporter objects.
      */
     protected $hour;
 

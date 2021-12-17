@@ -209,7 +209,7 @@ class participant implements participant_interface {
      * verifies whether the participant is part of a course group
      *
      * @param string $groupname The group name to verify membership.
-     * @return bool             The result of the suspension action.
+     * @return bool             The result of the being a member of the passed group.
      */
     public function is_member_of(string $groupname) {
         $groupid = groups_get_group_by_name($this->courseid, $groupname);

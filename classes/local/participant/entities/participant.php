@@ -27,6 +27,9 @@ namespace local_booking\local\participant\entities;
 
 use DateTime;
 use local_booking\local\participant\data_access\participant_vault;
+use local_booking\local\session\data_access\booking_vault;
+use local_booking\local\session\entities\booking;
+use local_booking\local\logbook\entities\logbook;
 
 require_once($CFG->dirroot . "/lib/completionlib.php");
 
@@ -78,6 +81,16 @@ class participant implements participant_interface {
     protected $is_student;
 
     /**
+     * @var booking[] $bookings The student array of bookings.
+     */
+    protected $bookings;
+
+    /**
+     * @var logbook $logbook The student logbook.
+     */
+    protected $logbook;
+
+    /**
      * Constructor.
      *
      * @param int $courseid The course id.
@@ -99,6 +112,15 @@ class participant implements participant_interface {
     }
 
     /**
+     * Get course id.
+     *
+     * @return int $courseid
+     */
+    public function get_courseid() {
+        return $this->courseid;
+    }
+
+    /**
      * Get fullname.
      *
      * @return string $fullname;
@@ -108,12 +130,41 @@ class participant implements participant_interface {
     }
 
     /**
-     * Set user name.
+     * Get an participant's bookings
      *
-     * @param string $fullname;
+     * @param bool $isstudent   Whether to get student bookings
+     * @param bool $activeonly  Whether to get active bookings only
+     * @param bool $oldestfirst Whether to sort results by oldest
+     * @return booking[] An array of bookings.
      */
-    public function set_name(string $fullname) {
-        $this->fullname = $fullname;
+    public function get_bookings(bool $isstudent = true, bool $activeonly = false, bool $oldestfirst = false) {
+
+        if (empty($this->bookings)) {
+            $bookings = [];
+            $bookingobjs = booking_vault::get_bookings($isstudent, $this->userid, $oldestfirst, $activeonly);
+            foreach ($bookingobjs as $bookingobj) {
+                $booking = new booking();
+                $booking->load($bookingobj);
+                $bookings[] = $booking;
+            }
+            $this->bookings = $bookings;
+        }
+
+        return $this->bookings;
+    }
+
+    /**
+     * Get an a's active bookings
+     *
+     * @return logentry[] An array of bookings.
+     */
+    public function get_logbook() {
+        if (empty($this->logbook)) {
+            $logbook = new logbook($this->courseid, $this->userid);
+            $logbook->load();
+            $this->logbook = $logbook;
+        }
+        return $this->logbook;
     }
 
     /**
@@ -122,7 +173,7 @@ class participant implements participant_interface {
      * @return DateTime $enroldate  The enrolment date of the participant.
      */
     public function get_enrol_date() {
-        $enrol = !empty($this->enroldate) ? $this->enroldate : ($this->vault->get_enrol_date($this->courseid, $this->userid))->timecreated;
+        $enrol = $this->enroldate ?: ($this->vault->get_enrol_date($this->courseid, $this->userid))->timecreated;
         $enrolmentdate = new DateTime('@' . $enrol);
         return $enrolmentdate;
     }
@@ -168,7 +219,7 @@ class participant implements participant_interface {
      * @return string   The participant callsign
      */
     public function get_simulator() {
-        $this->simulator = empty($this->simulator) ? participant_vault::get_customfield_data($this->courseid, $this->userid, 'simulator') : $this->simulator;
+        $this->simulator = $this->simulator ?: participant_vault::get_customfield_data($this->courseid, $this->userid, 'simulator');
         return $this->simulator;
     }
 
@@ -180,6 +231,15 @@ class participant implements participant_interface {
     public function get_callsign() {
         $this->callsign = empty($this->callsign) ? participant_vault::get_customfield_data($this->courseid, $this->userid, 'callsign') : $this->callsign;
         return $this->callsign;
+    }
+
+    /**
+     * Set user name.
+     *
+     * @param string $fullname;
+     */
+    public function set_name(string $fullname) {
+        $this->fullname = $fullname;
     }
 
     /**

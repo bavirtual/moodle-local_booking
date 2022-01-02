@@ -49,6 +49,13 @@ interface session_interface {
     public function get_booking();
 
     /**
+     * Get the logentry for this session.
+     *
+     * @return logentry
+     */
+    public function get_logentry();
+
+    /**
      * Get the status for this session.
      *
      * @return string
@@ -65,7 +72,7 @@ interface session_interface {
     /**
      * Get the date of this session.
      *
-     * @return array
+     * @return Datetime
      */
     public function get_sessiondate();
 

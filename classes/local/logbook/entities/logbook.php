@@ -25,7 +25,6 @@
 
 namespace local_booking\local\logbook\entities;
 
-use DateTime;
 use local_booking\local\logbook\data_access\logbook_vault;
 use local_booking\local\participant\entities\participant;
 
@@ -50,7 +49,7 @@ class logbook implements logbook_interface {
     protected $userid;
 
     /**
-     * @var array $entries The list of logbook entries.
+     * @var logentry[] $entries The list of logbook entries.
      */
     protected $entries;
 
@@ -76,15 +75,6 @@ class logbook implements logbook_interface {
     }
 
     /**
-     * Whether the logbook as entries or not.
-     *
-     * @return bool true if the Logbook has entries
-     */
-    public function has_entries() {
-        return count($this->entries) > 0;
-    }
-
-    /**
      * Creates a logbook entry.
      *
      * @return logentry
@@ -98,30 +88,45 @@ class logbook implements logbook_interface {
     /**
      * Save a logbook entry.
      *
+     * @param logentry $logentry
      * @return int The id of the logbook entery inserted
      */
-    public function add(logentry $logentry) {
-        $logentry->set_parent($this);
+    public function insert(logentry $logentry) {
         return logbook_vault::insert_logentry($this->courseid, $this->userid, $logentry);
     }
 
     /**
      * Update a logbook entry.
      *
+     * @param logentry $logentry
      * @return bool
      */
     public function update(logentry $logentry){
-        $logentry->set_parent($this);
         return logbook_vault::update_logentry($this->courseid, $this->userid, $logentry);
     }
 
     /**
-     * Deletes a logbook entry.
+     * Deletes a logbook entry and its associated logentires.
      *
+     * @param int $logentryid
      * @return bool
      */
     public function delete(int $logentryid) {
-        return logbook_vault::delete_logentry($logentryid);
+        $logentry = $this->get_logentry($logentryid);
+        return logbook_vault::delete_logentry($logentryid, $logentry->get_linkedlogentryid());
+    }
+
+    /**
+     * Insert/Update then link the instructor
+     * and student logbook entries.
+     *
+     * @param int $courseid
+     * @param logentry $instructorlogentry
+     * @param logentry $studentlogentry
+     * @return bool
+     */
+    public static function save_linked_logentries(int $courseid, logentry $instructorlogentry, logentry $studentlogentry) {
+        return logbook_vault::save_linked_logentries($courseid, $instructorlogentry, $studentlogentry);
     }
 
     /**
@@ -209,12 +214,12 @@ class logbook implements logbook_interface {
      * @return logentry $logentry The logbook entry db record
      */
     public function get_summary() {
-        list($totalflighttime, $totalsessiontime, $totalsolotime) = logbook_vault::get_logbook_summary($this->courseid, $this->userid);
+        list($totaldualtime, $totalsessiontime, $totalpictime) = logbook_vault::get_logbook_summary($this->courseid, $this->userid);
 
         return [
-            self::convert_duration($totalflighttime, 'text'),
-            self::convert_duration($totalsessiontime, 'text'),
-            self::convert_duration($totalsolotime, 'text')
+            self::convert_time($totaldualtime, 'MINS_TO_TEXT'),
+            self::convert_time($totalsessiontime, 'MINS_TO_TEXT'),
+            self::convert_time($totalpictime, 'MINS_TO_TEXT')
         ];
     }
 
@@ -237,29 +242,56 @@ class logbook implements logbook_interface {
     }
 
     /**
-     * Converts the total number of minutes from
-     * a text to integer duration and back.
+     * Whether the logbook as entries or not.
      *
-     * @param mixed $value
-     * @param string $toformat
-     * @return mixed $converted
+     * @return bool true if the Logbook has entries
      */
-    public static function convert_duration($value, string $toformat) {
+    public function has_entries() {
+        return count($this->entries) > 0;
+    }
+
+    /**
+     * Converts the total number of minutes from
+     * a text to number or timestamp duration and back.
+     *
+     * @param  mixed  $value     The value to be converted
+     * @param  string $toformat  The conversion tyep
+     * @param  int    $dayts     Additional information for the day timestamp
+     * @return mixed  $converted The converted value
+     */
+    public static function convert_time($value, string $toformat, int $dayts = 0) {
 
         $result = 0;
-        if ($toformat == 'text') {
-            $result = '00:00';
-            if ($value > 0 && is_numeric($value)) {
-                $hrs = floor($value / 60);
-                $mins = $value % 60;
-                $result = substr('00' . $hrs, -2) . ':' . substr('00' . $mins, -2);
-            }
-        } else if ($toformat == 'number') {
-            if (!empty($value)) {
-                $hrs = substr($value, 0, strpos($value, ':'));
-                $mins = substr($value, strpos($value, ':') - strlen($value) + 1);
-                $result = ($hrs * 60) + $mins;
-            }
+        switch ($toformat) {
+            case 'MINS_TO_TEXT':
+                if ($value > 0 && is_numeric($value)) {
+                    $hrs = floor($value / 60);
+                    $mins = $value % 60;
+                    $result = substr('00' . $hrs, -2) . ':' . substr('00' . $mins, -2);
+                }
+                break;
+            case 'MINS_TO_NUM':
+                if (!empty($value)) {
+                    $hrs = substr($value, 0, strpos($value, ':'));
+                    $mins = substr($value, strpos($value, ':') - strlen($value) + 1);
+                    $result = ($hrs * 60) + $mins;
+                }
+                break;
+            case 'TS_TO_TIME':
+                if ($value > 0 && is_numeric($value)) {
+                    $daymins = ($value - strtotime("today", $value))  / 60;
+                    $hrs = floor($daymins / 60);
+                    $mins = $daymins % 60;
+                    $result = substr('00' . $hrs, -2) . ':' . substr('00' . $mins, -2);
+                }
+                break;
+            case 'TIME_TO_TS':
+                if (!empty($value)) {
+                    $hrs = substr($value, 0, strpos($value, ':'));
+                    $mins = substr($value, strpos($value, ':') - strlen($value) + 1);
+                    $result = $dayts + ((($hrs * 60) + $mins) * 60);
+                }
+                break;
         }
 
         return $result;

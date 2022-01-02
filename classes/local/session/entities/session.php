@@ -46,6 +46,11 @@ class session implements session_interface {
     protected $booking;
 
     /**
+     * @var logentry $logentry the student's logentry.
+     */
+    protected $logentry;
+
+    /**
      * @var string $status The session status.
      */
     protected $status;
@@ -56,7 +61,7 @@ class session implements session_interface {
     protected $info;
 
     /**
-     * @var array $sessiondate The date of this session.
+     * @var Datetime $sessiondate The date of this session.
      */
     protected $sessiondate;
 
@@ -65,19 +70,22 @@ class session implements session_interface {
      *
      * @param grade             $grade          The session grade object.
      * @param booking           $booking        The session booking object.
+     * @param logentry          $logentry       The session logentry object.
      * @param string            $status         The session status.
      * @param string            $info           The session additional information.
-     * @param array             $sessiondate    The date of this session.
+     * @param Datetime          $sessiondate    The date of this session.
      */
     public function __construct(
         $grade = null,
         $booking = null,
+        $logentry = null,
         $status = '',
         $info = '',
-        $sessiondate = []
+        $sessiondate = null
     ) {
         $this->grade = $grade;
         $this->booking = $booking;
+        $this->logentry = $logentry;
         $this->status = $status;
         $this->info = $info;
         $this->sessiondate = $sessiondate;
@@ -102,6 +110,15 @@ class session implements session_interface {
     }
 
     /**
+     * Get the logentry for this session.
+     *
+     * @return logentry
+     */
+    public function get_logentry() {
+        return $this->logentry;
+    }
+
+    /**
      * Get the status for this session.
      *
      * @return string
@@ -122,7 +139,7 @@ class session implements session_interface {
     /**
      * Get the date of this session.
      *
-     * @return DateTime
+     * @return Datetime
      */
     public function get_sessiondate() {
         return $this->sessiondate;

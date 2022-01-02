@@ -455,7 +455,7 @@ class notification extends \core\message\message {
                 'insid'     => $instructorid)))->out(false),
             'icsurl'        => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'i'])))->out(false),
             'googleurl'     => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'g'])))->out(false),
-            'googlelogourl' => (new \moodle_url('/local/booking/pix'))->out(false),
+            'pixrooturl' => (new \moodle_url('/local/booking/pix'))->out(false),
             'liveurl'       => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'l'])))->out(false),
         );
 

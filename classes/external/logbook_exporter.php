@@ -74,13 +74,13 @@ class logbook_exporter extends exporter {
             'username' => [
                 'type' => PARAM_RAW
             ],
-            'totalflighttime' => [
+            'totaldualtime' => [
                 'type' => PARAM_RAW
             ],
             'totalsessiontime' => [
                 'type' => PARAM_RAW
             ],
-            'totalsolotime' => [
+            'totalpictime' => [
                 'type' => PARAM_RAW
             ],
         ];

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/booking/db" VERSION="20210910" COMMENT="XMLDB file for Moodle local/booking"
+<XMLDB PATH="local/booking/db" VERSION="20211228" COMMENT="XMLDB file for Moodle local/booking"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -70,6 +70,51 @@
         <INDEX NAME="userididx" UNIQUE="false" FIELDS="userid" HINTS="userlogentries"/>
         <INDEX NAME="courseididx" UNIQUE="false" FIELDS="courseid" HINTS="userlogentriesassociatecourse" COMMENT="Course id associated"/>
         <INDEX NAME="exerciseididx" UNIQUE="false" FIELDS="exerciseid" COMMENT="Index for searching by exerciseid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_booking_logbooks2" COMMENT="Pilot's logbook">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Logbook entry associated course"/>
+        <FIELD NAME="exerciseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Exercise assignment module id associated with the logentry"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Student pilot user id"/>
+        <FIELD NAME="flightdate" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Date when the flight took place"/>
+        <FIELD NAME="p1id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="P1 (instructor) user id"/>
+        <FIELD NAME="p2id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="P2 (student) user id"/>
+        <FIELD NAME="pirep" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="Pilot report id number for the flight"/>
+        <FIELD NAME="sessiontime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Training session overall time, logged for both instructor and student"/>
+        <FIELD NAME="pictime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Pilot in command (PIC) time is logged by a multi-crew flight captain, the instructor of dual flight, or the student on his/her checkride only if they pass"/>
+        <FIELD NAME="dualtime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Dual time is logged only by the student in a training flight"/>
+        <FIELD NAME="instructortime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Instructor time is only logged by the instructor in a training flight"/>
+        <FIELD NAME="multipilottime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Multicrew (multipilot) operation time, logged for each pilot in the crew flight"/>
+        <FIELD NAME="copilottime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Copilot multi-crew time is only logged by co-pilots in a multi-crewed flights"/>
+        <FIELD NAME="checkpilottime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Examiner time is only logged by the examiner on check rides"/>
+        <FIELD NAME="callsign" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="flight callsign for the flight"/>
+        <FIELD NAME="fstd" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Flight Simulation Training Device Qualification"/>
+        <FIELD NAME="depicao" TYPE="char" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="Flight departure airport ICAO"/>
+        <FIELD NAME="deptime" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Flight departure time"/>
+        <FIELD NAME="arricao" TYPE="char" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="Flight arrival airport ICAO"/>
+        <FIELD NAME="arrtime" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Flight arrival time"/>
+        <FIELD NAME="aircraft" TYPE="char" LENGTH="7" NOTNULL="true" SEQUENCE="false" COMMENT="Aircraft ICAO code"/>
+        <FIELD NAME="aircraftreg" TYPE="char" LENGTH="7" NOTNULL="true" SEQUENCE="false" COMMENT="Aircraft registration"/>
+        <FIELD NAME="enginetype" TYPE="char" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="Aircraft engine type single vs multiple engine (SE/ME)"/>
+        <FIELD NAME="landingsday" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Number of day landings for the flight"/>
+        <FIELD NAME="landingsnight" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Number of night landings for the flight"/>
+        <FIELD NAME="nighttime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Operational night time is the portion of the flight flown in night time. Logged by all pilots flying the aircraft"/>
+        <FIELD NAME="ifrtime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Operational IFR time is the portion of the flight flown under Instrument Flight Rules, logged for all pilots flying the aircraft"/>
+        <FIELD NAME="remarks" TYPE="char" LENGTH="500" NOTNULL="true" SEQUENCE="false" COMMENT="Open remarks for the instructor"/>
+        <FIELD NAME="linkedlogentryid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Linked to another logentry (instructor/student)"/>
+        <FIELD NAME="createdby" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="exerciseid" TYPE="foreign" FIELDS="exerciseid" REFTABLE="mdl_course_modules" REFFIELDS="id" COMMENT="Exercise id foreign key against course modules"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" COMMENT="Indexing user id lookups"/>
+        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" COMMENT="Course id index for lookup"/>
       </INDEXES>
     </TABLE>
   </TABLES>

@@ -32,6 +32,9 @@ if ($hassiteconfig) {
     $settingspage = new admin_settingpage('managelocalbooking', new lang_string('pluginname', 'local_booking'));
 
     if ($ADMIN->fulltree) {
+        // add general settings section
+        $settingspage->add(new admin_setting_heading('local_booking_addheading_general', new lang_string('generalsection', 'local_booking'),''));
+
         // hours in the day 24-hour format
         $options = array();
         for ($i = 0; $i <= 23; $i++) {

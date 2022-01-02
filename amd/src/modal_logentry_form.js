@@ -26,29 +26,31 @@
  */
 
 define([
-            'jquery',
-            'core/event',
-            'core/str',
-            'core/notification',
-            'core/custom_interaction_events',
-            'core/modal',
-            'core/modal_registry',
-            'core/fragment',
-            'local_booking/events',
-            'local_booking/repository',
-        ],
-        function(
-            $,
-            Event,
-            Str,
-            Notification,
-            CustomEvents,
-            Modal,
-            ModalRegistry,
-            Fragment,
-            LogbookEvents,
-            Repository,
-        ) {
+        'jquery',
+        'core/event',
+        'core/str',
+        'core/notification',
+        'core/custom_interaction_events',
+        'core/modal',
+        'core/modal_registry',
+        'core/fragment',
+        'local_booking/events',
+        'local_booking/repository',
+        'local_booking/selectors',
+    ],
+    function(
+        $,
+        Event,
+        Str,
+        Notification,
+        CustomEvents,
+        Modal,
+        ModalRegistry,
+        Fragment,
+        LogbookEvents,
+        Repository,
+        BookingSelectors,
+    ) {
 
     var registered = false;
     var SELECTORS = {
@@ -64,7 +66,7 @@ define([
     var ModalLogEntryForm = function(root) {
         Modal.call(this, root);
         this.logentryId = null;
-        this.sessionDate = null;
+        this.flightDate = null;
         this.exerciseId = null;
         this.courseId = null;
         this.contextId = null;
@@ -135,7 +137,7 @@ define([
      * @method setExerciseId
      * @param {int} id The exercise id
      */
-     ModalLogEntryForm.prototype.setExerciseId = function(id) {
+        ModalLogEntryForm.prototype.setExerciseId = function(id) {
         this.exerciseId = id;
     };
 
@@ -155,7 +157,7 @@ define([
      * @method hasExerciseId
      * @return {bool}
      */
-     ModalLogEntryForm.prototype.hasExerciseId = function() {
+        ModalLogEntryForm.prototype.hasExerciseId = function() {
         return this.exerciseId !== null;
     };
 
@@ -165,7 +167,7 @@ define([
      * @method setUserId
      * @param {int} id The user id
      */
-     ModalLogEntryForm.prototype.setUserId = function(id) {
+        ModalLogEntryForm.prototype.setUserId = function(id) {
         this.userId = id;
     };
 
@@ -185,7 +187,7 @@ define([
      * @method hasUserId
      * @return {bool}
      */
-     ModalLogEntryForm.prototype.hasUserId = function() {
+        ModalLogEntryForm.prototype.hasUserId = function() {
         return this.userId !== null;
     };
 
@@ -222,31 +224,31 @@ define([
     /**
      * Set the start time to the given value.
      *
-     * @method setSessionDate
+     * @method setFlightDate
      * @param {int} time The session date time
      */
-    ModalLogEntryForm.prototype.setSessionDate = function(time) {
-        this.sessionDate = time;
+    ModalLogEntryForm.prototype.setFlightDate = function(time) {
+        this.flightDate = time;
     };
 
     /**
      * Retrieve the current start time, if any.
      *
-     * @method getSessionDate
+     * @method getFlightDate
      * @return {int|null} The start time
      */
-    ModalLogEntryForm.prototype.getSessionDate = function() {
-        return this.sessionDate;
+    ModalLogEntryForm.prototype.getFlightDate = function() {
+        return this.flightDate;
     };
 
     /**
      * Check if the modal has session date time.
      *
-     * @method hasSessionDate
+     * @method hasFlightDate
      * @return {bool}
      */
-    ModalLogEntryForm.prototype.hasSessionDate = function() {
-        return this.sessionDate !== null;
+    ModalLogEntryForm.prototype.hasFlightDate = function() {
+        return this.flightDate !== null;
     };
 
     /**
@@ -364,8 +366,8 @@ define([
             args.logentryid = this.getLogentryId();
         }
 
-        if (this.hasSessionDate()) {
-            args.sessiondate = this.getSessionDate();
+        if (this.hasFlightDate()) {
+            args.flightdate = this.getFlightDate();
         }
 
         if (this.hasCourseId()) {
@@ -388,15 +390,25 @@ define([
         this.bodyPromise.then(function() {
             this.enableButtons();
 
-            // Mask session, flight, and solo times < 5hrs
+            // Mask flight times < 5hrs and departure/arrival times to 24hr format
             $(document).ready(function() {
-                var flighttimemins = document.getElementById("id_flighttimemins"),
-                    soloflighttimemins = document.getElementById("id_soloflighttimemins"),
-                    sessiontimemins = document.getElementById("id_sessiontimemins");
-                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(flighttimemins);
-                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(soloflighttimemins);
-                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(sessiontimemins);
-            });
+                if ($(BookingSelectors.bookingwrapper).data('trainingtype') == "Dual") {
+                    Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_dualtime"));
+                } else {
+                    Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_multipilottime"));
+                    Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_copilottime"));
+                }
+                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_sessiontime"));
+                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_pictime"));
+                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_instructortime"));
+                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_checkpilottime"));
+                Inputmask({"regex": "^([01]?[0-9]|2[0-3]):[0-5][0-9]"}).mask(document.getElementById("id_deptime"));
+                Inputmask({"regex": "^([01]?[0-9]|2[0-3]):[0-5][0-9]"}).mask(document.getElementById("id_arrtime"));
+                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_nighttime"));
+                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_ifrtime"));
+                Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsday"));
+                Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsnight"));
+              });
 
             return;
         }.bind(this))
@@ -408,6 +420,16 @@ define([
         .fail(Notification.exception);
 
         return this.bodyPromise;
+    };
+
+    /**
+     * Reload both the title and body content.
+     *
+     * @method applyFlightRules
+     * @param  {string} rule The rule to be applied
+     */
+    ModalLogEntryForm.prototype.applyFlightRules = function(rule) {
+        window.console.log('working for ' + rule);
     };
 
     /**
@@ -448,7 +470,7 @@ define([
     ModalLogEntryForm.prototype.hide = function() {
         Modal.prototype.hide.call(this);
         this.setLogentryId(null);
-        this.setSessionDate(null);
+        this.setFlightDate(null);
         this.setContextId(null);
         this.setCourseId(null);
         this.setExerciseId(null);
@@ -539,7 +561,7 @@ define([
                 return;
             }.bind(this))
             .fail(Notification.exception);
-    };
+        };
 
     /**
      * Set up all of the event handling for the modal.

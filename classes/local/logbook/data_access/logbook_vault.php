@@ -34,7 +34,7 @@ use stdClass;
 class logbook_vault implements logbook_vault_interface {
 
     /** Bookings table name for the persistent. */
-    const DB_LOGBOOKS = 'local_booking_logbooks';
+    const DB_LOGBOOKS = 'local_booking_logbooks2';
 
     /** Course Modules table name for the persistent. */
     const DB_COURSE_MODULES = 'course_modules';
@@ -54,9 +54,12 @@ class logbook_vault implements logbook_vault_interface {
         global $DB;
 
         $logbook = [];
-        $sql = 'SELECT lb.id, lb.courseid, lb.exerciseid, lb.userid, lb.flighttimemins,
-                    lb.sessiontimemins, lb.soloflighttimemins, lb.aircrafticao, lb.callsign,
-                    lb.picid, lb.sicid, lb.pirep, lb.fromicao, lb.toicao, lb.timemodified
+        $sql = 'SELECT lb.id, lb.courseid, lb.exerciseid, lb.userid, lb.pirep,
+                    lb.callsign, lb.flightdate, lb.depicao, lb.deptime, lb.arricao, lb.arrtime,
+                    lb.aircraft, lb.aircraftreg, lb.enginetype, lb.multipilottime, lb.p1id, lb.p2id,
+                    lb.landingsday, lb.landingsnight, lb.sessiontime, lb.nighttime, lb.ifrtime,
+                    lb.pictime, lb.copilottime, lb.dualtime, lb.instructortime, lb.checkpilottime,
+                    lb.fstd, lb.remarks, lb.linkedlogentryid, lb.createdby, lb.timecreated, lb.timemodified
                 FROM {' . self::DB_LOGBOOKS . '} lb
                 INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.id = lb.exerciseid
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
@@ -123,9 +126,81 @@ class logbook_vault implements logbook_vault_interface {
     public static function update_logentry(int $courseid, int $userid, logentry $logentry){
         global $DB;
 
-        $logentryobj = self::get_logentryrecobj($courseid, $userid, $logentry);
+        $logentryobj = self::get_logentryrecobj($courseid, $userid, $logentry, false);
 
         return $DB->update_record(static::DB_LOGBOOKS, $logentryobj);
+    }
+
+    /**
+     * Delete a logbook entry by id with its associated entries.
+     *
+     * @param int   $logentryid         The logbook entry id to be deleted.
+     * @param int   $linkedlogentryid   The associated logbook entry id to be deleted.
+     * @return bool result of the database update operation.
+     */
+    public static function delete_logentry(int $logentryid, int $linkedlogentryid = 0) {
+        global $DB;
+
+        // start a transaction
+        $transaction = $DB->start_delegated_transaction();
+
+        $result = $DB->delete_records(static::DB_LOGBOOKS, ['id'=>$logentryid]);
+        if (!empty($linkedlogentryid))
+            $result = $result && $DB->delete_records(static::DB_LOGBOOKS, ['id'=>$linkedlogentryid]);
+
+        if ($result)
+            $result = $transaction->allow_commit();
+        else
+            $transaction->rollback(new \moodle_exception(get_string('errordelete', 'local_booking')));
+
+        return $result;
+    }
+
+    /**
+     * Insert/Update then link two logentries.
+     *
+     * @param int $$courseid
+     * @param logentry $logentry1
+     * @param logentry $logentry2
+     * @return bool
+     */
+    public static function save_linked_logentries(int $courseid, logentry $logentry1, logentry $logentry2) {
+        global $DB;
+        $result = true;
+
+        // start a transaction
+        $transaction = $DB->start_delegated_transaction();
+
+        // determine if the entries new and need to be inserted or in edit and need to be updated
+        if (!empty($logentry1->get_id()) && !empty($logentry2->get_id())) {
+            $result = ($logentry1id = self::update_logentry($courseid, $logentry1->get_userid(), $logentry1));
+            $logentry1->set_id($logentry1id);
+            if ($$result) {
+                $logentry2->set_linkedlogentryid($logentry1id);
+                $result = ($logentry2id = self::update_logentry($courseid, $logentry2->get_userid(), $logentry2));
+                $logentry2->set_id($logentry2id);
+            }
+        } else {
+            // insert instructor entry, then student's then update instructor with the student entry id
+            $result = $logentry1id = self::insert_logentry($courseid, $logentry1->get_userid(), $logentry1);
+            $logentry1->set_id($logentry1id);
+            $logentry2->set_linkedlogentryid($logentry1id);
+            if ($result) {
+                $result = ($logentry2id = self::insert_logentry($courseid, $logentry2->get_userid(), $logentry2));
+                $logentry2->set_id($logentry2id);
+            }
+        }
+
+        // link first logentry
+        if ($result)
+            $result = $DB->execute('UPDATE {' . static::DB_LOGBOOKS . '} SET linkedlogentryid=' . $logentry2id . ' WHERE id=' . $logentry1id);
+
+        if ($result)
+            $result = $transaction->allow_commit();
+        else
+            $transaction->rollback(new \moodle_exception(get_string('errorlinking', 'local_booking')));
+
+        return $result;
     }
 
     /**
@@ -133,14 +208,22 @@ class logbook_vault implements logbook_vault_interface {
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
-     * @return array    $totalflighttime, $totalsessiontime, $totalsolotime
+     * @return array    $totaldualtime, $totalsessiontime, $totalpictime
      */
     public static function get_logbook_summary(int $courseid, int $userid) {
         global $DB;
 
-        $sql = 'SELECT SUM(flighttimemins) as totalflighttime,
-                    SUM(sessiontimemins) as totalsessiontime,
-                    SUM(soloflighttimemins) as totalsolotime
+        $sql = 'SELECT SUM(multipilottime) as totalmultipilottime,
+                    SUM(nighttime) as totalnighttime,
+                    SUM(sessiontime) as totalsessiontime,
+                    SUM(ifrtime) as totalifrtime,
+                    SUM(pictime) as totalpictime,
+                    SUM(copilottime) as totalcopilottime,
+                    SUM(dualtime) as totaldualtime,
+                    SUM(instructortime) as totalinstructortime,
+                    SUM(checkpilottime) as totalcheckpilottime,
+                    SUM(landingsday) as totallandingsday,
+                    SUM(landingsnight) as totallandingsnight
                 FROM {' . self::DB_LOGBOOKS .'}
                 WHERE courseid = :courseid
                 AND userid = :userid';
@@ -150,23 +233,11 @@ class logbook_vault implements logbook_vault_interface {
             'userid' => $userid
         ];
         $summary = $DB->get_record_sql($sql, $params);
-        $totalflighttime = $summary->totalflighttime;
+        $totaldualtime = $summary->totaldualtime;
         $totalsessiontime = $summary->totalsessiontime;
-        $totalsolotime = $summary->totalsolotime;
+        $totalpictime = $summary->totalpictime;
 
-        return [$totalflighttime, $totalsessiontime, $totalsolotime];
-    }
-
-    /**
-     * Delete a logbook entry by id
-     *
-     * @param int   $logentryid   The logbook entry id to be deleted.
-     * @return bool result of the database update operation.
-     */
-    public static function delete_logentry($logentryid) {
-        global $DB;
-
-        return $DB->delete_records(static::DB_LOGBOOKS, ['id'=>$logentryid]);
+        return [$totaldualtime, $totalsessiontime, $totalpictime];
     }
 
     /**
@@ -175,24 +246,46 @@ class logbook_vault implements logbook_vault_interface {
      * @param logentry  $logentry       A logbook entry of the user.
      * @return stdClass $logentryobj    The log entry object for persistence.
      */
-    protected static function get_logentryrecobj(int $courseid, int $userid, logentry $logentry) {
+    protected static function get_logentryrecobj(int $courseid, int $userid, logentry $logentry, bool $newrec = true) {
+        global $USER;
         $logentryobj = new stdClass();
 
         $logentryobj->id = $logentry->get_id();
         $logentryobj->courseid = $courseid;
         $logentryobj->exerciseid = $logentry->get_exerciseid();
         $logentryobj->userid = $userid;
-        $logentryobj->flighttimemins = $logentry->get_flighttimemins();
-        $logentryobj->soloflighttimemins = $logentry->get_soloflighttimemins();
-        $logentryobj->sessiontimemins = $logentry->get_sessiontimemins();
-        $logentryobj->aircrafticao = $logentry->get_aircraft();
-        $logentryobj->picid = $logentry->get_picid();
-        $logentryobj->sicid = $logentry->get_sicid();
+        $logentryobj->flightdate = $logentry->get_flightdate();
+        $logentryobj->sessiontime = $logentry->get_sessiontime();
+        $logentryobj->p1id = $logentry->get_p1id();
+        $logentryobj->p2id = $logentry->get_p2id();
+        $logentryobj->pictime = $logentry->get_pictime();
+        $logentryobj->dualtime = $logentry->get_dualtime();
+        $logentryobj->instructortime = $logentry->get_instructortime();
+        $logentryobj->multipilottime = $logentry->get_multipilottime();
+        $logentryobj->copilottime = $logentry->get_copilottime();
         $logentryobj->pirep = $logentry->get_pirep();
         $logentryobj->callsign = $logentry->get_callsign();
-        $logentryobj->fromicao = $logentry->get_fromicao();
-        $logentryobj->toicao = $logentry->get_toicao();
-        $logentryobj->timemodified = $logentry->get_sessiondate();
+        $logentryobj->fstd = $logentry->get_fstd();
+        $logentryobj->depicao = $logentry->get_depicao();
+        $logentryobj->deptime = $logentry->get_deptime();
+        $logentryobj->arricao = $logentry->get_arricao();
+        $logentryobj->arrtime = $logentry->get_arrtime();
+        $logentryobj->aircraft = $logentry->get_aircraft();
+        $logentryobj->aircraftreg = $logentry->get_aircraftreg();
+        $logentryobj->enginetype = $logentry->get_enginetype();
+        $logentryobj->landingsday = $logentry->get_landingsday();
+        $logentryobj->landingsnight = $logentry->get_landingsnight();
+        $logentryobj->nighttime = $logentry->get_nighttime();
+        $logentryobj->ifrtime = $logentry->get_ifrtime();
+        $logentryobj->checkpilottime = $logentry->get_checkpilottime();
+        $logentryobj->remarks = $logentry->get_remarks();
+        $logentryobj->linkedlogentryid = $logentry->get_linkedlogentryid();
+        if ($newrec) {
+            $logentryobj->createdby = $USER->id;
+            $logentryobj->timecreated = time();
+        } else {
+            $logentryobj->timemodified = time();
+        }
 
         return $logentryobj;
     }
@@ -207,17 +300,32 @@ class logbook_vault implements logbook_vault_interface {
         $logentry = new logentry($logbook);
         $logentry->set_id($dataobj->id);
         $logentry->set_exerciseid($dataobj->exerciseid);
-        $logentry->set_flighttimemins($dataobj->flighttimemins);
-        $logentry->set_sessiontimemins($dataobj->sessiontimemins);
-        $logentry->set_soloflighttimemins($dataobj->soloflighttimemins);
-        $logentry->set_picid($dataobj->picid);
-        $logentry->set_sicid($dataobj->sicid);
-        $logentry->set_aircraft($dataobj->aircrafticao);
-        $logentry->set_callsign(!empty($dataobj->callsign)?$dataobj->callsign:'');
-        $logentry->set_pirep(!empty($dataobj->pirep)?$dataobj->pirep:'');
-        $logentry->set_fromicao(!empty($dataobj->fromicao)?$dataobj->fromicao:'');
-        $logentry->set_toicao(!empty($dataobj->toicao)?$dataobj->toicao:'');
-        $logentry->set_sessiondate($dataobj->timemodified);
+        $logentry->set_flightdate($dataobj->flightdate);
+        $logentry->set_sessiontime($dataobj->sessiontime);
+        $logentry->set_p1id($dataobj->p1id);
+        $logentry->set_p2id($dataobj->p2id);
+        $logentry->set_pictime($dataobj->pictime);
+        $logentry->set_dualtime($dataobj->dualtime);
+        $logentry->set_instructortime($dataobj->instructortime);
+        $logentry->set_multipilottime($dataobj->multipilottime);
+        $logentry->set_copilottime($dataobj->copilottime);
+        $logentry->set_checkpilottime($dataobj->checkpilottime);
+        $logentry->set_pirep($dataobj->pirep);
+        $logentry->set_callsign($dataobj->callsign);
+        $logentry->set_fstd($dataobj->fstd);
+        $logentry->set_depicao($dataobj->depicao);
+        $logentry->set_deptime($dataobj->deptime);
+        $logentry->set_arricao($dataobj->arricao);
+        $logentry->set_arrtime($dataobj->arrtime);
+        $logentry->set_aircraft($dataobj->aircraft);
+        $logentry->set_aircraftreg($dataobj->aircraftreg);
+        $logentry->set_enginetype($dataobj->enginetype);
+        $logentry->set_landingsday($dataobj->landingsday);
+        $logentry->set_landingsnight($dataobj->landingsnight);
+        $logentry->set_nighttime($dataobj->nighttime);
+        $logentry->set_ifrtime($dataobj->ifrtime);
+        $logentry->set_remarks($dataobj->remarks);
+        $logentry->set_linkedlogentryid($dataobj->linkedlogentryid);
 
         return $logentry;
     }

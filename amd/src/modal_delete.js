@@ -72,10 +72,10 @@ function(
         Modal.prototype.registerEventListeners.call(this);
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.DELETE_BUTTON, function(e, data) {
-            var saveEvent = $.Event(ModalEvents.save);
-            this.getRoot().trigger(saveEvent, this);
+            var deleteEvent = $.Event(ModalEvents.save);
+            this.getRoot().trigger(deleteEvent, this);
 
-            if (!saveEvent.isDefaultPrevented()) {
+            if (!deleteEvent.isDefaultPrevented()) {
                 this.hide();
                 data.originalEvent.preventDefault();
             }

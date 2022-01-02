@@ -46,6 +46,10 @@ $context = context_course::instance($courseid);
 require_login($course, false);
 require_capability('local/booking:logbookview', $context);
 
+// RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
+$PAGE->requires->jquery();
+$PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask-5/dist/jquery.inputmask.min.js'), true);
+
 $PAGE->navbar->add(get_string('logbook', 'local_booking'));
 $PAGE->set_pagelayout('standard');  // otherwise use 'standard' layout
 $PAGE->set_title($title, 'local_booking');

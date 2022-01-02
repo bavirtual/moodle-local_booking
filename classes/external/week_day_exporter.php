@@ -143,13 +143,13 @@ class week_day_exporter extends day_exporter {
         $slotstatus = '';
         $slotstatustooltip = '';
         if ($this->slotdata['slot'] != null) {
-            $slotstatus = !empty($this->slotdata['slot']->slotstatus) ? $this->slotdata['slot']->slotstatus : 'selected';
+            $slotstatus = $this->slotdata['slot']->slotstatus ?: 'selected';
             // add student name tooltip in group view
             if ($this->groupview) {
                 $studentname = student::get_fullname($this->slotdata['slot']->userid);
                 $slotstatustooltip = $studentname . '<br/>';
             }
-            $slotstatustooltip .= !empty($this->slotdata['slot']->bookinginfo) ? $this->slotdata['slot']->bookinginfo : '';
+            $slotstatustooltip .= $this->slotdata['slot']->bookinginfo ?: '';
 
         }
 

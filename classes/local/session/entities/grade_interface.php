@@ -78,9 +78,9 @@ interface grade_interface {
     public function get_studentname();
 
     /**
-     * Get the date array of the grade.
+     * Get the date timestamp of the grade.
      *
-     * @return array
+     * @return int
      */
     public function get_gradedate();
 
@@ -134,11 +134,11 @@ interface grade_interface {
     public function set_studentname(string $studentname);
 
     /**
-     * Set the date array of the grade.
+     * Set the date timestamp of the grade.
      *
-     * @param array
+     * @param int
      */
-    public function set_gradedate(array $gradedate);
+    public function set_gradedate(int $gradedate);
 
     /**
      * Set the final grade.

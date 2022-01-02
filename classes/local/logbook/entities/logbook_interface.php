@@ -44,13 +44,6 @@ interface logbook_interface {
     public function load();
 
     /**
-     * Whether the logbook as entries or not.
-     *
-     * @return bool true if the Logbook has entries
-     */
-    public function has_entries();
-
-    /**
      * Creates a logbook entry.
      *
      * @return logentry
@@ -62,7 +55,7 @@ interface logbook_interface {
      *
      * @return bool
      */
-    public function add(logentry $logentry);
+    public function insert(logentry $logentry);
 
     /**
      * Update a logbook entry.
@@ -77,6 +70,17 @@ interface logbook_interface {
      * @return bool
      */
     public function delete(int $logentryid);
+
+    /**
+     * Insert/Update then link the instructor
+     * and student logbook entries.
+     *
+     * @param int $courseid
+     * @param logentry $instructorlogentry
+     * @param logentry $studentlogentry
+     * @return bool
+     */
+    public static function save_linked_logentries(int $courseid, logentry $instructorlogentry, logentry $studentlogentry);
 
     /**
      * Load a logbook entry.
@@ -119,4 +123,11 @@ interface logbook_interface {
      * @param int $userid
      */
     public function set_userid(int $userid);
+
+    /**
+     * Whether the logbook as entries or not.
+     *
+     * @return bool true if the Logbook has entries
+     */
+    public function has_entries();
 }

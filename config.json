@@ -22,6 +22,42 @@
         "dark purple" : "#4a148c",
         "light yellow": "#ffff00"
     },
+    "integrations": {
+        "pireps"     : {
+            "enabled"   : 0,
+            "host"      : "localhost",
+            "db"        : "bav_management",
+            "data"      : {
+                "pirep" : {
+                    "table" : "pireps",
+                    "field" : "id",
+                    "key"   : "id"
+                },
+                "linkedpirep" : {
+                    "table" : "pireps",
+                    "field" : "linked_pirep_id",
+                    "key"   : "id"
+                }
+            }
+        },
+        "aircraft"  : {
+            "enabled"   : 0,
+            "host"      : "localhost",
+            "db"        : "bav_management",
+            "data"      : {
+                "enginetype": {
+                    "table"     : "fleet",
+                    "field"     : "engine_type",
+                    "key"       : "icao"
+                },
+                "aircraftreg": {
+                    "table"     : "fleet_registrations",
+                    "field"     : "reg",
+                    "key"       : "icao"
+                }
+            }
+        }
+    },
     "google_client_id": "665457883640-3t61p4f3vp5sg5bnh5kgqcnm3332c145.apps.googleusercontent.com",
     "google_client_secret": "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",
     "google_auth_url": "https://accounts.google.com/o/oauth2/auth",

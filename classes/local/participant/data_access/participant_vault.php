@@ -466,7 +466,7 @@ class participant_vault implements participant_vault_interface {
 
         $customfieldobj = $DB->get_record_sql($sql, $params);
 
-        return empty($customfieldobj->data) ? '' : $customfieldobj->data;
+        return empty($customfieldobj->data) ? '' : $customfieldobj->data;;
     }
 
     /**
@@ -548,6 +548,7 @@ class participant_vault implements participant_vault_interface {
      */
     public function get_next_student_exercise($courseid, $studentid) {
         global $DB;
+        $result = [0,0];
 
         // Get first record of exercises not completed yet
         $sql = 'SELECT cm.id AS nextexerciseid, cs.section AS section
@@ -572,6 +573,10 @@ class participant_vault implements participant_vault_interface {
 
         $rs = $DB->get_records_sql($sql, $params);
 
-        return [current($rs)->nextexerciseid, current($rs)->section];
+        // check for last exercise in the course
+        if (!empty($rs))
+            $result = [current($rs)->nextexerciseid, current($rs)->section];
+
+        return $result;
     }
 }

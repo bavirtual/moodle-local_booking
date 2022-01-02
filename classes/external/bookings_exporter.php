@@ -103,6 +103,7 @@ class bookings_exporter extends exporter {
         $this->viewtype = $data['view'];
         $this->subscribedcourse = new subscriber($data['courseid']);
         $this->exercises = $this->subscribedcourse->get_exercises();
+        $data['trainingtype'] = $this->subscribedcourse->trainingtype;
         if ($this->viewtype == 'confirm')
             $this->bookingstudentid = $studentid;
 
@@ -120,6 +121,9 @@ class bookings_exporter extends exporter {
             ],
             'courseid' => [
                 'type' => PARAM_INT,
+            ],
+            'trainingtype' => [
+                'type' => PARAM_RAW,
             ],
         ];
     }
@@ -192,7 +196,7 @@ class bookings_exporter extends exporter {
         foreach($this->exercises as $exercise) {
             // break down each setting title by <br/> tag, until a better way is identified
             $customtitle = array_shift($titlevalue);
-            $exercise->title = !empty($customtitle) ? $customtitle : $exercise->exercisename;
+            $exercise->title = $customtitle ?: $exercise->exercisename;
             $data = [
                 'exerciseid'    => $exercise->exerciseid,
                 'exercisename'  => $exercise->exercisename,
@@ -345,7 +349,7 @@ class bookings_exporter extends exporter {
         // get active bookings if the view is session booking
         if ($this->viewtype == 'sessions') {
             $instructor = new instructor($this->data['courseid'], $USER->id);
-            $bookings = $instructor->get_bookings(0, true);
+            $bookings = $instructor->get_bookings(false, true, true);
             foreach ($bookings as $booking) {
                 $bookingexport = new booking_mybookings_exporter(['booking'=>$booking], $this->related);
                 $bookingexports[] = $bookingexport->export($output);

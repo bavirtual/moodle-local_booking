@@ -248,3 +248,24 @@ import Ajax from 'core/ajax';
 
     return Ajax.call([request])[0];
 };
+
+/**
+ * Send the form data of the logbook entry form
+ * to be persisted at the server.
+ *
+ * @method verifyPirep
+ * @param {string} formArgs An array of J URL encoded values from the form
+ * @param {string} formData The URL encoded values from the form
+ * @return {promise} Resolved with the pirep data
+ */
+ export const verifyPirep = (formArgs, formData) => {
+    const request = {
+        methodname: 'local_booking_verify_pirep',
+        args: {
+            formargs: formArgs,
+            formdata: formData
+        }
+    };
+
+    return Ajax.call([request])[0];
+};

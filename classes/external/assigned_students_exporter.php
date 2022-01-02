@@ -131,7 +131,7 @@ class assigned_students_exporter extends exporter {
         $students = $instructor->get_assigned_students();
         foreach ($students as $student) {
             list($nextexercise, $exercisesection) = $student->get_next_exercise();
-            $student->set_next_lesson(subscriber::get_exercise_name($nextexercise));
+            $student->set_next_lesson(!empty($nextexercise) ? subscriber::get_exercise_name($nextexercise) : '--');
             $data = [
                 'student' => $student,
             ];

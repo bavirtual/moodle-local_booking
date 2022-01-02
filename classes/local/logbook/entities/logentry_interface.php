@@ -47,16 +47,23 @@ interface logentry_interface {
     /**
      * Get the parent logbook.
      *
-     * @param logbook
+     * @return logbook
      */
     public function get_parent();
 
     /**
      * Get the id for the logbook entry.
      *
-     * @return int
+     * @param int
      */
     public function get_id();
+
+    /**
+     * Get the user id for the logbook entry (student).
+     *
+     * @param int
+     */
+    public function get_userid();
 
     /**
      * Get the course exercise id for the log entry.
@@ -66,65 +73,6 @@ interface logentry_interface {
     public function get_exerciseid();
 
     /**
-     * Get the aircraft type of the log entry.
-     *
-     * @return string
-     */
-    public function get_aircraft();
-
-    /**
-     * Get the flight duration minutes of the log entry.
-     *
-     * @param bool $numeric whether the request value in number or text format
-     * @return mixed
-     */
-    public function get_flighttimemins(bool $numeric = true);
-
-    /**
-     * Get the session duration minutes of the log entry.
-     *
-     * @param bool $numeric whether the request value in number or text format
-     * @return mixed
-     */
-    public function get_sessiontimemins(bool $numeric = true);
-
-    /**
-     * Get the solo flight duration minutes of the log entry.
-     *
-     * @param bool $numeric whether the request value in number or text format
-     * @return mixed
-     */
-    public function get_soloflighttimemins(bool $numeric = true);
-
-    /**
-     * Get the pilot in command user id of the log entry.
-     *
-     * @return int
-     */
-    public function get_picid();
-
-    /**
-     * Get the pilot in command name of the log entry.
-     *
-     * @return string
-     */
-    public function get_picname();
-
-    /**
-     * Get the secondary in command user id of the log entry.
-     *
-     * @return int
-     */
-    public function get_sicid();
-
-    /**
-     * Get the secondary in command name of the log entry.
-     *
-     * @return string
-     */
-    public function get_sicname();
-
-    /**
      * Get the PIREP string of log entry.
      *
      * @return string $pirep
@@ -132,33 +80,188 @@ interface logentry_interface {
     public function get_pirep();
 
     /**
-     * Get the flight callsign of the log entry.
+     * Get the flight callsign.
      *
      * @return string
      */
     public function get_callsign();
 
     /**
-     * Get the flight departure airport ICAO of the log entry.
+     * Get the flight date timestamp.
      *
-     * @return string
-     */
-    public function get_fromicao();
-
-    /**
-     * Get the flight arrival airport ICAO of the log entry.
-     *
-     * @return string
-     */
-    public function get_toicao();
-
-    /**
-     * Get the date timestamp of the log entry.
-     *
-     * @param bool $formatted string formatting of the date
      * @return mixed
      */
-    public function get_sessiondate(bool $formatted = false);
+    public function get_flightdate(bool $tostring = false);
+
+    /**
+     * Get the flight departure airport ICAO.
+     *
+     * @return string
+     */
+    public function get_depicao();
+
+    /**
+     * Get the flight departure time.
+     *
+     * @return int
+     */
+    public function get_deptime();
+
+    /**
+     * Get the flight arrival airport ICAO.
+     *
+     * @return string
+     */
+    public function get_arricao();
+
+    /**
+     * Get the flight arrival time.
+     *
+     * @return int
+     */
+    public function get_arrtime();
+
+    /**
+     * Get the aircraft type.
+     *
+     * @return string
+     */
+    public function get_aircraft();
+
+    /**
+     * Get the aircraft registration.
+     *
+     * @return string
+     */
+    public function get_aircraftreg();
+
+    /**
+     * Get the aircraft engine type.
+     *
+     * @return string
+     */
+    public function get_enginetype();
+
+    /**
+     * Get the multipilot time duration minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_multipilottime(bool $numeric = true);
+
+    /**
+     * Get the P1 (instructor) id.
+     *
+     * @return int
+     */
+    public function get_p1id();
+
+    /**
+     * Get the P2 (student) id.
+     *
+     * @return int
+     */
+    public function get_p2id();
+
+    /**
+     * Get the pilot in command name.
+     *
+     * @return string
+     */
+    public function get_picname();
+
+    /**
+     * Get the number of day landings for the flight..
+     *
+     * @return int
+     */
+    public function get_landingsday();
+
+    /**
+     * Get the number of night landings for the flight..
+     *
+     * @return int
+     */
+    public function get_landingsnight();
+
+    /**
+     * Get the training session duration in minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_sessiontime(bool $numeric = true);
+
+    /**
+     * Get the flying at night duration in minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_nighttime(bool $numeric = true);
+
+    /**
+     * Get the flying IFR duration in minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_ifrtime(bool $numeric = true);
+
+    /**
+     * Get the flying as PIC duration in minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_pictime(bool $numeric = true);
+
+    /**
+     * Get the flying as copilot duration in minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_copilottime(bool $numeric = true);
+
+    /**
+     * Get the flight instructor/student duration minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_dualtime(bool $numeric = true);
+
+    /**
+     * Get the flight instructor duration minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_instructortime(bool $numeric = true);
+
+    /**
+     * Get the examiner checkride duration minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_checkpilottime(bool $numeric = true);
+
+    /**
+     * Get the Flight Simulation Training Device qualification.
+     *
+     * @return string
+     */
+    public function get_fstd();
+
+    /**
+     * Get the instructor remarks.
+     *
+     * @return string
+     */
+    public function get_remarks();
 
     /**
      * Set the parent logbook.
@@ -182,51 +285,6 @@ interface logentry_interface {
     public function set_exerciseid(int $exerciseid);
 
     /**
-     * Set the aircraft type of the log entry.
-     *
-     * @param string $aircraft
-     */
-    public function set_aircraft(string $aircraft);
-
-    /**
-     * Set the flight duration minutes of the log entry.
-     *
-     * @param mixed $flighttimemins The flight time total minutes duration
-     * @param bool $isnumeric whether the passed duration is numberic or string format
-     */
-    public function set_flighttimemins($flighttimemins, bool $isnumeric = true);
-
-    /**
-     * Set the session duration minutes of the log entry.
-     *
-     * @param mixed $sessiontimemins The session time total minutes duration
-     * @param bool $isnumeric whether the passed duration is numberic or string format
-     */
-    public function set_sessiontimemins($sessiontimemins, bool $isnumeric = true);
-
-    /**
-     * Set the solo flight time duration minutes of the log entry.
-     *
-     * @param mixed $soloflighttimemins The solo flight time total minutes duration
-     * @param bool $isnumeric whether the passed duration is numberic or string format
-     */
-    public function set_soloflighttimemins($soloflighttimemins, bool $isnumeric = true);
-
-    /**
-     * Set the pilot in command user id of the log entry.
-     *
-     * @param int $picid
-     */
-    public function set_picid(int $picid);
-
-    /**
-     * Set the secondary in command user id of the log entry.
-     *
-     * @param int $sicid
-     */
-    public function set_sicid(int $sicid);
-
-    /**
      * Set the PIREP string of log entry.
      *
      * @param string $pirep
@@ -234,37 +292,194 @@ interface logentry_interface {
     public function set_pirep(string $pirep);
 
     /**
-     * Set the flight callsign of the log entry.
+     * Set the flight callsign.
      *
      * @param string $callsign
      */
     public function set_callsign(string $callsign);
 
     /**
-     * Set the flight departure airport ICAO of the log entry.
+     * Set the flight date timestamp.
      *
-     * @param string $fromicao
+     * @param int $flightdate
      */
-    public function set_fromicao(string $fromicao);
+    public function set_flightdate(int $flightdate);
 
     /**
-     * Set the flight arrival airport ICAO of the log entry.
+     * Set the flight departure airport ICAO.
      *
-     * @param string
+     * @param string $depicao
      */
-    public function set_toicao(string $toicao);
+    public function set_depicao(string $depicao);
 
     /**
-     * Set the date timestamp of the log entry.
+     * Set the flight departure time.
      *
-     * @param int $sessiondate
+     * @param int $deptime departure time timestamp
      */
-    public function set_sessiondate(int $sessiondate);
+    public function set_deptime($deptime);
+
+    /**
+     * Set the flight arrival airport ICAO.
+     *
+     * @return string
+     */
+    public function set_arricao(string $arricao);
+
+    /**
+     * Set the flight arrival time.
+     *
+     * @param int $arrtime arrival time timestamp
+     */
+    public function set_arrtime($arrtime);
+
+    /**
+     * Set the aircraft type.
+     *
+     * @return string
+     */
+    public function set_aircraft(string $aircraft);
+
+    /**
+     * Set the aircraft registration.
+     *
+     * @return string
+     */
+    public function set_aircraftreg(string $aircraftreg);
+    /**
+     * Set the aircraft engine type.
+     *
+     * @return string
+     */
+    public function set_enginetype(string $enginetype) ;
+
+    /**
+     * Set the flight multipilot time in minutes.
+     *
+     * @param mixed $multipilottime The flight multipilot time total minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_multipilottime($multipilottime, bool $isnumeric = true);
+
+    /**
+     * Set the p1 (instructor) id.
+     *
+     * @param int $p1id
+     */
+    public function set_p1id(int $p1id);
+
+    /**
+     * Set the p2 (student) id.
+     *
+     * @param int $p2id
+     */
+    public function set_p2id(int $p2id);
+
+    /**
+     * Set the number of day landings for the flight.
+     *
+     * @param int $landingsday
+     */
+    public function set_landingsday(int $landingsday);
+
+    /**
+     * Set the number of night landings for the flight.
+     *
+     * @param int $landingsnight
+     */
+    public function set_landingsnight(int $landingsnight);
+
+    /**
+     * Set the training session duration in minutes.
+     *
+     * @param mixed $sessiontime The session time total minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_sessiontime($sessiontime, bool $isnumeric = true);
+
+    /**
+     * Set the flying at night duration in minutes.
+     *
+     * @param mixed $nighttime The night time minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_nighttime($nighttime, bool $isnumeric = true);
+
+    /**
+     * Set the flying IFR duration in minutes.
+     *
+     * @param mixed $nighttime The night time minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_ifrtime($ifrtime, bool $isnumeric = true);
+
+    /**
+     * Set the flying as PIC duration in minutes.
+     *
+     * @param mixed $nighttime The night time minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_pictime($pictime, bool $isnumeric = true);
+
+    /**
+     * Set the flying as copilot duration in minutes.
+     *
+     * @param mixed $nighttime The night time minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_copilottime($copilottime, bool $isnumeric = true);
+
+    /**
+     * Set the flight instructor/student duration minutes.
+     *
+     * @param mixed $dualtime The flight time total minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_dualtime($dualtime, bool $isnumeric = true);
+
+    /**
+     * Set the flight instructor duration minutes.
+     *
+     * @param mixed $instructortime The flight time total minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_instructortime($instructortime, bool $isnumeric = true);
+
+    /**
+     * Set the flight instructor duration minutes.
+     *
+     * @param mixed $checkpilottime The flight time total minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_checkpilottime($checkpilottime, bool $isnumeric = true);
+
+    /**
+     * Set the secondary in command user id.
+     *
+     * @param string $fstd
+     */
+    public function set_fstd(string $fstd);
+
+    /**
+     * Set the instructor's remarks.
+     *
+     * @param string $remarks
+     */
+    public function set_remarks(string $remarks);
 
     /**
      * Populates a log book entry with a modal form data.
      *
      * @param object $formdata
+     * @param bool $isinstructor
      */
-    public function populate(object $formdata);
+    public function populate(object $formdata, bool $isinstructor = true);
+
+    /**
+     * Converts the object to array.
+     *
+     * @param bool  $formattostring: whether to return some values in string format
+     * @return array
+     */
+    public function __toArray(bool $formattostring = false);
 }

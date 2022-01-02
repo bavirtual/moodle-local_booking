@@ -31,8 +31,12 @@ $string['bookingfooter'] = '<p style="font-family:sans-serif"><a href=\'{$a->cou
 $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
 $string['bookingnoposts'] = 'No posts';
 $string['bookingoverride'] = 'Override';
-$string['bookingoverridelabel'] = 'Restriction period override';
+$string['bookingoverridelabel'] = 'Restriction wait period';
 $string['bookingoverridetooltip'] = 'Allows the student to post availability and override the restriction period';
+$string['bookingkeepactivetrue'] = 'Keep active ON';
+$string['bookingkeepactivefalse'] = 'Keep active OFF';
+$string['bookingkeepactivelabel'] = 'On-hold list';
+$string['bookingkeepactivetooltip'] = 'Forces the student to stay on the active students list';
 $string['bookingrecencyfrombooktooltip'] = 'Last booking<br/>{$a}';
 $string['bookingrecencyfromenroltooltip'] = 'No booking<br/>days since enrollment<br/>{$a}';
 $string['bookingrecencyfromgradetooltip'] = 'No booking<br/>days since last graded<br/>{$a}';
@@ -49,6 +53,8 @@ $string['booksave'] = 'Save Booking';
 $string['cancellationcomment'] = 'Please provide the student with a short comment on this cancellation:';
 $string['configmissing'] = 'Failed to open {$a}';
 $string['crontask'] = 'Background processing for session booking';
+$string['customfielddual'] = 'Dual';
+$string['customfieldmulticrew'] = 'Multicrew';
 $string['elapseddays'] = 'Elapsed Days';
 $string['enroldate'] = 'Enrol Date';
 $string['exercise'] = 'Exercise';
@@ -69,8 +75,8 @@ $string['sequencetooltip'] = 'Score: {$a->score}<br/>Last session: {$a->recency}
 $string['sessionaction'] = 'Action';
 $string['sessiondate'] = 'Session Date';
 $string['sessionbookedby'] = '{$a->sessiondate}<br/>{$a->bookingstatus}<br/>{$a->instructor}';
-$string['sessiongradedby'] = '{$a->bookingdate}Graded by:<br/>{$a->instructor}<br/>On: {$a->sessiondate}';
-$string['sessiongradeexampass'] = 'Exam Results<br/>Grade: {$a->grade}<br/>Date: {$a->sessiondate}';
+$string['sessiongradedby'] = '{$a->sessiondate}Graded by:<br/>{$a->instructor}<br/>On: {$a->gradedate}';
+$string['sessiongradeexampass'] = 'Exam Results<br/>Grade: {$a->grade}<br/>Date: {$a->gradedate}';
 $string['sessionvenue'] = 'Discord';
 $string['simulator'] = 'Sim';
 $string['slots'] = 'slots';
@@ -121,41 +127,86 @@ $string['weeknext'] = 'Next week';
 
 // Logbook
 $string['aircraft'] = 'Aircraft';
+$string['aircraft_help'] = 'Aircraft type, registration, and engine type';
+$string['aircraftgroup'] = 'Aircraft (type/reg\'n/eng.)';
+$string['aircraftreg'] = 'Aircraft Registration';
+$string['arrgroup'] = 'Arrival (ICAO/time)';
+$string['arricao'] = 'Arrival ICAO';
+$string['arrtime'] = 'Arrival time (zulu)';
 $string['callsign'] = 'Callsign';
+$string['checkpilottime'] = 'Check pilot time';
+$string['checkpilottime_help'] = 'Flight time logged for the examiner as the check pilot (in minutes)';
+$string['copilottime'] = 'Copilot time';
+$string['copilottime_help'] = 'Flight time logged for the copilot time in a multi-crewed flights (in minutes)';
 $string['confirmlogentrydelete'] = 'Are you sure you want to delete this entry?';
 $string['deletelogentry'] = 'Delete entry';
+$string['depgroup'] = 'Departure (ICAO/time)';
+$string['deptime'] = 'Departure time (zulu)';
+$string['dualtime'] = 'Dual time';
+$string['dualtime_help'] = 'Flight time logged for the student in training flights (in minutes)';
+$string['depicao'] = 'Departure ICAO';
 $string['editlogentry'] = 'Editing Logbook entry';
+$string['enginetype'] = 'Engine type';
+$string['errordelete'] = 'Failed to delete logentry';
 $string['errorinvaliddate'] = 'Flight date cannot be before booked session date';
+$string['errorinvalidarrtime'] = 'Arrival date/time must be greater than departure date/time';
+$string['errorlandings'] = 'Number from 1-9';
+$string['errorlinking'] = 'Failed to link instructor/student logentries';
 $string['errorlogentrycancel'] = 'Errors encountered: Unable to cancel booking!';
 $string['errorlogentryfetch'] = 'Error encountered while trying to fetch logbook entry with ID: ';
+$string['errorp1pirepincorrect'] = 'P1 PIREP incorrect or missing!';
+$string['errorp2pirepincorrect'] = 'P2 PIREP incorrect or missing!';
 $string['feedback'] = 'Feedback';
+$string['flightcopilottimetooltip'] = 'Flight time logged for the co-pilot in a multi-crewed flights';
 $string['flightdate'] = 'Flight date';
 $string['flightdate2'] = 'flight date';
-$string['flighttime'] = 'flight duration';
-$string['flighttimemins'] = 'Flight duration';
-$string['fromicao'] = 'Departure ICAO';
+$string['flighttime'] = 'flight time';
+$string['fstd'] = 'FSTD';
+$string['fstd_help'] = 'Flight Simulation Training Device qualification';
+$string['ifrtime'] = 'IFR flight time';
+$string['ifrtime_help'] = 'Operational IFR time is the portion of the flight flown under Instrument Flight Rules, logged for all pilots flying the aircraft (in minutes)';
+$string['instructortime'] = 'Instructor time';
+$string['instructortime_help'] = 'Flight time logged for the instructor in training flights (in minutes)';
+$string['landings_help'] = 'The number for each of the day and night landings for the flight';
+$string['landingsday'] = 'Landings day';
+$string['landingsgroup'] = 'Landings (day/night)';
+$string['landingsnight'] = 'Landings night';
 $string['logbook'] = 'My logbook';
 $string['logbooksummary'] = 'LOGBOOK SUMMARY';
 $string['logentry'] = 'Logbook Entry';
 $string['logentry2'] = 'Log entry';
 $string['logentrymissing'] = 'No logbook entry!';
-$string['logentrysavesuccess'] = 'Logbook entry saved.';
-$string['logentrysaveunable'] = 'Unable to save logbook entry.';
+$string['logentrydeletesuccess'] = 'Logbook entry deleted';
+$string['logentrydeletefailed'] = 'Unable to delete logbook entry';
+$string['logentrysavesuccess'] = 'Logbook entry saved';
+$string['logentrysaveunable'] = 'Unable to save logbook entry';
+$string['multipilottime'] = 'Multi-pilot time';
+$string['multipilottime_help'] = 'Flight time logged for each pilot in multi-crew flights (in minutes)';
+$string['nighttime'] = 'Night flight time';
+$string['nighttime_help'] = 'Operational night time is the portion of the flight flown in night time. Logged for the PIC and copilots (in minutes)';
 $string['newlogentry'] = 'New Logbook entry';
-$string['pic'] = 'Pilot in command';
-$string['pic2'] = 'PIC';
+$string['p1'] = 'P1 (instructor)';
+$string['p2'] = 'P2 (student)';
+$string['p1pirep'] = 'P1 PIREP';
+$string['p2pirep'] = 'P2 PIREP';
+$string['pictime'] = 'PIC/PICUS time';
+$string['pictime_help'] = 'Flight time logged for the pilot in command (PIC). As per the EASA <a href="https://www.easa.europa.eu/sites/default/files/dfu/Part-FCL.pdf">Part-FLC</a>
+    [pg30]. "the applicant for or the holder of a pilot licence may log as PIC time all solo flight time, flight time as SPIC and flight time under supervision..." (in minutes)';
 $string['pilot'] = 'Pilot';
 $string['pirep'] = 'PIREP';
-$string['sessiontime'] = 'session duration';
-$string['sessiontimemins'] = 'Session duration';
-$string['sic'] = 'Secondary in command';
-$string['sic2'] = 'SIC';
-$string['soloflighttime'] = 'solo flight duration';
-$string['soloflighttimemins'] = 'Solo flight duration';
-$string['toicao'] = 'Arrival ICAO';
-$string['totalflighttime'] = 'Total flight time';
+$string['pirepsgroup'] = 'PIREPs (P1/P2)';
+$string['remarks'] = 'Remarks';
+$string['sessiontime'] = 'Session time';
+$string['sessiontime_help'] = 'The ground training session overall time (in minutes)';
+$string['soloflight'] = 'Solo flight';
+$string['soloflight_help'] = 'Student solo flight logged by the instructor';
+$string['totaldualtime'] = 'Total dual flight time';
 $string['totalsessiontime'] = 'Total session time';
-$string['totalsolotime'] = 'Total solo flight time';
+$string['totalpictime'] = 'Total PIC flight time';
+$string['verifypirep'] = 'Verify PIREP';
+
+// integrations
+$string['errordbconnection'] = "Failed to connect to the database: ";
 
 // capabilities
 $string['booking:availabilityview'] = 'View availability posting';
@@ -184,21 +235,17 @@ $string['emailnotifyhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{
     </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p>';
 $string['emailnotifycalendarshtml'] = '<p style="font-size: .9em;">Add a reminder to your calendar:<br />
     <table style="border-collapse: collapse; width: 100%;">
-    <tbody>
-    <tr>
-    <td style="width: 50px; text-align: center;"><img src="{$a->googlelogourl}/btn_google_dark_normal_ios.svg" alt="Add to Google calendar"/></td>
-    <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
-    </tr>
-    <tr>
-    <td style="width: 50px; text-align: center;"><img src=
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Outlook.com_icon_%282012-2019%29.svg/1200px-Outlook.com_icon_%282012-2019%29.svg.png"
-    alt="Add to Outlook Live calendar" width="25" height="25" /></td>
-    <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td>
-    </tr>
-    <tr>
-    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Apple_Calendar_Icon.png/120px-Apple_Calendar_Icon.png" alt="Add to Outlook Live calendar" width="28" height="28" /></td>
-    <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td>
-    </tr>
+    <tbody><tr>
+        <td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.svg" alt="Add to Google calendar"/></td>
+        <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
+        </tr><tr>
+        <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 0 6 0 6px">
+            <img src="{$a->pixrooturl}/btn_outlook.png" alt="Add to Outlook Live calendar" width="25" height="25" /></div></td>
+        <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td>
+        </tr><tr>
+        <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 3 6 0 6px">
+            <img src="{$a->pixrooturl}/btn_ical.png" alt="Add to Outlook Live calendar" width="28" height="28" /></div></td>
+        <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td></tr>
     </tbody>
     </table>
     <hr /></div>';
@@ -212,19 +259,17 @@ $string['emailconfirmhtml'] = '<div style="font-family:sans-serif"><p><a href=\'
     <strong>{$a->sessiondate}</strong>.</p>';
 $string['emailconfirmcalendarshtml'] = '<p style="font-size: .9em;">Add a reminder to your calendar:<br />
     <table style="border-collapse: collapse; width: 100%;">
-    <tbody>
-    <tr>
-    <td style="width: 50px; text-align: center;"><img src="{$a->googlelogourl}/btn_google_dark_normal_ios.svg" alt="Add to Google calendar"/></td>
-    <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
-    </tr>
-    <tr>
-    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Outlook.com_icon_%282012-2019%29.svg/1200px-Outlook.com_icon_%282012-2019%29.svg.png" alt="Add to Outlook Live calendar" width="25" height="25" /></td>
-    <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td>
-    </tr>
-    <tr>
-    <td style="width: 50px; text-align: center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Apple_Calendar_Icon.png/120px-Apple_Calendar_Icon.png" alt="Add to Outlook Live calendar" width="28" height="28" /></td>
-    <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td>
-    </tr>
+    <tbody><tr>
+        <td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.svg" alt="Add to Google calendar"/></td>
+        <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
+        </tr><tr>
+        <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 0 6 0 6px">
+            <img src="{$a->pixrooturl}/btn_outlook.png" alt="Add to Outlook Live calendar" width="25" height="25" /></div></td>
+        <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td>
+        </tr><tr>
+        <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 3 6 0 6px">
+            <img src="{$a->pixrooturl}/btn_ical.png" alt="Add to Outlook Live calendar" width="28" height="28" /></div></td>
+        <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td></tr>
     </tbody>
     </table>
     <hr /></div>';
@@ -293,14 +338,15 @@ $string['emailoverduenotifyinsthtml'] = '<font face="sans-serif"><p><a href=\'{$
 $string['emailoverduestatus'] = 'not booked a session since \'{$a}\'';
 
 // settings
-$string['recencydaysweight'] = 'Recency prioritization';
-$string['recencydaysweightdesc'] = 'weight multiplier to calculate prioritization for session recency';
-$string['slotcountweight'] = 'Slot count prioritization';
-$string['slotcountweightdesc'] = 'weight multiplier to calculate prioritization for availability slots';
 $string['activitycountweight'] = 'Course activity prioritization';
 $string['activitycountweightdesc'] = 'weight multiplier to calculate prioritization for course activity';
 $string['completionweight'] = 'Lesson completion prioritization';
 $string['completionweightdesc'] = 'weight multiplier to calculate prioritization of lesson completion';
+$string['generalsection'] = 'General settings';
+$string['recencydaysweight'] = 'Recency prioritization';
+$string['recencydaysweightdesc'] = 'weight multiplier to calculate prioritization for session recency';
+$string['slotcountweight'] = 'Slot count prioritization';
+$string['slotcountweightdesc'] = 'weight multiplier to calculate prioritization for availability slots';
 
 // install
 $string['useplugin'] = 'Use Session Booking';

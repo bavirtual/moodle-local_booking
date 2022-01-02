@@ -58,7 +58,7 @@ interface logbook_vault_interface {
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
-     * @return array    $totalflighttime, $totalsessiontime, $totalsolotime
+     * @return array    $totaldualtime, $totalsessiontime, $totalpictime
      */
     public static function get_logbook_summary(int $courseid, int $userid);
 
@@ -83,10 +83,21 @@ interface logbook_vault_interface {
     public static function update_logentry(int $courseid, int $userid, logentry $logentry);
 
     /**
-     * Delete a logbook entry by id
+     * Insert/Update then link two logentries.
      *
-     * @param int   $logentryid   The logbook entry id to be deleted.
+     * @param int $$courseid
+     * @param logentry $logentry1
+     * @param logentry $logentry2
+     * @return bool
+     */
+    public static function save_linked_logentries(int $courseid, logentry $logentry1, logentry $logentry2);
+
+    /**
+     * Delete a logbook entry by id with its associated entries.
+     *
+     * @param int   $logentryid         The logbook entry id to be deleted.
+     * @param int   $linkedlogentryid   The associated logbook entry id to be deleted.
      * @return bool result of the database update operation.
      */
-    public static function delete_logentry($logentryid);
+    public static function delete_logentry(int $logentryid, int $linkedlogentryid = 0);
 }

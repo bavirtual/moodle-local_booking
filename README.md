@@ -17,6 +17,8 @@ Session Booking provides a workflow for posting availability slots, booking agai
 - Provides a dashboard for instructors and course administrators to visualize student progression throughout the course
 - Provides a custom student prioritization mechanism for booking sessions based on student's session recency, course activity, availability posting, and lesson completion
 - Session calendar integration with Moodle, Google, and Outlook Live calendars, including (ics) standard iCal calendar file download
+- EASA format Logbook reporting
+- Administration and flight time analysis reporting
 
 ## Setup
 
@@ -57,11 +59,3 @@ There are three areas of configurations:
    - Primary Simulator
    - Secondary Simulator
    - Callsign
-
-## FAQ
-
-- Q: How to adjust and tune student prioritization?
-- A: In the plugin there are multiplier settings that allow higher multiplier score for weighing each student prioritization. The higher the multiplier the higher the weight of that setting in the overall score determining prioritization.
-
-- Q: What happens when the plugin is uninstalled?
-- A: The plugin follows Moodle standard for plugins and it is uninstalled completely from Moodle including associated data and configurations. The only addition that is left is the ATO category and simulators & callsign custom fields. If desired these can be removed from [Site administration > Users > User profile fields]

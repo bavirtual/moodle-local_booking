@@ -14,8 +14,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A module to handle CRUD operations within the UI.
- * Improvised from core_calendar.
+ * This module handles session booking and logentry operations
+ * including CRUD and UI events.
  *
  * @module     local_booking/booking_actions
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -51,7 +51,7 @@ function(
     Pending,
     ModalLogentryForm,
     Repository,
-    BookingEvents,
+    BookingSessions,
     ModalDelete,
     BookingSelectors,
     ViewManager,
@@ -84,7 +84,7 @@ function(
                 return;
             })
             .always(function() {
-                $('body').trigger(BookingEvents.canceled, [root, false]);
+                $('body').trigger(BookingSessions.canceled, [root, false]);
                 Notification.fetchNotifications();
                 ViewManager.stopLoading(root);
             })
@@ -102,7 +102,7 @@ function(
         ViewManager.startLoading(root);
 
         // Get course id and booking id
-        const studentId = root.find(BookingSelectors.bookConfirmation).data('studentid');
+        const studentId = root.find(BookingSelectors.bookingconfirmation).data('studentid');
 
         // Send the request data to the server for processing.
         return Repository.overrideWaitRestriction(studentId)
@@ -165,7 +165,7 @@ function(
                 var pendingPromise = new Pending('local_booking/booking_actions:initModal:deletedlogentry');
                 Repository.deleteLogentry(logentryId, userId, courseId)
                     .then(function() {
-                        $('body').trigger(BookingEvents.deleted, [logentryId, false]);
+                        $('body').trigger(BookingSessions.deleted, [logentryId, false]);
                         return;
                     })
                     .then(pendingPromise.resolve)
@@ -185,72 +185,6 @@ function(
     };
 
     /**
-     * Create the logentry form modal for creating new logentries and
-     * editing existing logentries.
-     *
-     * @method  registerLogentryFormModal
-     * @param   {object} root The progression booking root element
-     * @return  {promise} The create modal promise
-     */
-     var registerLogentryFormModal = () => {
-        var logentryFormPromise = ModalFactory.create({
-            type: ModalLogentryForm.TYPE,
-            large: true
-        });
-
-        return logentryFormPromise;
-    };
-
-    /**
-     * Register the listeners required for editing the logentry.
-     *
-     * @method  registerActionListeners
-     * @param   {jQuery} root
-     * @param   {Promise} logentryFormModalPromise
-     * @returns {Promise}
-     */
-    var registerActionListeners = (root, logentryFormModalPromise) => {
-        var pendingPromise = new Pending('local_booking/booking_actions:registerActionListeners');
-
-        return logentryFormModalPromise
-        .then(function(modal) {
-            // Show the logentry form modal form when the user clicks
-            // on a session in the progression booking view to edit a logentry
-            $('body').on(BookingEvents.addLogentry, function(e, exerciseId, userId, sessionDate) {
-                var bookingWrapper = root.find(BookingSelectors.bookingwrapper);
-                modal.setSessionDate(sessionDate);
-                modal.setExerciseId(exerciseId);
-                modal.setUserId(userId);
-                modal.setCourseId(bookingWrapper.data('courseid'));
-                modal.setContextId(bookingWrapper.data('contextid'));
-                modal.show();
-
-                e.stopImmediatePropagation();
-            });
-            // Show the logentry form modal form when the user clicks
-            // on a session in the progression booking view to edit a logentry
-            $('body').on(BookingEvents.editLogentry, function(e, logentryId, userId, sessionDate) {
-                var bookingWrapper = root.find(BookingSelectors.bookingwrapper);
-                modal.setSessionDate(sessionDate);
-                modal.setLogentryId(logentryId);
-                modal.setUserId(userId);
-                modal.setCourseId(bookingWrapper.data('courseid'));
-                modal.setContextId(bookingWrapper.data('contextid'));
-                modal.show();
-
-                e.stopImmediatePropagation();
-            });
-            return modal;
-        })
-        .then(function(modal) {
-            pendingPromise.resolve();
-
-            return modal;
-        })
-        .catch(Notification.exception);
-    };
-
-    /**
      * Register the listeners required to delete the logentry.
      *
      * @method  registerDelete
@@ -259,7 +193,7 @@ function(
      var registerDelete = (root) => {
         root.on('click', BookingSelectors.actions.deleteLogentry, function(e) {
             // Fetch the logentry title, and pass them into the new dialogue.
-            var logentrySource = root.find(BookingSelectors.logentryItem),
+            var logentrySource = root.find(BookingSelectors.logentryitem),
                 logentryId = logentrySource.data('logentryId'),
                 userId = logentrySource.data('userId'),
                 courseId = logentrySource.data('courseId');
@@ -279,7 +213,7 @@ function(
      var registerBookingConfirm = (root) => {
         root.on('click', BookingSelectors.actions.bookingConfirm, function(e) {
             // Fetch the data from the session option selected and redirect to the student's availability
-            var sessionOption = root.find(BookingSelectors.logentryItem),
+            var sessionOption = root.find(BookingSelectors.logentryitem),
                 exerciseId = sessionOption.data('exercise-id');
             const courseId = root.find(BookingSelectors.bookingwrapper).data('courseid');
             const userId = root.find(BookingSelectors.bookingwrapper).data('studentid');
@@ -303,11 +237,11 @@ function(
      var registerRedirect = (root) => {
         root.on('click', BookingSelectors.actions.gotoFeedback, function(e) {
             // Fetch the exercise and user id and redirect to assignment submission & grading
-            var logentrySource = root.find(BookingSelectors.logentryItem),
+            var logentrySource = root.find(BookingSelectors.logentryitem),
                 courseId = logentrySource.data('courseId'),
                 exerciseId = logentrySource.data('exerciseId'),
                 userId = logentrySource.data('userId');
-                $('body').trigger(BookingEvents.gotoFeedback, [exerciseId]);
+                $('body').trigger(BookingSessions.gotoFeedback, [exerciseId]);
 
                 // Redirect to the grading and feedback page
                 location.href = M.cfg.wwwroot + '/local/booking/assign.php?courseid=' + courseId +
@@ -322,8 +256,6 @@ function(
         registerRedirect: registerRedirect,
         registerDelete: registerDelete,
         cancelBooking: cancelBooking,
-        overrideRestriction: overrideRestriction,
-        registerLogentryFormModal: registerLogentryFormModal,
-        registerActionListeners: registerActionListeners
+        overrideRestriction: overrideRestriction
     };
 });

@@ -37,6 +37,13 @@ interface participant_interface {
     public function get_id();
 
     /**
+     * Get course id.
+     *
+     * @return int $courseid
+     */
+    public function get_courseid();
+
+    /**
      * Get fullname.
      *
      * @return string $fullname;
@@ -49,6 +56,23 @@ interface participant_interface {
      * @param string $fullname;
      */
     public function set_name(string $fullname);
+
+    /**
+     * Get an participant's bookings
+     *
+     * @param bool $isStudent   Whether to get student bookings
+     * @param bool $activeonly  Whether to get active bookings only
+     * @param bool $oldestfirst Whether to sort results by oldest
+     * @return booking[] An array of bookings.
+     */
+    public function get_bookings(bool $isStudent = true, bool $activeonly = false, bool $oldestfirst = false);
+
+    /**
+     * Get an a's active bookings
+     *
+     * @return logentry[] An array of bookings.
+     */
+    public function get_logbook();
 
     /**
      * Get student's enrolment date.

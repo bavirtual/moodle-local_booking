@@ -72,7 +72,7 @@ class analytics_vault implements analytics_vault_interface {
         } else {
             $student = new student($courseid, $studentid);
             $lastgraded = $student->get_last_graded_date();
-            $lastsessiondate = empty($lastgraded) ? $student->get_enrol_date($studentid) : $lastgraded;
+            $lastsessiondate = $lastgraded ?: $student->get_enrol_date($studentid);
             $info['source'] = empty($lastgraded) ? 'enrol' : 'grade';
         }
         $info['date'] = $lastsessiondate;

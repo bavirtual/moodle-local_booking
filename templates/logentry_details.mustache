@@ -49,12 +49,12 @@
 }}
 
 <div class="row mb-5">
-    <div class="col-1">{{#pix}} booking, local_booking {{/pix}}</div>
+    <div class="col-1">{{#pix}} calendar, local_booking {{/pix}}</div>
     <div class="col-11 logbook-title">{{{formattedtime}}}</div>
 </div>
 <div class="row mt-1">
     <div class="col-1 logbook-mt1">
-        <i class="logbook-mt1">{{#pix}} question-circle, local_booking, {{#str}} exercise, local_booking {{/str}} {{/pix}}
+        <i class="logbook-mt1">{{#pix}} check, local_booking, {{#str}} exercise, local_booking {{/str}} {{/pix}}
         </i>
     </div>
     <div class="col-5">{{#str}} exercise, local_booking {{/str}}</div>
@@ -62,25 +62,25 @@
 </div>
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
-    <div class="col-5">{{#str}} flighttimemins, local_booking {{/str}}</div>
-    <div class="col-6">{{flighttime}}</div>
-</div>
-<div class="row mt-1">
-    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
-    <div class="col-5">{{#str}} sessiontimemins, local_booking {{/str}}</div>
+    <div class="col-5">{{#str}} sessiontime, local_booking {{/str}}</div>
     <div class="col-6">{{sessiontime}}</div>
 </div>
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
-    <div class="col-5">{{#str}} soloflighttimemins, local_booking {{/str}}</div>
-    <div class="col-6">{{soloflighttime}}</div>
+    <div class="col-5">{{#str}} pictime, local_booking {{/str}}</div>
+    <div class="col-6">{{pictime}}</div>
+</div>
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
+    <div class="col-5">{{#str}} dualtime, local_booking {{/str}}</div>
+    <div class="col-6">{{dualtime}}</div>
 </div>
 <div class="row mt-1">
     <div class="col-1">
         <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} pic, local_booking {{/str}} {{/pix}}
         </i>
     </div>
-    <div class="col-5">{{#str}} pic, local_booking {{/str}}</div>
+    <div class="col-5">{{#str}} p1, local_booking {{/str}}</div>
     <div class="col-6">{{picname}}</div>
 </div>
 <div class="row mt-1">
@@ -88,11 +88,11 @@
         <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} sic, local_booking {{/str}} {{/pix}}
         </i>
     </div>
-    <div class="col-5">{{#str}} sic, local_booking {{/str}}</div>
-    <div class="col-6">{{sicname}}</div>
+    <div class="col-5">{{#str}} p2, local_booking {{/str}}</div>
+    <div class="col-6">{{p2name}}</div>
 </div>
 <div class="row mt-1">
-    <div class="col-1"></div>
+    <div class="col-1">{{#pix}} booking, local_booking {{/pix}}</div>
     <div class="col-5">{{#str}} aircraft, local_booking {{/str}}</div>
     <div class="col-6">{{aircraft}}</div>
 </div>
@@ -108,12 +108,17 @@
 </div>
 <div class="row mt-1">
     <div class="col-1"></div>
-    <div class="col-5">{{#str}} fromicao, local_booking {{/str}}</div>
-    <div class="col-6">{{fromicao}}</div>
+    <div class="col-5">{{#str}} depicao, local_booking {{/str}}</div>
+    <div class="col-6">{{depicao}}</div>
 </div>
 <div class="row mt-1">
     <div class="col-1"></div>
-    <div class="col-5">{{#str}} toicao, local_booking {{/str}}</div>
-    <div class="col-6">{{toicao}}</div>
+    <div class="col-5">{{#str}} arricao, local_booking {{/str}}</div>
+    <div class="col-6">{{arricao}}</div>
+</div>
+<div class="row mt-1">
+    <div class="col-1"></div>
+    <div class="col-5">{{#str}} remarks, local_booking {{/str}}</div>
+    <div class="col-6">{{remarks}}</div>
 </div>
 

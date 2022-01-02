@@ -35,6 +35,7 @@
     class="bookingwrapper"{{!
     }}{{#courseid}} data-courseid="{{courseid}}"{{/courseid}}{{!
     }} data-contextid="{{contextid}}"{{!
+    }} data-trainingtype="{{trainingtype}}"{{!
     }}>
     <form id="booking">
         {{#activestudents}}
@@ -52,13 +53,13 @@
                         <span class="media-body" aria-hidden="true">#</span>
                     </th>
                     <th class="header booking-header text-xs-center">
-                        <span class="media-body" aria-hidden="true">{{#str}}students,local_booking{{/str}}</span>
+                        <span class="media-body" aria-hidden="true">{{#str}} students, local_booking {{/str}}</span>
                     </th>
                     <th class="header booking-header booking-small text-xs-center">
-                        <span class="media-body" aria-hidden="true">{{#str}}wait,local_booking{{/str}}</span>
+                        <span class="media-body" aria-hidden="true">{{#str}} wait, local_booking {{/str}}</span>
                     </th>
                     <th class="header booking-header booking-med text-xs-center">
-                        <span class="media-body" aria-hidden="true">{{#str}}simulator,local_booking{{/str}}</span>
+                        <span class="media-body" aria-hidden="true">{{#str}} simulator, local_booking {{/str}}</span>
                     </th>
                     {{#exercises}}
                     <th class="header booking-header booking-xbig text-xs-center"
@@ -99,18 +100,19 @@
                     {{/sessionoptions}}
                 </tr>
                 <tr style="height: 50px;">
-                    <td colspan="4" style="text-align: right;"><h6>{{#str}}newlogentryadd,local_booking{{/str}}:&nbsp;</h6></td>
+                    <td colspan="4" style="text-align: right;"><h6>{{#str}} newlogentryadd, local_booking {{/str}}:&nbsp;</h6></td>
                     {{#exercises}}
                     <td class="text-sm-center"
                         data-region="session-entry"
                         data-action="view-logentry"
                         data-student-id="{{studentid}}"
                         data-exercise-id="{{exerciseid}}"
-                        data-session-date="{{sessionts}}"
+                        data-session-date="{{sessiondatets}}"
+                        data-booking-date="{{lastbookingts}}"
                         data-logentry-id="{{logentryid}}"
                         data-is-additional="true">
                         <div id="exercise-session" class="d-md-block text-xs-center clickable">
-                                {{#pix}}plus-square,local_booking,{{#str}}add{{/str}}{{/pix}}
+                                {{#pix}} plus-square, local_booking,{{#str}} add {{/str}} {{/pix}}
                         </div>
                     </td>
                     {{/exercises}}
@@ -123,8 +125,8 @@
                 <td
                     data-toggle="tooltip"
                     data-html="true"
-                    title="{{#str}}bookingoverridetooltip,local_booking{{/str}}">
-                    <h4>{{#str}}bookingoverridelabel,local_booking{{/str}}:</h4>
+                    title="{{#str}} bookingoverridetooltip, local_booking {{/str}}">
+                    <h4>{{#str}} bookingoverridelabel, local_booking {{/str}}:</h4>
                 </td>
                 <td class="mdl-right">
                     <div class="singlebutton">
@@ -132,18 +134,18 @@
                             data-region="override-button"
                             id="override_button"
                             title="override">
-                            {{#str}}bookingoverride,local_booking{{/str}}
+                            {{#str}} bookingoverride, local_booking {{/str}}
                         </button>
                     </div>
                 </td>
             </tr>
             <tr style="height: 80px;">
                 <td>
-                    <h4>{{#str}}bookingavailabilityposts,local_booking{{/str}}:</h4>
+                    <h4>{{#str}} bookingavailabilityposts, local_booking {{/str}}:</h4>
                 </td>
                 <td class="mdl-right">
                     <div style="text-align: left; text-indent: 22px; font-weight: bolder; font-size: x-large;">
-                        <span>{{posts}}&nbsp;{{#str}}slots,local_booking{{/str}}</span>
+                        <span>{{posts}}&nbsp;{{#str}} slots, local_booking {{/str}}</span>
                     </div>
                 </td>
             </tr>
@@ -156,13 +158,13 @@
                     data-region="back-button"
                     id="back_button"
                     title="">
-                    {{#str}}back{{/str}}
+                    {{#str}} back {{/str}}
                 </button>
                 <button type="submit"
                     class="session-button-confirm"
                     id="continue_button"
                     formaction="{{formaction}}">
-                    {{#str}}continue{{/str}}
+                    {{#str}} continue {{/str}}
                 </button>
             </div>
         </div>

@@ -60,25 +60,21 @@ class logentry_exporter extends exporter {
 
         if (!empty($logentry)) {
             // convert flight time duration, session duration, and
-            // solo flight duration to their equivalent int values
-            $data['flighttimemins'] = $logentry->get_flighttimemins();
-            $data['sessiontimemins'] = $logentry->get_sessiontimemins();
-            $data['soloflighttimemins'] = !empty($data['soloflighttimemins']) ? $logentry->get_soloflighttimemins() : 0;
+            // pic flight duration to their equivalent int values
 
             // process data for new and edit logbook entry
             if (empty($logentry->get_id())) {
-                // convert sessiondate to timestamp format
-                $sessiondatestr = $data['sessiondate']['month'] . '/' .
-                $data['sessiondate']['day'] . '/' .
-                $data['sessiondate']['year'];
-                $sessiondate = DateTime::createFromFormat('m/d/Y', $sessiondatestr);
+                // convert flightdate to timestamp format
+                $flightdatestr = $data['flightdate']['month'] . '/' .
+                $data['flightdate']['day'] . '/' .
+                $data['flightdate']['year'];
+                $data['flightdate'] = (DateTime::createFromFormat('m/d/Y', $flightdatestr))->getTimestamp();
+                $data['sessiontime'] = $logentry->get_sessiontime();
             } else {
-                $sessiondate = new DateTime('@' . $logentry->get_sessiondate());
-                $data += $logentry->__toArray();
-                $data['url'] = new moodle_url('/booking/view', ['courseid'=>$data['courseid']]);
+                $data = $logentry->__toArray($data['view'] == 'summary') + $data;
             }
-            $data['sessiondate'] = $sessiondate->getTimestamp();
         }
+        $data['url'] = new moodle_url('/booking/view', ['courseid'=>$data['courseid']]);
         $data['visible'] = 1;
 
         parent::__construct($data, $related);
@@ -103,17 +99,19 @@ class logentry_exporter extends exporter {
             'userid' => [
                 'type' => PARAM_INT
             ],
-            'sessiondate' => [
-                'type' => PARAM_INT
-            ],
-            'flighttimemins' => [
+            'flightdate' => [
                 'type' => PARAM_RAW
             ],
-            'sessiontimemins' => [
-                'type' => PARAM_INT
+            'dualtime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
             ],
-            'soloflighttimemins' => [
-                'type' => PARAM_INT
+            'sessiontime' => [
+                'type' => PARAM_RAW
+            ],
+            'pictime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
             ],
             'aircraft' => [
                 'type' => PARAM_RAW,
@@ -127,11 +125,15 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true,
             ],
-            'fromicao' => [
+            'depicao' => [
                 'type' => PARAM_RAW,
                 'optional' => true,
             ],
-            'toicao' => [
+            'arricao' => [
+                'type' => PARAM_RAW,
+                'optional' => true,
+            ],
+            'remarks' => [
                 'type' => PARAM_RAW,
                 'optional' => true,
             ],
@@ -154,19 +156,10 @@ class logentry_exporter extends exporter {
             'formattedtime' => [
                 'type' => PARAM_RAW
             ],
-            'flighttime' => [
-                'type' => PARAM_RAW
-            ],
-            'sessiontime' => [
-                'type' => PARAM_RAW
-            ],
-            'soloflighttime' => [
-                'type' => PARAM_RAW
-            ],
             'picname' => [
                 'type' => PARAM_RAW
             ],
-            'sicname' => [
+            'p2name' => [
                 'type' => PARAM_RAW
             ],
             'sectionname' => [
@@ -183,22 +176,16 @@ class logentry_exporter extends exporter {
      */
     protected function get_other_values(renderer_base $output) {
         $exerciseid = !empty($this->logentry) ? $this->logentry->get_exerciseid() : $this->data['exerciseid'];
-        $sessiondate = !empty($this->logentry) ? $this->logentry->get_sessiondate(true) : $this->data['sessiondate'];
-        $flighttimemins = !empty($this->logentry) ? $this->logentry->get_flighttimemins(false) : $this->data['flighttimemins'];
-        $sessiontimemins = !empty($this->logentry) ? $this->logentry->get_sessiontimemins(false) : $this->data['sessiontimemins'];
-        $soloflighttimemins = !empty($this->logentry) ? $this->logentry->get_soloflighttimemins(false) : $this->data['soloflighttimemins'];
-        $picid = !empty($this->logentry) ? $this->logentry->get_picid() : $this->data['picid'];
-        $sicid = !empty($this->logentry) ? $this->logentry->get_sicid() : $this->data['sicid'];
+        $flightdate = !empty($this->logentry) ? $this->logentry->get_flightdate($this->data['view'] == 'summary') : $this->data['flightdate'];
+        $p1id = !empty($this->logentry) ? $this->logentry->get_p1id() : $this->data['p1id'];
+        $userid = !empty($this->logentry) ? $this->logentry->get_userid() : $this->data['userid'];
         $sectionname = !empty($this->logentry) ? '' : subscriber::get_section_name($this->data['courseid'], $exerciseid);
 
         return [
             'exercisename' => subscriber::get_exercise_name($exerciseid),
-            'formattedtime' => $sessiondate,
-            'flighttime' => $flighttimemins,
-            'sessiontime' => $sessiontimemins,
-            'soloflighttime' => $soloflighttimemins,
-            'picname' => participant::get_fullname($picid),
-            'sicname' => participant::get_fullname($sicid),
+            'formattedtime' => $flightdate,
+            'picname' => participant::get_fullname($p1id),
+            'p2name' => participant::get_fullname($userid),
             'sectionname' => $sectionname,
         ];
     }

@@ -189,6 +189,9 @@ function create_course_customfields() {
 
     // create course Session Booking custom fields for ATO
     save_course_customfield($category, 'checkbox', 'subscribed', get_string('useplugin', 'local_booking'),',"visibility":"2","checkbydefault":"0"');
+    save_course_customfield($category, 'select', 'trainingtype', get_string('useplugin', 'local_booking'),',"visibility":"2","options":"' .
+            get_string('customfielddual', 'local_booking') . '\r\n' . get_string('customfieldmulticrew', 'local_booking') . '","defaultvalue":"' .
+            get_string('customfielddual', 'local_booking') . '"');
     save_course_customfield($category, 'text', 'homeicao',  get_string('homeicao', 'local_booking'),
         ',"visibility":"2","defaultvalue":"","displaysize":50,"maxlength":1333,"ispassword":"0","link":""');
     save_course_customfield($category, 'textarea', 'aircrafticao', get_string('trainingaircraft', 'local_booking'),

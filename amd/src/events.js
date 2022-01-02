@@ -24,13 +24,13 @@
  */
 define([], function() {
     return {
-        canceled: 'booking-events:canceled',
-        created: 'booking-events:created',
-        deleted: 'booking-events:deleted',
-        updated: 'booking-events:updated',
-        addLogentry: 'booking-events:add_logentry',
-        editLogentry: 'booking-events:edit_logentry',
-        viewUpdated: 'booking-events:view_updated',
-        gotoFeedback: 'booking-events:goto_feedback',
+        canceled: 'booking-sessions:canceled',
+        created: 'booking-sessions:created',
+        deleted: 'booking-sessions:deleted',
+        updated: 'booking-sessions:updated',
+        addLogentry: 'booking-sessions:add_logentry',
+        editLogentry: 'booking-sessions:edit_logentry',
+        viewUpdated: 'booking-sessions:view_updated',
+        gotoFeedback: 'booking-sessions:goto_feedback',
     };
 });

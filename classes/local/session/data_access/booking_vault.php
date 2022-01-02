@@ -39,19 +39,21 @@ class booking_vault implements booking_vault_interface {
     /**
      * get booked sessions for a user
      *
-     * @param int    $userid of the student in the booking.
-     * @param bool   $oldestfirst sort order of the returned records.
+     * @param bool   $isstudent   Whether to get student bookings
+     * @param int    $userid      The student in the booking.
+     * @param bool   $oldestfirst Sort order of the returned records.
+     * @param bool   $activeonly  Retrieve active bookings only.
      * @return array {Object}
      */
-    public static function get_bookings(int $userid, bool $oldestfirst = false) {
+    public static function get_bookings(bool $isstudent, int $userid, bool $oldestfirst = false, bool $activeonly = true) {
         global $DB;
 
         $sql = 'SELECT b.id, b.userid, b.courseid, b.studentid, b.exerciseid,
                        b.slotid, b.confirmed, b.active, b.timemodified
                 FROM {' . static::DB_BOOKINGS. '} b
                 INNER JOIN {' . static::DB_SLOTS . '} s on s.id = b.slotid
-                WHERE b.userid = :userid
-                AND b.active = 1' .
+                WHERE ' . ($isstudent ? 'b.studentid' : 'b.userid') . ' = :userid' .
+                ($activeonly ? ' AND b.active = 1' : '') .
                 ($oldestfirst ? ' ORDER BY s.starttime' : '');
 
         return $DB->get_records_sql($sql, ['userid'=>$userid]);

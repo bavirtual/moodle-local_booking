@@ -33,10 +33,12 @@ use local_booking\external\logentry_exporter;
 use local_booking\local\session\entities\booking;
 use local_booking\local\slot\entities\slot;
 use local_booking\local\message\notification;
+use local_booking\local\logbook\forms\pirep as pirep_verificaiton_form;
 use local_booking\local\logbook\forms\create as create_logentry_form;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\external\week_exporter;
 use local_booking\local\logbook\entities\logbook;
+use local_booking\local\logbook\entities\logentry;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
@@ -237,17 +239,17 @@ function local_booking_output_fragment_logentry_form($args) {
         $USER->ignoresesskey = true;
     }
 
-    $courseid = (!empty($args['courseid'])) ? $args['courseid'] : 0;
-    $exerciseid = (!empty($args['exerciseid'])) ? $args['exerciseid'] : 0;
-    $userid = (!empty($args['userid'])) ? $args['userid'] : 0;
-    $sessiondate = (!empty($args['sessiondate'])) ? $args['sessiondate'] : 0;
+    $courseid = $args['courseid'] ?: 0;
+    $exerciseid = $args['exerciseid'] ?: 0;
+    $userid = $args['userid'] ?: 0;
+    $flightdate = $args['flightdate'] ?: 0;
 
     $formoptions = [
         'context'   => $context,
         'courseid'  => $courseid,
         'exerciseid'=> $exerciseid,
         'userid' => $userid,
-        'sessiondate' => $sessiondate,
+        'flightdate' => $flightdate,
     ];
 
     $logbook = new logbook($courseid, $userid);
@@ -257,12 +259,10 @@ function local_booking_output_fragment_logentry_form($args) {
         $formoptions['logentry'] = $logentry;
         $formdata = $logentry->__toArray(true);
         $data = $formdata;
-        $data['sessiondate'] = $logentry->get_sessiondate();
+        $data['flightdate'] = $logentry->get_flightdate();
         $mform = new update_logentry_form(null, $formoptions, 'post', '', null, true, $formdata);
     } else {
         $logentry = $logbook->create_logentry();
-        $logentry->set_picid($userid);
-        $logentry->set_sicid($USER->id);
         $formoptions['logentry'] = $logentry;
         $mform = new create_logentry_form(null, $formoptions, 'post', '', null, true, $formdata);
         // copy over additional data needed for setting the form
@@ -400,7 +400,7 @@ function get_logbook_view($courseid) {
 
     $userid = $USER->id;
     $logbook = new logbook($courseid, $userid);
-    list($totalflighthours, $totalsessionhours, $totalsolohours) = $logbook->get_summary();
+    list($totaldualhours, $totalsessionhours, $totalpichours) = $logbook->get_summary();
     $renderer = $PAGE->get_renderer('local_booking');
 
     $template = 'local_booking/logbook';
@@ -408,9 +408,9 @@ function get_logbook_view($courseid) {
         'courseid'  => $courseid,
         'userid'  => $userid,
         'username'  => participant::get_fullname($userid),
-        'totalflighttime'  => $totalflighthours,
+        'totaldualtime'  => $totaldualhours,
         'totalsessiontime'  => $totalsessionhours,
-        'totalsolotime'  => $totalsolohours,
+        'totalsolotime'  => $totalpichours,
     ];
 
     $logbook = new logbook_exporter($data, ['context' => \context_course::instance($courseid)]);
@@ -422,25 +422,33 @@ function get_logbook_view($courseid) {
 /**
  * Get the logbook entry view output.
  *
- * @param   int     $logentryid the logbook entry id.
- * @param   int     $courseid
- * @param   int     $userid
- * @return  array[array, string]
+ * @param   int      $logentryid     The logbook entry id.
+ * @param   int      $courseid       The course id
+ * @param   int      $userid         The owner of the logentry
+ * @param   logentry $editedlogentry Newly created or edited logentry
+ * @param   array    $formdata       Newly created or edited logentry form data
+ * @return  array[array, string]     Exporter output
  */
-function get_logentry_output($logentryid, $courseid, $userid) {
+function get_logentry_view(int $logentryid, int $courseid, int $userid, logentry $editedlogentry = null, array $formdata = null) {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
 
-    $template = 'local_booking/bookings';
-    $data = [
-        'logentryid'  => $logentryid,
-        'courseid'  => $courseid,
-        'userid'  => $userid,
-    ];
-
-    $logbook = new logbook($courseid);
-    $logentry = $logbook->get_logentry($logentryid);
+    if (empty($editedlogentry) && empty($formdata)) {
+        $data = [
+            'logentryid'  => $logentryid,
+            'courseid'  => $courseid,
+            'userid'  => $userid,
+            'view'  => 'summary',
+        ];
+        $template = 'local_booking/logentry_summary_modal';
+        $logbook = new logbook($courseid, $userid);
+        $logentry = $logbook->get_logentry($logentryid);
+    } else {
+        $template = 'local_booking/modal_logentry_form';
+        $data = $formdata;
+        $logentry = $editedlogentry;
+    }
     $logentryexp = new logentry_exporter($data, $logentry, ['context' => \context_course::instance($courseid)]);
     $data = $logentryexp->export($renderer);
 
@@ -500,7 +508,7 @@ function get_participation_view($courseid) {
 function save_booking($params) {
     global $USER;
 
-    $courseid = !empty($params['courseid']) ? $params['courseid'] : SITEID;
+    $courseid = $params['courseid'] ?: SITEID;
     require_login($courseid, false);
 
     $result = false;
@@ -612,7 +620,7 @@ function cancel_booking($bookingid, $comment) {
     // get the booking to be deleted
     $booking = new booking($bookingid);
     $booking->load();
-    $courseid = !empty($booking->get_courseid()) ? $booking->get_courseid() : $COURSE->id;
+    $courseid = $booking->get_courseid() ?: $COURSE->id;
     $sessiondate = new DateTime('@' . ($booking->get_slot())->get_starttime());
 
     require_login($courseid, false);
@@ -724,9 +732,9 @@ function random_color() {
 }
 
 /**
- * Returns the ATO name from config.xml
+ * Returns the settings from config.xml
  *
- * @return string  The ATO name.
+ * @return mixed  The requested setting value.
  */
 function get_booking_config(string $key, $associative = null) {
     global $CFG;

@@ -34,32 +34,32 @@
 <div class="logbook-body">
 </br>
 <div class="logbook-card logbook-shadow2">
-    <h2 class="logbook-h2">{{#str}}logbooksummary,local_booking{{/str}}</h2>
-    <pre>{{#str}}pilot,local_booking{{/str}}:
+    <h2 class="logbook-h2">{{#str}} logbooksummary, local_booking {{/str}}</h2>
+    <pre>{{#str}} pilot, local_booking {{/str}}:
     <span class="logbook-highlight">{{username}}</span>
 
-    {{#str}}totalflighttime,local_booking{{/str}}<span class="logbook-highlight">&#09;&#09;{{totalflighttime}}</span>
-    {{#str}}totalsessiontime,local_booking{{/str}}<span class="logbook-highlight">&#09;&#09;{{totalsessiontime}}</span>
-    {{#str}}totalsolotime,local_booking{{/str}}<span class="logbook-highlight">&#09;{{totalsolotime}}</span>
+    {{#str}} totaldualtime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totaldualtime}}</span>
+    {{#str}} totalsessiontime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalsessiontime}}</span>
+    {{#str}} totalpictime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalpictime}}</span>
     </pre></div>
 
 {{#entries}}
     <p>
     <div class="logbook-card logbook-shadow1">
     <h2 class="logbook-h2">{{sectionname}}</h2><h4>{{exercisename}}</h4><br/>
-        <pre>{{#str}}logentry2,local_booking{{/str}}:
-        {{#str}}flightdate2,local_booking{{/str}}&#09;&#09;&#09;&#09;{{sessiondate}}
-        {{#str}}flighttime,local_booking{{/str}}&#09;&#09;&#09;&#09;{{flighttimemins}}
-        {{#str}}sessiontime,local_booking{{/str}}&#09;&#09;&#09;{{sessiontimemins}}
-        {{#str}}soloflighttime,local_booking{{/str}}&#09;&#09;&#09;{{soloflighttimemins}}
+        <pre>{{#str}} logentry2, local_booking {{/str}}:
+        {{#str}} flightdate2, local_booking {{/str}}&#09;&#09;&#09;&#09;{{flightdate}}
+        {{#str}} dualtime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{dualtime}}
+        {{#str}} sessiontime, local_booking {{/str}}&#09;&#09;&#09;{{sessiontime}}
+        {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;{{pictime}}
 
-        {{#str}}aircraft,local_booking{{/str}}&#09;&#09;&#09;&#09;{{aircraft}}
-        {{#str}}callsign,local_booking{{/str}}&#09;&#09;&#09;&#09;{{callsign}}
-        {{#str}}pic2,local_booking{{/str}}&#09;&#09;&#09;&#09;&#09;{{picname}}
-        {{#str}}sic2,local_booking{{/str}}&#09;&#09;&#09;&#09;&#09;{{sicname}}
-        {{#str}}pirep,local_booking{{/str}}&#09;&#09;&#09;&#09;&#09;{{pirep}}
-        {{#str}}fromicao,local_booking{{/str}}&#09;&#09;&#09;&#09;{{fromicao}}
-        {{#str}}toicao,local_booking{{/str}}&#09;&#09;&#09;&#09;{{toicao}}
+        {{#str}} aircraft, local_booking {{/str}}&#09;&#09;&#09;&#09;{{aircraft}}
+        {{#str}} callsign, local_booking {{/str}}&#09;&#09;&#09;&#09;{{callsign}}
+        {{#str}} p1, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{picname}}
+        {{#str}} p2, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{p2name}}
+        {{#str}} pirep, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{pirep}}
+        {{#str}} depicao, local_booking {{/str}}&#09;&#09;&#09;&#09;{{depicao}}
+        {{#str}} arricao, local_booking {{/str}}&#09;&#09;&#09;&#09;{{arricao}}
         </pre>
   </div>
   </p>

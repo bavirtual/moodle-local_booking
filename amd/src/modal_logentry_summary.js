@@ -166,11 +166,11 @@ function(
     /**
      * Get the exercise id for the logbook entry being shown in this modal.
      *
-     * @method getSessionDate
+     * @method getFlightDate
      * @return {int}
      */
-     ModalLogentrySummary.prototype.getSessionDate = function() {
-        return this.getBody().find(SELECTORS.ROOT).attr('data-session-date');
+     ModalLogentrySummary.prototype.getFlightDate = function() {
+        return this.getBody().find(SELECTORS.ROOT).attr('data-flight-date');
     };
 
     /**
@@ -228,7 +228,7 @@ function(
 
         this.getAddButton().on(CustomEvents.events.activate, function(e, data) {
             // When the edit button is clicked we fire an event for the booking UI to handle edit.
-            $('body').trigger(BookingEvents.addLogentry, [this.getExerciseId(), this.getUserId(), this.getSessionDate()]);
+            $('body').trigger(BookingEvents.addLogentry, [this.getExerciseId(), this.getUserId(), this.getFlightDate()]);
 
             // There is nothing else for us to do so let's hide.
             this.hide();
@@ -242,7 +242,7 @@ function(
 
         this.getEditButton().on(CustomEvents.events.activate, function(e, data) {
             // When the edit button is clicked we fire an event for the booking UI to handle edit.
-            $('body').trigger(BookingEvents.editLogentry, [this.getLogentryId(), this.getUserId(), this.getSessionDate()]);
+            $('body').trigger(BookingEvents.editLogentry, [this.getUserId(), this.getLogentryId()]);
 
             // There is nothing else for us to do so let's hide.
             this.hide();

@@ -30,6 +30,13 @@ defined('MOODLE_INTERNAL') || die();
 interface subscriber_interface {
 
     /**
+     * Get the subscriber's course id.
+     *
+     * @return int $courseid
+     */
+    public function get_id();
+
+    /**
      * Get all active students.
      *
      * @param int $studentid    A specific student for booking confirmation

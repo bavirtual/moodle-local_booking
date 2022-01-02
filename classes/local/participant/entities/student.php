@@ -28,6 +28,8 @@ namespace local_booking\local\participant\entities;
 use DateTime;
 use moodle_exception;
 use local_booking\local\session\entities\priority;
+use local_booking\local\session\data_access\booking_vault;
+use local_booking\local\session\entities\booking;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\slot\entities\slot;
 
@@ -37,6 +39,11 @@ class student extends participant {
      * Process user enrollments table name.
      */
     const SLOT_COLOR = '#00e676';
+
+    /**
+     * @var array $grades The student exercise/quize grades.
+     */
+    protected $grades;
 
     /**
      * @var array $slots The student posted timeslots.
@@ -62,6 +69,11 @@ class student extends participant {
      * @var array $nextexercise The student's next exercise and section.
      */
     protected $nextexercise;
+
+    /**
+     * @var booking $activebooking The currently active booking for the student.
+     */
+    protected $activebooking;
 
     /**
      * @var DateTime $restrictiondate The student's end of restriction period date.
@@ -161,15 +173,17 @@ class student extends participant {
      * Get grades for a specific student from
      * assignments and quizes.
      *
-     * @return {object}[]  A student grades.
+     * @return {object}[] The student grades.
      */
     public function get_grades() {
-        // join both graded assignments and attempted quizes into one grades array
-        $assignments = $this->vault->get_student_assignment_grades($this->userid);
-        $quizes = $this->vault->get_student_quizes_grades($this->userid);
-        $grades = $assignments + $quizes;
+        if (empty($this->grades)) {
+            // join both graded assignments and attempted quizes into one grades array
+            $assignments = $this->vault->get_student_assignment_grades($this->userid);
+            $quizes = $this->vault->get_student_quizes_grades($this->userid);
+            $this->grades = $assignments + $quizes;
+        }
 
-        return $grades;
+        return $this->grades;
     }
 
     /**
@@ -239,7 +253,7 @@ class student extends participant {
                 $daysfromlast = (get_config('local_booking', 'nextsessionwaitdays')) ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
 
                 $lastsession = slot::get_last_booking($this->courseid, $this->userid);
-                $sessiondatets = !empty($lastsession) ? $lastsession : time();
+                $sessiondatets = $lastsession ?: time();
                 $sessiondate = new DateTime('@' . $sessiondatets);
                 date_add($sessiondate, date_interval_create_from_date_string($daysfromlast . ' days'));
 
@@ -261,29 +275,29 @@ class student extends participant {
     }
 
     /**
-     * Returns whether the student complete
-     * all sessons prior to the upcoming next
-     * exercise.
+     * Returns the student's currently active booking.
      *
-     * @param   int     The upcoming next exercise id
-     * @return  bool    Whether the lessones were completed or not.
+     * @return booking
      */
-    public function has_completed_lessons() {
-        if (empty($this->nextexercise))
-            $this->nextexercise = $this->get_next_exercise();
-        list($exerciseid, $section) = $this->nextexercise;
-        return $this->vault->get_student_lessons_complete($this->userid, $this->courseid, $section);
+    public function get_active_booking() {
+        if (empty($this->activebooking)) {
+            $booking = new booking(0, $this->courseid, $this->userid);
+            if ($booking->load())
+                $this->activebooking = $booking;
+        }
+        return $this->activebooking;
     }
 
     /**
-     * Returns the next upcoming exercise id
+     * Returns the next upcoming exercise id and section
      * for the student and its associated course section.
      *
      * @return int The next exercise id and associated course section
      */
     public function get_next_exercise() {
-        if (empty($this->next_exercise))
+        if (empty($this->next_exercise)) {
             $this->next_exercise = $this->vault->get_next_student_exercise($this->courseid, $this->userid);
+        }
         return $this->next_exercise;
     }
 
@@ -326,5 +340,20 @@ class student extends participant {
      */
     public function set_next_lesson(string $nextlesson) {
         $this->nextlesson = $nextlesson;
+    }
+
+    /**
+     * Returns whether the student complete
+     * all sessons prior to the upcoming next
+     * exercise.
+     *
+     * @param   int     The upcoming next exercise id
+     * @return  bool    Whether the lessones were completed or not.
+     */
+    public function has_completed_lessons() {
+        if (empty($this->nextexercise))
+            $this->nextexercise = $this->get_next_exercise();
+        list($exerciseid, $section) = $this->nextexercise;
+        return !empty($this->nextexercise) ? $this->vault->get_student_lessons_complete($this->userid, $this->courseid, $section) : false;
     }
 }

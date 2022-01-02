@@ -25,7 +25,7 @@
  */
 define([], function() {
     return {
-        viewSelector: 'div[data-region="view-selector"]',
+        viewselector: 'div[data-region="view-selector"]',
         actions: {
             add: '[data-action="add"]',
             edit: '[data-action="edit"]',
@@ -34,11 +34,10 @@ define([], function() {
             gotoFeedback: '[data-action="feedback"]',
             bookingConfirm: '[data-action="booking-confirm"]',
         },
-        logentryItem: '[data-type="logentry"]',
-        sessionOption: '[data-type="session-option"]',
+        logentryitem: '[data-type="logentry"]',
         today: '.today',
         day: '[data-region="day"]',
-        bookConfirmation: '[data-region="session-booking-confirmation"]',
+        bookingconfirmation: '[data-region="session-booking-confirmation"]',
         calendarwrapper: '.calendarwrapper',
         bookingwrapper: '.bookingwrapper',
         mybookingswrapper: '.mybookingswrapper',

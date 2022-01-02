@@ -26,6 +26,7 @@
 namespace local_booking\local\subscriber\entities;
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
+require_once($CFG->dirroot . '/group/lib.php');
 
 use local_booking\local\subscriber\data_access\subscriber_vault;
 use local_booking\local\participant\data_access\participant_vault;
@@ -79,12 +80,26 @@ class subscriber implements subscriber_interface {
                     $finalvalues = array_combine($fieldvalues, $fieldvalues);
                     $value = $finalvalues;
                 } else {
-                    $value = $customfield->get_value();
+                    // get the field value checking dropdown selects as well
+                    $value = $customfield->get_field()->get('type') == 'select' ? $customfield->export_value() : $customfield->get_value();
                 }
 
                 $this->{$customfield->get_field()->get('shortname')} = $value;
             }
         }
+
+        // verify groups exist
+        if (!$this->verify_groups())
+            throw new \Exception('Unable to create needed course groups.');
+    }
+
+    /**
+     * Get the subscriber's course id.
+     *
+     * @return int $courseid
+     */
+    public function get_id() {
+        return $this->courseid;
     }
 
     /**
@@ -214,5 +229,85 @@ class subscriber implements subscriber_interface {
      */
     public static function get_exercise_name($exerciseid) {
         return subscriber_vault::get_subscriber_exercise_name($exerciseid);
+    }
+
+    /**
+     * Checks if there is a database integration
+     * for the specified passed key.
+     *
+     * @param string $key The key associated with the integration.
+     * @return bool
+     */
+    public static function has_integration($key) {
+        $integrations = get_booking_config('integrations');
+        return !empty($integrations->$key->enabled);
+    }
+
+    /**
+     * Returns an array of records from integrated database
+     * that matches the passed criteria.
+     *
+     * @param string $key    The key associated with the integration.
+     * @param string $target The target data structure of the integration.
+     * @param string $value  The data selection criteria
+     * @return array
+     */
+    public static function get_integrated_data($key, $data, $value) {
+        global $CFG;
+
+        // get the integration object from settings
+        $integrations = get_booking_config('integrations');
+
+        // Moodle user/password must have read access to the target host, database, and tables
+        $conn = new \mysqli($integrations->$key->host, $CFG->dbuser, $CFG->dbpass, $integrations->$key->db);
+
+        $target = $integrations->$key->data;
+
+        if ($conn->connect_errno) {
+            $sql = 'SELECT ' . $target[$data]->field . ' FROM ' . $target[$data]->table . ' WHERE ' . $target[$data]->key . ' = "' . $value . '"';
+            // Return name of current default database
+            if ($result = $conn->query($sql)) {
+                $records = $result->fetch_row();
+                $result->close();
+            }
+            $conn->close();
+        } else {
+            throw new \Exception(get_string('errordbconnection', 'local_booking') . $conn->connect_error);
+        }
+
+        return $records;
+    }
+
+    /**
+     * Verifies custom groups are exist otherwise create them.
+     *
+     * @return bool
+     */
+    protected function verify_groups() {
+        $onholdgroupid = true;
+        $inactivegroupid = true;
+
+        // check if LOCAL_BOOKING_ONHOLDGROUP exists otherwise create it
+        $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_ONHOLDGROUP);
+        if (empty($groupid)) {
+            $data = new \stdClass();
+            $data->courseid = $this->courseid;
+            $data->name = LOCAL_BOOKING_ONHOLDGROUP;
+            $data->description = 'Group to track students put on hold.';
+            $data->descriptionformat = FORMAT_HTML;
+            $onholdgroupid = groups_create_group($data);
+        }
+
+        // check if LOCAL_BOOKING_INACTIVEGROUP exists otherwise create it
+        $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_INACTIVEGROUP);
+        if (empty($groupid)) {
+            $data = new \stdClass();
+            $data->courseid = $this->courseid;
+            $data->name = LOCAL_BOOKING_INACTIVEGROUP;
+            $data->description = 'Group to track inactive instructors.';
+            $data->descriptionformat = FORMAT_HTML;
+            $inactivegroupid = groups_create_group($data);
+        }
+        return !empty($onholdgroupid) && !empty($inactivegroupid);
     }
 }

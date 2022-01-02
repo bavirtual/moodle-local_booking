@@ -14,8 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A javascript module to handler booking view changes.
- * Improvised from core_calendar.
+ * This module handles session booking and logentry view changes.
  *
  * @module     local_booking/booking_view_manager
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -30,21 +29,21 @@ import Notification from 'core/notification';
 import Pending from 'core/pending';
 import ModalFactory from 'core/modal_factory';
 import ModalEvents from 'core/modal_events';
-import SummaryModal from 'local_booking/modal_logentry_summary';
+import ModalLogentrySummaryForm from 'local_booking/modal_logentry_summary';
 import * as Repository from 'local_booking/repository';
 import * as Selectors from 'local_booking/selectors';
 
 /**
  * Refresh student progression content.
  *
- * @method  refreshProgressionContent
+ * @method  refreshInstructorDashboardContent
  * @param   {object} root The root element.
  * @param   {number} courseId The id of the course associated with the progression view shown
  * @param   {number} categoryId The id of the category associated with the progression view shown
  * @param   {object} target The element being replaced. If not specified, the bookingwrapper is used.
  * @return  {promise}
  */
-export const refreshProgressionContent = (root, courseId, categoryId, target = null) => {
+export const refreshInstructorDashboardContent = (root, courseId, categoryId, target = null) => {
     startLoading(root);
 
     const template = root.attr('data-template');
@@ -99,18 +98,76 @@ export const refreshProgressionContent = (root, courseId, categoryId, target = n
 };
 
 /**
+ * Render the logentry new/edit modal.
+ *
+ * @method  renderLogentryModal
+ * @param  {object} e          The triggered event.
+ * @param   {Number} LogentryFormPromise  The Logentry form promise.
+ * @param   {object} target     The target element.
+ * @param   {Number} contextId  The course context id of the logentry.
+ * @param   {number} courseId   The graded session course id.
+ * @param   {number} userId     The graded session user id.
+ * @param   {number} logentryId The graded session logbook entry id.
+ * @param   {bool}   editMode   Whether the render is for edit.
+ * @returns {promise}
+ */
+ export const renderLogentryModal = (e, LogentryFormPromise, target, contextId, courseId, userId, logentryId, editMode) => {
+    const pendingPromise = new Pending('local_booking/booking_view_manager:renderLogentryModal');
+
+    return LogentryFormPromise
+    .then(function(modal) {
+        // Show the logentry form modal form when the user clicks on a session
+        // in the 'Instructor dashboard' page to add or edit a logentry
+        LogentryFormPromise.then(function(modal) {
+            modal.setContextId(contextId);
+            modal.setCourseId(courseId);
+            modal.setUserId(userId);
+            modal.setLogentryId(logentryId);
+
+            // Sel elements not meant for edit mode
+            if (!editMode) {
+                const logegntrySession = target.closest(Selectors.actions.viewLogEntry);
+                const flightDate = logegntrySession.dataset.bookingDate;
+                const exerciseId = logegntrySession.dataset.exerciseId;
+                const additionalEntry = logegntrySession.dataset.isAdditional !== undefined;
+                modal.setExerciseId(exerciseId);
+                modal.setFlightDate(flightDate);
+                modal.setAdditionalEntry(additionalEntry);
+            }
+
+            // Handle hidden event.
+            modal.getRoot().on(ModalEvents.hidden, function() {
+                // Destroy when hidden.
+                modal.destroy();
+            });
+
+            modal.show();
+            e.stopImmediatePropagation();
+            return;
+        })
+        .fail(Notification.exception);
+        return modal;
+    })
+    .then(function(modal) {
+        pendingPromise.resolve();
+        return modal;
+    })
+    .catch(Notification.exception);
+ };
+
+/**
  * Render the logentry summary modal.
  *
  * @method  renderLogentrySummaryModal
- * @param   {Number} logentryId The graded session logbook entry id.
- * @param   {Number} courseId The graded session course id.
- * @param   {Number} userId The graded session user id.
- * @returns {Promise}
+ * @param   {number} courseId The graded session course id.
+ * @param   {number} userId The graded session user id.
+ * @param   {number} logentryId The graded session logbook entry id.
+ * @returns {promise}
  */
- export const renderLogentrySummaryModal = (logentryId, courseId, userId) => {
+ export const renderLogentrySummaryModal = (courseId, userId, logentryId) => {
     const pendingPromise = new Pending('local_booking/booking_view_manager:renderLogentrySummaryModal');
 
-    // Calendar repository promise.
+    // Booking repository promise.
     return Repository.getLogentryById(logentryId, courseId, userId)
     .then((getEventResponse) => {
         if (!getEventResponse.logentry) {
@@ -123,15 +180,8 @@ export const refreshProgressionContent = (root, courseId, categoryId, target = n
         // Build the modal parameters from the logentry data.
         const modalParams = {
             title: Str.get_string('logentry', 'local_booking'),
-            type: SummaryModal.TYPE,
-            body: Templates.render('local_booking/logentry_summary_body', logentryData),
-            templateContext: {
-                canedit: logentryData.canedit,
-                candelete: logentryData.candelete,
-                isactionevent: logentryData.isactionevent,
-                url: logentryData.url,
-                action: logentryData.action
-            }
+            type: ModalLogentrySummaryForm.TYPE,
+            body: Templates.render('local_booking/logentry_summary_body', logentryData)
         };
 
         // Create the modal.
@@ -143,7 +193,6 @@ export const refreshProgressionContent = (root, courseId, categoryId, target = n
             // Destroy when hidden.
             modal.destroy();
         });
-
         // Finally, render the modal!
         modal.show();
 

@@ -66,7 +66,7 @@ class grade implements grade_interface {
     protected $studentname;
 
     /**
-     * @var array $gradedate The date of this grade.
+     * @var int $gradedate The date of this grade.
      */
     protected $gradedate;
 
@@ -87,7 +87,7 @@ class grade implements grade_interface {
      * @param string    $gradername     The grader name of this grade.
      * @param int       $studentid      The user id of the student of this grade.
      * @param string    $studentname    The student name of this grade.
-     * @param array     $gradedate      The date of this grade.
+     * @param int       $gradedate      The date of this grade.
      * @param int       $grade          The final grade.
      */
     public function __construct(
@@ -97,7 +97,7 @@ class grade implements grade_interface {
         $gradername     = '',
         $studentid      = 0,
         $studentname    = '',
-        $gradedate      = [],
+        $gradedate      = 0,
         $finalgrade     = 0,
         $totalgrade     = 0
         ) {
@@ -113,7 +113,6 @@ class grade implements grade_interface {
     }
 
     // Getter functions
-
     public function get_exerciseid() {
         return $this->exerciseid;
     }
@@ -192,11 +191,11 @@ class grade implements grade_interface {
     }
 
     /**
-     * Get the date array of the grade.
+     * Get the date timestamp of the grade.
      *
-     * @param array
+     * @param int
      */
-    public function set_gradedate(array $gradedate) {
+    public function set_gradedate(int $gradedate) {
         $this->gradedate = $gradedate;
     }
 

@@ -25,10 +25,6 @@
 
 namespace local_booking\local\participant\entities;
 
-use DateTime;
-use local_booking\local\session\data_access\booking_vault;
-use local_booking\local\session\entities\booking;
-
 class instructor extends participant {
 
     /**
@@ -56,22 +52,5 @@ class instructor extends participant {
             $assignedstudents[$student->userid] = $student;
         }
         return $assignedstudents;
-    }
-
-    /**
-     * Get an instructor's active bookings
-     *
-     * @return booking[] An array of bookings.
-     */
-    public function get_bookings(bool $oldestfirst = false) {
-        $bookings = [];
-
-        $bookingobjs = booking_vault::get_bookings($this->userid, $oldestfirst);
-        foreach ($bookingobjs as $bookingobj) {
-            $booking = new booking();
-            $booking->load($bookingobj);
-            $bookings[] = $booking;
-        }
-        return $bookings;
     }
 }

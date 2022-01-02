@@ -31,10 +31,8 @@ defined('MOODLE_INTERNAL') || die();
 
 use renderer_base;
 use core\external\exporter;
-use local_booking\local\logbook\entities\logbook;
 use local_booking\local\session\entities\action;
 use local_booking\local\participant\entities\student;
-use local_booking\local\session\entities\booking;
 
 /**
  * Class for displaying each student row in progression view.
@@ -62,16 +60,6 @@ class booking_student_exporter extends exporter {
     protected $courseexercises;
 
     /**
-     * @var array $studentgrades An array of the student's exercise grades.
-     */
-    protected $studentgrades;
-
-    /**
-     * @var booking $booking A vault to access booking data.
-     */
-    protected $booking;
-
-    /**
      * Constructor.
      *
      * @param mixed $data An array of student data.
@@ -81,8 +69,6 @@ class booking_student_exporter extends exporter {
         $this->courseid = $courseid;
         $this->student = new student($courseid, $data['studentid']);
         $this->courseexercises = $related['courseexercises'];
-        $this->booking = new booking(0, $courseid, $data['studentid']);
-        $this->booking->load();
 
         parent::__construct($data, $related);
     }
@@ -226,13 +212,9 @@ class booking_student_exporter extends exporter {
      */
     protected function get_sessions($output) {
         $sessions = [];
-
-        // get student grades
-        $this->studentgrades = $this->student->get_grades();
-
-        // get student log book
-        $logbook = new logbook($this->courseid, $this->student->get_id());
-        $logbook->load();
+        $grades = $this->student->get_grades();
+        $bookings = $this->student->get_bookings();
+        $logbook = $this->student->get_logbook();
 
         // export all exercise sessions, quizes, and exams
         foreach ($this->courseexercises as $exercise) {
@@ -240,11 +222,10 @@ class booking_student_exporter extends exporter {
             $studentinfo = [
                 'student'     => $this->student,
                 'studentname' => $this->data['studentname'],
-                'courseid'    => $this->courseid,
                 'exerciseid'  => $exercise->exerciseid,
-                'grades'      => $this->studentgrades,
-                'logentry'    => $logbook->get_logentry(0, $exercise->exerciseid, false),
-                'booking'     => $this->booking,
+                'grades'      => $grades,
+                'bookings'    => $bookings,
+                'logbook'     => $logbook
             ];
             $exercisesession = new booking_session_exporter($studentinfo, $this->related);
             $sessions[] = $exercisesession->export($output);
@@ -264,14 +245,14 @@ class booking_student_exporter extends exporter {
      */
     protected function get_next_action() {
         // next action depends if the student has any booking
-        $actiontype = !empty($this->booking->get_id()) ? 'grade' : 'book';
+        $activebooking = $this->student->get_active_booking();
+        $actiontype = !empty($activebooking) ? 'grade' : 'book';
         if ($actiontype == 'book') {
-            list($nextexerciseid, $section) = $this->student->get_next_exercise();
+            list($refexerciseid, $section) = $this->student->get_next_exercise();
         } else {
-            $nextexerciseid = $this->booking->get_exerciseid();
+            $refexerciseid = $activebooking->get_exerciseid();
         }
-        $nextexerciseid = empty($nextexerciseid) ? 0 : $nextexerciseid;
-        $action = new action($actiontype, $this->courseid, $this->student->get_id(), $nextexerciseid);
+        $action = new action($actiontype, $this->courseid, $this->student->get_id(), $refexerciseid);
 
         return $action;
     }

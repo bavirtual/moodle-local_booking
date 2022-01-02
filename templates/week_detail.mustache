@@ -57,11 +57,11 @@
             <tr>
                 {{#showlocaltime}}
                 <th class="header text-xs-center localtime">
-                    <br><span class="media-body small" aria-hidden="true">{{#str}}local,local_booking{{/str}}</span></br>
+                    <br><span class="media-body small" aria-hidden="true">{{#str}} local, local_booking {{/str}}</span></br>
                 </th>
                 {{/showlocaltime}}
                 <th class="header text-xs-center zulutime">
-                    <span class="media-body" aria-hidden="true">{{#str}}zulutime,local_booking{{/str}}</span>
+                    <span class="media-body" aria-hidden="true">{{#str}} zulutime, local_booking {{/str}}</span>
                 </th>
                 {{#daynames}}
                 <th class="header text-xs-center daynames" colspan="{{maxlanes}}" data-region="slot-week-day">
@@ -130,8 +130,8 @@
                         data-region="copy-button"
                         id="copy_button"{{uniqid}}
                         title="">
-                        {{#pix}}copy,local_booking{{/pix}}
-                        {{#str}}buttoncopy,local_booking{{/str}}
+                        {{#pix}} copy, local_booking {{/pix}}
+                        {{#str}} buttoncopy, local_booking {{/str}}
                     </button>
                 </div>
                 <div class="singlebutton">
@@ -139,8 +139,8 @@
                         data-region="paste-button"
                         id="paste_button"
                         title="">
-                        {{#pix}}paste,local_booking{{/pix}}
-                        {{#str}}buttonpaste,local_booking{{/str}}
+                        {{#pix}} paste, local_booking {{/pix}}
+                        {{#str}} buttonpaste, local_booking {{/str}}
                     </button>
                 </div>
                 <div class="singlebutton single-button-clear">
@@ -148,8 +148,8 @@
                         data-region="clear-button"
                         id="clear_button"{{uniqid}}
                         title="">
-                        {{#pix}}trash,local_booking{{/pix}}
-                        {{#str}}buttonclear,local_booking{{/str}}
+                        {{#pix}} trash, local_booking {{/pix}}
+                        {{#str}} buttonclear, local_booking {{/str}}
                     </button>
                 </div>
             </div>
@@ -161,14 +161,14 @@
                 data-region="save-button"
                 id="save_button"
                 title="">
-                {{#pix}}save,local_booking{{/pix}}
-                {{#str}}buttonsave,local_booking{{/str}}
+                {{#pix}} save, local_booking {{/pix}}
+                {{#str}} buttonsave, local_booking {{/str}}
             </button>
         </div>
     </div>
     <div>
         <br/><span class="small"><a href='{{viewalllink}}'>
-            {{#str}}availabilityallview,local_booking{{/str}}</a></span>
+            {{#str}} availabilityallview, local_booking {{/str}}</a></span>
     </div>
     {{/editing}}
     {{^editing}}
@@ -179,8 +179,8 @@
                 data-region="book-button"
                 id="book_button"
                 title="">
-                {{#pix}}plane,local_booking{{/pix}}
-                {{#str}}booksave,local_booking{{/str}}
+                {{#pix}} plane, local_booking {{/pix}}
+                {{#str}} booksave, local_booking {{/str}}
             </button>
         </div>
     </div>

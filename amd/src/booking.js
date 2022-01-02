@@ -14,8 +14,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This module is responsible for handling progression booking activity
- * Improvised from core_calendar.
+ * This module is responsible for registering listeners
+ * for all session booking and logentry events.
  *
  * @module     local_booking/booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -24,144 +24,72 @@
  */
 
 define([
-            'jquery',
-            'core/str',
-            'core/modal_factory',
-            'core/modal_events',
-            'core/pending',
-            'local_booking/modal_logentry_form',
-            'local_booking/booking_view_manager',
-            'local_booking/booking_actions',
-            'local_booking/events',
-            'local_booking/selectors'
-        ],
-        function(
-            $,
-            Str,
-            ModalFactory,
-            ModalEvents,
-            Pending,
-            ModalLogentryForm,
-            ViewManager,
-            BookingActions,
-            BookingEvents,
-            BookingSelectors
-        ) {
+        'jquery',
+        'core/str',
+        'local_booking/booking_view_manager',
+        'local_booking/booking_actions',
+        'local_booking/logentry',
+        'local_booking/events'
+    ],
+    function(
+        $,
+        Str,
+        ViewManager,
+        BookingActions,
+        Logentry,
+        BookingSessions
+    ) {
 
-    var SELECTORS = {
-        BOOKING_WRAPPER: ".bookingwrapper",
+    const SELECTORS = {
         CANCEL_BUTTON: "[data-region='cancel-button']",
         OVERRIDE_BUTTON: "[data-region='override-button']",
-        SESSION_ENTRY: "[data-region='session-entry']",
     };
 
     /**
-     * Listen to and handle any calendar events fired by the calendar UI.
+     * Listen to and handle any logentry events fired by
+     * Logentry and PIREP the modal forms.
      *
      * @method registerBookingEventListeners
-     * @param  {object} root The calendar root element
-     * @param  {object} logentryFormModalPromise A promise reolved with the event form modal
+     * @param  {object} root The booking root element
+     * @param  {object} logentryFormModalPromise A promise reolved with the Logentry form modal
+     * @param  {object} pirepFormPromise A promise reolved with the PIREP verification form modal
      */
-     var registerBookingEventListeners = function(root, logentryFormModalPromise) {
-        var body = $('body');
+     const registerBookingEventListeners = function(root) {
+        const body = $('body');
 
-        body.on(BookingEvents.canceled, function() {
-            ViewManager.refreshProgressionContent(root);
+        body.on(BookingSessions.canceled, function() {
+            ViewManager.refreshInstructorDashboardContent(root);
             ViewManager.refreshMyBookingsContent(root);
         });
-        body.on(BookingEvents.created, function() {
-            ViewManager.refreshProgressionContent(root);
+        body.on(BookingSessions.created, function() {
+            ViewManager.refreshInstructorDashboardContent(root);
         });
-        body.on(BookingEvents.updated, function() {
-            ViewManager.refreshProgressionContent(root);
+        body.on(BookingSessions.updated, function() {
+            ViewManager.refreshInstructorDashboardContent(root);
         });
-        body.on(BookingEvents.deleted, function() {
-            ViewManager.refreshProgressionContent(root);
+        body.on(BookingSessions.deleted, function() {
+            ViewManager.refreshInstructorDashboardContent(root);
         });
-
-        BookingActions.registerActionListeners(root, logentryFormModalPromise);
     };
 
     /**
      * Register event listeners for logbook entry,
-     * session cancellation, and restriction override actions.
+     * session cancellation, and restriction override actions
+     * in both 'Instructor dashboard' and 'Session selection' pages.
      *
      * @method  registerEventListeners
-     * @param   {object} root The calendar root element
+     * @param   {object} root The booking root element
      */
-     var registerEventListeners = function(root) {
+     const registerEventListeners = function(root) {
 
-        var logentryFormPromise = BookingActions.registerLogentryFormModal(root),
-            contextId = $(SELECTORS.BOOKING_WRAPPER).data('contextid'),
-            courseId = $(SELECTORS.BOOKING_WRAPPER).data('courseid');
-        registerBookingEventListeners(root, logentryFormPromise);
+        // Register listeners to booking actions
+        registerBookingEventListeners(root);
 
-        if (contextId) {
-            // Listen the click on the progression table of sessions.
-            root.on('click', SELECTORS.SESSION_ENTRY, function(e) {
-                var sessionDate = $(this).attr('data-booking-date');
-                var studentId = $(this).attr('data-student-id');
-                var exerciseId = $(this).attr('data-exercise-id');
-                var logentryId = $(this).attr('data-logentry-id');
-                var additionalEntry = $(this).attr('data-is-additional') !== undefined;
-
-                if (logentryId == 0) {
-                    logentryFormPromise.then(function(modal) {
-                        modal.setContextId(contextId);
-                        modal.setCourseId(courseId);
-                        modal.setUserId(studentId);
-                        modal.setExerciseId(exerciseId);
-                        modal.setLogentryId(logentryId);
-                        modal.setSessionDate(sessionDate);
-                        modal.setAdditionalEntry(additionalEntry);
-                        modal.show();
-                        return;
-                    })
-                    .fail(Notification.exception);
-
-                    e.preventDefault();
-                } else {
-                    let logentrySession = null;
-                    let logentryId = null;
-                    const target = e.target;
-                    const pendingPromise = new Pending('local_booking/booking_view_manager:logentrySession:click');
-
-                    if (target.matches(BookingSelectors.actions.viewLogEntry)) {
-                        logentrySession = target;
-                    } else {
-                        logentrySession = target.closest(BookingSelectors.actions.viewLogEntry);
-                    }
-
-                    if (logentrySession) {
-                        logentryId = logentrySession.dataset.logentryId;
-                    } else {
-                        logentryId = target.querySelector(BookingSelectors.actions.viewLogEntry).dataset.logentryId;
-                    }
-
-                    if (logentryId) {
-                        // A link was found. Show the modal.
-
-                        e.preventDefault();
-                        // We've handled the event so stop it from bubbling
-                        // and causing the day click handler to fire.
-                        e.stopPropagation();
-
-                        ViewManager.renderLogentrySummaryModal(logentryId, courseId, studentId)
-                        .then(pendingPromise.resolve)
-                        .catch();
-                    } else {
-                        pendingPromise.resolve();
-                    }
-
-                }
-            });
-        }
-
-        // Listen the click on the Cancel booking buttons.
+        // Listen to the click on the Cancel booking buttons in 'Instructor dashboard' page.
         root.on('click', SELECTORS.CANCEL_BUTTON, function(e) {
             // eslint-disable-next-line no-alert
             Str.get_string('cancellationcomment', 'local_booking').then(function(promptMsg) {
-                var comment = prompt(promptMsg);
+                const comment = prompt(promptMsg);
                 if (comment !== null) {
                     BookingActions.cancelBooking(root, e, comment);
                 }
@@ -169,7 +97,7 @@ define([
             }).catch(Notification.exception);
         });
 
-        // Listen the click on the Override button in the booking confirmation page.
+        // Listen to the click on the Override button in the 'Session selection' page.
         root.on('click', SELECTORS.OVERRIDE_BUTTON, function() {
             return BookingActions.overrideRestriction(root);
         });
@@ -178,6 +106,7 @@ define([
     return {
         init: function(root) {
             root = $(root);
+            Logentry.init(root);
             registerEventListeners(root);
         }
     };

@@ -31,7 +31,6 @@ use local_booking\external\logentry_exporter;
 use local_booking\local\logbook\forms\create as create_logentry_form;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
-use local_booking\local\logbook\entities\logentry;
 use local_booking\local\participant\entities\student;
 
 /**
@@ -138,7 +137,7 @@ class local_booking_external extends external_api {
         self::validate_context($context);
         $PAGE->set_url('/local/booking/');
 
-        list($data, $template) = get_logentry_output($logentryid, $courseid, $userid);
+        list($data, $template) = get_logentry_view($logentryid, $courseid, $userid);
 
         return array('logentry' => $data, 'warnings' => $warnings);
     }
@@ -200,7 +199,11 @@ class local_booking_external extends external_api {
         $PAGE->set_url('/local/booking/');
 
         $logbook = new logbook($courseid, $userid);
-        $logbook->delete($logentryid);
+
+        if ($logbook->delete($logentryid))
+            \core\notification::success(get_string('logentrydeletesuccess', 'local_booking'));
+        else
+            \core\notification::error(get_string('logentrydeletefailed', 'local_booking'));
 
         return null;
     }
@@ -649,7 +652,6 @@ class local_booking_external extends external_api {
             $USER->ignoresesskey = true;
         }
 
-        $contextid = $args['contextid'];
         $courseid = $args['courseid'];
         $exerciseid = $args['exerciseid'];
         $userid = $args['userid'];
@@ -657,18 +659,17 @@ class local_booking_external extends external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
         $formoptions = [
-            'context' => $context,
-            'courseid'  => $courseid,
+            'context'    => $context,
+            'courseid'   => $courseid,
+            'userid'     => $userid,
             'exerciseid' => $exerciseid,
         ];
 
         // if the operation is an update, get the logentry
         if (!empty($data['id'])) {
             $logbook = new logbook($courseid, $userid);
-            $logentryid = clean_param($data['id'], PARAM_INT);
-            $logentry = $logbook->get_logentry($logentryid);
+            $logentry = $logbook->get_logentry(clean_param($data['id'], PARAM_INT));
             $formoptions['logentry'] = $logentry;
-            $data = array_merge($logentry->__toArray(), $data);
         }
 
         // get the form data and persist the new entry(s)
@@ -680,26 +681,30 @@ class local_booking_external extends external_api {
                 $logentry->save();
             // for new entries, populate instructor and student logentries then save
             } else {
-                // add instructor logentry, the user creating the entry is always the instructor
-                $instructorlogbook = new logbook($courseid, $USER->id);
-                $instructorlogentry = $instructorlogbook->create_logentry();
-                $instructorlogentry->populate($validateddata);
-                $instructorlogentry->save();
                 // add student logentry
                 $studentlogbook = new logbook($courseid, $userid);
                 $studentlogentry = $studentlogbook->create_logentry();
                 $studentlogentry->populate($validateddata);
-                $studentlogentry->save();
-                // logentry for the exporter either is good
-                $logentry = $instructorlogentry;
+
+                if (!$validateddata->soloflight) {
+                    // add instructor logentry, the user creating the entry is always the instructor
+                    $instructorlogbook = new logbook($courseid, $USER->id);
+                    $instructorlogentry = $instructorlogbook->create_logentry();
+                    $instructorlogentry->populate($validateddata, true);
+                    logbook::save_linked_logentries($courseid, $instructorlogentry, $studentlogentry);
+                } else {
+                    $studentlogentry->save();
+                }
+
+                // logentry for the exporter either student or instructor logentry would do
+                $logentry = $studentlogentry;
             }
 
-            $relatedobjects = ['context' => $context];
-            $exporter = new logentry_exporter($data, $logentry, $relatedobjects);
-            $renderer = $PAGE->get_renderer('local_booking');
+            // get exporter output for return values
+            list($output, $template) = get_logentry_view($logentry->get_id(), $courseid, $userid, $logentry, $data);
 
             \core\notification::success(get_string('logentrysavesuccess', 'local_booking'));
-            return [ 'logentry' => $exporter->export($renderer) ];
+            return [ 'logentry' => $output ];
         } else {
             \core\notification::error(get_string('logentrysaveunable', 'local_booking'));
             return [ 'validationerror' => true ];

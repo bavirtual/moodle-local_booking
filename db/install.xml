@@ -86,6 +86,7 @@
         <FIELD NAME="pictime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Pilot in command (PIC) time is logged by a multi-crew flight captain, the instructor of dual flight, or the student on his/her checkride only if they pass"/>
         <FIELD NAME="dualtime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Dual time is logged only by the student in a training flight"/>
         <FIELD NAME="instructortime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Instructor time is only logged by the instructor in a training flight"/>
+        <FIELD NAME="picustime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Pilot in command under supervision (PICUS) time is only logged the FO and the student that passes a checkride"/>
         <FIELD NAME="multipilottime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Multicrew (multipilot) operation time, logged for each pilot in the crew flight"/>
         <FIELD NAME="copilottime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Copilot multi-crew time is only logged by co-pilots in a multi-crewed flights"/>
         <FIELD NAME="checkpilottime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Examiner time is only logged by the examiner on check rides"/>

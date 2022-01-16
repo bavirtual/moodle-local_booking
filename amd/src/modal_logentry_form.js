@@ -16,8 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This module handles logbook entry form
- * Improvised from core_calendar.
+ * This module handles logbook entry form.
  *
  * @module     local_booking/modal_logentry_form
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -54,6 +53,7 @@ define([
 
     var registered = false;
     var SELECTORS = {
+        PIC_TIME_INPUT: '#id_pictime',
         SAVE_BUTTON: '[data-action="save"]',
         LOADING_ICON_CONTAINER: '[data-region="loading-icon-container"]',
     };
@@ -71,7 +71,6 @@ define([
         this.courseId = null;
         this.contextId = null;
         this.userId = null;
-        this.isAdditional = null;
         this.reloadingBody = false;
         this.reloadingTitle = false;
         this.saveButton = this.getFooter().find(SELECTORS.SAVE_BUTTON);
@@ -252,28 +251,6 @@ define([
     };
 
     /**
-     * Set the modal isAdditional variable for new logbook
-     * entry triggered from the booking confrimation view.
-     *
-     * @method setAdditionalEntry
-     * @param {bool} additionalEntry Indicates additional logbook entry.
-     */
-    ModalLogEntryForm.prototype.setAdditionalEntry = function(additionalEntry) {
-        this.isAdditional = additionalEntry;
-    };
-
-    /**
-     * Check if the logbook entery is an additional entry
-     * triggered from the booking confirmation view.
-     *
-     * @method isAdditionalEntry
-     * @return {bool}
-     */
-    ModalLogEntryForm.prototype.isAdditionalEntry = function() {
-        return this.isAdditional;
-    };
-
-    /**
      * Get the form element from the modal.
      *
      * @method getForm
@@ -389,26 +366,8 @@ define([
 
         this.bodyPromise.then(function() {
             this.enableButtons();
-
-            // Mask flight times < 5hrs and departure/arrival times to 24hr format
-            $(document).ready(function() {
-                if ($(BookingSelectors.bookingwrapper).data('trainingtype') == "Dual") {
-                    Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_dualtime"));
-                } else {
-                    Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_multipilottime"));
-                    Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_copilottime"));
-                }
-                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_sessiontime"));
-                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_pictime"));
-                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_instructortime"));
-                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_checkpilottime"));
-                Inputmask({"regex": "^([01]?[0-9]|2[0-3]):[0-5][0-9]"}).mask(document.getElementById("id_deptime"));
-                Inputmask({"regex": "^([01]?[0-9]|2[0-3]):[0-5][0-9]"}).mask(document.getElementById("id_arrtime"));
-                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_nighttime"));
-                Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_ifrtime"));
-                Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsday"));
-                Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsnight"));
-              });
+            this.setInputMask();
+            this.registerChangeListeners();
 
             return;
         }.bind(this))
@@ -423,13 +382,200 @@ define([
     };
 
     /**
-     * Reload both the title and body content.
+     * Sets the input mask for all masked elements.
      *
-     * @method applyFlightRules
+     * @method setInputMask
+     */
+    ModalLogEntryForm.prototype.setInputMask = function() {
+        // Mask flight times < 5hrs and departure/arrival times to 24hr format
+        if ($(BookingSelectors.bookingwrapper).data('trainingtype') == "Dual") {
+            Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_dualtime"));
+        } else {
+            Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_multipilottime"));
+            Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_copilottime"));
+        }
+        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_sessiontime"));
+        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_pictime"));
+        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_instructortime"));
+        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_picustime"));
+        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_checkpilottime"));
+        Inputmask({"regex": "^([01]?[0-9]|2[0-3]):[0-5][0-9]"}).mask(document.getElementById("id_deptime"));
+        Inputmask({"regex": "^([01]?[0-9]|2[0-3]):[0-5][0-9]"}).mask(document.getElementById("id_arrtime"));
+        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_nighttime"));
+        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_ifrtime"));
+        Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsday"));
+        Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsnight"));
+    };
+
+    /**
+     * Sets the input mask for all masked elements.
+     *
+     * @method registerChangeListeners
+     */
+    ModalLogEntryForm.prototype.registerChangeListeners = function() {
+
+        // PIREP search trigger
+        var pirep = $('#id_p1pirep');
+        pirep.on('change', function(e) {
+            return this.getPIREPData(e);
+        }.bind(this));
+
+        // Hide unnecessary elements for Solo flights when checkbox is clicked
+        var soloflight = $('#id_soloflight');
+        soloflight.on('change', function(e) {
+            return this.applyFlightOpsDefaults(e, 'Solo');
+        }.bind(this));
+
+        // The onchange property has to be set due to the pictime element being masked
+        pictime = document.getElementById("id_pictime");
+        pictime.onchange = function(e) {
+            return this.applyFlightOpsDefaults(e);
+        }.bind(this);
+    };
+
+    /**
+     * Retrieve and populate log entry data from
+     * the server's PIREP lookup service.
+     *
+     * @method getPIREPData
+     * @param  {object} e The triggered event
+     * @return {object} pirep of the logentry
+     */
+     ModalLogEntryForm.prototype.getPIREPData = function(e) {
+        var loadingContainer = this.getFooter().find(SELECTORS.LOADING_ICON_CONTAINER);
+        rule = $(BookingSelectors.bookingwrapper).data('trainingtype');
+        pirepdiv = $('#id_p1pirep').parent();
+        pirep = $('#id_p1pirep').val();
+        courseid = this.getCourseId();
+        userid = this.getUserId();
+
+        loadingContainer.removeClass('hidden');
+        return Repository.findPirep(pirep, courseid, userid)
+            .then(function(response) {
+                // Handle the response
+                if (response.result) {
+                    // Clean up any past client side errors
+                    $('#id_p1pirep').removeClass('is-invalid');
+                    if (!$('#id_valid_p1pirep').length) {
+                        Str.get_string('pirepfound', 'local_booking').then(function(string) {
+                            pirepdiv.append('<div class="form-control-feedback valid-feedback" id="id_valid_p1pirep" ' +
+                            'tabindex="0" style="">' + string + '</div');
+                            $('#id_p1pirep').addClass('is-valid');
+                            return string;
+                        })
+                        .fail(Notification.exception);
+                    }
+
+                    // Update elements with PIREP returned data depending on
+                    // solo flight status and flight rule (Dual/Multicrew)
+                    $('#id_flightdate').val(response.logentry.flightdate);
+                    if (rule == 'Dual' && !response.logentry.soloflight) {
+                        $('#id_dualtime').val(response.logentry.pictime);
+                    } else if (rule == 'Multicrew' && !response.logentry.soloflight) {
+                        $('#id_multipilottime').val(response.logentry.pictime);
+                        $('#id_copilottime').val(response.logentry.pictime);
+                        $('#id_ifrttime').val(response.logentry.pictime);
+                    }
+                    $('#id_instructortime').val(response.logentry.pictime);
+                    $('input[name="linkedpirep"]').val(response.logentry.linkedpirep);
+                    $('#id_pictime').val(response.logentry.pictime);
+                    $('#id_depicao').val(response.logentry.depicao);
+                    $('#id_arricao').val(response.logentry.arricao);
+                    $('#id_deptime').val(response.logentry.deptime);
+                    $('#id_arrtime').val(response.logentry.arrtime);
+                    $('#id_callsign').val(response.logentry.callsign);
+                    $('#id_aircraft').val(response.logentry.aircraft);
+                    $('#id_aircraftreg').val(response.logentry.aircraftreg);
+                    $('#id_fstd').val(response.logentry.fstd);
+                } else {
+                    // Display inline error
+                    $('#id_p1pirep').addClass('is-invalid');
+                    if (!$('#id_error2_p1pirep').length) {
+                        Str.get_string('errorp1pirepnotfound', 'local_booking').then(function(string) {
+                            pirepdiv.append('<div class="form-control-feedback invalid-feedback" id="id_error2_p1pirep" ' +
+                            'tabindex="0" style="">' + string + '</div');
+                            return string;
+                        })
+                        .fail(Notification.exception);
+                    } else {
+                        $('#id_error2_p1pirep').show();
+                    }
+                }
+
+                return;
+            })
+            .always(function() {
+                // Regardless of success or error we should always stop
+                // the loading icon and re-enable the buttons.
+                loadingContainer.addClass('hidden');
+                e.preventDefault();
+                e.stopPropagation();
+
+                return;
+            })
+            .fail(Notification.exception);
+    };
+
+    /**
+     * Apply default values based on flight operation
+     * Dual vs Multicrew taking solo flights in conisderation
+     *
+     * @method applyFlightOpsDefaults
+     * @param  {object} e The triggered event
      * @param  {string} rule The rule to be applied
      */
-    ModalLogEntryForm.prototype.applyFlightRules = function(rule) {
-        window.console.log('working for ' + rule);
+     ModalLogEntryForm.prototype.applyFlightOpsDefaults = function(e, rule) {
+
+        rule = rule || $(BookingSelectors.bookingwrapper).data('trainingtype');
+        var flighttime = $('#id_pictime').val();
+        var soloflight = $('#id_soloflight').prop('checked');
+
+        // Check the training rule type
+        switch (rule) {
+            case 'Dual':
+                // Duplicate P1 time for the student and instructor
+                if (!soloflight) {
+                    $('#id_dualtime').val(flighttime);
+                    $('#id_instructortime').val(flighttime);
+                }
+                break;
+
+            case 'Multicrew':
+                // Duplicate P1 time for the student and instructor
+                if (!soloflight) {
+                    $('#id_multipilot').val(flighttime);
+                    $('#id_copilot').val(flighttime);
+                }
+                break;
+
+            case 'Solo':
+                // Hide all irrelevant time and set required value
+                // client verification to 0 where appropriate.
+                $("#id_sessiontime").toggle();
+                $("#id_sessiontime").val(0);
+                $("#id_instructortime").toggle();
+                $("#id_p2pirep").toggle();
+                $("#id_checkpilottime").toggle();
+
+
+                if ($('#id_dualtime').length) {
+                    $("#id_dualtime").val(0);
+                    $("#id_dualtime").toggle();
+                }
+
+                if ($('#id_multipilottime').length) {
+                    $("#id_multipilottime").val(0);
+                    $("#id_multipilottime").toggle();
+                }
+
+                if ($('#id_copilottime').length) {
+                    $("#id_copilottime").val(0);
+                    $("#id_copilottime").toggle();
+                }
+                break;
+        }
+        e.preventDefault();
+        e.stopPropagation();
     };
 
     /**
@@ -532,11 +678,10 @@ define([
                     return;
                 } else {
                     // Check whether this was a new logbook entry or not.
-                    // check if the logentry is from the prgression view or an additional
+                    // check if the logentry is from the prgression view
                     // logentry from the confirmation view
                     // The hide function unsets the form data so grab this before the hide.
                     var isExisting = this.hasLogentryId();
-                    var isAddedEntry = this.isAdditionalEntry();
 
                     // No problemo! Our work here is done.
                     this.hide();
@@ -544,7 +689,7 @@ define([
                     // Trigger the appropriate logbook event so that the view can be updated.
                     if (isExisting) {
                         $('body').trigger(LogbookEvents.updated, [response.logentry]);
-                    } else if (!isAddedEntry) {
+                    } else {
                         $('body').trigger(LogbookEvents.created, [response.logentry]);
                     }
                 }

@@ -169,6 +169,9 @@ function(
                         return;
                     })
                     .then(pendingPromise.resolve)
+                    .always(function() {
+                        Notification.fetchNotifications();
+                    })
                     .catch(Notification.exception);
             });
 

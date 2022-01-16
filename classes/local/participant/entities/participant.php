@@ -141,7 +141,7 @@ class participant implements participant_interface {
 
         if (empty($this->bookings)) {
             $bookings = [];
-            $bookingobjs = booking_vault::get_bookings($isstudent, $this->userid, $oldestfirst, $activeonly);
+            $bookingobjs = booking_vault::get_bookings($this->courseid, $this->userid, $isstudent, $oldestfirst, $activeonly);
             foreach ($bookingobjs as $bookingobj) {
                 $booking = new booking();
                 $booking->load($bookingobj);
@@ -156,12 +156,14 @@ class participant implements participant_interface {
     /**
      * Get an a's active bookings
      *
-     * @return logentry[] An array of bookings.
+     * @param  $loadentries Whether to load all enteries or not
+     * @return logentry[]   An array of bookings.
      */
-    public function get_logbook() {
+    public function get_logbook(bool $loadentries = false) {
         if (empty($this->logbook)) {
             $logbook = new logbook($this->courseid, $this->userid);
-            $logbook->load();
+            if ($loadentries)
+                $logbook->load();
             $this->logbook = $logbook;
         }
         return $this->logbook;

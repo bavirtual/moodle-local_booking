@@ -143,12 +143,36 @@ $functions = array(
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
 
+    'local_booking_get_pilot_logbook' => array(
+        'classname' => 'local_booking_external',
+        'classpath' => '/local/booking/externallib.php',
+        'methodname' => 'get_pilot_logbook',
+        'description' => 'Fetch the logbook for a pilot by course and id',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
+
     'local_booking_delete_logentry' => array(
         'classname' => 'local_booking_external',
         'classpath' => '/local/booking/externallib.php',
         'methodname' => 'delete_logentry',
         'description' => 'Delete a logbook entry by its id',
         'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
+
+    'local_booking_get_pirep' => array(
+        'classname' => 'local_booking_external',
+        'classpath' => '/local/booking/externallib.php',
+        'methodname' => 'get_pirep',
+        'description' => 'Retrieves PIREP information',
+        'type' => 'read',
         'capabilities' => '',
         'ajax' => true,
         'loginrequired' => true,
@@ -220,6 +244,15 @@ $services = array(
         'uploadfiles' => 0
     ),
 
+    'Session Booking retrieve pilot logbook by course and user id web service'  => array(
+        'functions' => array('local_booking_get_pilot_logbook'), // Unused as we add the service in each function definition, third party services would use this.
+        'enabled' => 1,         // if 0, then token linked to this service won't work
+        'restrictedusers' => 0,
+        'shortname' => 'get_pilot_logbook',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
     'Session Booking retrieve logbook entry by id web service'  => array(
         'functions' => array('local_booking_get_logentry_by_id'), // Unused as we add the service in each function definition, third party services would use this.
         'enabled' => 1,         // if 0, then token linked to this service won't work
@@ -234,6 +267,15 @@ $services = array(
         'enabled' => 1,         // if 0, then token linked to this service won't work
         'restrictedusers' => 0,
         'shortname' => 'delete_logentry',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
+    'Session Booking get pirep web service'  => array(
+        'functions' => array('local_booking_get_pirep'), // Unused as we add the service in each function definition, third party services would use this.
+        'enabled' => 1,         // if 0, then token linked to this service won't work
+        'restrictedusers' => 0,
+        'shortname' => 'get_pirep',
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),

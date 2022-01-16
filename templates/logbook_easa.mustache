@@ -1,0 +1,141 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_booking/logbook_easa
+
+    Log book view for summary and log book entries.
+
+    The purpose of this template is to render the main, detailed weekly view.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+    }
+}}
+<div id="logbookwrapper-{{uniqid}}" data-template="local_booking/logbook_easa"
+    data-courseid="{{courseid}}" data-userid="{{userid}}">
+    <div class="logbook-body">
+        <br>
+        <div class="float-right">
+            <button type="button" class="btn btn-primary btn-sm" onclick="location.href='{{{easaformaturl}}}';">{{#str}} logbookformateasa, local_booking {{/str}}</button>
+            <button type="button" class="btn btn-primary btn-sm mr-3" onclick="location.href='{{{stdformaturl}}}';">{{#str}} logbookformatsimple, local_booking {{/str}}</button>
+        </div>
+        <br>
+        <div class="logbook-body logbook-easa-card logbook-shadow2">
+            <h3 class="logbook-h2">{{#str}} pilotlogbook, local_booking {{/str}}</h3>
+            <pre>{{#str}} name {{/str}}: <span class="logbook-highlight">{{username}}</span></pre>
+            <br>
+
+            <table class="table-hover table-striped logbook-easa display compact" id="logbook">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 85px; font-size: xs-small;">{{#str}} logbookdate, local_booking {{/str}}</th>
+                        <th class="text-center" colspan="2" style="width: 65px; font-size: xs-small;">{{#str}} logbookdep, local_booking {{/str}}</th>
+                        <th class="text-center" colspan="2" style="width: 65px; font-size: xs-small;">{{#str}} logbookarr, local_booking {{/str}}</th>
+                        <th class="text-center" colspan="2" style="width: 65px; font-size: xs-small;">{{#str}} logbookaircraft, local_booking {{/str}}</th>
+                        <th class="text-center" colspan="2" style="width: 40px; font-size: xs-small;">{{#str}} logbooksinglepilot, local_booking {{/str}}</th>
+                        <th rowspan="2" style="width: 40px;">{{#str}} logbookmultipilot, local_booking {{/str}}</th>
+                        <th rowspan="2" style="width: 40px;">{{#str}} logbooktotaltime, local_booking {{/str}}</th>
+                        <th rowspan="2" style="width: 135px; font-size: xs-small;">{{#str}} logbookp1name, local_booking {{/str}}</th>
+                        <th class="text-center" colspan="2" style="width: 70px; font-size: xs-small;">{{#str}} logbooklandings, local_booking {{/str}}</th>
+                        <th class="text-center" colspan="2" style="width: 70px; font-size: xs-small;">{{#str}} logbookops, local_booking {{/str}}</th>
+                        <th class="text-center" colspan="5" style="width: 175px; font-size: xs-small;">{{#str}} logbookfunc, local_booking {{/str}}</th>
+                        <th rowspan="2" style="width: 35px; font-size: xs-small;">{{#str}} logbookfstd, local_booking {{/str}}</th>
+                        <th rowspan="2" style="width: 195px; font-size: xs-small;">{{#str}} logbookremarks, local_booking {{/str}}</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 35px;">{{#str}} logbookplace, local_booking {{/str}}</th>
+                        <th style="width: 30px;">{{#str}} logbooktime, local_booking {{/str}}</th>
+                        <th style="width: 35px;">{{#str}} logbookplace, local_booking {{/str}}</th>
+                        <th style="width: 30px;">{{#str}} logbookplace, local_booking {{/str}}</th>
+                        <th style="width: 35px;">{{#str}} logbookmakemodel, local_booking {{/str}}</th>
+                        <th style="width: 30px;">{{#str}} logbookreg, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbookse, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbookme, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbookday, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbooknight, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbooknight, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbookifr, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbookpic, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbookcopilot, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbookdual, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbookistr, local_booking {{/str}}</th>
+                        <th style="width: 20px;">{{#str}} logbookpicus, local_booking {{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody class="logbook-easa">
+                    {{#entries}}
+                    <tr>
+                        <td>{{flightdate}}</td>
+                        <td>{{depicao}}</td>
+                        <td>{{deptime}}</td>
+                        <td>{{arricao}}</td>
+                        <td>{{arrtime}}</td>
+                        <td>{{aircraft}}</td>
+                        <td>{{aircraftreg}}</td>
+                        <td>{{se}}</td>
+                        <td>{{me}}</td>
+                        <td>{{multipilottime}}</td>
+                        <td>{{totaltime}}</td>
+                        <td>{{p1name}}</td>
+                        <td>{{landingsday}}</td>
+                        <td>{{landingsnight}}</td>
+                        <td>{{nighttime}}</td>
+                        <td>{{ifrtime}}</td>
+                        <td>{{pictime}}</td>
+                        <td>{{copilottime}}</td>
+                        <td>{{dualtime}}</td>
+                        <td>{{instructortime}}</td>
+                        <td>{{picustime}}</td>
+                        <td>{{fstd}}</td>
+                        <td>{{remarks}}</td>
+                    </tr>
+                    {{/entries}}
+                </tbody>
+                <tfoot class="logbook-easa">
+                    <tr>
+                        <td class="border-less"></td><td class="border-less"></td><td class="border-less"></td><td class="border-less"></td>
+                        <td class="border-less"></td><td class="border-less"></td><td class="border-less"></td>
+                        <td colspan="2" style="text-align: right; font-weight: bold; padding-left: 2px">Page Total:</td><td></td><td></td>
+                        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                        <td class="border-less"></td><td class="border-less"></td>
+                    </tr>
+                    <tr>
+                        <td class="border-less"></td><td class="border-less"></td><td class="border-less"></td><td class="border-less"></td>
+                        <td class="border-less"></td><td class="border-less"></td><td class="border-less"></td>
+                        <td colspan="2" style="text-align: right; font-weight: bold; white-space: nowrap; padding-left: 2px;">Grand Total:</td><td>{{totalmultipilottime}}</td>
+                        <td>{{totaltime}}</td><td></td>
+                        <td class="text-center">{{totallandingsday}}</td><td class="text-center">{{totallandingsnight}}</td><td>{{totalnighttime}}</td><td>{{totalifrtime}}</td>
+                        <td>{{totalpictime}}</td>
+                        <td>{{totalcopilottime}}</td><td>{{totaldualtime}}</td><td>{{totalinstructortime}}</td><td>{{totalpicustime}}</td>
+                        <td class="border-less"></td><td class="border-less"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <br>
+    </div>
+</div>
+
+
+
+

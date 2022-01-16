@@ -291,10 +291,11 @@ class participant_vault implements participant_vault_interface {
     /**
      * Get grades for a specific student.
      *
-     * @param int       $studentid  The student id.
+     * @param int       $courseid  The course id.
+     * @param int       $studentid The student id.
      * @return grade[]  A student grades.
      */
-    public function get_student_assignment_grades($studentid) {
+    public function get_student_assignment_grades(int $courseid, int $studentid) {
         global $DB;
 
         // Get the student's grades
@@ -309,6 +310,7 @@ class participant_vault implements participant_vault_interface {
                 INNER JOIN {' . self::DB_MODULES . '} m ON m.id = cm.module
                 INNER JOIN {' . self::DB_USER . '} u ON ag.grader = u.id
                 WHERE m.name = :assign
+                    AND cm.course = :courseid
                     AND ag.userid = :studentid
                     AND ag.grade > 0
                     AND ag.timemodified > ' . $this->pastdatacutoff . '
@@ -317,6 +319,7 @@ class participant_vault implements participant_vault_interface {
 
         $params = [
             'assign' => 'assign',
+            'courseid'  => $courseid,
             'studentid'  => $studentid
         ];
 
@@ -329,7 +332,7 @@ class participant_vault implements participant_vault_interface {
      * @param int       $studentid  The student id.
      * @return grade[]  A student quizes.
      */
-    public function get_student_quizes_grades($studentid) {
+    public function get_student_quizes_grades(int $courseid, int $studentid) {
         global $DB;
 
         // Get the student's grades
@@ -344,11 +347,13 @@ class participant_vault implements participant_vault_interface {
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
                 INNER JOIN {' . self::DB_MODULES . '} as m ON m.id = cm.module
                 WHERE m.name = :quiz
+                    AND cm.course = :courseid
                     AND qg.userid = :studentid
                 ORDER BY cs.section';
 
         $params = [
             'quiz' => 'quiz',
+            'courseid'  => $courseid,
             'studentid'  => $studentid
         ];
 

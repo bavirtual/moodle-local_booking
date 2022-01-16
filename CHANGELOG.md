@@ -1,5 +1,15 @@
 # Change log
 
+## [2022011600] - UNRELEASED 2022-01-16
+
+### Changed
+
+- logentry from logentry summary form
+- PICUS column in table structure and mvc
+- multicrew operations
+- PIREP integration with BAV_MANAGEMENT
+- new logentry modal to handle PIREP lookup and defaults
+
 ## [2022010201] - UNRELEASED 2022-01-02
 
 ### Fixed

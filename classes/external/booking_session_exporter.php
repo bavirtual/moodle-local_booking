@@ -228,7 +228,7 @@ class booking_session_exporter extends exporter {
 
         $grade = $this->find_grade($data['grades'], $data['exerciseid']);
         $booking = $this->find_booking($data['bookings'], $data['exerciseid']);
-        $logentry = $data['logbook']->get_logentry(0, $data['exerciseid'], false);
+        $logentry = !empty($grade) ? $data['logbook']->get_logentry(0, $data['exerciseid']) : null;
 
         // collect session information
         $session = null;

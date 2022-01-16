@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_booking/logentry_details
+    @template local_booking/logentry_summary_details
 
     Log book entry details.
 
@@ -47,7 +47,6 @@
         "subscription": "true",
     }
 }}
-
 <div class="row mb-5">
     <div class="col-1">{{#pix}} calendar, local_booking {{/pix}}</div>
     <div class="col-11 logbook-title">{{{formattedtime}}}</div>
@@ -61,28 +60,15 @@
     <div class="col-6">{{exercisename}}</div>
 </div>
 <div class="row mt-1">
-    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
-    <div class="col-5">{{#str}} sessiontime, local_booking {{/str}}</div>
-    <div class="col-6">{{sessiontime}}</div>
-</div>
-<div class="row mt-1">
-    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
-    <div class="col-5">{{#str}} pictime, local_booking {{/str}}</div>
-    <div class="col-6">{{pictime}}</div>
-</div>
-<div class="row mt-1">
-    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
-    <div class="col-5">{{#str}} dualtime, local_booking {{/str}}</div>
-    <div class="col-6">{{dualtime}}</div>
-</div>
-<div class="row mt-1">
     <div class="col-1">
         <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} pic, local_booking {{/str}} {{/pix}}
         </i>
     </div>
-    <div class="col-5">{{#str}} p1, local_booking {{/str}}</div>
-    <div class="col-6">{{picname}}</div>
+    {{^soloflight}}<div class="col-5">{{#str}} p1, local_booking {{/str}}</div>{{/soloflight}}
+    {{#soloflight}}<div class="col-5">{{#str}} p1solo, local_booking {{/str}}</div>{{/soloflight}}
+    <div class="col-6">{{p1name}}</div>
 </div>
+{{^soloflight}}
 <div class="row mt-1">
     <div class="col-1">
         <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} sic, local_booking {{/str}} {{/pix}}
@@ -91,15 +77,46 @@
     <div class="col-5">{{#str}} p2, local_booking {{/str}}</div>
     <div class="col-6">{{p2name}}</div>
 </div>
-<div class="row mt-1">
-    <div class="col-1">{{#pix}} booking, local_booking {{/pix}}</div>
-    <div class="col-5">{{#str}} aircraft, local_booking {{/str}}</div>
-    <div class="col-6">{{aircraft}}</div>
-</div>
+{{/soloflight}}
 <div class="row mt-1">
     <div class="col-1"></div>
     <div class="col-5">{{#str}} pirep, local_booking {{/str}}</div>
     <div class="col-6">{{pirep}}</div>
+</div>
+{{^soloflight}}
+<hr/>
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
+    <div class="col-5">{{#str}} sessiontime, local_booking {{/str}}</div>
+    <div class="col-6">{{sessiontime}}</div>
+</div>
+{{/soloflight}}
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
+    <div class="col-5">{{#str}} pictime, local_booking {{/str}}</div>
+    <div class="col-6">{{pictime}}</div>
+</div>
+{{^soloflight}}
+{{#dualops}}
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
+    <div class="col-5">{{#str}} dualtime, local_booking {{/str}}</div>
+    <div class="col-6">{{dualtime}}</div>
+</div>
+{{/dualops}}
+{{^dualops}}
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
+    <div class="col-5">{{#str}} copilottime, local_booking {{/str}}</div>
+    <div class="col-6">{{copilottime}}</div>
+</div>
+{{/dualops}}
+{{/soloflight}}
+<hr/>
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} booking, local_booking {{/pix}}</div>
+    <div class="col-5">{{#str}} aircraft, local_booking {{/str}}</div>
+    <div class="col-6">{{aircraft}}</div>
 </div>
 <div class="row mt-1">
     <div class="col-1"></div>

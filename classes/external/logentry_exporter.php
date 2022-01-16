@@ -28,7 +28,6 @@ namespace local_booking\external;
 defined('MOODLE_INTERNAL') || die();
 
 use renderer_base;
-use DateTime;
 use moodle_url;
 use core\external\exporter;
 use local_booking\local\participant\entities\participant;
@@ -55,25 +54,14 @@ class logentry_exporter extends exporter {
      * @param array $data       The form data.
      * @param array $related    The related data.
      */
-    public function __construct($data, $logentry = null, $related = []) {
-        $this->logentry = $logentry;
+    public function __construct($data, $related = []) {
+        $this->logentry = $data['logentry'];
+        $nullable = !isset($data['nullable']) || $data['nullable'];
 
-        if (!empty($logentry)) {
-            // convert flight time duration, session duration, and
-            // pic flight duration to their equivalent int values
+        // add logentry properties to the exporter's data and remove the logentry object
+        $data = $this->logentry->__toArray($data['view'] == 'summary', $nullable, (!empty($data['shortdate'])?:false)) + $data;
+        unset($data['logentry']);
 
-            // process data for new and edit logbook entry
-            if (empty($logentry->get_id())) {
-                // convert flightdate to timestamp format
-                $flightdatestr = $data['flightdate']['month'] . '/' .
-                $data['flightdate']['day'] . '/' .
-                $data['flightdate']['year'];
-                $data['flightdate'] = (DateTime::createFromFormat('m/d/Y', $flightdatestr))->getTimestamp();
-                $data['sessiontime'] = $logentry->get_sessiontime();
-            } else {
-                $data = $logentry->__toArray($data['view'] == 'summary') + $data;
-            }
-        }
         $data['url'] = new moodle_url('/booking/view', ['courseid'=>$data['courseid']]);
         $data['visible'] = 1;
 
@@ -102,14 +90,39 @@ class logentry_exporter extends exporter {
             'flightdate' => [
                 'type' => PARAM_RAW
             ],
+            'sessiontime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'pictime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
             'dualtime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true,
             ],
-            'sessiontime' => [
-                'type' => PARAM_RAW
+            'picustime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
             ],
-            'pictime' => [
+            'instructortime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'multipilottime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'copilottime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'totaltime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'checkpilottime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true,
             ],
@@ -117,7 +130,15 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true,
             ],
+            'enginetype' => [
+                'type' => PARAM_RAW,
+                'optional' => true,
+            ],
             'pirep' => [
+                'type' => PARAM_RAW,
+                'optional' => true,
+            ],
+            'linkedpirep' => [
                 'type' => PARAM_RAW,
                 'optional' => true,
             ],
@@ -133,8 +154,52 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true,
             ],
+            'deptime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'arrtime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'landingsday' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'landingsnight' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'nighttime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'ifrtime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'fstd' => [
+                'type' => PARAM_RAW,
+                'optional' => true,
+            ],
             'remarks' => [
                 'type' => PARAM_RAW,
+                'optional' => true,
+            ],
+            'trainingtype' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'soloflight' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
+            'se' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'me' => [
+                'type' => PARAM_TEXT,
                 'optional' => true,
             ],
             'visible' => [
@@ -151,19 +216,28 @@ class logentry_exporter extends exporter {
     protected static function define_other_properties() {
         return [
             'exercisename' => [
-                'type' => PARAM_RAW
+                'type' => PARAM_TEXT,
+                'optional' => true,
             ],
             'formattedtime' => [
-                'type' => PARAM_RAW
+                'type' => PARAM_TEXT,
+                'optional' => true,
             ],
-            'picname' => [
-                'type' => PARAM_RAW
+            'p1name' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
             ],
             'p2name' => [
-                'type' => PARAM_RAW
+                'type' => PARAM_TEXT,
+                'optional' => true,
             ],
             'sectionname' => [
-                'type' => PARAM_RAW
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'dualops' => [
+                'type' => PARAM_BOOL,
+                'default' => true,
             ],
         ];
     }
@@ -180,13 +254,15 @@ class logentry_exporter extends exporter {
         $p1id = !empty($this->logentry) ? $this->logentry->get_p1id() : $this->data['p1id'];
         $userid = !empty($this->logentry) ? $this->logentry->get_userid() : $this->data['userid'];
         $sectionname = !empty($this->logentry) ? '' : subscriber::get_section_name($this->data['courseid'], $exerciseid);
+        $dualops = $this->data['trainingtype'] == 'Dual';
 
         return [
             'exercisename' => subscriber::get_exercise_name($exerciseid),
             'formattedtime' => $flightdate,
-            'picname' => participant::get_fullname($p1id),
-            'p2name' => participant::get_fullname($userid),
+            'p1name' => !empty($p1id) ? participant::get_fullname($p1id) : '',
+            'p2name' => !empty($userid) ? participant::get_fullname($userid) : '',
             'sectionname' => $sectionname,
+            'dualops' => $dualops,
         ];
     }
 

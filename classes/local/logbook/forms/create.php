@@ -66,7 +66,7 @@ class create extends \moodleform {
         // Empty string so that the element doesn't get rendered.
         $mform->addElement('header', 'general', '');
 
-        $this->add_default_hidden_elements($mform);
+        $this->add_default_hidden_elements($mform, $subscriber->trainingtype);
         $this->add_elements($mform, $subscriber, $logentry);
 
         // Add the javascript required to enhance this mform.
@@ -95,45 +95,8 @@ class create extends \moodleform {
             if ($data['arrtime'] <= $data['deptime'])
                 $errors['arrtime'] = get_string('errorinvalidarrtime', 'local_booking');
         }
+
         return $errors;
-    }
-
-    /**
-     * Add the list of hidden elements that should appear in this form each
-     * time. These elements will never be visible to the user.
-     *
-     * @param MoodleQuickForm $mform
-     */
-    protected function add_default_hidden_elements($mform) {
-
-        // Add some hidden fields.
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-        $mform->setDefault('id', 0);
-
-        $mform->addElement('hidden', 'linkedlogentryid');
-        $mform->setType('linkedlogentryid', PARAM_INT);
-        $mform->setDefault('linkedlogentryid', 0);
-
-        $mform->addElement('hidden', 'userid');
-        $mform->setType('userid', PARAM_INT);
-        $mform->setDefault('userid', 0);
-
-        $mform->addElement('hidden', 'exerciseid');
-        $mform->setType('exerciseid', PARAM_INT);
-        $mform->setDefault('exerciseid', 0);
-
-        $mform->addElement('hidden', 'courseid');
-        $mform->setType('courseid', PARAM_INT);
-        $mform->setDefault('courseid', 0);
-
-        $mform->addElement('hidden', 'contextid');
-        $mform->setType('contextid', PARAM_INT);
-        $mform->setDefault('contextid', 0);
-
-        $mform->addElement('hidden', 'visible');
-        $mform->setType('visible', PARAM_INT);
-        $mform->setDefault('visible', 1);
     }
 
     /**
@@ -145,59 +108,64 @@ class create extends \moodleform {
      */
     protected function add_elements($mform, $subscriber, $logentry) {
         global $USER;
+        $integratedpireps = $subscriber->has_integration('pireps');
+        $newlogentry = empty($logentry) || empty($logentry->get_id());
 
         // set additional information
-        if (!empty($logentry) && !empty($logentry->get_id())) {
-            $flightdate = $logentry->get_flightdate();
-            $p1id = $logentry->get_p1id();
-            $p2id = $logentry->get_p2id();
-        } else {
+        if ($newlogentry) {
             $flightdate = isset($this->_customdata['flightdate']) ? $this->_customdata['flightdate'] : null;
             $p1id = $USER->id;
             $p2id = $this->_customdata['userid'];
+        } else {
+            $flightdate = $logentry->get_flightdate();
+            $p1id = $logentry->get_p1id();
+            $p2id = $logentry->get_p2id();
         }
         // P1/PIC instructor id and P2 student id
         $pilots = $this->get_pilot_ids($subscriber);
 
-        // show pireps only if they there is lookup integration
-        if ($subscriber->has_integration('pireps')) {
-            $this->add_element($mform, 'pireps', array($subscriber->trainingtype));
-        } else {
-            // add primary elements
-            $this->add_element($mform, 'flightdate', array($flightdate));
-            $this->add_element($mform, 'p1id', array($pilots, $p1id));
-            $this->add_element($mform, 'p2id', array($pilots, $p2id));
+        // show pireps only if they there is lookup integration or a PIREP for editing
+        if ($integratedpireps || !$newlogentry)
+            $this->add_element($mform, 'pireps', array($integratedpireps, $newlogentry));
 
-            $this->add_element($mform, 'soloflight');
-            $this->add_element($mform, 'sessiontime');
-            $this->add_element($mform, 'pictime', array($subscriber->trainingtype));
-            $this->add_element($mform, 'instructortime');
+        // add primary elements
+        $this->add_element($mform, 'flightdate', array($flightdate));
+        $this->add_element($mform, 'p1id', array($pilots, $p1id));
+        $this->add_element($mform, 'p2id', array($pilots, $p2id));
 
-            // add elements depending on the training type
-            if ($subscriber->trainingtype == 'Dual') {
-                $this->add_element($mform, 'dualtime');
-            } elseif ($subscriber->trainingtype == 'Multicrew') {
-                $this->add_element($mform, 'multipilottime');
-                $this->add_element($mform, 'copilottime');
-            }
+        $this->add_element($mform, 'soloflight');
+        $this->add_element($mform, 'sessiontime');
+        $this->add_element($mform, 'pictime');
+        $this->add_element($mform, 'instructortime');
 
-            // add secondary form elements (more...)
-            // default to 30 hr/mins from session time for departure and 1:30 hr/mins from session time for arrival
-            $defaultdepttime = logbook::convert_time(($flightdate + (30 * 60)), 'TS_TO_TIME');
-            $defaultarrttime = logbook::convert_time(($flightdate + (90 * 60)), 'TS_TO_TIME');
-            $this->add_element($mform, 'pireps', array($subscriber->trainingtype), false);
-            $this->add_element($mform, 'departure', array($subscriber->homeicao, $defaultdepttime), false);
-            $this->add_element($mform, 'arrival', array($subscriber->homeicao, $defaultarrttime), false);
-            $this->add_element($mform, 'aircraft', array($subscriber->aircrafticao, ['SE'=>'Single engine', 'ME'=>'Multi-engine'],
-                                                         $subscriber->trainingtype == 'Dual' ? 'SE' : 'ME'), false);
-            $this->add_element($mform, 'nighttime', null, false);
-            $this->add_element($mform, 'ifrtime', null, false);
-            $this->add_element($mform, 'checkpilottime', null, false);
-            $this->add_element($mform, 'landings', null, false);
-            $this->add_element($mform, 'callsign', array($this->get_pilot_info('callsign', $subscriber->get_id(), $p1id)), false);
-            $this->add_element($mform, 'remarks', null, false);
-            $this->add_element($mform, 'fstd', array($this->get_pilot_info('simulator', $subscriber->get_id(), $p2id)), false);
+        // add elements depending on the training type
+        if ($subscriber->trainingtype == 'Dual') {
+            $this->add_element($mform, 'dualtime');
+        } elseif ($subscriber->trainingtype == 'Multicrew') {
+            $this->add_element($mform, 'multipilottime');
+            $this->add_element($mform, 'copilottime');
         }
+
+        // add secondary form elements (more...)
+        // add PIREP group if there's no integration here
+        if (!$integratedpireps)
+            $this->add_element($mform, 'pireps', null, false);
+
+        // default to 30 hr/mins from session time for departure and 1:30 hr/mins from session time for arrival
+        $defaultdepttime = logbook::convert_time(($flightdate + (30 * 60)), 'TS_TO_TIME');
+        $defaultarrttime = logbook::convert_time(($flightdate + (90 * 60)), 'TS_TO_TIME');
+        $this->add_element($mform, 'departure', array($subscriber->homeicao, $defaultdepttime), false);
+        $this->add_element($mform, 'arrival', array($subscriber->homeicao, $defaultarrttime), false);
+        $this->add_element($mform, 'aircraft', array($subscriber->aircrafticao, ['SE'=>'Single engine', 'ME'=>'Multi-engine'],
+                                                        $subscriber->trainingtype == 'Dual' ? 'SE' : 'ME'), false);
+        $this->add_element($mform, 'nighttime', null, false);
+        $this->add_element($mform, 'ifrtime', null, false);
+        $this->add_element($mform, 'picustime', null, false);
+        $this->add_element($mform, 'checkpilottime', null, false);
+        $this->add_element($mform, 'landings', null, false);
+        $this->add_element($mform, 'callsign', array($this->get_pilot_info('callsign', $subscriber->get_id(), $p1id)), false);
+        $this->add_element($mform, 'remarks', null, false);
+        $this->add_element($mform, 'fstd', array($this->get_pilot_info('simulator', $subscriber->get_id(), $p2id)), false);
     }
 
     /**
@@ -256,20 +224,28 @@ class create extends \moodleform {
             case 'pictime':
                 // PIC flight time duration
                 if ($input) {
-                    $attributes = array('onchange' => 'applyFlightRules("' . $options[0] . '")', 'size' => '5', 'placeholder' => 'hh:mm');
+                    $attributes = array('size' => '5', 'placeholder' => 'hh:mm');
                     $mform->addElement('text', 'pictime', get_string('pictime', 'local_booking'), $attributes);
                     $mform->addRule('pictime', get_string('required'), 'required', null, 'client');
                     $mform->addHelpButton('pictime', 'pictime', 'local_booking');
                     $mform->setType('pictime', PARAM_TEXT);
-                    $mform->setDefault('pictime', '00:00');
                 } else $mform->addElement('static', 'description', get_string('pictime', 'local_booking'), $value);
                 break;
 
             case 'instructortime':
-                // Instructortime flight time duration
+                // Instructor flight time duration
                 $mform->addElement('text', 'instructortime', get_string('instructortime', 'local_booking'), 'size="5" placeholder="hh:mm"');
                 $mform->setType('instructortime', PARAM_TEXT);
                 $mform->addHelpButton('instructortime', 'instructortime', 'local_booking');
+                break;
+
+            case 'picustime':
+                // PICUS flight time duration
+                $mform->addElement('text', 'picustime', get_string('picustime', 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->setType('picustime', PARAM_TEXT);
+                $mform->addHelpButton('picustime', 'picustime', 'local_booking');
+                if (!$maindisplay)
+                    $mform->setAdvanced('picustime');
                 break;
 
             case 'dualtime':
@@ -278,7 +254,6 @@ class create extends \moodleform {
                 $mform->addRule('dualtime', get_string('required'), 'required', null, 'client');
                 $mform->addHelpButton('dualtime', 'dualtime', 'local_booking');
                 $mform->setType('dualtime', PARAM_TEXT);
-                $mform->setDefault('dualtime', '00:00');
                 break;
 
             case 'multipilottime':
@@ -297,12 +272,19 @@ class create extends \moodleform {
 
             case 'pireps':
                 // PIREPs group P1 & P2
-                $pireps=array();
-                $pireps[] =& $mform->createElement('text', 'p1pirep', get_string('p1pirep', 'local_booking'));
-                $pireps[] =& $mform->createElement('text', 'p2pirep', get_string('p2pirep', 'local_booking'));
-                $mform->addGroup($pireps, 'pireps', get_string('pirepsgroup', 'local_booking'), '   ', false);
-                $mform->addGroupRule('pireps', array('p1pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
-                $mform->addGroupRule('pireps', array('p2pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
+                // Show integrated PIREP lookup (options[0])
+                if ($options[0]) {
+                    // Show P1 PIREP vs PIREP depending on whether it's a new entry or not (options[1])
+                    $mform->addElement('text', 'p1pirep', get_string(($options[1] ? 'p1pirep' : 'pirep'), 'local_booking'));
+                    $mform->addRule('p1pirep', get_string('err_numeric', 'form'), 'numeric', null, 'client');
+                } else {
+                    $pireps=array();
+                    $pireps[] =& $mform->createElement('text', 'p1pirep', get_string('p1pirep', 'local_booking'));
+                    $pireps[] =& $mform->createElement('text', 'p2pirep', get_string('p2pirep', 'local_booking'));
+                    $mform->addGroup($pireps, 'pireps', get_string('pirepsgroup', 'local_booking'), '   ', false);
+                    $mform->addGroupRule('pireps', array('p1pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
+                    $mform->addGroupRule('pireps', array('p2pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
+                }
                 if (!$maindisplay)
                     $mform->setAdvanced('pireps');
                 break;
@@ -415,6 +397,52 @@ class create extends \moodleform {
                     $mform->setAdvanced('fstd');
                 break;
         }
+    }
+
+    /**
+     * Add the list of hidden elements that should appear in this form each
+     * time. These elements will never be visible to the user.
+     *
+     * @param MoodleQuickForm $mform
+     */
+    protected function add_default_hidden_elements($mform, $trainingtype) {
+
+        // Add some hidden fields.
+        $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
+        $mform->setDefault('id', 0);
+
+        $mform->addElement('hidden', 'linkedlogentryid');
+        $mform->setType('linkedlogentryid', PARAM_INT);
+        $mform->setDefault('linkedlogentryid', 0);
+
+        $mform->addElement('hidden', 'linkedpirep');
+        $mform->setType('linkedpirep', PARAM_INT);
+        $mform->setDefault('linkedpirep', 0);
+
+        $mform->addElement('hidden', 'userid');
+        $mform->setType('userid', PARAM_INT);
+        $mform->setDefault('userid', 0);
+
+        $mform->addElement('hidden', 'exerciseid');
+        $mform->setType('exerciseid', PARAM_INT);
+        $mform->setDefault('exerciseid', 0);
+
+        $mform->addElement('hidden', 'courseid');
+        $mform->setType('courseid', PARAM_INT);
+        $mform->setDefault('courseid', 0);
+
+        $mform->addElement('hidden', 'contextid');
+        $mform->setType('contextid', PARAM_INT);
+        $mform->setDefault('contextid', 0);
+
+        $mform->addElement('hidden', 'trainingtype');
+        $mform->setType('trainingtype', PARAM_TEXT);
+        $mform->setDefault('trainingtype', $trainingtype);
+
+        $mform->addElement('hidden', 'visible');
+        $mform->setType('visible', PARAM_INT);
+        $mform->setDefault('visible', 1);
     }
 
     /**

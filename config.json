@@ -24,35 +24,53 @@
     },
     "integrations": {
         "pireps"     : {
-            "enabled"   : 0,
-            "host"      : "localhost",
+            "enabled"   : 1,
+            "host"      : "127.0.0.1:8889",
             "db"        : "bav_management",
             "data"      : {
                 "pirep" : {
                     "table" : "pireps",
-                    "field" : "id",
+                    "fields": {
+                        "flightdate" : "start_date",
+                        "pictime"    : "flight_time",
+                        "depicao"    : "dep_icao",
+                        "arricao"    : "arr_icao",
+                        "deptime"    : "start_time",
+                        "arrtime"    : "end_time",
+                        "callsign"   : "callsign",
+                        "aircraft"   : "aircraft",
+                        "aircraftreg": "registration",
+                        "fstd"       : "sim",
+                        "linkedpirep": "linked_pirep_id"
+                    },
                     "key"   : "id"
                 },
                 "linkedpirep" : {
                     "table" : "pireps",
-                    "field" : "linked_pirep_id",
+                    "fields": {
+                        "linked_pirep_id": "linked_pirep_id"
+                    },
                     "key"   : "id"
                 }
             }
         },
         "aircraft"  : {
-            "enabled"   : 0,
+            "enabled"   : 1,
             "host"      : "localhost",
             "db"        : "bav_management",
             "data"      : {
                 "enginetype": {
                     "table"     : "fleet",
-                    "field"     : "engine_type",
+                    "fields"    : {
+                        "engine_type": "engine_type"
+                    },
                     "key"       : "icao"
                 },
                 "aircraftreg": {
                     "table"     : "fleet_registrations",
-                    "field"     : "reg",
+                    "fields"    : {
+                        "reg": "reg"
+                    },
                     "key"       : "icao"
                 }
             }

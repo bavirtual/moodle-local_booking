@@ -23,6 +23,7 @@ $string['bookingcalwinlive'] = 'Add to Windows Live calendar';
 $string['bookingcancel'] = 'Cancel';
 $string['bookingcanceledsuccess'] = 'Booking with \'{$a->studentname}\' cancelled!';
 $string['bookingcanceledunable'] = 'Unable to cancel booking!';
+$string['bookingcancelednotfound'] = 'Booking not found!';
 $string['bookingconfirmmsg'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
 $string['bookingconfirmsuccess'] = 'Booking confirmed for \'{$a->exercise}\' with {$a->instructor} on {$a->sessiondate} zulu';
 $string['bookingconfirmunable'] = 'Unable to confirm booking!';
@@ -67,7 +68,6 @@ $string['pluginname'] = 'Session Booking';
 $string['progression'] = 'Students Progression';
 $string['mystudents'] = 'My assigned students';
 $string['nextlesson'] = 'Next Lesson';
-$string['newlogentryadd'] = 'Add a new logbook entry';
 $string['nobookingtoconfirm'] = 'You have no booking to confirm.';
 $string['role'] = 'Role';
 $string['sequencetooltip'] = 'Score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
@@ -134,16 +134,16 @@ $string['arrgroup'] = 'Arrival (ICAO/time)';
 $string['arricao'] = 'Arrival ICAO';
 $string['arrtime'] = 'Arrival time (zulu)';
 $string['callsign'] = 'Callsign';
-$string['checkpilottime'] = 'Check pilot time';
-$string['checkpilottime_help'] = 'Flight time logged for the examiner as the check pilot (in minutes)';
+$string['checkpilottime'] = 'Examiner time';
+$string['checkpilottime_help'] = 'Flight time logged for the examiner as the check pilot';
 $string['copilottime'] = 'Copilot time';
-$string['copilottime_help'] = 'Flight time logged for the copilot time in a multi-crewed flights (in minutes)';
+$string['copilottime_help'] = 'Flight time logged for the copilot time in a multi-crewed flights';
 $string['confirmlogentrydelete'] = 'Are you sure you want to delete this entry?';
 $string['deletelogentry'] = 'Delete entry';
 $string['depgroup'] = 'Departure (ICAO/time)';
 $string['deptime'] = 'Departure time (zulu)';
 $string['dualtime'] = 'Dual time';
-$string['dualtime_help'] = 'Flight time logged for the student in training flights (in minutes)';
+$string['dualtime_help'] = 'Flight time logged for the student in training flights';
 $string['depicao'] = 'Departure ICAO';
 $string['editlogentry'] = 'Editing Logbook entry';
 $string['enginetype'] = 'Engine type';
@@ -154,8 +154,7 @@ $string['errorlandings'] = 'Number from 1-9';
 $string['errorlinking'] = 'Failed to link instructor/student logentries';
 $string['errorlogentrycancel'] = 'Errors encountered: Unable to cancel booking!';
 $string['errorlogentryfetch'] = 'Error encountered while trying to fetch logbook entry with ID: ';
-$string['errorp1pirepincorrect'] = 'P1 PIREP incorrect or missing!';
-$string['errorp2pirepincorrect'] = 'P2 PIREP incorrect or missing!';
+$string['errorp1pirepnotfound'] = ' - PIREP not found.';
 $string['feedback'] = 'Feedback';
 $string['flightcopilottimetooltip'] = 'Flight time logged for the co-pilot in a multi-crewed flights';
 $string['flightdate'] = 'Flight date';
@@ -164,15 +163,45 @@ $string['flighttime'] = 'flight time';
 $string['fstd'] = 'FSTD';
 $string['fstd_help'] = 'Flight Simulation Training Device qualification';
 $string['ifrtime'] = 'IFR flight time';
-$string['ifrtime_help'] = 'Operational IFR time is the portion of the flight flown under Instrument Flight Rules, logged for all pilots flying the aircraft (in minutes)';
+$string['ifrtime_help'] = 'Operational IFR time is the portion of the flight flown under Instrument Flight Rules, logged for all pilots flying the aircraft';
 $string['instructortime'] = 'Instructor time';
-$string['instructortime_help'] = 'Flight time logged for the instructor in training flights (in minutes)';
+$string['instructortime_help'] = 'Flight time logged for the instructor in training flights';
 $string['landings_help'] = 'The number for each of the day and night landings for the flight';
 $string['landingsday'] = 'Landings day';
 $string['landingsgroup'] = 'Landings (day/night)';
 $string['landingsnight'] = 'Landings night';
 $string['logbook'] = 'My logbook';
+$string['logbookaircraft'] = 'Aircraft';
+$string['logbookarr'] = 'Arrival';
+$string['logbookcopilot'] = 'Co-Pilot';
+$string['logbookdate'] = 'Date';
+$string['logbookday'] = 'Day';
+$string['logbookdep'] = 'Departure';
+$string['logbookdual'] = 'Dual';
+$string['logbookformat'] = 'format';
+$string['logbookformateasa'] = 'EASA';
+$string['logbookformatsimple'] = 'Simple';
+$string['logbookfunc'] = 'Function';
+$string['logbookfstd'] = 'FSTD';
+$string['logbookifr'] = 'IFR';
+$string['logbookistr'] = 'Instr-uctor';
+$string['logbooklandings'] = 'Landings';
+$string['logbookmakemodel'] = 'Make, Model';
+$string['logbookme'] = 'ME';
+$string['logbookmultipilot'] = 'Multi-Pilot';
+$string['logbooknight'] = 'Night';
+$string['logbookops'] = 'Operational';
+$string['logbookp1name'] = 'Name(s) PIC';
+$string['logbookpic'] = 'PIC';
+$string['logbookpicus'] = 'PICUS';
+$string['logbookplace'] = 'Place';
+$string['logbookreg'] = 'Reg\'n';
+$string['logbookremarks'] = 'Remarks';
+$string['logbookse'] = 'SE';
+$string['logbooksinglepilot'] = 'Single-Pilot';
 $string['logbooksummary'] = 'LOGBOOK SUMMARY';
+$string['logbooktime'] = 'Time';
+$string['logbooktotaltime'] = 'Total Time';
 $string['logentry'] = 'Logbook Entry';
 $string['logentry2'] = 'Log entry';
 $string['logentrymissing'] = 'No logbook entry!';
@@ -181,28 +210,41 @@ $string['logentrydeletefailed'] = 'Unable to delete logbook entry';
 $string['logentrysavesuccess'] = 'Logbook entry saved';
 $string['logentrysaveunable'] = 'Unable to save logbook entry';
 $string['multipilottime'] = 'Multi-pilot time';
-$string['multipilottime_help'] = 'Flight time logged for each pilot in multi-crew flights (in minutes)';
+$string['multipilottime_help'] = 'Flight time logged for each pilot in multi-crew flights';
 $string['nighttime'] = 'Night flight time';
-$string['nighttime_help'] = 'Operational night time is the portion of the flight flown in night time. Logged for the PIC and copilots (in minutes)';
+$string['nighttime_help'] = 'Operational night time is the portion of the flight flown in night time. Logged for the PIC and copilots';
 $string['newlogentry'] = 'New Logbook entry';
 $string['p1'] = 'P1 (instructor)';
+$string['p1solo'] = 'P1 (solo)';
 $string['p2'] = 'P2 (student)';
 $string['p1pirep'] = 'P1 PIREP';
 $string['p2pirep'] = 'P2 PIREP';
-$string['pictime'] = 'PIC/PICUS time';
+$string['pictime'] = 'PIC time';
 $string['pictime_help'] = 'Flight time logged for the pilot in command (PIC). As per the EASA <a href="https://www.easa.europa.eu/sites/default/files/dfu/Part-FCL.pdf">Part-FLC</a>
-    [pg30]. "the applicant for or the holder of a pilot licence may log as PIC time all solo flight time, flight time as SPIC and flight time under supervision..." (in minutes)';
+    [pg30]. "the applicant for or the holder of a pilot licence may log as PIC time all solo flight time, flight time as SPIC and flight time under supervision..."';
+$string['picustime'] = 'PICUS time';
+$string['picustime_help'] = 'Flight time logged by the pilot in command under supervision (PICUS), which is the FO or the student that passes a checkride';
 $string['pilot'] = 'Pilot';
+$string['pilotlogbook'] = 'Pilot\'s Logbook';
 $string['pirep'] = 'PIREP';
+$string['pirepfound'] = ' - PIREP found.';
 $string['pirepsgroup'] = 'PIREPs (P1/P2)';
 $string['remarks'] = 'Remarks';
 $string['sessiontime'] = 'Session time';
-$string['sessiontime_help'] = 'The ground training session overall time (in minutes)';
+$string['sessiontime_help'] = 'The ground training session overall time';
 $string['soloflight'] = 'Solo flight';
 $string['soloflight_help'] = 'Student solo flight logged by the instructor';
+$string['totalcopilottime'] = 'Total Co-pilot flight time';
 $string['totaldualtime'] = 'Total dual flight time';
-$string['totalsessiontime'] = 'Total session time';
+$string['totalifrtime'] = 'Total IFR flight time';
+$string['totalinstructortime'] = 'Total instructor flight time';
+$string['totallandingsday'] = 'Total day landings';
+$string['totallandingsnight'] = 'Total night landings';
+$string['totalmultipilottime'] = 'Total Multi-pilot flight time';
+$string['totalnighttime'] = 'Total night flight time';
 $string['totalpictime'] = 'Total PIC flight time';
+$string['totalpicustime'] = 'Total PICUS flight time';
+$string['totalsessiontime'] = 'Total session time';
 $string['verifypirep'] = 'Verify PIREP';
 
 // integrations
@@ -236,7 +278,7 @@ $string['emailnotifyhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{
 $string['emailnotifycalendarshtml'] = '<p style="font-size: .9em;">Add a reminder to your calendar:<br />
     <table style="border-collapse: collapse; width: 100%;">
     <tbody><tr>
-        <td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.svg" alt="Add to Google calendar"/></td>
+        <td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.png" alt="Add to Google calendar"/></td>
         <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
         </tr><tr>
         <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 0 6 0 6px">
@@ -260,7 +302,7 @@ $string['emailconfirmhtml'] = '<div style="font-family:sans-serif"><p><a href=\'
 $string['emailconfirmcalendarshtml'] = '<p style="font-size: .9em;">Add a reminder to your calendar:<br />
     <table style="border-collapse: collapse; width: 100%;">
     <tbody><tr>
-        <td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.svg" alt="Add to Google calendar"/></td>
+        <td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.png" alt="Add to Google calendar"/></td>
         <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
         </tr><tr>
         <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 0 6 0 6px">
@@ -352,7 +394,7 @@ $string['slotcountweightdesc'] = 'weight multiplier to calculate prioritization 
 $string['useplugin'] = 'Use Session Booking';
 $string['homeicao'] = 'Home airport ICAO';
 $string['exercisetitles'] = 'Course exercise titles:';
-$string['exercisetitlesdesc'] = 'Session Booking column titles (one title per line, use &lt;br/&gt; tag to break a title)';
+$string['exercisetitlesdesc'] = 'Use to improve the display of long exercise titles on the instructors dashboard page (one title per line, use &lt;br/&gt; tag to break a title)';
 $string['trainingaircraft'] = 'Training Aircraft ICAO';
 $string['trainingaircraftdesc'] = '(one per line)';
 

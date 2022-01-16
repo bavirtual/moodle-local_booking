@@ -1,0 +1,89 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_booking/logbook_std
+
+    Log book view for summary and log book entries.
+
+    The purpose of this template is to render the main, detailed weekly view.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+    }
+}}
+<div class="logbook-body">
+    <br>
+    <div class="float-right">
+        <button type="button" class="btn btn-primary btn-sm" onclick="location.href='{{{easaformaturl}}}';">{{#str}} logbookformateasa, local_booking {{/str}}</button>
+        <button type="button" class="btn btn-primary btn-sm mr-3" onclick="location.href='{{{stdformaturl}}}';">{{#str}} logbookformatsimple, local_booking {{/str}}</button>
+    </div>
+    <div class="logbook-card logbook-shadow2">
+        <h2 class="logbook-h2">{{#str}} logbooksummary, local_booking {{/str}}</h2>
+        <pre>{{#str}} pilot, local_booking {{/str}}: <span class="logbook-highlight">{{username}}</span>
+
+        {{#str}} totalsessiontime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalsessiontime}}</span>
+        {{#str}} logbooktotaltime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;&#09;{{totaltime}}</span>
+
+        {{#str}} totalpictime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpictime}}</span>
+        {{#str}} totaldualtime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totaldualtime}}</span>
+        {{#str}} totalmultipilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalmultipilottime}}</span>
+        {{#str}} totalcopilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalcopilottime}}</span>
+        {{#str}} totalifrtime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalifrtime}}</span>
+        {{#str}} totalnighttime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalnighttime}}</span>
+        {{#str}} totalinstructortime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalinstructortime}}</span>
+        {{#str}} totalpicustime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpicustime}}</span>
+
+        {{#str}} totallandingsday, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsday}}</span>
+        {{#str}} totallandingsnight, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsnight}}</span>
+        </pre>
+    </div>
+
+{{#entries}}
+    <div class="logbook-card logbook-shadow1">
+    <h2 class="logbook-h2">{{{sectionname}}}</h2><h4>{{{exercisename}}}</h4><br/>
+        <pre>{{#str}} logentry2, local_booking {{/str}}:
+        {{#str}} flightdate2, local_booking {{/str}}&#09;&#09;&#09;&#09;{{flightdate}}
+        {{#str}} p1, local_booking {{/str}}&#09;&#09;&#09;&#09;{{p1name}}
+        {{#str}} p2, local_booking {{/str}}&#09;&#09;&#09;&#09;{{p2name}}
+
+        {{#str}} sessiontime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{sessiontime}}
+        {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{pictime}}
+        {{#dualops}}
+        {{#str}} dualtime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{dualtime}}
+        {{/dualops}}
+        {{^dualops}}
+        {{#str}} copilottime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{dualtime}}
+        {{/dualops}}
+        {{#str}} picustime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{picustime}}
+
+        {{#str}} aircraft, local_booking {{/str}}&#09;&#09;&#09;&#09;{{aircraft}}
+        {{#str}} callsign, local_booking {{/str}}&#09;&#09;&#09;&#09;{{callsign}}
+        {{#str}} pirep, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{pirep}}
+        {{#str}} depicao, local_booking {{/str}}&#09;&#09;&#09;&#09;{{depicao}} - {{deptime}}
+        {{#str}} arricao, local_booking {{/str}}&#09;&#09;&#09;&#09;{{arricao}} - {{arrtime}}
+        </pre>
+  </div>
+{{/entries}}
+<br>
+</div>
+

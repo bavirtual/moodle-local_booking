@@ -70,9 +70,10 @@ interface participant_interface {
     /**
      * Get an a's active bookings
      *
-     * @return logentry[] An array of bookings.
+     * @param  $loadentries Whether to load all enteries or not
+     * @return logentry[]   An array of bookings.
      */
-    public function get_logbook();
+    public function get_logbook(bool $loadentries = false);
 
     /**
      * Get student's enrolment date.

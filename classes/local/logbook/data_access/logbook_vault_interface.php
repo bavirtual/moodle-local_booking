@@ -39,7 +39,7 @@ interface logbook_vault_interface {
      * @param logbook   $logbook    The logbook_interface of for all entries.
      * @return logentries[]     Array of logentry_interfaces.
      */
-    public static function get_logbook(int $courseid, int $userid, $logbook = null);
+    public static function get_logbook(int $courseid, int $userid, $logbook);
 
     /**
      * Get a specific logbook entry.

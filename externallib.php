@@ -32,6 +32,7 @@ use local_booking\local\logbook\forms\create as create_logentry_form;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\participant\entities\student;
+use local_booking\local\subscriber\entities\subscriber;
 
 /**
  * Session Booking Plugin
@@ -102,6 +103,73 @@ class local_booking_external extends external_api {
      * @return external_function_parameters.
      * @since Moodle 2.5
      */
+    public static function get_pilot_logbook_parameters() {
+        return new external_function_parameters(
+            array(
+                'courseid'  => new external_value(PARAM_INT, 'The course id in context', VALUE_DEFAULT),
+                'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
+            )
+        );
+    }
+
+    /**
+     * Retrieve a pilot's logbook entries by course and id.
+     *
+     * @param int $courseid The course id in context.
+     * @param int $userid The user user id in context.
+     * @return array array of slots created.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function get_pilot_logbook($courseid, $userid) {
+        global $PAGE;
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::get_pilot_logbook_parameters(), array(
+                'courseid' => $courseid,
+                'userid' => $userid,
+                )
+            );
+
+        $context = context_course::instance($courseid);
+        self::validate_context($context);
+        $PAGE->set_url('/local/booking/logbook?courseid=' . $courseid);
+        $renderer = $PAGE->get_renderer('local_booking');
+
+        $subscriber = new subscriber($courseid);
+        $logbook = new logbook($courseid, $userid);
+        $logbook->load();
+        $logbookentries = $logbook->get_logentries();
+        $entries = [];
+        foreach ($logbookentries as $entry) {
+            $data['logentry'] = $entry;
+            $data['courseid'] = $courseid;
+            $data['userid'] = $userid;
+            $data['view'] = 'summary';
+            $data['trainingtype'] = $subscriber->trainingtype;
+            $data['shortdate'] = true;
+            $entry = new logentry_exporter($data, ['context' => \context_course::instance($courseid)]);
+            $entries[] = $entry->export($renderer);
+        }
+
+        return $entries;
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function get_pilot_logbook_returns() {
+        return new external_multiple_structure(logentry_exporter::get_read_structure());
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters.
+     * @since Moodle 2.5
+     */
     public static function get_logentry_by_id_parameters() {
         return new external_function_parameters(
             array(
@@ -122,7 +190,6 @@ class local_booking_external extends external_api {
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
     public static function get_logentry_by_id($logentryid, $courseid, $userid) {
-        global $PAGE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_logentry_by_id_parameters(), array(
@@ -133,11 +200,9 @@ class local_booking_external extends external_api {
             );
 
         $warnings = array();
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/');
-
-        list($data, $template) = get_logentry_view($logentryid, $courseid, $userid);
+        $logentry = (new logbook($courseid, $userid))->get_logentry($logentryid);
+        $data = array('logentry' => $logentry, 'view' => 'summary') + $params;
+        list($data, $template) = get_logentry_view($courseid, $userid, $data);
 
         return array('logentry' => $data, 'warnings' => $warnings);
     }
@@ -153,6 +218,86 @@ class local_booking_external extends external_api {
 
         return new external_single_structure(array(
             'logentry' => $logentrystructure,
+            'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters.
+     * @since Moodle 2.5
+     */
+    public static function get_pirep_parameters() {
+        return new external_function_parameters(
+            array(
+                'pirep'  => new external_value(PARAM_TEXT, 'The PIREP id', VALUE_DEFAULT),
+                'courseid'  => new external_value(PARAM_INT, 'The cousre id', VALUE_DEFAULT),
+                'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
+            )
+        );
+    }
+
+    /**
+     * Retrieve a logbook entry by its id.
+     *
+     * @param int $logentryid The logbook entry id.
+     * @param int $courseid The course id in context.
+     * @param int $userid The user user id in context.
+     * @return array array of slots created.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function get_pirep($pirep, $courseid, $userid) {
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::get_pirep_parameters(), array(
+                'pirep' => $pirep,
+                'courseid' => $courseid,
+                'userid' => $userid,
+                )
+            );
+
+        $result = true;
+        $warnings = array();
+        $logentry = (new logbook($courseid, $userid))->create_logentry();
+        $rec = subscriber::get_integrated_data('pireps', 'pirep', $pirep);
+        if (!empty($rec)) {
+            $logentry->read($rec);
+            $data['logentry'] = $logentry;
+            $data['courseid'] = $courseid;
+            $data['userid'] = $userid;
+            $data['view'] = 'summary';
+            $data['nullable'] = false;
+            list($data, $template) = get_logentry_view($courseid, $userid, $data);
+        } else {
+            $data = $logentry->__toArray(false, false) + $params;
+            $subscriber = new subscriber($courseid);
+            $data['dualops'] = $subscriber->trainingtype == 'Dual';
+            $data['visible'] = 1;
+            $result = false;
+            $warnings[] = [
+                'item' => $pirep,
+                'warningcode' => 'errorp1pirepnotfound',
+                'message' => get_string('errorp1pirepnotfound', 'local_booking')
+            ];
+        }
+
+        return array('logentry' => $data, 'result' => $result, 'warnings' => $warnings);
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function get_pirep_returns() {
+        $logentrystructure = logentry_exporter::get_read_structure();
+
+        return new external_single_structure(array(
+            'logentry' => $logentrystructure,
+            'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),
             'warnings' => new external_warnings()
             )
         );
@@ -699,9 +844,10 @@ class local_booking_external extends external_api {
                 // logentry for the exporter either student or instructor logentry would do
                 $logentry = $studentlogentry;
             }
+            $data['logentry'] = $logentry;
 
             // get exporter output for return values
-            list($output, $template) = get_logentry_view($logentry->get_id(), $courseid, $userid, $logentry, $data);
+            list($output, $template) = get_logentry_view($courseid, $userid, $data);
 
             \core\notification::success(get_string('logentrysavesuccess', 'local_booking'));
             return [ 'logentry' => $output ];

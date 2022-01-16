@@ -30,8 +30,12 @@ require_once(__DIR__ . '/lib.php');
 defined('MOODLE_INTERNAL') || die();
 
 // Set up the page.
+global $COURSE, $USER;
+
+$userid = $USER->id;
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
+$format = optional_param('format', null, PARAM_TEXT);
 $course = get_course($courseid);
 $title = $course->shortname . ' ' . get_string('logbook', 'local_booking');
 $title = get_string('logbook', 'local_booking');
@@ -46,9 +50,17 @@ $context = context_course::instance($courseid);
 require_login($course, false);
 require_capability('local/booking:logbookview', $context);
 
-// RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
 $PAGE->requires->jquery();
+// RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
 $PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask-5/dist/jquery.inputmask.min.js'), true);
+
+$PAGE->requires->js(new \moodle_url('https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js'), true);
+$PAGE->requires->js(new \moodle_url('https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js'), true);
+$PAGE->requires->css(new \moodle_url('https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css'));
+$PAGE->requires->js(new \moodle_url('https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js'), true);
+$PAGE->requires->js(new \moodle_url('https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js'), true);
+$PAGE->requires->css(new \moodle_url('https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap4.min.css'));
+$PAGE->requires->js(new \moodle_url($CFG->wwwroot . '/local/booking/js/datatables/logbook.js'));
 
 $PAGE->navbar->add(get_string('logbook', 'local_booking'));
 $PAGE->set_pagelayout('standard');  // otherwise use 'standard' layout
@@ -61,7 +73,7 @@ $renderer = $PAGE->get_renderer('local_booking');
 echo $OUTPUT->header();
 echo $renderer->start_layout();
 
-list($data, $template) = get_logbook_view($courseid);
+list($data, $template) = get_logbook_view($courseid, $userid, $format, true);
 echo $renderer->render_from_template($template, $data);
 
 echo $renderer->complete_layout();

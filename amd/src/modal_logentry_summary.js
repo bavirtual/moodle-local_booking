@@ -228,7 +228,7 @@ function(
 
         this.getAddButton().on(CustomEvents.events.activate, function(e, data) {
             // When the edit button is clicked we fire an event for the booking UI to handle edit.
-            $('body').trigger(BookingEvents.addLogentry, [this.getExerciseId(), this.getUserId(), this.getFlightDate()]);
+            $('body').trigger(BookingEvents.addLogentry, [this.getUserId()]);
 
             // There is nothing else for us to do so let's hide.
             this.hide();

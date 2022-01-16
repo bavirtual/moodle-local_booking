@@ -178,8 +178,8 @@ class student extends participant {
     public function get_grades() {
         if (empty($this->grades)) {
             // join both graded assignments and attempted quizes into one grades array
-            $assignments = $this->vault->get_student_assignment_grades($this->userid);
-            $quizes = $this->vault->get_student_quizes_grades($this->userid);
+            $assignments = $this->vault->get_student_assignment_grades($this->courseid, $this->userid);
+            $quizes = $this->vault->get_student_quizes_grades($this->courseid, $this->userid);
             $this->grades = $assignments + $quizes;
         }
 

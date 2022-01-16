@@ -99,24 +99,6 @@
                     </td>
                     {{/sessionoptions}}
                 </tr>
-                <tr style="height: 50px;">
-                    <td colspan="4" style="text-align: right;"><h6>{{#str}} newlogentryadd, local_booking {{/str}}:&nbsp;</h6></td>
-                    {{#exercises}}
-                    <td class="text-sm-center"
-                        data-region="session-entry"
-                        data-action="view-logentry"
-                        data-student-id="{{studentid}}"
-                        data-exercise-id="{{exerciseid}}"
-                        data-session-date="{{sessiondatets}}"
-                        data-booking-date="{{lastbookingts}}"
-                        data-logentry-id="{{logentryid}}"
-                        data-is-additional="true">
-                        <div id="exercise-session" class="d-md-block text-xs-center clickable">
-                                {{#pix}} plus-square, local_booking,{{#str}} add {{/str}} {{/pix}}
-                        </div>
-                    </td>
-                    {{/exercises}}
-                </tr>
             </tbody>
         </table>
         <p>

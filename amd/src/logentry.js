@@ -55,7 +55,7 @@ const ViewManager = require('local_booking/booking_view_manager');
             e.stopPropagation();
 
             if (logentryId == 0) {
-                registerLogentryEditForm(e, contextId, courseId, userId, logentryId, false);
+                registerLogentryEditForm(null, e, contextId, courseId, userId, logentryId, true);
             } else {
                 registerLogentrySummaryForm(contextId, courseId, userId, logentryId);
             }
@@ -69,14 +69,15 @@ const ViewManager = require('local_booking/booking_view_manager');
  * creating and editing logentries.
  *
  * @method registerLogentryEditForm
+ * @param  {object} root       The root element.
  * @param  {object} e          The triggered event.
  * @param  {Number} contextId  The course context id of the logentry.
  * @param  {Number} courseId   The course id of the logentry.
  * @param  {Number} userId     The user id the logentry belongs to.
  * @param  {Number} logentryId The logentry id.
- * @param  {bool}   editMode   Whether to register for edit mode.
+ * @param  {bool}   isNew      Whether to register for edit mode.
  */
- const registerLogentryEditForm = (e, contextId, courseId, userId, logentryId, editMode) => {
+ const registerLogentryEditForm = (root, e, contextId, courseId, userId, logentryId, isNew) => {
     const LogentryFormPromise = ModalFactory.create({
         type: ModalLogentryEditForm.TYPE,
         large: true
@@ -85,7 +86,7 @@ const ViewManager = require('local_booking/booking_view_manager');
     const target = e.target;
     const pendingPromise = new Pending('local_booking/registerLogentryEditForm');
 
-    ViewManager.renderLogentryModal(e, LogentryFormPromise, target, contextId, courseId, userId, logentryId, editMode)
+    ViewManager.renderLogentryModal(root, e, LogentryFormPromise, target, contextId, courseId, userId, logentryId, isNew)
     .then(pendingPromise.resolve())
     .catch();
  };
@@ -107,7 +108,11 @@ const registerLogentrySummaryForm = (contextId, courseId, userId, logentryId) =>
         ViewManager.renderLogentrySummaryModal(courseId, userId, logentryId)
         .then(function(modal) {
             $('body').on(LogentryEvents.editLogentry, function(e, userId, logentryId) {
-                registerLogentryEditForm(e, contextId, courseId, userId, logentryId, true);
+                registerLogentryEditForm(modal.getRoot(), e, contextId, courseId, userId, logentryId);
+                e.stopImmediatePropagation();
+            });
+            $('body').on(LogentryEvents.addLogentry, function(e, userId) {
+                registerLogentryEditForm(modal.getRoot(), e, contextId, courseId, userId, 0);
                 e.stopImmediatePropagation();
             });
             return modal;

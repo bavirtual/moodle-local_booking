@@ -206,6 +206,27 @@ import Ajax from 'core/ajax';
 /**
  * Get a graded session logbook entry by id.
  *
+ * @method getPilotLogbook
+ * @param  {number} courseId The associated course id.
+ * @param  {number} userId The user id of entry.
+ * @return {promise} Resolved with requested calendar event
+ */
+ export const getPilotLogbook = (courseId, userId) => {
+
+    const request = {
+        methodname: 'local_booking_get_pilot_logbook',
+        args: {
+            courseid: courseId,
+            userid: userId
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
+ * Get a graded session logbook entry by id.
+ *
  * @method getLogentryById
  * @param {number} logentryId The logbook entry id.
  * @param {number} courseId The associated course id.
@@ -253,17 +274,19 @@ import Ajax from 'core/ajax';
  * Send the form data of the logbook entry form
  * to be persisted at the server.
  *
- * @method verifyPirep
- * @param {string} formArgs An array of J URL encoded values from the form
- * @param {string} formData The URL encoded values from the form
- * @return {promise} Resolved with the pirep data
+ * @method findPirep
+ * @param  {string} pirep The passed PIREP number
+ * @param  {number} courseId The logbook entry user id.
+ * @param  {number} userId The logbook entry course id.
+* @return  {promise} Resolved with the pirep data
  */
- export const verifyPirep = (formArgs, formData) => {
+ export const findPirep = (pirep, courseId, userId) => {
     const request = {
-        methodname: 'local_booking_verify_pirep',
+        methodname: 'local_booking_get_pirep',
         args: {
-            formargs: formArgs,
-            formdata: formData
+            pirep: pirep,
+            courseid: courseId,
+            userid: userId
         }
     };
 

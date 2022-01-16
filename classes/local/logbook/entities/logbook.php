@@ -149,16 +149,51 @@ class logbook implements logbook_interface {
         if ($logentryid != 0) {
             $logentry = $reload ?
                 logbook_vault::get_logentry($this->userid, $this->courseid, $logentryid, 0, $this) :
-                $logentry = $this->entries[$logentryid];
+                $this->entries[$logentryid];
         } else if ($exerciseid != 0) {
             $logentry = $reload ?
                 logbook_vault::get_logentry($this->userid, $this->courseid, 0, $exerciseid, $this) :
-                $logentry = $this->get_logentry_by_exericseid($exerciseid);
+                $this->get_logentry_by_exericseid($exerciseid);
         }
         if (!empty($logentry))
             $logentry->set_parent($this);
 
         return $logentry;
+    }
+
+    /**
+     * get an entry from the logbook entris by
+     * exercise id.
+     *
+     * @param int $exerciseid: The entry associated exercise id
+     * @return logentry $logentry The logbook entry db record
+     */
+    protected function get_logentry_by_exericseid(int $exerciseid) {
+        $logentry = null;
+        foreach ($this->entries as $entry) {
+            if ($entry->get_exerciseid() == $exerciseid) {
+                $logentry = $entry;
+                break;
+            }
+        }
+        return $logentry;
+    }
+
+    /**
+     * Get the logbook entries time totals
+     *
+     * @param  bool $tostring The totals in string time format
+     * @return array          The logbook time table totals
+     */
+    public function get_summary(bool $tostring = false) {
+        $totals = logbook_vault::get_logbook_summary($this->courseid, $this->userid);
+        if ($tostring) {
+            foreach ($totals as $key => $total) {
+                if ($key != 'totallandingsday' && $key != 'totallandingsnight')
+                    $totals->$key = self::convert_time($total, 'MINS_TO_TEXT') ?: '';
+            }
+        }
+        return $totals;
     }
 
     /**
@@ -186,41 +221,6 @@ class logbook implements logbook_interface {
      */
     public function get_username() {
         return participant::get_fullname($this->userid);
-    }
-
-    /**
-     * get an entry from the logbook entris by
-     * exercise id.
-     *
-     * @param int $exerciseid: The entry associated exercise id
-     * @return logentry $logentry The logbook entry db record
-     */
-    public function get_logentry_by_exericseid(int $exerciseid) {
-        $logentry = null;
-        foreach ($this->entries as $entry) {
-            if ($entry->get_exerciseid() == $exerciseid) {
-                $logentry = $entry;
-                break;
-            }
-        }
-        return $logentry;
-    }
-
-    /**
-     * get an entry from the logbook entris by
-     * exercise id.
-     *
-     * @param int $exerciseid: The entry associated exercise id
-     * @return logentry $logentry The logbook entry db record
-     */
-    public function get_summary() {
-        list($totaldualtime, $totalsessiontime, $totalpictime) = logbook_vault::get_logbook_summary($this->courseid, $this->userid);
-
-        return [
-            self::convert_time($totaldualtime, 'MINS_TO_TEXT'),
-            self::convert_time($totalsessiontime, 'MINS_TO_TEXT'),
-            self::convert_time($totalpictime, 'MINS_TO_TEXT')
-        ];
     }
 
     /**
@@ -267,7 +267,7 @@ class logbook implements logbook_interface {
                 if ($value > 0 && is_numeric($value)) {
                     $hrs = floor($value / 60);
                     $mins = $value % 60;
-                    $result = substr('00' . $hrs, -2) . ':' . substr('00' . $mins, -2);
+                    $result = ($hrs < 10 ? substr('00' . $hrs, -2) : $hrs) . ':' . substr('00' . $mins, -2);
                 }
                 break;
             case 'MINS_TO_NUM':
@@ -282,7 +282,7 @@ class logbook implements logbook_interface {
                     $daymins = ($value - strtotime("today", $value))  / 60;
                     $hrs = floor($daymins / 60);
                     $mins = $daymins % 60;
-                    $result = substr('00' . $hrs, -2) . ':' . substr('00' . $mins, -2);
+                    $result = ($hrs < 10 ? substr('00' . $hrs, -2) : $hrs) . ':' . substr('00' . $mins, -2);
                 }
                 break;
             case 'TIME_TO_TS':

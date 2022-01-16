@@ -80,6 +80,13 @@ interface logentry_interface {
     public function get_pirep();
 
     /**
+     * Get the linked PIREP string of logbook entry.
+     *
+     * @return string $linkedpirep
+     */
+    public function get_linkedpirep();
+
+    /**
      * Get the flight callsign.
      *
      * @return string
@@ -91,7 +98,7 @@ interface logentry_interface {
      *
      * @return mixed
      */
-    public function get_flightdate(bool $tostring = false);
+    public function get_flightdate(bool $tostring = false, bool $shortdate = false);
 
     /**
      * Get the flight departure airport ICAO.
@@ -143,7 +150,7 @@ interface logentry_interface {
     public function get_enginetype();
 
     /**
-     * Get the multipilot time duration minutes.
+     * Get the multipilot time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
@@ -165,11 +172,11 @@ interface logentry_interface {
     public function get_p2id();
 
     /**
-     * Get the pilot in command name.
+     * Get the pilot 1 name.
      *
      * @return string
      */
-    public function get_picname();
+    public function get_p1name();
 
     /**
      * Get the number of day landings for the flight..
@@ -186,7 +193,7 @@ interface logentry_interface {
     public function get_landingsnight();
 
     /**
-     * Get the training session duration in minutes.
+     * Get the training session time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
@@ -194,7 +201,7 @@ interface logentry_interface {
     public function get_sessiontime(bool $numeric = true);
 
     /**
-     * Get the flying at night duration in minutes.
+     * Get the flying at night time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
@@ -202,7 +209,7 @@ interface logentry_interface {
     public function get_nighttime(bool $numeric = true);
 
     /**
-     * Get the flying IFR duration in minutes.
+     * Get the flying IFR time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
@@ -210,7 +217,7 @@ interface logentry_interface {
     public function get_ifrtime(bool $numeric = true);
 
     /**
-     * Get the flying as PIC duration in minutes.
+     * Get the flying as PIC time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
@@ -218,7 +225,7 @@ interface logentry_interface {
     public function get_pictime(bool $numeric = true);
 
     /**
-     * Get the flying as copilot duration in minutes.
+     * Get the flying as copilot time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
@@ -226,7 +233,7 @@ interface logentry_interface {
     public function get_copilottime(bool $numeric = true);
 
     /**
-     * Get the flight instructor/student duration minutes.
+     * Get the flight instructor/student time minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
@@ -234,7 +241,7 @@ interface logentry_interface {
     public function get_dualtime(bool $numeric = true);
 
     /**
-     * Get the flight instructor duration minutes.
+     * Get the flight instructor time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
@@ -242,12 +249,28 @@ interface logentry_interface {
     public function get_instructortime(bool $numeric = true);
 
     /**
-     * Get the examiner checkride duration minutes.
+     * Get the flight PIC under supervision time in minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_picustime(bool $numeric = true);
+
+    /**
+     * Get the examiner checkride time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
      */
     public function get_checkpilottime(bool $numeric = true);
+
+    /**
+     * Get the total time for the log entry.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_totaltime(bool $numeric = true);
 
     /**
      * Get the Flight Simulation Training Device qualification.
@@ -290,6 +313,13 @@ interface logentry_interface {
      * @param string $pirep
      */
     public function set_pirep(string $pirep);
+
+    /**
+     * Set the associated linked pirep.
+     *
+     * @param int $linkedpirep
+     */
+    public function set_linkedpirep(int $linkedpirep);
 
     /**
      * Set the flight callsign.
@@ -446,6 +476,14 @@ interface logentry_interface {
     public function set_instructortime($instructortime, bool $isnumeric = true);
 
     /**
+     * Set the flight PIC under supervision time in minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function set_picustime($instructortime, bool $isnumeric = true);
+
+    /**
      * Set the flight instructor duration minutes.
      *
      * @param mixed $checkpilottime The flight time total minutes duration
@@ -479,7 +517,18 @@ interface logentry_interface {
      * Converts the object to array.
      *
      * @param bool  $formattostring: whether to return some values in string format
+     * @param bool  $nullable:       whether to return null values or not
+     * @param bool  $shortdate:      whether to show short vs long date formats
      * @return array
      */
-    public function __toArray(bool $formattostring = false);
+    public function __toArray(bool $formattostring = false, bool $nullable = true, bool $shortdate = false);
+
+    /**
+     * Reads a record array and populates the logentery
+     * with array's key=>value pairs.
+     *
+     * @param array $record
+     * @return logentry
+     */
+    public function read(array $record);
 }

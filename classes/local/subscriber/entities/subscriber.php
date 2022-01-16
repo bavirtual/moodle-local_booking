@@ -88,9 +88,10 @@ class subscriber implements subscriber_interface {
             }
         }
 
-        // verify groups exist
-        if (!$this->verify_groups())
-            throw new \Exception('Unable to create needed course groups.');
+        if ($this->subscribed)
+            // verify groups exist
+            if (!$this->verify_groups())
+                throw new \Exception('Unable to create needed course groups.');
     }
 
     /**
@@ -262,12 +263,17 @@ class subscriber implements subscriber_interface {
         $conn = new \mysqli($integrations->$key->host, $CFG->dbuser, $CFG->dbpass, $integrations->$key->db);
 
         $target = $integrations->$key->data;
+        $fieldnames = array_keys((array) $target->$data->fields);
+        $fields = implode(',', (array) $target->$data->fields);
+        $table = $target->$data->table;
+        $keyfield = $target->$data->key;
 
-        if ($conn->connect_errno) {
-            $sql = 'SELECT ' . $target[$data]->field . ' FROM ' . $target[$data]->table . ' WHERE ' . $target[$data]->key . ' = "' . $value . '"';
+        if (!$conn->connect_errno) {
+            $sql = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE ' . $keyfield . ' = "' . $value . '"';
             // Return name of current default database
             if ($result = $conn->query($sql)) {
-                $records = $result->fetch_row();
+                $values = $result->fetch_row();
+                $record = array_combine( $fieldnames, $values);
                 $result->close();
             }
             $conn->close();
@@ -275,7 +281,7 @@ class subscriber implements subscriber_interface {
             throw new \Exception(get_string('errordbconnection', 'local_booking') . $conn->connect_error);
         }
 
-        return $records;
+        return $record;
     }
 
     /**
@@ -286,6 +292,7 @@ class subscriber implements subscriber_interface {
     protected function verify_groups() {
         $onholdgroupid = true;
         $inactivegroupid = true;
+        $graduatesgroupid = true;
 
         // check if LOCAL_BOOKING_ONHOLDGROUP exists otherwise create it
         $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_ONHOLDGROUP);
@@ -308,6 +315,17 @@ class subscriber implements subscriber_interface {
             $data->descriptionformat = FORMAT_HTML;
             $inactivegroupid = groups_create_group($data);
         }
-        return !empty($onholdgroupid) && !empty($inactivegroupid);
+
+        // check if LOCAL_BOOKING_GRADUATESGROUP exists otherwise create it
+        $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_GRADUATESGROUP);
+        if (empty($groupid)) {
+            $data = new \stdClass();
+            $data->courseid = $this->courseid;
+            $data->name = LOCAL_BOOKING_GRADUATESGROUP;
+            $data->description = 'Group to track graduated students.';
+            $data->descriptionformat = FORMAT_HTML;
+            $graduatesgroupid = groups_create_group($data);
+        }
+        return !empty($onholdgroupid) && !empty($inactivegroupid) && !empty($graduatesgroupid);
     }
 }

@@ -90,6 +90,14 @@ interface logbook_interface {
     public function get_logentry(int $logentryid);
 
     /**
+     * Get the logbook entries time totals
+     *
+     * @param  bool $tostring The totals in string time format
+     * @return array          The logbook time table totals
+     */
+    public function get_summary(bool $tostring = false);
+
+    /**
      * Get the course id for the log entry.
      *
      * @return int

@@ -35,13 +35,14 @@ interface booking_vault_interface {
     /**
      * get booked sessions for a user
      *
+     * @param bool   $courseid    The course id.
+     * @param int    $userid      The student user id in the booking.
      * @param bool   $isstudent   Whether to get student bookings
-     * @param int    $userid      The student in the booking.
      * @param bool   $oldestfirst Sort order of the returned records.
      * @param bool   $activeonly  Retrieve active bookings only.
      * @return array {Object}
      */
-    public static function get_bookings(bool $isstudent, int $userid, bool $oldestfirst = false, bool $activeonly = true);
+    public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true);
 
     /**
      * Get booking based on passed object.

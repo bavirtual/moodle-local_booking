@@ -33,7 +33,6 @@ use local_booking\external\logentry_exporter;
 use local_booking\local\session\entities\booking;
 use local_booking\local\slot\entities\slot;
 use local_booking\local\message\notification;
-use local_booking\local\logbook\forms\pirep as pirep_verificaiton_form;
 use local_booking\local\logbook\forms\create as create_logentry_form;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\external\week_exporter;
@@ -86,7 +85,7 @@ define('LOCAL_BOOKING_DAYSFROMLASTSESSION', 12);
 /**
  * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades)
  */
-define('LOCAL_BOOKING_PASTDATACUTOFF', 365);
+define('LOCAL_BOOKING_PASTDATACUTOFF', 730); // 365
 /**
  * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group quering purposes
  */
@@ -260,6 +259,7 @@ function local_booking_output_fragment_logentry_form($args) {
         $formdata = $logentry->__toArray(true);
         $data = $formdata;
         $data['flightdate'] = $logentry->get_flightdate();
+        $data['p1pirep'] = $logentry->get_pirep();
         $mform = new update_logentry_form(null, $formoptions, 'post', '', null, true, $formdata);
     } else {
         $logentry = $logbook->create_logentry();
@@ -393,27 +393,39 @@ function get_booking_confirm_view($courseid, $studentid) {
  * Get the user's log book view output.
  *
  * @param   int     $courseid the associated course.
+ * @param   int     $userid the logbook owner user id.
+ * @param   string  $templateformat the logbook format.
+ * @param   bool    $loadentries whether to load logbook entries or not.
  * @return  array[array, string]
  */
-function get_logbook_view($courseid) {
-    global $PAGE, $USER;
+function get_logbook_view($courseid, $userid, $templateformat) {
+    global $PAGE;
 
-    $userid = $USER->id;
+    // get summary information (not requested by the webservice)
     $logbook = new logbook($courseid, $userid);
-    list($totaldualhours, $totalsessionhours, $totalpichours) = $logbook->get_summary();
+    $totals = (array) $logbook->get_summary(true);
+
     $renderer = $PAGE->get_renderer('local_booking');
 
-    $template = 'local_booking/logbook';
+    if (empty($templateformat)) {
+        $templateformat = get_user_preferences('local_booking_logbookformat', 'std');
+    } else {
+        $setformat = get_user_preferences('local_booking_logbookformat', 'std');
+        if ($templateformat != $setformat)
+            set_user_preferences(array('local_booking_logbookformat'=>$templateformat));
+    }
+
+    $template = 'local_booking/logbook_' . $templateformat;
     $data = [
         'courseid'  => $courseid,
         'userid'  => $userid,
         'username'  => participant::get_fullname($userid),
-        'totaldualtime'  => $totaldualhours,
-        'totalsessiontime'  => $totalsessionhours,
-        'totalsolotime'  => $totalpichours,
+        'easaformaturl' => $PAGE->url . '&format=easa',
+        'stdformaturl' => $PAGE->url . '&format=std',
+        'shortdate' => $templateformat == 'easa'
     ];
 
-    $logbook = new logbook_exporter($data, ['context' => \context_course::instance($courseid)]);
+    $logbook = new logbook_exporter($data + $totals, ['context' => \context_course::instance($courseid)]);
     $data = $logbook->export($renderer);
 
     return [$data, $template];
@@ -422,35 +434,37 @@ function get_logbook_view($courseid) {
 /**
  * Get the logbook entry view output.
  *
- * @param   int      $logentryid     The logbook entry id.
  * @param   int      $courseid       The course id
  * @param   int      $userid         The owner of the logentry
- * @param   logentry $editedlogentry Newly created or edited logentry
  * @param   array    $formdata       Newly created or edited logentry form data
+ * @param   logentry $logentry       Newly created or edited logentry
  * @return  array[array, string]     Exporter output
  */
-function get_logentry_view(int $logentryid, int $courseid, int $userid, logentry $editedlogentry = null, array $formdata = null) {
+function get_logentry_view(int $courseid, int $userid, array $formdata = null) {
     global $PAGE;
 
+    $context = \context_course::instance($courseid);
+    $PAGE->set_context($context);
     $renderer = $PAGE->get_renderer('local_booking');
 
-    if (empty($editedlogentry) && empty($formdata)) {
+    if (!empty($formdata)) {
+        $data = $formdata;
+    } else {
+        // semi populated logentry from PIREP lookup
         $data = [
-            'logentryid'  => $logentryid,
             'courseid'  => $courseid,
             'userid'  => $userid,
-            'view'  => 'summary',
+            'exerciseid'  => 0,
         ];
-        $template = 'local_booking/logentry_summary_modal';
-        $logbook = new logbook($courseid, $userid);
-        $logentry = $logbook->get_logentry($logentryid);
-    } else {
-        $template = 'local_booking/modal_logentry_form';
-        $data = $formdata;
-        $logentry = $editedlogentry;
     }
-    $logentryexp = new logentry_exporter($data, $logentry, ['context' => \context_course::instance($courseid)]);
+
+    // add training type to the data sent to the exporter
+    $subscriber = new subscriber($courseid);
+    $data['trainingtype'] = $subscriber->trainingtype;
+
+    $logentryexp = new logentry_exporter($data, ['context' => $context]);
     $data = $logentryexp->export($renderer);
+    $template = 'local_booking/modal_logentry_form';
 
     return [$data, $template];
 }
@@ -616,30 +630,37 @@ function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
  */
 function cancel_booking($bookingid, $comment) {
     global $COURSE;
+    $msg = '';
 
     // get the booking to be deleted
-    $booking = new booking($bookingid);
-    $booking->load();
-    $courseid = $booking->get_courseid() ?: $COURSE->id;
-    $sessiondate = new DateTime('@' . ($booking->get_slot())->get_starttime());
+    if (!empty($bookingid)) {
+        $booking = new booking($bookingid);
+        $booking->load();
+        $courseid = $booking->get_courseid() ?: $COURSE->id;
+        $sessiondate = new DateTime('@' . ($booking->get_slot())->get_starttime());
 
-    require_login($courseid, false);
+        require_login($courseid, false);
 
-    $result = $booking->delete();
+        $result = $booking->delete();
 
-    $cancellationmsg = [
-        'studentname' => student::get_fullname($booking->get_studentid()),
-        'sessiondate' => $sessiondate->format('D M j\, H:i'),
-    ];
+        $cancellationmsg = [
+            'studentname' => student::get_fullname($booking->get_studentid()),
+            'sessiondate' => $sessiondate->format('D M j\, H:i'),
+        ];
+        $msg = get_string('bookingcanceledsuccess', 'local_booking', $cancellationmsg);
+
+    } else {
+        $msg = get_string('bookingcancelednotfound', 'local_booking');
+    }
 
     if ($result) {
         // send email notification to the student of the booking cancellation
         $message = new notification();
         if ($message->send_session_cancellation($booking->get_studentid(), $booking->get_exerciseid(), $sessiondate, $comment)) {
-            \core\notification::success(get_string('bookingcanceledsuccess', 'local_booking', $cancellationmsg));
+            \core\notification::success($msg);
         }
     } else {
-        \core\notification::warning(get_string('bookingcanceledunable', 'local_booking'));
+        \core\notification::warning($msg ?: get_string('bookingcanceledunable', 'local_booking'));
     }
 
     return $result;

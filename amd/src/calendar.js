@@ -121,8 +121,10 @@ define([
     return {
         init: function(root) {
             root = $(root);
+            CalendarViewManager.startLoading(root);
             CalendarViewManager.init(root);
             registerEventListeners(root);
+            CalendarViewManager.stopLoading(root);
         }
     };
 });

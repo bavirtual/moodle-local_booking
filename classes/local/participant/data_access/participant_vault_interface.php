@@ -68,18 +68,20 @@ interface participant_vault_interface {
     /**
      * Get grades for a specific student.
      *
-     * @param int $studentid    The student id.
-     * @return grade[]          A student booking.
+     * @param int       $courseid  The course id.
+     * @param int       $studentid The student id.
+     * @return grade[]  A student grades.
      */
-    public function get_student_assignment_grades($studentid);
+    public function get_student_assignment_grades(int $courseid, int $studentid);
 
     /**
      * Get grades for a specific student.
      *
+     * @param int       $courseid  The course id.
      * @param int $studentid  The student id.
      * @return grade[]        A student quizes.
      */
-    public function get_student_quizes_grades($studentid);
+    public function get_student_quizes_grades(int $courseid, int $studentid);
 
     /**
      * Get student's enrolment date.

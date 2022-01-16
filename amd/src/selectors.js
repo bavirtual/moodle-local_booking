@@ -40,6 +40,7 @@ define([], function() {
         bookingconfirmation: '[data-region="session-booking-confirmation"]',
         calendarwrapper: '.calendarwrapper',
         bookingwrapper: '.bookingwrapper',
+        logbookwrapper: '.logbookwrapper',
         mybookingswrapper: '.mybookingswrapper',
         table: '.calendartable',
         links: {
@@ -47,6 +48,7 @@ define([], function() {
         },
         containers: {
             loadingIcon: '[data-region="overlay-icon-container"]',
+            summaryForm: '[data-region="summary-modal-container"]',
         },
     };
 });

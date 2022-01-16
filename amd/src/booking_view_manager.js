@@ -101,17 +101,18 @@ export const refreshInstructorDashboardContent = (root, courseId, categoryId, ta
  * Render the logentry new/edit modal.
  *
  * @method  renderLogentryModal
- * @param  {object} e          The triggered event.
+ * @param   {object} root       The container element
+ * @param   {object} e          The triggered event.
  * @param   {Number} LogentryFormPromise  The Logentry form promise.
  * @param   {object} target     The target element.
  * @param   {Number} contextId  The course context id of the logentry.
  * @param   {number} courseId   The graded session course id.
  * @param   {number} userId     The graded session user id.
  * @param   {number} logentryId The graded session logbook entry id.
- * @param   {bool}   editMode   Whether the render is for edit.
+ * @param   {bool}   isNew      Whether the render is for edit.
  * @returns {promise}
  */
- export const renderLogentryModal = (e, LogentryFormPromise, target, contextId, courseId, userId, logentryId, editMode) => {
+ export const renderLogentryModal = (root, e, LogentryFormPromise, target, contextId, courseId, userId, logentryId, isNew) => {
     const pendingPromise = new Pending('local_booking/booking_view_manager:renderLogentryModal');
 
     return LogentryFormPromise
@@ -119,21 +120,26 @@ export const refreshInstructorDashboardContent = (root, courseId, categoryId, ta
         // Show the logentry form modal form when the user clicks on a session
         // in the 'Instructor dashboard' page to add or edit a logentry
         LogentryFormPromise.then(function(modal) {
+            var logegntrySession, flightDate, exerciseId;
+
+            // Sel elements not meant for new or additional logentries
+            if (isNew) {
+                logegntrySession = target.closest(Selectors.actions.viewLogEntry);
+                flightDate = logegntrySession.dataset.flightDate;
+                exerciseId = logegntrySession.dataset.exerciseId;
+            } else {
+                logegntrySession = root.find(Selectors.containers.summaryForm);
+                flightDate = logegntrySession.data('flight-date');
+                exerciseId = logegntrySession.data('exercise-id');
+            }
+
+            // Set form properties
             modal.setContextId(contextId);
             modal.setCourseId(courseId);
             modal.setUserId(userId);
             modal.setLogentryId(logentryId);
-
-            // Sel elements not meant for edit mode
-            if (!editMode) {
-                const logegntrySession = target.closest(Selectors.actions.viewLogEntry);
-                const flightDate = logegntrySession.dataset.bookingDate;
-                const exerciseId = logegntrySession.dataset.exerciseId;
-                const additionalEntry = logegntrySession.dataset.isAdditional !== undefined;
-                modal.setExerciseId(exerciseId);
-                modal.setFlightDate(flightDate);
-                modal.setAdditionalEntry(additionalEntry);
-            }
+            modal.setExerciseId(exerciseId);
+            modal.setFlightDate(flightDate);
 
             // Handle hidden event.
             modal.getRoot().on(ModalEvents.hidden, function() {
@@ -224,7 +230,7 @@ export const refreshInstructorDashboardContent = (root, courseId, categoryId, ta
 /**
  * Remove the loading state from the element.
  *
- * @method  startLoading
+ * @method  stopLoading
  * @param   {object} root The container element
  */
 export const stopLoading = (root) => {

@@ -30,6 +30,8 @@ defined('MOODLE_INTERNAL') || die();
 use renderer_base;
 use core\external\exporter;
 use local_booking\local\logbook\entities\logbook;
+use local_booking\local\subscriber\entities\subscriber;
+use moodle_url;
 
 /**
  * Class for displaying a logbook entry.
@@ -71,17 +73,75 @@ class logbook_exporter extends exporter {
      */
     protected static function define_properties() {
         return [
-            'username' => [
-                'type' => PARAM_RAW
+            'courseid' => [
+                'type' => PARAM_INT
             ],
-            'totaldualtime' => [
-                'type' => PARAM_RAW
+            'userid' => [
+                'type' => PARAM_INT
+            ],
+            'username' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'easaformaturl' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'stdformaturl' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
             ],
             'totalsessiontime' => [
-                'type' => PARAM_RAW
+                'type' => PARAM_TEXT,
+                'optional' => true
             ],
             'totalpictime' => [
-                'type' => PARAM_RAW
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totaldualtime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totalinstructortime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totalpicustime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totalmultipilottime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totalcopilottime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totaltime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totalnighttime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totalifrtime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totalcheckpilottime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totallandingsday' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totallandingsnight' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
             ],
         ];
     }
@@ -95,7 +155,8 @@ class logbook_exporter extends exporter {
         return [
             'entries' => [
                 'type' => PARAM_RAW,
-                'multiple' => true
+                'multiple' => true,
+                'optional' => true
             ],
         ];
     }
@@ -107,9 +168,7 @@ class logbook_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
-        return [
-            'entries' => $this->get_logbook_entries($this->courseid, $this->userid, $output),
-        ];
+        return ['entries' => $this->get_logbook_entries($this->courseid, $this->userid, $output)];
     }
 
     /**
@@ -123,14 +182,19 @@ class logbook_exporter extends exporter {
         $logbook = new logbook($courseid, $userid);
         $logbook->load();
         $logbookentries = $logbook->get_logentries();
+        $subscriber = new subscriber($courseid);
+        $data = [];
         $entries = [];
 
         // iterate through all the entries and export them
         foreach ($logbookentries as $logbookentry) {
-            $data = $logbookentry->__toArray(true);
+            $data['logentry'] = $logbookentry;
             $data['courseid'] = $courseid;
             $data['userid'] = $userid;
-            $entry = new logentry_exporter($data, null, $this->related);
+            $data['view'] = 'summary';
+            $data['trainingtype'] = $subscriber->trainingtype;
+            $data['shortdate'] = $this->data['shortdate'];
+            $entry = new logentry_exporter($data, $this->related);
             $entries[] = $entry->export($output);
         }
 

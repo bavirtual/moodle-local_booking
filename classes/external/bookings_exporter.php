@@ -266,7 +266,7 @@ class bookings_exporter extends exporter {
             $activestudentsexports[] = $studentexporter->export($output);
             $totaldays += $student->get_priority()->get_recency_days();
         }
-        $this->averagewait = ceil($totaldays / $i);
+        $this->averagewait = !empty($totaldays) ? ceil($totaldays / $i) : 0;
 
         return $activestudentsexports;
     }

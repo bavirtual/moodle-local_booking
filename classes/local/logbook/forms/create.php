@@ -136,7 +136,6 @@ class create extends \moodleform {
         $this->add_element($mform, 'soloflight');
         $this->add_element($mform, 'sessiontime');
         $this->add_element($mform, 'pictime');
-        $this->add_element($mform, 'instructortime');
 
         // add elements depending on the training type
         if ($subscriber->trainingtype == 'Dual') {
@@ -145,6 +144,11 @@ class create extends \moodleform {
             $this->add_element($mform, 'multipilottime');
             $this->add_element($mform, 'copilottime');
         }
+
+        // additional time fieldss
+        $this->add_element($mform, 'instructortime');
+        $this->add_element($mform, 'picustime');
+        $this->add_element($mform, 'checkpilottime');
 
         // add secondary form elements (more...)
         // add PIREP group if there's no integration here
@@ -160,8 +164,6 @@ class create extends \moodleform {
                                                         $subscriber->trainingtype == 'Dual' ? 'SE' : 'ME'), false);
         $this->add_element($mform, 'nighttime', null, false);
         $this->add_element($mform, 'ifrtime', null, false);
-        $this->add_element($mform, 'picustime', null, false);
-        $this->add_element($mform, 'checkpilottime', null, false);
         $this->add_element($mform, 'landings', null, false);
         $this->add_element($mform, 'callsign', array($this->get_pilot_info('callsign', $subscriber->get_id(), $p1id)), false);
         $this->add_element($mform, 'remarks', null, false);
@@ -275,8 +277,10 @@ class create extends \moodleform {
                 // Show integrated PIREP lookup (options[0])
                 if ($options[0]) {
                     // Show P1 PIREP vs PIREP depending on whether it's a new entry or not (options[1])
-                    $mform->addElement('text', 'p1pirep', get_string(($options[1] ? 'p1pirep' : 'pirep'), 'local_booking'));
+                    $mform->addElement('text', 'p1pirep', get_string(($options[1] ? 'instpirep' : 'pirep'), 'local_booking'));
                     $mform->addRule('p1pirep', get_string('err_numeric', 'form'), 'numeric', null, 'client');
+                    if ($options[1])
+                        $mform->addHelpButton('p1pirep', 'instpirep', 'local_booking');
                 } else {
                     $pireps=array();
                     $pireps[] =& $mform->createElement('text', 'p1pirep', get_string('p1pirep', 'local_booking'));

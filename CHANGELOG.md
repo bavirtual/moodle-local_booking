@@ -1,5 +1,16 @@
 # Change log
 
+## [2022011601] - UNRELEASED 2022-01-16
+
+### Fixed
+
+- Average time division by zero
+
+### Added
+
+- Integrated PIREP label for instructors
+- solo flight toggle logic
+
 ## [2022011600] - UNRELEASED 2022-01-16
 
 ### Changed

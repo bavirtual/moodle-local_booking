@@ -53,7 +53,7 @@ define([
 
     var registered = false;
     var SELECTORS = {
-        PIC_TIME_INPUT: '#id_pictime',
+        ADVANCED_FORM: '[data-form-type="other"]',
         SAVE_BUTTON: '[data-action="save"]',
         LOADING_ICON_CONTAINER: '[data-region="loading-icon-container"]',
     };
@@ -530,6 +530,14 @@ define([
         var flighttime = $('#id_pictime').val();
         var soloflight = $('#id_soloflight').prop('checked');
 
+        var reset = function(element) {
+            if ($(element).is(':hidden')) {
+                $(element).val('');
+            } else {
+                $(element).val(0);
+            }
+        };
+
         // Check the training rule type
         switch (rule) {
             case 'Dual':
@@ -551,26 +559,20 @@ define([
             case 'Solo':
                 // Hide all irrelevant time and set required value
                 // client verification to 0 where appropriate.
-                $("#id_sessiontime").toggle();
-                $("#id_sessiontime").val(0);
-                $("#id_instructortime").toggle();
-                $("#id_p2pirep").toggle();
-                $("#id_checkpilottime").toggle();
-
-
+                $('#fitem_id_p2id').slideToggle('fast', reset('#id_p2id'));
+                $("#fitem_id_sessiontime").slideToggle('fast', reset('#id_sessiontime'));
+                $("#fitem_id_instructortime").slideToggle('fast', reset('#id_instructortime'));
+                $("#fitem_id_p2pirep").slideToggle('fast', reset('#id_p2pirep'));
+                $("#fitem_id_picustime").slideToggle('fast', reset('#id_picustime'));
+                $("#fitem_id_checkpilottime").slideToggle('fast', reset('#id_checkpilottime'));
                 if ($('#id_dualtime').length) {
-                    $("#id_dualtime").val(0);
-                    $("#id_dualtime").toggle();
+                    $("#fitem_id_dualtime").slideToggle('fast', reset('#id_dualtime'));
                 }
-
                 if ($('#id_multipilottime').length) {
-                    $("#id_multipilottime").val(0);
-                    $("#id_multipilottime").toggle();
+                    $("#fitem_id_multipilottime").slideToggle('fast', reset('#id_multipilottime'));
                 }
-
                 if ($('#id_copilottime').length) {
-                    $("#id_copilottime").val(0);
-                    $("#id_copilottime").toggle();
+                    $("#fitem_id_copilottime").slideToggle('fast', reset('#id_copilottime'));
                 }
                 break;
         }

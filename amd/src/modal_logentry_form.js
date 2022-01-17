@@ -417,7 +417,9 @@ define([
         // PIREP search trigger
         var pirep = $('#id_p1pirep');
         pirep.on('change', function(e) {
-            return this.getPIREPData(e);
+            if (!isNaN(pirep.val())) {
+                return this.getPIREPData(e);
+            }
         }.bind(this));
 
         // Hide unnecessary elements for Solo flights when checkbox is clicked
@@ -551,8 +553,8 @@ define([
             case 'Multicrew':
                 // Duplicate P1 time for the student and instructor
                 if (!soloflight) {
-                    $('#id_multipilot').val(flighttime);
-                    $('#id_copilot').val(flighttime);
+                    $('#id_multipilottime').val(flighttime);
+                    $('#id_copilottime').val(flighttime);
                 }
                 break;
 

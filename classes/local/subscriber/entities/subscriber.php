@@ -255,6 +255,7 @@ class subscriber implements subscriber_interface {
      */
     public static function get_integrated_data($key, $data, $value) {
         global $CFG;
+        $record = null;
 
         // get the integration object from settings
         $integrations = get_booking_config('integrations');
@@ -273,7 +274,8 @@ class subscriber implements subscriber_interface {
             // Return name of current default database
             if ($result = $conn->query($sql)) {
                 $values = $result->fetch_row();
-                $record = array_combine( $fieldnames, $values);
+                if (!empty($values))
+                    $record = array_combine( $fieldnames, $values);
                 $result->close();
             }
             $conn->close();

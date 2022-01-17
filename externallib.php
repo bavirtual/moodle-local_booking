@@ -249,6 +249,7 @@ class local_booking_external extends external_api {
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
     public static function get_pirep($pirep, $courseid, $userid) {
+        global $PAGE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_pirep_parameters(), array(
@@ -271,6 +272,10 @@ class local_booking_external extends external_api {
             $data['nullable'] = false;
             list($data, $template) = get_logentry_view($courseid, $userid, $data);
         } else {
+            // set the context and return warning message
+            $context = context_course::instance($courseid);
+            self::validate_context($context);
+            $PAGE->set_url('/local/booking/');
             $data = $logentry->__toArray(false, false) + $params;
             $subscriber = new subscriber($courseid);
             $data['dualops'] = $subscriber->trainingtype == 'Dual';

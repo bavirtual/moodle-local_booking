@@ -16,9 +16,12 @@ Session Booking provides a workflow for posting availability slots, booking agai
 - Manages email communication between students and instructors
 - Provides a dashboard for instructors and course administrators to visualize student progression throughout the course
 - Provides a custom student prioritization mechanism for booking sessions based on student's session recency, course activity, availability posting, and lesson completion
-- Session calendar integration with Moodle, Google, and Outlook Live calendars, including (ics) standard iCal calendar file download
-- EASA format Logbook reporting
-- Administration and flight time analysis reporting
+- Provides session calendar integration with Moodle, Google, and Outlook Live calendars, including (ics) standard iCal calendar file download
+- Provides simple course specific logbook and EASA format.
+- Allows for Administration and flight time analysis reporting.
+- Allows for configuration-specific integration with external data sources for PIREP, aircraft, and fleet lookup.
+- Provides automatic notification for student inactivity warnings, placement on-hold, suspension and instructor inactivity.
+- Provides course-specific student profile with relevant information along with administration functions to manage logbook entries, on-hold management, overdue restriction override, keep alive for inactive students placed on-hold.
 
 ## Setup
 

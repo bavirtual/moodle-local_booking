@@ -884,42 +884,43 @@ class logentry implements logentry_interface {
      * @return array
      */
     public function __toArray(bool $formattostring = false, bool $nullable = true, bool $shortdate = false) {
-        return [
-            'id' => $this->id,
-            'exerciseid' => $this->exerciseid,
-            'flightdate' => $this->get_flightdate($formattostring && $nullable, $shortdate),
-            'p1id' => $this->p1id,
-            'p2id' => $this->p2id,
-            'sessiontime' => $this->get_sessiontime(!$formattostring) ?: ($nullable ? null : 0),
-            'pictime' => $this->get_pictime(!$formattostring) ?: ($nullable ? null : 0),
-            'dualtime' => $this->get_dualtime(!$formattostring) ?: ($nullable ? null : 0),
-            'instructortime' => $this->get_instructortime(!$formattostring) ?: ($nullable ? null : 0),
-            'picustime' => $this->get_picustime(!$formattostring) ?: ($nullable ? null : 0),
-            'multipilottime' => $this->get_multipilottime(!$formattostring) ?: ($nullable ? null : 0),
-            'copilottime' => $this->get_copilottime(!$formattostring) ?: ($nullable ? null : 0),
-            'checkpilottime' => $this->get_checkpilottime(!$formattostring) ?: ($nullable ? null : 0),
-            'totaltime' => $this->get_totaltime(!$formattostring) ?: ($nullable ? null : 0),
-            'pirep' => $this->pirep,
-            'linkedpirep' => $this->linkedpirep,
-            'callsign' => $this->callsign,
-            'depicao' => $this->depicao,
-            'deptime' => ($formattostring ? logbook::convert_time($this->deptime, 'TS_TO_TIME') : $this->deptime),
-            'arricao' => $this->arricao,
-            'arrtime' => ($formattostring ? logbook::convert_time($this->arrtime, 'TS_TO_TIME') : $this->arrtime),
-            'aircraft' => $this->aircraft,
-            'aircraftreg' => $this->aircraftreg,
-            'enginetype' => $this->enginetype,
-            'landingsday' => $this->landingsday,
-            'landingsnight' => $this->landingsnight,
-            'nighttime' => $this->get_nighttime(!$formattostring) ?: ($nullable ? null : 0),
-            'ifrtime' => $this->get_ifrtime(!$formattostring) ?: ($nullable ? null : 0),
-            'fstd' => $this->fstd,
-            'remarks' => $this->remarks,
-            'linkedlogentryid' => $this->linkedlogentryid,
-            'soloflight' => $this->soloflight,
-            'se' => $this->enginetype == 'SE' ? 'X' : null,
-            'me' => $this->enginetype == 'ME' ? 'X' : null
-        ];
+        $logentryarray = [];
+        $logentryarray['id'] = $this->id;
+        $logentryarray['exerciseid'] = $this->exerciseid;
+        $logentryarray['flightdate'] = $this->get_flightdate($formattostring && $nullable, $shortdate);
+        $logentryarray['p1id'] = $this->p1id;
+        $logentryarray['p2id'] = $this->p2id;
+        $logentryarray['sessiontime'] = $this->get_sessiontime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['pictime'] = $this->get_pictime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['dualtime'] = $this->get_dualtime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['instructortime'] = $this->get_instructortime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['picustime'] = $this->get_picustime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['multipilottime'] = $this->get_multipilottime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['copilottime'] = $this->get_copilottime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['checkpilottime'] = $this->get_checkpilottime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['totaltime'] = $this->get_totaltime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['pirep'] = $this->pirep;
+        $logentryarray['linkedpirep'] = $this->linkedpirep;
+        $logentryarray['callsign'] = $this->callsign;
+        $logentryarray['depicao'] = $this->depicao;
+        $logentryarray['deptime'] = ($formattostring ? logbook::convert_time($this->deptime, 'TS_TO_TIME') : $this->deptime);
+        $logentryarray['arricao'] = $this->arricao;
+        $logentryarray['arrtime'] = ($formattostring ? logbook::convert_time($this->arrtime, 'TS_TO_TIME') : $this->arrtime);
+        $logentryarray['aircraft'] = $this->aircraft;
+        $logentryarray['aircraftreg'] = $this->aircraftreg;
+        $logentryarray['enginetype'] = $this->enginetype;
+        $logentryarray['landingsday'] = $this->landingsday;
+        $logentryarray['landingsnight'] = $this->landingsnight;
+        $logentryarray['nighttime'] = $this->get_nighttime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['ifrtime'] = $this->get_ifrtime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['fstd'] = $this->fstd;
+        $logentryarray['remarks'] = $this->remarks;
+        $logentryarray['linkedlogentryid'] = $this->linkedlogentryid;
+        $logentryarray['se'] = $this->enginetype == 'SE' ? 'X' : ($nullable ? null : '');
+        $logentryarray['me'] = $this->enginetype == 'ME' ? 'X' : ($nullable ? null : '');
+        $logentryarray['soloflight'] = $this->soloflight;
+
+        return $logentryarray;
     }
 
     /**

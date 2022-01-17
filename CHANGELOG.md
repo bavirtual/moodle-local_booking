@@ -1,5 +1,12 @@
 # Change log
 
+## [2022011700] - UNRELEASED 2022-01-17
+
+### Fixed
+
+- getpirep with invalid string exception
+- Non-numeric pirep value verification prior to lookup
+
 ## [2022011601] - UNRELEASED 2022-01-16
 
 ### Fixed

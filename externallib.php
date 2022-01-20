@@ -31,6 +31,7 @@ use local_booking\external\logentry_exporter;
 use local_booking\local\logbook\forms\create as create_logentry_form;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
+use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 
@@ -261,17 +262,42 @@ class local_booking_external extends external_api {
 
         $result = true;
         $warnings = array();
+        $errorcode = '';
         $logentry = (new logbook($courseid, $userid))->create_logentry();
         $rec = subscriber::get_integrated_data('pireps', 'pirep', $pirep);
         if (!empty($rec)) {
             $logentry->read($rec);
-            $data['logentry'] = $logentry;
-            $data['courseid'] = $courseid;
-            $data['userid'] = $userid;
-            $data['view'] = 'summary';
-            $data['nullable'] = false;
-            list($data, $template) = get_logentry_view($courseid, $userid, $data);
+            // get engine type integrated data
+            if (subscriber::has_integration('pilot')) {
+                $pilotrec = subscriber::get_integrated_data('pilot', 'pilot', $logentry->pilot_id);
+                $alternatename = $pilotrec['alternatename'];
+                if (core_user::get_user($userid, 'alternatename')->alternatename == $alternatename) {
+                    // get engine type integrated data
+                    if (subscriber::has_integration('aircraft')) {
+                        $enginetyperec = subscriber::get_integrated_data('aircraft', 'enginetype', $logentry->get_aircraft());
+                        if (!empty($enginetyperec))
+                            $logentry->set_enginetype($enginetyperec['engine_type'] == 'single' ? 'SE' : 'ME');
+                    }
+                    $data['logentry'] = $logentry;
+                    $data['courseid'] = $courseid;
+                    $data['userid'] = $userid;
+                    $data['view'] = 'summary';
+                    $data['nullable'] = false;
+                    list($data, $template) = get_logentry_view($courseid, $userid, $data);
+                } else {
+                    $result = false;
+                    $errorcode = 'errorp1pirepwrongpilot';
+                }
+            } else {
+                $result = false;
+                $errorcode = 'errorp1pirepnopilotintegration';
+            }
         } else {
+            $result = false;
+            $errorcode = 'errorp1pirepnotfound';
+        }
+
+        if (!$result) {
             // set the context and return warning message
             $context = context_course::instance($courseid);
             self::validate_context($context);
@@ -280,11 +306,10 @@ class local_booking_external extends external_api {
             $subscriber = new subscriber($courseid);
             $data['dualops'] = $subscriber->trainingtype == 'Dual';
             $data['visible'] = 1;
-            $result = false;
             $warnings[] = [
                 'item' => $pirep,
-                'warningcode' => 'errorp1pirepnotfound',
-                'message' => get_string('errorp1pirepnotfound', 'local_booking')
+                'warningcode' => $errorcode,
+                'message' => get_string($errorcode, 'local_booking')
             ];
         }
 
@@ -817,6 +842,7 @@ class local_booking_external extends external_api {
 
         // if the operation is an update, get the logentry
         if (!empty($data['id'])) {
+            $logentryuser = new participant($courseid, $userid);
             $logbook = new logbook($courseid, $userid);
             $logentry = $logbook->get_logentry(clean_param($data['id'], PARAM_INT));
             $formoptions['logentry'] = $logentry;
@@ -827,7 +853,7 @@ class local_booking_external extends external_api {
         if ($validateddata = $mform->get_data()) {
             // for entry update, populate logentry then save
             if (!empty($data['id'])) {
-                $logentry->populate($validateddata);
+                $logentry->populate($validateddata, !$logentryuser->is_student(), true);
                 $logentry->save();
             // for new entries, populate instructor and student logentries then save
             } else {
@@ -836,7 +862,7 @@ class local_booking_external extends external_api {
                 $studentlogentry = $studentlogbook->create_logentry();
                 $studentlogentry->populate($validateddata);
 
-                if (!$validateddata->soloflight) {
+                if (!$validateddata->flighttype=='solo') {
                     // add instructor logentry, the user creating the entry is always the instructor
                     $instructorlogbook = new logbook($courseid, $USER->id);
                     $instructorlogentry = $instructorlogbook->create_logentry();

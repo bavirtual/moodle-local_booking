@@ -61,7 +61,7 @@ class booking_mybookings_exporter extends exporter {
         'exerciseid'  => $booking->get_exerciseid(),
         'exercise'    => subscriber::get_exercise_name($booking->get_exerciseid()),
         'sessiondate' => $sessiondate->format('D M j'),
-        'sessiontime' => $sessiondate->format('H:i'),
+        'groundtime' => $sessiondate->format('H:i'),
         'actionname'  => $action->get_name(),
         'actionurl'   => $action->get_url()->out(false),
         ];
@@ -89,7 +89,7 @@ class booking_mybookings_exporter extends exporter {
             'sessiondate' => [
                 'type' => PARAM_RAW,
             ],
-            'sessiontime' => [
+            'groundtime' => [
                 'type' => PARAM_RAW,
             ],
             'actionname' => [

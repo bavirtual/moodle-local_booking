@@ -31,6 +31,7 @@
                 "pirep" : {
                     "table" : "pireps",
                     "fields": {
+                        "pilot_id"   : "pilot_id",
                         "flightdate" : "start_date",
                         "pictime"    : "flight_time",
                         "depicao"    : "dep_icao",
@@ -72,6 +73,20 @@
                         "reg": "reg"
                     },
                     "key"       : "icao"
+                }
+            }
+        },
+        "pilot"  : {
+            "enabled"   : 1,
+            "host"      : "localhost",
+            "db"        : "bav_management",
+            "data"      : {
+                "pilot": {
+                    "table"     : "pilots",
+                    "fields"    : {
+                        "alternatename": "baw_id"
+                    },
+                    "key"       : "id"
                 }
             }
         }

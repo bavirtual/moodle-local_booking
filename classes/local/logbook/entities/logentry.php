@@ -68,9 +68,9 @@ class logentry implements logentry_interface {
     protected $p2id = 0;
 
     /**
-     * @var int $sessiontime The training session time in minutes.
+     * @var int $groundtime The training session time in minutes.
      */
-    protected $sessiontime = 0;
+    protected $groundtime = 0;
 
     /**
      * @var int $pictime The flying as PIC time in minutes.
@@ -183,9 +183,9 @@ class logentry implements logentry_interface {
     protected $fstd = '';
 
     /**
-     * @var bool $soloflight Whether the flight is a solo flight or not.
+     * @var bool $flighttype the type of flight: training, solo, or check (line check / check ride).
      */
-    protected $soloflight = false;
+    protected $flighttype = 'training';
 
     /**
      * @var int $linkedlogentryid Other logentries associated with the flight.
@@ -402,8 +402,8 @@ class logentry implements logentry_interface {
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
      */
-    public function get_sessiontime(bool $numeric = true) {
-        return $numeric ? $this->sessiontime : logbook::convert_time($this->sessiontime, 'MINS_TO_TEXT');
+    public function get_groundtime(bool $numeric = true) {
+        return $numeric ? $this->groundtime : logbook::convert_time($this->groundtime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -533,6 +533,14 @@ class logentry implements logentry_interface {
      */
     public function get_linkedlogentryid() {
         return $this->linkedlogentryid;
+    }
+
+    /**
+     * Get the flight type.
+     *
+     */
+    public function get_flighttype() {
+        return $this->flighttype;
     }
 
     /**
@@ -667,7 +675,6 @@ class logentry implements logentry_interface {
      * @param int $p2id
      */
     public function set_p2id(int $p2id) {
-        $this->soloflight = $p2id == 0;
         $this->p2id = $p2id;
     }
 
@@ -692,11 +699,11 @@ class logentry implements logentry_interface {
     /**
      * Set the training session time in minutes.
      *
-     * @param mixed $sessiontime The session time total minutes duration
+     * @param mixed $groundtime The session time total minutes duration
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
-    public function set_sessiontime($sessiontime, bool $isnumeric = true) {
-        $this->sessiontime = $isnumeric ? $sessiontime : logbook::convert_time($sessiontime, 'MINS_TO_NUM');
+    public function set_groundtime($groundtime, bool $isnumeric = true) {
+        $this->groundtime = $isnumeric ? $groundtime : logbook::convert_time($groundtime, 'MINS_TO_NUM');
     }
 
     /**
@@ -826,28 +833,20 @@ class logentry implements logentry_interface {
     }
 
     /**
-     * Whether the flight is a solo flight or not.
-     *
-     * @param bool $soloflight
-     */
-    public function is_solo() {
-        return $this->soloflight;
-    }
-
-    /**
      * Populates a log book entry with a modal form data.
      *
      * @param object $formdata
      * @param bool $isinstructor
+     * @param bool $edit
      */
-    public function populate(object $formdata, bool $isinstructor = false) {
+    public function populate(object $formdata, bool $isinstructor = false, bool $edit = false) {
         $this->id = $formdata->id ?: null;
         $this->exerciseid = $formdata->exerciseid;
-        $this->sessiontime = !empty($formdata->sessiontime) ? logbook::convert_time($formdata->sessiontime, 'MINS_TO_NUM') : 0;
+        $this->groundtime = !empty($formdata->groundtime) ? logbook::convert_time($formdata->groundtime, 'MINS_TO_NUM') : 0;
         $this->flightdate = $formdata->flightdate;
-        $this->p1id = $formdata->soloflight ? $this->parent->get_userid() : $formdata->p1id;
-        $this->p2id = $formdata->soloflight ? 0 : $formdata->p2id;
-        $this->pictime = ($formdata->soloflight || $isinstructor) && !empty($formdata->pictime) ? logbook::convert_time($formdata->pictime, 'MINS_TO_NUM') : 0;
+        $this->p1id = $formdata->flighttype == 'solo' || $edit ? $this->parent->get_userid() : $formdata->p1id;
+        $this->p2id = $formdata->flighttype == 'solo' || $edit ? 0 : $formdata->p2id;
+        $this->pictime = ($formdata->flighttype == 'solo'  || $isinstructor) && !empty($formdata->pictime) ? logbook::convert_time($formdata->pictime, 'MINS_TO_NUM') : 0;
         $this->dualtime = !$isinstructor && !empty($formdata->pictime) ? logbook::convert_time($formdata->dualtime, 'MINS_TO_NUM') : 0;
         $this->instructortime = $isinstructor ? logbook::convert_time($formdata->instructortime, 'MINS_TO_NUM') : 0;
         $this->picustime = !empty($formdata->picustime) ? logbook::convert_time($formdata->picustime, 'MINS_TO_NUM') : 0;
@@ -865,14 +864,20 @@ class logentry implements logentry_interface {
         $this->aircraft = $formdata->aircraft;
         $this->aircraftreg = $formdata->aircraftreg;
         $this->enginetype = $formdata->enginetype;
-        $this->landingsday = $formdata->landingsday;
-        $this->landingsnight = $formdata->landingsnight;
+        // check if the logentry is being edited not new
+        if ($edit) {
+            $this->landingsday = $formdata->landingsday;
+            $this->landingsnight = $formdata->landingsnight;
+        } else {
+            $this->landingsday = $isinstructor ? $formdata->landingsp1day : $formdata->landingsp2day;
+            $this->landingsnight = $isinstructor ? $formdata->landingsp1night : $formdata->landingsp2night;
+        }
         $this->nighttime = !empty($formdata->nighttime) ? logbook::convert_time($formdata->nighttime, 'MINS_TO_NUM') : 0;
         $this->ifrtime = !empty($formdata->ifrtime) ? logbook::convert_time($formdata->ifrtime, 'MINS_TO_NUM') : 0;
         $this->checkpilottime = !empty($formdata->checkpilottime) && $isinstructor ? logbook::convert_time($formdata->checkpilottime, 'MINS_TO_NUM') : 0;
         $this->remarks = $formdata->remarks;
         $this->linkedlogentryid = $formdata->linkedlogentryid ?: 0;
-        $this->soloflight = $formdata->soloflight;
+        $this->flighttype = $formdata->flighttype;
     }
 
     /**
@@ -890,7 +895,7 @@ class logentry implements logentry_interface {
         $logentryarray['flightdate'] = $this->get_flightdate($formattostring && $nullable, $shortdate);
         $logentryarray['p1id'] = $this->p1id;
         $logentryarray['p2id'] = $this->p2id;
-        $logentryarray['sessiontime'] = $this->get_sessiontime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['groundtime'] = $this->get_groundtime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['pictime'] = $this->get_pictime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['dualtime'] = $this->get_dualtime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['instructortime'] = $this->get_instructortime(!$formattostring) ?: ($nullable ? null : 0);
@@ -918,7 +923,7 @@ class logentry implements logentry_interface {
         $logentryarray['linkedlogentryid'] = $this->linkedlogentryid;
         $logentryarray['se'] = $this->enginetype == 'SE' ? 'X' : ($nullable ? null : '');
         $logentryarray['me'] = $this->enginetype == 'ME' ? 'X' : ($nullable ? null : '');
-        $logentryarray['soloflight'] = $this->soloflight;
+        $logentryarray['flighttype'] = $this->flighttype;
 
         return $logentryarray;
     }
@@ -937,7 +942,7 @@ class logentry implements logentry_interface {
             switch ($key) {
                 case 'linkedpirep':
                     $this->$key = $value;
-                    $this->soloflight = $value == 0;
+                    $this->flighttype = $value != 0 ? 'training' : 'solo';
                     break;
                 case 'flightdate':
                     $this->$key = strtotime($value);

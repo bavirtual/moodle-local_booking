@@ -1,5 +1,13 @@
 # Change log
 
+## [2022012000] - UNRELEASED 2022-01-20
+
+### Changed
+
+- session time to ground time everywhere
+- logic to show/hide elements on modal_logboo_form
+- flight type (training/solo/check) handing everywhere
+
 ## [2022011700] - UNRELEASED 2022-01-17
 
 ### Fixed

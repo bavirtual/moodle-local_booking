@@ -58,7 +58,7 @@ interface logbook_vault_interface {
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
-     * @return array    $totaldualtime, $totalsessiontime, $totalpictime
+     * @return array    $totaldualtime, $totalgroundtime, $totalpictime
      */
     public static function get_logbook_summary(int $courseid, int $userid);
 

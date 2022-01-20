@@ -91,7 +91,7 @@ class logbook_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],
-            'totalsessiontime' => [
+            'totalgroundtime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],

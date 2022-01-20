@@ -87,29 +87,35 @@
 <hr/>
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
-    <div class="col-5">{{#str}} sessiontime, local_booking {{/str}}</div>
-    <div class="col-6">{{sessiontime}}</div>
+    <div class="col-5">{{#str}} groundtime, local_booking {{/str}}</div>
+    <div class="col-6">{{groundtime}}</div>
 </div>
 {{/soloflight}}
+{{#haspictime}}
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
     <div class="col-5">{{#str}} pictime, local_booking {{/str}}</div>
     <div class="col-6">{{pictime}}</div>
 </div>
+{{/haspictime}}
 {{^soloflight}}
 {{#dualops}}
+{{^haspictime}}
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
     <div class="col-5">{{#str}} dualtime, local_booking {{/str}}</div>
     <div class="col-6">{{dualtime}}</div>
 </div>
+{{/haspictime}}
 {{/dualops}}
 {{^dualops}}
+{{^haspictime}}
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
     <div class="col-5">{{#str}} copilottime, local_booking {{/str}}</div>
     <div class="col-6">{{copilottime}}</div>
 </div>
+{{/haspictime}}
 {{/dualops}}
 {{/soloflight}}
 <hr/>

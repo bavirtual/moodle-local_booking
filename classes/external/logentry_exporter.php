@@ -60,6 +60,8 @@ class logentry_exporter extends exporter {
 
         // add logentry properties to the exporter's data and remove the logentry object
         $data = $this->logentry->__toArray($data['view'] == 'summary', $nullable, (!empty($data['shortdate'])?:false)) + $data;
+        $data['soloflight'] = $this->logentry->get_flighttype() == 'solo';
+        $data['haspictime'] = $this->logentry->get_pictime() != 0;
         unset($data['logentry']);
 
         $data['url'] = new moodle_url('/booking/view', ['courseid'=>$data['courseid']]);
@@ -90,7 +92,7 @@ class logentry_exporter extends exporter {
             'flightdate' => [
                 'type' => PARAM_RAW
             ],
-            'sessiontime' => [
+            'groundtime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true,
             ],
@@ -191,6 +193,10 @@ class logentry_exporter extends exporter {
                 'optional' => true,
             ],
             'soloflight' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
+            'haspictime' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],

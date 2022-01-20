@@ -45,34 +45,7 @@
         <INDEX NAME="userweeklyslots" UNIQUE="false" FIELDS="userid, week, year" COMMENT="Retrieving user's weekly slots"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_booking_logbooks" COMMENT="Student pilot logbook entries">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Logbook entry associated course"/>
-        <FIELD NAME="exerciseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Exercise assignment module id associated with the logentry"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Student pilot user id"/>
-        <FIELD NAME="flighttimemins" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Logentry flight time hours session time minutes"/>
-        <FIELD NAME="soloflighttimemins" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Solo flight time minutes"/>
-        <FIELD NAME="sessiontimemins" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Flight session minutes"/>
-        <FIELD NAME="aircrafticao" TYPE="char" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="The ICAO aircraft code of the logbook entry"/>
-        <FIELD NAME="picid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Logbook entry pilot in command user id"/>
-        <FIELD NAME="sicid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Secondary in command user id"/>
-        <FIELD NAME="pirep" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="Pilot's report for the logentry"/>
-        <FIELD NAME="callsign" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Logentry aircraft callsign"/>
-        <FIELD NAME="fromicao" TYPE="char" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="Logentry departure airport ICAO"/>
-        <FIELD NAME="toicao" TYPE="char" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="Logentry arrival airport ICAO"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Logentry timestamp"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="userididx" UNIQUE="false" FIELDS="userid" HINTS="userlogentries"/>
-        <INDEX NAME="courseididx" UNIQUE="false" FIELDS="courseid" HINTS="userlogentriesassociatecourse" COMMENT="Course id associated"/>
-        <INDEX NAME="exerciseididx" UNIQUE="false" FIELDS="exerciseid" COMMENT="Index for searching by exerciseid"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="local_booking_logbooks2" COMMENT="Pilot's logbook">
+    <TABLE NAME="local_booking_logbooks" COMMENT="Pilot's logbook">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Logbook entry associated course"/>
@@ -82,7 +55,7 @@
         <FIELD NAME="p1id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="P1 (instructor) user id"/>
         <FIELD NAME="p2id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="P2 (student) user id"/>
         <FIELD NAME="pirep" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="Pilot report id number for the flight"/>
-        <FIELD NAME="sessiontime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Training session overall time, logged for both instructor and student"/>
+        <FIELD NAME="groundtime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Training session overall time, logged for both instructor and student"/>
         <FIELD NAME="pictime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Pilot in command (PIC) time is logged by a multi-crew flight captain, the instructor of dual flight, or the student on his/her checkride only if they pass"/>
         <FIELD NAME="dualtime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Dual time is logged only by the student in a training flight"/>
         <FIELD NAME="instructortime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Instructor time is only logged by the instructor in a training flight"/>
@@ -91,6 +64,7 @@
         <FIELD NAME="copilottime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Copilot multi-crew time is only logged by co-pilots in a multi-crewed flights"/>
         <FIELD NAME="checkpilottime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Examiner time is only logged by the examiner on check rides"/>
         <FIELD NAME="callsign" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="flight callsign for the flight"/>
+        <FIELD NAME="flighttype" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Flight type: training, solo, or a line check / check ride"/>
         <FIELD NAME="fstd" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Flight Simulation Training Device Qualification"/>
         <FIELD NAME="depicao" TYPE="char" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="Flight departure airport ICAO"/>
         <FIELD NAME="deptime" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Flight departure time"/>

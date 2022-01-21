@@ -98,7 +98,7 @@ interface participant_vault_interface {
      * @param int   $studentid  The student id in reference
      * @return bool             The result of the suspension action.
      */
-    public function set_suspend_status(int $courseid, int $studentid);
+    public function suspend(int $courseid, int $studentid);
 
     /**
      * Returns full username

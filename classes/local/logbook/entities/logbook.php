@@ -259,41 +259,38 @@ class logbook implements logbook_interface {
      * @param  int    $dayts     Additional information for the day timestamp
      * @return mixed  $converted The converted value
      */
-    public static function convert_time($value, string $toformat, int $dayts = 0) {
+    public static function convert_time($value = null, string $toformat = 'MINS_TO_TEXT', int $dayts = 0) {
 
         $result = 0;
-        switch ($toformat) {
-            case 'MINS_TO_TEXT':
-                if ($value > 0 && is_numeric($value)) {
-                    $hrs = floor($value / 60);
-                    $mins = $value % 60;
-                    $result = ($hrs < 10 ? substr('00' . $hrs, -2) : $hrs) . ':' . substr('00' . $mins, -2);
-                }
-                break;
-            case 'MINS_TO_NUM':
-                if (!empty($value)) {
+        if (!empty($value)) {
+            switch ($toformat) {
+                case 'MINS_TO_TEXT':
+                    if ($value > 0 && is_numeric($value)) {
+                        $hrs = floor($value / 60);
+                        $mins = $value % 60;
+                        $result = ($hrs < 10 ? substr('00' . $hrs, -2) : $hrs) . ':' . substr('00' . $mins, -2);
+                    }
+                    break;
+                case 'MINS_TO_NUM':
                     $hrs = substr($value, 0, strpos($value, ':'));
                     $mins = substr($value, strpos($value, ':') - strlen($value) + 1);
                     $result = ($hrs * 60) + $mins;
-                }
-                break;
-            case 'TS_TO_TIME':
-                if ($value > 0 && is_numeric($value)) {
-                    $daymins = ($value - strtotime("today", $value))  / 60;
-                    $hrs = floor($daymins / 60);
-                    $mins = $daymins % 60;
-                    $result = ($hrs < 10 ? substr('00' . $hrs, -2) : $hrs) . ':' . substr('00' . $mins, -2);
-                }
-                break;
-            case 'TIME_TO_TS':
-                if (!empty($value)) {
+                    break;
+                case 'TS_TO_TIME':
+                    if ($value > 0 && is_numeric($value)) {
+                        $daymins = ($value - strtotime("today", $value))  / 60;
+                        $hrs = floor($daymins / 60);
+                        $mins = $daymins % 60;
+                        $result = ($hrs < 10 ? substr('00' . $hrs, -2) : $hrs) . ':' . substr('00' . $mins, -2);
+                    }
+                    break;
+                case 'TIME_TO_TS':
                     $hrs = substr($value, 0, strpos($value, ':'));
                     $mins = substr($value, strpos($value, ':') - strlen($value) + 1);
                     $result = $dayts + ((($hrs * 60) + $mins) * 60);
-                }
-                break;
+                    break;
+            }
         }
-
         return $result;
     }
 }

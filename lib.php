@@ -416,10 +416,12 @@ function get_logbook_view($courseid, $userid, $templateformat) {
     }
 
     $template = 'local_booking/logbook_' . $templateformat;
+    $pilot = new participant($courseid, $userid);
     $data = [
         'courseid'  => $courseid,
         'userid'  => $userid,
-        'username'  => participant::get_fullname($userid),
+        'username'  => $pilot->get_fullname($userid),
+        'isstudent'  => $pilot->is_student(),
         'easaformaturl' => $PAGE->url . '&format=easa',
         'stdformaturl' => $PAGE->url . '&format=std',
         'shortdate' => $templateformat == 'easa'

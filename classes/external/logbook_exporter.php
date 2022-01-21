@@ -153,6 +153,10 @@ class logbook_exporter extends exporter {
      */
     protected static function define_other_properties() {
         return [
+            'dualops' => [
+                'type' => PARAM_BOOL,
+                'default' => false
+            ],
             'entries' => [
                 'type' => PARAM_RAW,
                 'multiple' => true,
@@ -168,7 +172,12 @@ class logbook_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
-        return ['entries' => $this->get_logbook_entries($this->courseid, $this->userid, $output)];
+        $subscriber = new subscriber($this->courseid);
+        $trainingtype = $subscriber->trainingtype;
+        return [
+            'dualops' => $trainingtype=="Dual",
+            'entries' => $this->get_logbook_entries($trainingtype, $output)
+        ];
     }
 
     /**
@@ -177,22 +186,21 @@ class logbook_exporter extends exporter {
      * @param renderer_base $output The renderer.
      * @return array Keys are the property names, values are their values.
      */
-    protected function get_logbook_entries($courseid, $userid, renderer_base $output) {
+    protected function get_logbook_entries($trainingtype, renderer_base $output) {
         // get the the logbook of a user
-        $logbook = new logbook($courseid, $userid);
+        $logbook = new logbook($this->courseid, $this->userid);
         $logbook->load();
         $logbookentries = $logbook->get_logentries();
-        $subscriber = new subscriber($courseid);
         $data = [];
         $entries = [];
 
         // iterate through all the entries and export them
         foreach ($logbookentries as $logbookentry) {
             $data['logentry'] = $logbookentry;
-            $data['courseid'] = $courseid;
-            $data['userid'] = $userid;
+            $data['courseid'] = $this->courseid;
+            $data['userid'] = $this->userid;
             $data['view'] = 'summary';
-            $data['trainingtype'] = $subscriber->trainingtype;
+            $data['trainingtype'] = $trainingtype;
             $data['shortdate'] = $this->data['shortdate'];
             $entry = new logentry_exporter($data, $this->related);
             $entries[] = $entry->export($output);

@@ -190,11 +190,12 @@ class participant_vault implements participant_vault_interface {
                             SELECT userid
                             FROM {' . self::DB_GROUPS_MEM . '} gm
                             INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                            WHERE g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
-                            ' . $onhold_clause . ')';
+                            WHERE g.courseid = :gcourseid AND (g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
+                            ' . $onhold_clause . '))';
 
         $params = [
             'courseid'  => $courseid,
+            'gcourseid' => $courseid,
             'contextid' => \context_course::instance($courseid)->id,
             'role'      => 'student'
         ];
@@ -390,7 +391,7 @@ class participant_vault implements participant_vault_interface {
      * @param int   $studentid  The student id in reference
      * @return bool             The result of the suspension action.
      */
-    public function set_suspend_status(int $courseid, int $studentid) {
+    public function suspend(int $courseid, int $studentid) {
         global $DB;
 
         $sql = 'UPDATE {' . static::DB_USER_ENROL . '} ue

@@ -140,10 +140,10 @@ class cron_task extends \core\task\scheduled_task {
                             // SUSPENSION NOTIFICATION
                             // suspend when passed on-hold by 9x wait days process suspension and notify student and senior instructor roles
                             mtrace('            suspension date: ' . $suspenddate->format('M d, Y'));
-                            if ($suspenddate->getTimestamp() <= time()) {
+                            if ($suspenddate->getTimestamp() <= time() && !$keepactive) {
                                 // unenrol the student from the course
                                 $participant = new participant($sitecourse->id, $student->get_id());
-                                if ($participant->set_suspend_status()) {
+                                if ($participant->suspend()) {
                                     mtrace('                Suspended!');
                                     // send notification of unenrolment from the course and senior instructor roles
                                     if ($message->send_suspension_notification($student->get_id(), $lastsessiondate, $sitecourse->shortname, $seniorinstructors)) {

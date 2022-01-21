@@ -1,5 +1,12 @@
 # Change log
 
+## [2022012100] - UNRELEASED 2022-01-21
+
+### Fixed
+
+- get_active_students to include courseid in the groups lookup
+- logentry missing elements in exporter
+
 ## [2022012000] - UNRELEASED 2022-01-20
 
 ### Changed
@@ -7,6 +14,7 @@
 - session time to ground time everywhere
 - logic to show/hide elements on modal_logboo_form
 - flight type (training/solo/check) handing everywhere
+- separated landings for each of the instructor and student in logentries
 
 ## [2022011700] - UNRELEASED 2022-01-17
 

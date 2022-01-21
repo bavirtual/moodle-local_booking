@@ -328,6 +328,18 @@ class subscriber implements subscriber_interface {
             $data->descriptionformat = FORMAT_HTML;
             $graduatesgroupid = groups_create_group($data);
         }
+
+        // check if LOCAL_BOOKING_GRADUATESGROUP exists otherwise create it
+        $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_KEEPACTIVE);
+        if (empty($groupid)) {
+            $data = new \stdClass();
+            $data->courseid = $this->courseid;
+            $data->name = LOCAL_BOOKING_KEEPACTIVE;
+            $data->description = 'Group to track students from being placed on hold.';
+            $data->descriptionformat = FORMAT_HTML;
+            $graduatesgroupid = groups_create_group($data);
+        }
+
         return !empty($onholdgroupid) && !empty($inactivegroupid) && !empty($graduatesgroupid);
     }
 }

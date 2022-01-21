@@ -54,8 +54,8 @@ class logbook_vault implements logbook_vault_interface {
         global $DB;
 
         $logbookentries = [];
-        $sql = 'SELECT lb.id, lb.courseid, lb.exerciseid, lb.userid, lb.pirep,
-                    lb.callsign, lb.flightdate, lb.depicao, lb.deptime, lb.arricao, lb.arrtime,
+        $sql = 'SELECT lb.id, lb.courseid, lb.exerciseid, lb.userid, lb.pirep, lb.callsign,
+                    lb.flighttype, lb.flightdate, lb.depicao, lb.deptime, lb.arricao, lb.arrtime,
                     lb.aircraft, lb.aircraftreg, lb.enginetype, lb.multipilottime, lb.p1id, lb.p2id,
                     lb.landingsday, lb.landingsnight, lb.groundtime, lb.nighttime, lb.ifrtime,
                     lb.pictime, lb.copilottime, lb.dualtime, lb.instructortime, lb.picustime, lb.checkpilottime,
@@ -272,6 +272,7 @@ class logbook_vault implements logbook_vault_interface {
         $logentryobj->copilottime = $logentry->get_copilottime();
         $logentryobj->pirep = $logentry->get_pirep();
         $logentryobj->callsign = $logentry->get_callsign();
+        $logentryobj->flighttype = $logentry->get_flighttype();
         $logentryobj->fstd = $logentry->get_fstd();
         $logentryobj->depicao = $logentry->get_depicao();
         $logentryobj->deptime = $logentry->get_deptime();
@@ -321,6 +322,7 @@ class logbook_vault implements logbook_vault_interface {
             $logentry->set_checkpilottime($dataobj->checkpilottime);
             $logentry->set_pirep($dataobj->pirep);
             $logentry->set_callsign($dataobj->callsign);
+            $logentry->set_flighttype($dataobj->flighttype);
             $logentry->set_fstd($dataobj->fstd);
             $logentry->set_depicao($dataobj->depicao);
             $logentry->set_deptime($dataobj->deptime);

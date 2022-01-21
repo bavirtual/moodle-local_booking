@@ -35,7 +35,7 @@
     <br>
     <div class="float-right">
         <button type="button" class="btn btn-primary btn-sm" onclick="location.href='{{{easaformaturl}}}';">{{#str}} logbookformateasa, local_booking {{/str}}</button>
-        <button type="button" class="btn btn-primary btn-sm mr-3" onclick="location.href='{{{stdformaturl}}}';">{{#str}} logbookformatsimple, local_booking {{/str}}</button>
+        <button type="button" class="btn btn-primary btn-sm mr-3" onclick="location.href='{{{stdformaturl}}}';">{{#str}} logbookformatcourse, local_booking {{/str}}</button>
     </div>
     <div class="logbook-card logbook-shadow2">
         <h2 class="logbook-h2">{{#str}} logbooksummary, local_booking {{/str}}</h2>
@@ -45,13 +45,25 @@
         {{#str}} logbooktotaltime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;&#09;{{totaltime}}</span>
 
         {{#str}} totalpictime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpictime}}</span>
+        {{#dualops}}
+        {{#isstudent}}
         {{#str}} totaldualtime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totaldualtime}}</span>
+        {{/isstudent}}
+        {{/dualops}}
+        {{^dualops}}
         {{#str}} totalmultipilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalmultipilottime}}</span>
+        {{#isstudent}}
         {{#str}} totalcopilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalcopilottime}}</span>
+        {{/isstudent}}
+        {{/dualops}}
         {{#str}} totalifrtime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalifrtime}}</span>
         {{#str}} totalnighttime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalnighttime}}</span>
+        {{^isstudent}}
         {{#str}} totalinstructortime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalinstructortime}}</span>
+        {{/isstudent}}
+        {{#isstudent}}
         {{#str}} totalpicustime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpicustime}}</span>
+        {{/isstudent}}
 
         {{#str}} totallandingsday, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsday}}</span>
         {{#str}} totallandingsnight, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsnight}}</span>
@@ -61,20 +73,32 @@
 {{#entries}}
     <div class="logbook-card logbook-shadow1">
     <h2 class="logbook-h2">{{{sectionname}}}</h2><h4>{{{exercisename}}}</h4><br/>
-        <pre>{{#str}} logentry2, local_booking {{/str}}:
-        {{#str}} flightdate2, local_booking {{/str}}&#09;&#09;&#09;&#09;{{flightdate}}
-        {{#str}} p1, local_booking {{/str}}&#09;&#09;&#09;&#09;{{p1name}}
-        {{#str}} p2, local_booking {{/str}}&#09;&#09;&#09;&#09;{{p2name}}
+        <pre>{{#str}} logentry, local_booking {{/str}}:
+        {{#str}} flightdate, local_booking {{/str}}&#09;&#09;&#09;&#09;{{flightdate}}
+        {{#str}} flighttype, local_booking {{/str}}&#09;&#09;&#09;&#09;{{trainingflight}}
+        {{#str}} p1, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{p1name}}
+        {{#str}} p2, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{p2name}}
 
         {{#str}} groundtime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{groundtime}}
         {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{pictime}}
         {{#dualops}}
+        {{#isstudent}}
         {{#str}} dualtime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{dualtime}}
+        {{/isstudent}}
         {{/dualops}}
         {{^dualops}}
-        {{#str}} copilottime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{dualtime}}
+        {{#str}} multipilottime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{multipilottime}}
+        {{#str}} nighttime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{nighttime}}
+        {{#isstudent}}
+        {{#str}} copilottime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{copilottime}}
+        {{/isstudent}}
         {{/dualops}}
+        {{#isstudent}}
         {{#str}} picustime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{picustime}}
+        {{/isstudent}}
+        {{^isstudent}}
+        {{#str}} instructortime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{instructortime}}
+        {{/isstudent}}
 
         {{#str}} aircraft, local_booking {{/str}}&#09;&#09;&#09;&#09;{{aircraft}}
         {{#str}} callsign, local_booking {{/str}}&#09;&#09;&#09;&#09;{{callsign}}

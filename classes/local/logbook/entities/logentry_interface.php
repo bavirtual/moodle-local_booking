@@ -342,6 +342,13 @@ interface logentry_interface {
     public function set_callsign(string $callsign);
 
     /**
+     * Set the flight type.
+     *
+     * @param string $flighttype
+     */
+    public function set_flighttype(string $flighttype);
+
+    /**
      * Set the flight date timestamp.
      *
      * @param int $flightdate

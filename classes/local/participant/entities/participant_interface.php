@@ -125,7 +125,7 @@ interface participant_interface {
      *
      * @return bool             The result of the suspension action.
      */
-    public function set_suspend_status();
+    public function suspend();
 
     /**
      * Loads participant's date from a table record

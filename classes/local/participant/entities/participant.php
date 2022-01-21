@@ -101,7 +101,7 @@ class participant implements participant_interface {
         $this->courseid = $courseid;
         $this->userid = $userid;
         $context = \context_course::instance($courseid);
-        $this->is_student = current(get_user_roles($context, $userid))->shortname == 'student' ? true : false;
+        $this->is_student = count(get_user_roles($context, $userid)) > 0 && current(get_user_roles($context, $userid))->shortname == 'student' ? true : false;
     }
 
     /**
@@ -251,8 +251,8 @@ class participant implements participant_interface {
      *
      * @return bool The result of the suspension action.
      */
-    public function set_suspend_status() {
-        return $this->vault->set_suspend_status($this->courseid, $this->userid);
+    public function suspend() {
+        return $this->vault->suspend($this->courseid, $this->userid);
     }
 
     /**

@@ -302,10 +302,11 @@ class local_booking_external extends external_api {
             $context = context_course::instance($courseid);
             self::validate_context($context);
             $PAGE->set_url('/local/booking/');
+
+            // get empty logentry for returns structure
             $data = $logentry->__toArray(false, false) + $params;
-            $subscriber = new subscriber($courseid);
-            $data['dualops'] = $subscriber->trainingtype == 'Dual';
             $data['visible'] = 1;
+            // set the warring message
             $warnings[] = [
                 'item' => $pirep,
                 'warningcode' => $errorcode,
@@ -862,7 +863,7 @@ class local_booking_external extends external_api {
                 $studentlogentry = $studentlogbook->create_logentry();
                 $studentlogentry->populate($validateddata);
 
-                if (!$validateddata->flighttype=='solo') {
+                if ($validateddata->flighttype!='solo') {
                     // add instructor logentry, the user creating the entry is always the instructor
                     $instructorlogbook = new logbook($courseid, $USER->id);
                     $instructorlogentry = $instructorlogbook->create_logentry();

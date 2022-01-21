@@ -85,7 +85,7 @@ class create extends \moodleform {
 
         // validate the flight date is not before the booking date
         $exercisedate = booking::get_exercise_date($data['courseid'], $data['userid'], $data['exerciseid']);
-        if (!empty($exercisedate)) {
+        if (!empty($exercisedate) && $data['flighttype'] != 'solo') {
             if ($data['flightdate'] < $exercisedate)
                 $errors['flightdate'] = get_string('errorinvaliddate', 'local_booking');
         }
@@ -124,6 +124,9 @@ class create extends \moodleform {
         // P1/PIC instructor id and P2 student id
         $pilots = $this->get_pilot_ids($subscriber);
 
+        // show flight type first
+        $this->add_element($mform, 'flighttype', array($subscriber->trainingtype == 'Dual'));
+
         // show pireps only if they there is lookup integration or a PIREP for editing
         if ($integratedpireps || !$newlogentry)
             $this->add_element($mform, 'pireps', array($integratedpireps, $newlogentry));
@@ -133,7 +136,6 @@ class create extends \moodleform {
         $this->add_element($mform, 'p1id', array($pilots, $p1id));
         $this->add_element($mform, 'p2id', array($pilots, $p2id));
 
-        $this->add_element($mform, 'flighttype', array($subscriber->trainingtype == 'Dual'));
         $this->add_element($mform, 'passfail');
         $this->add_element($mform, 'groundtime');
         $this->add_element($mform, 'pictime');
@@ -199,6 +201,7 @@ class create extends \moodleform {
                 $select->setSelected($options[1]);
                 $mform->setType('p1id', PARAM_INT);
                 $mform->addRule('p1id', get_string('required'), 'required', null, 'client');
+                $mform->addHelpButton('p1id', 'p1', 'local_booking');
                 break;
 
             case 'p2id':
@@ -207,6 +210,7 @@ class create extends \moodleform {
                 $select->setSelected($options[1]);
                 $mform->setType('p2id', PARAM_INT);
                 $mform->addRule('p2id', get_string('required'), 'required', null, 'client');
+                $mform->addHelpButton('p2id', 'p2', 'local_booking');
                 break;
 
             case 'flighttype':
@@ -272,7 +276,6 @@ class create extends \moodleform {
             case 'dualtime':
                 // Dual flight time duration
                 $mform->addElement('text', 'dualtime', get_string('dualtime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->addRule('dualtime', get_string('required'), 'required', null, 'client');
                 $mform->addHelpButton('dualtime', 'dualtime', 'local_booking');
                 $mform->setType('dualtime', PARAM_TEXT);
                 break;

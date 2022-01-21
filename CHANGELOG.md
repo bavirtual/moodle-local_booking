@@ -1,5 +1,15 @@
 # Change log
 
+## [2022012101] - UNRELEASED 2022-01-21
+
+### Fixed
+
+- logentry dual time not being persisted
+
+### Added
+
+- examiner time to course format logbook
+
 ## [2022012100] - UNRELEASED 2022-01-21
 
 ### Fixed

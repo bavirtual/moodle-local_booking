@@ -639,8 +639,8 @@ define([
 
             // Toggle landings and set to default to 1 for P1
             toggle('#fgroup_id_landingsp2', '#id_landingsp2', false);
-            $('id_landingsp1day').val(1);
-            $('id_landingsp2day').val(0);
+            $('#id_landingsp1day').val('1');
+            $('#id_landingsp2day').val('0');
 
         } else if (flighttype == 'check' || passfail == 'pass') {
             // Set P1 id and label for instructor

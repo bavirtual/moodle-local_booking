@@ -284,7 +284,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_flightdate(bool $tostring = false, bool $shortdate = false) {
-        $date = $tostring ? (new \DateTime('@'.$this->flightdate))->format(($shortdate?'Y\/m\/d':'l M d \- H:i\z')) : $this->flightdate;
+        $date = $tostring ? (new \DateTime('@'.$this->flightdate))->format(($shortdate?'Y\/m\/d':'l M d\, Y \- H:i\z')) : $this->flightdate;
         return $date;
     }
 
@@ -856,15 +856,15 @@ class logentry implements logentry_interface {
         $this->p1id = $edit || $formdata->flighttype == 'solo' ? $this->parent->get_userid() : $formdata->p1id;
         $this->p2id = $edit || $formdata->flighttype == 'solo' ? 0 : $formdata->p2id;
         $this->pictime = $isinstructor || $formdata->flighttype == 'solo' ? logbook::convert_time($formdata->pictime, 'MINS_TO_NUM') : 0;
-        $this->dualtime = !$isinstructor && $formdata->flighttype = 'training' ? logbook::convert_time($formdata->dualtime, 'MINS_TO_NUM') : 0;
+        $this->dualtime = !$isinstructor && $formdata->flighttype == 'training' ? logbook::convert_time($formdata->dualtime, 'MINS_TO_NUM') : 0;
         $this->instructortime = $isinstructor ? logbook::convert_time($formdata->instructortime, 'MINS_TO_NUM') : 0;
+        $this->multipilottime = logbook::convert_time($formdata->multipilottime, 'MINS_TO_NUM');
+        $this->copilottime = !$isinstructor && $formdata->flighttype == 'training' ? logbook::convert_time($formdata->copilottime, 'MINS_TO_NUM') : 0;
         $this->picustime = !$isinstructor ? logbook::convert_time($formdata->picustime, 'MINS_TO_NUM') : 0;
         $this->pirep = $isinstructor || $formdata->flighttype == 'solo' ? $formdata->p1pirep : ($formdata->p2pirep ?: $formdata->linkedpirep);
         $this->linkedpirep = $isinstructor || $formdata->flighttype == 'solo' ? ($formdata->p2pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;
         $this->callsign = strtoupper($formdata->callsign);
         $this->fstd = $formdata->fstd;
-        $this->multipilottime = logbook::convert_time($formdata->multipilottime, 'MINS_TO_NUM');
-        $this->copilottime = !$isinstructor && $formdata->flighttype = 'training' ? logbook::convert_time($formdata->copilottime, 'MINS_TO_NUM') : 0;
         $this->depicao = strtoupper($formdata->depicao);
         $this->arricao = strtoupper($formdata->arricao);
 

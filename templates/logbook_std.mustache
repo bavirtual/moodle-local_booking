@@ -60,6 +60,7 @@
         {{#str}} totalnighttime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalnighttime}}</span>
         {{^isstudent}}
         {{#str}} totalinstructortime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalinstructortime}}</span>
+        {{#str}} totalcheckpilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalcheckpilottime}}</span>
         {{/isstudent}}
         {{#isstudent}}
         {{#str}} totalpicustime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpicustime}}</span>
@@ -87,7 +88,7 @@
         {{/isstudent}}
         {{/dualops}}
         {{^dualops}}
-        {{#str}} multipilottime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{multipilottime}}
+        {{#str}} multipilottime, local_booking {{/str}}&#09;&#09;&#09;{{multipilottime}}
         {{#str}} nighttime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{nighttime}}
         {{#isstudent}}
         {{#str}} copilottime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{copilottime}}

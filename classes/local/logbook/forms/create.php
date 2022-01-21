@@ -126,6 +126,7 @@ class create extends \moodleform {
 
         // show flight type first
         $this->add_element($mform, 'flighttype', array($subscriber->trainingtype == 'Dual'));
+        $this->add_element($mform, 'passfail');
 
         // show pireps only if they there is lookup integration or a PIREP for editing
         if ($integratedpireps || !$newlogentry)
@@ -136,7 +137,6 @@ class create extends \moodleform {
         $this->add_element($mform, 'p1id', array($pilots, $p1id));
         $this->add_element($mform, 'p2id', array($pilots, $p2id));
 
-        $this->add_element($mform, 'passfail');
         $this->add_element($mform, 'groundtime');
         $this->add_element($mform, 'pictime');
 
@@ -215,13 +215,12 @@ class create extends \moodleform {
 
             case 'flighttype':
                 // Solo flight indicator
-                $attributes = array('onchange' => 'applyFlightRules()');
                 $radioarray=array();
-                $radioarray[] = $mform->createElement('radio', 'flighttype', '', get_string('flighttypetraining', 'local_booking'), 'training', $attributes);
+                $radioarray[] = $mform->createElement('radio', 'flighttype', '', get_string('flighttypetraining', 'local_booking'), 'training');
                 // Add solo flight option if the training type is Dual
                 if ($options[0])
-                    $radioarray[] = $mform->createElement('radio', 'flighttype', '', get_string('flighttypesolo', 'local_booking'), 'solo', $attributes);
-                $radioarray[] = $mform->createElement('radio', 'flighttype', '', get_string('flighttypecheck', 'local_booking'), 'check', $attributes);
+                    $radioarray[] = $mform->createElement('radio', 'flighttype', '', get_string('flighttypesolo', 'local_booking'), 'solo');
+                $radioarray[] = $mform->createElement('radio', 'flighttype', '', get_string('flighttypecheck', 'local_booking'), 'check');
                 $mform->addGroup($radioarray, 'flighttype', get_string('flighttype', 'local_booking'), array(' '), false);
                 $mform->setType('flighttype', PARAM_TEXT);
                 $mform->setDefault('flighttype', 'training');
@@ -229,10 +228,9 @@ class create extends \moodleform {
 
             case 'passfail':
                 // Solo flight indicator
-                $attributes = array('onchange' => 'applyFlightRules()');
                 $radioarray=array();
-                $radioarray[] = $mform->createElement('radio', 'passfail', '', get_string('checkpassed', 'local_booking'), 'pass', $attributes);
-                $radioarray[] = $mform->createElement('radio', 'passfail', '', get_string('checkfailed', 'local_booking'), 'fail', $attributes);
+                $radioarray[] = $mform->createElement('radio', 'passfail', '', get_string('checkpassed', 'local_booking'), 'pass');
+                $radioarray[] = $mform->createElement('radio', 'passfail', '', get_string('checkfailed', 'local_booking'), 'fail');
                 $mform->addGroup($radioarray, 'passfail',  get_string('checkflight', 'local_booking'), array(' '), false);
                 $mform->setType('passfail', PARAM_TEXT);
                 $mform->setDefault('passfail', 'pass');

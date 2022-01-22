@@ -159,13 +159,14 @@ class participant implements participant_interface {
      * Get an a's active bookings
      *
      * @param  $loadentries Whether to load all enteries or not
-     * @return logentry[]   An array of bookings.
+     * @param  bool $allentries Whether to get entries for all courses
+     * @return logbook   An array of bookings.
      */
-    public function get_logbook(bool $loadentries = false) {
+    public function get_logbook(bool $loadentries = false, bool $allentries = false) {
         if (empty($this->logbook)) {
             $logbook = new logbook($this->courseid, $this->userid);
             if ($loadentries)
-                $logbook->load();
+                $logbook->load($allentries);
             $this->logbook = $logbook;
         }
         return $this->logbook;

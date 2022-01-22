@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use renderer_base;
 use core\external\exporter;
-use local_booking\local\logbook\entities\logbook;
+use local_booking\local\participant\entities\participant;
 use local_booking\local\subscriber\entities\subscriber;
 use moodle_url;
 
@@ -153,6 +153,10 @@ class logbook_exporter extends exporter {
      */
     protected static function define_other_properties() {
         return [
+            'isstudent' => [
+                'type' => PARAM_BOOL,
+                'default' => true
+            ],
             'dualops' => [
                 'type' => PARAM_BOOL,
                 'default' => false
@@ -188,9 +192,7 @@ class logbook_exporter extends exporter {
      */
     protected function get_logbook_entries($trainingtype, renderer_base $output) {
         // get the the logbook of a user
-        $logbook = new logbook($this->courseid, $this->userid);
-        $logbook->load();
-        $logbookentries = $logbook->get_logentries();
+        $logbookentries = $this->data['logbook']->get_logentries();
         $data = [];
         $entries = [];
 
@@ -201,6 +203,7 @@ class logbook_exporter extends exporter {
             $data['userid'] = $this->userid;
             $data['view'] = 'summary';
             $data['trainingtype'] = $trainingtype;
+            $data['isstudent'] = $this->data['isstudent'];
             $data['shortdate'] = $this->data['shortdate'];
             $entry = new logentry_exporter($data, $this->related);
             $entries[] = $entry->export($output);

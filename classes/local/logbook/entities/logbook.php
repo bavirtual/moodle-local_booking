@@ -67,10 +67,11 @@ class logbook implements logbook_interface {
     /**
      * Load and retrieve the logbook of a user.
      *
+     * @param  bool $allentries whether to get entries for all courses
      * @return bool true if the Logbook has entries
      */
-    public function load() {
-        $this->entries = logbook_vault::get_logbook($this->courseid, $this->userid, $this);
+    public function load(bool $allentries = false) {
+        $this->entries = logbook_vault::get_logbook($this->courseid, $this->userid, $this, $allentries);
         return count($this->entries) > 0;
     }
 

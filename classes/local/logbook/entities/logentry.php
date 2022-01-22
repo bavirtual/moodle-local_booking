@@ -851,20 +851,19 @@ class logentry implements logentry_interface {
     public function populate(object $formdata, bool $isinstructor = false, bool $edit = false) {
         $this->id = $formdata->id ?: null;
         $this->exerciseid = $formdata->exerciseid;
-        $this->groundtime = logbook::convert_time($formdata->groundtime, 'MINS_TO_NUM');
         $this->flightdate = $formdata->flightdate;
-        $this->p1id = $edit || $formdata->flighttype == 'solo' ? $this->parent->get_userid() : $formdata->p1id;
-        $this->p2id = $edit || $formdata->flighttype == 'solo' ? 0 : $formdata->p2id;
+        $this->p1id = $formdata->flighttype == 'solo' ? $this->parent->get_userid() : $formdata->p1id;
+        $this->p2id = $formdata->flighttype == 'solo' ? 0 : $formdata->p2id;
+        $this->groundtime = logbook::convert_time($formdata->groundtime, 'MINS_TO_NUM');
         $this->pictime = $isinstructor || $formdata->flighttype == 'solo' ? logbook::convert_time($formdata->pictime, 'MINS_TO_NUM') : 0;
-        $this->dualtime = !$isinstructor && $formdata->flighttype == 'training' ? logbook::convert_time($formdata->dualtime, 'MINS_TO_NUM') : 0;
+        $this->dualtime = !$isinstructor && ($formdata->flighttype == 'training' || $formdata->passfail == 'fail') ? logbook::convert_time($formdata->dualtime, 'MINS_TO_NUM') : 0;
         $this->instructortime = $isinstructor ? logbook::convert_time($formdata->instructortime, 'MINS_TO_NUM') : 0;
+        $this->picustime = !$isinstructor && $formdata->passfail != 'fail' ? logbook::convert_time($formdata->picustime, 'MINS_TO_NUM') : 0;
         $this->multipilottime = logbook::convert_time($formdata->multipilottime, 'MINS_TO_NUM');
-        $this->copilottime = !$isinstructor && $formdata->flighttype == 'training' ? logbook::convert_time($formdata->copilottime, 'MINS_TO_NUM') : 0;
-        $this->picustime = !$isinstructor ? logbook::convert_time($formdata->picustime, 'MINS_TO_NUM') : 0;
-        $this->pirep = $isinstructor || $formdata->flighttype == 'solo' ? $formdata->p1pirep : ($formdata->p2pirep ?: $formdata->linkedpirep);
-        $this->linkedpirep = $isinstructor || $formdata->flighttype == 'solo' ? ($formdata->p2pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;
+        $this->copilottime = !$isinstructor && ($formdata->flighttype == 'training' || $formdata->passfail == 'fail') ? logbook::convert_time($formdata->copilottime, 'MINS_TO_NUM') : 0;
+        $this->checkpilottime = $isinstructor && $formdata->passfail != 'fail' ? logbook::convert_time($formdata->checkpilottime, 'MINS_TO_NUM') : 0;
+        $this->pirep = $isinstructor || $edit || $formdata->flighttype == 'solo' ? $formdata->p1pirep : ($formdata->p2pirep ?: $formdata->linkedpirep);
         $this->callsign = strtoupper($formdata->callsign);
-        $this->fstd = $formdata->fstd;
         $this->depicao = strtoupper($formdata->depicao);
         $this->arricao = strtoupper($formdata->arricao);
 
@@ -876,20 +875,17 @@ class logentry implements logentry_interface {
         $this->aircraftreg = $formdata->aircraftreg;
         $this->enginetype = $formdata->enginetype;
 
-        // check if the logentry is being edited not new
-        if ($edit) {
-            $this->landingsday = $formdata->landingsday;
-            $this->landingsnight = $formdata->landingsnight;
-        } else {
-            $this->landingsday = $isinstructor || $formdata->flighttype == 'solo' ? $formdata->landingsp1day : $formdata->landingsp2day;
-            $this->landingsnight = $isinstructor || $formdata->flighttype == 'solo' ? $formdata->landingsp1night : $formdata->landingsp2night;
-        }
+        // assign landings day/night of p1 to instructor, solo, or editing mode case otherwise use p2 for the student
+        $this->landingsday = $isinstructor || $formdata->flighttype == 'solo' || $edit ? $formdata->landingsp1day : $formdata->landingsp2day;
+        $this->landingsnight = $isinstructor || $formdata->flighttype == 'solo' || $edit ? $formdata->landingsp1night : $formdata->landingsp2night;
+
         $this->nighttime = logbook::convert_time($formdata->nighttime, 'MINS_TO_NUM');
         $this->ifrtime = logbook::convert_time($formdata->ifrtime, 'MINS_TO_NUM');
-        $this->checkpilottime = $isinstructor ? logbook::convert_time($formdata->checkpilottime, 'MINS_TO_NUM') : 0;
         $this->remarks = $formdata->remarks;
-        $this->linkedlogentryid = $formdata->linkedlogentryid ?: 0;
+        $this->fstd = $formdata->fstd;
         $this->flighttype = $formdata->flighttype;
+        $this->linkedlogentryid = $formdata->linkedlogentryid ?: 0;
+        $this->linkedpirep = $isinstructor || $edit || $formdata->flighttype == 'solo' ? ($formdata->p2pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;
     }
 
     /**

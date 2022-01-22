@@ -39,9 +39,10 @@ interface logbook_interface {
     /**
      * Loads the logbook of entries for a user.
      *
+     * @param  bool $allentries whether to get entries for all courses
      * @return bool true if the Logbook has entries
      */
-    public function load();
+    public function load(bool $allentries = false);
 
     /**
      * Creates a logbook entry.

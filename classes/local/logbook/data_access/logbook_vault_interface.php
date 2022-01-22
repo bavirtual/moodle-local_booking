@@ -37,9 +37,10 @@ interface logbook_vault_interface {
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
      * @param logbook   $logbook    The logbook_interface of for all entries.
+     * @param bool      $allentries Whether to get entries for all courses
      * @return logentries[]     Array of logentry_interfaces.
      */
-    public static function get_logbook(int $courseid, int $userid, $logbook);
+    public static function get_logbook(int $courseid, int $userid, $logbook, $allentries);
 
     /**
      * Get a specific logbook entry.

@@ -130,6 +130,10 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true,
             ],
+            'aircraftreg' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
             'enginetype' => [
                 'type' => PARAM_RAW,
                 'optional' => true,
@@ -203,6 +207,11 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true,
             ],
+            'isstudent' => [
+                'type' => PARAM_BOOL,
+                'optional' => true,
+                'default' => true,
+            ],
             'visible' => [
                 'type' => PARAM_INT
             ],
@@ -250,6 +259,16 @@ class logentry_exporter extends exporter {
                 'optional' => true,
                 'default' => false,
             ],
+            'checkflight' => [
+                'type' => PARAM_BOOL,
+                'optional' => true,
+                'default' => false,
+            ],
+            'passedcheck' => [
+                'type' => PARAM_BOOL,
+                'optional' => true,
+                'default' => true,
+            ],
             'haspictime' => [
                 'type' => PARAM_BOOL,
                 'optional' => true,
@@ -271,9 +290,10 @@ class logentry_exporter extends exporter {
         $p2id = !empty($this->logentry) ? $this->logentry->get_p2id() : $this->data['p2id'];
         $sectionname = !empty($this->logentry) ? '' : subscriber::get_section_name($this->data['courseid'], $exerciseid);
         $dualops = $this->data['trainingtype'] == 'Dual';
-        $soloflight = !empty($this->logentry) ? $this->logentry->get_flighttype() == 'solo' : false;
-        $haspictime = !empty($this->logentry) ? $this->logentry->get_pictime() != 0 : false;
+        $haspictime = !empty($this->logentry) ? !empty($this->logentry->get_pictime()) : false;
+        $flighttype = !empty($this->logentry) ? $this->logentry->get_flighttype() : 'training';
         // get training flight text
+        $passed = false;
         $trainingflight = '';
         if (!empty($this->logentry)) {
             switch ($this->logentry->get_flighttype()) {
@@ -285,6 +305,7 @@ class logentry_exporter extends exporter {
                     break;
                 case 'check':
                     $trainingflight = $dualops ? get_string('flightcheckride', 'local_booking') : get_string('flightlinecheck', 'local_booking');
+                    $passed = !empty($this->logentry) ? !empty($this->logentry->get_picustime()) || !empty($this->logentry->get_checkpilottime()) : false;
                     break;
             }
         }
@@ -297,7 +318,9 @@ class logentry_exporter extends exporter {
             'sectionname' => $sectionname,
             'trainingflight' => $trainingflight,
             'dualops' => $dualops,
-            'soloflight' => $soloflight,
+            'soloflight' => $flighttype == 'solo',
+            'checkflight' => $flighttype == 'check',
+            'passedcheck' => $passed,
             'haspictime' => $haspictime,
         ];
     }

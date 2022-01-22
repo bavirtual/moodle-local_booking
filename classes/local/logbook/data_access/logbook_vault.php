@@ -48,11 +48,13 @@ class logbook_vault implements logbook_vault_interface {
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
      * @param logbook   $logbook    The logbook_interface of for all entries.
+     * @param bool      $allentries Whether to get entries for all courses
      * @return logentries[]     Array of logentry_interfaces.
      */
-    public static function get_logbook(int $courseid, int $userid, $logbook) {
+    public static function get_logbook(int $courseid, int $userid, $logbook, $allentries = false) {
         global $DB;
 
+        $coursestatement = !$allentries ? 'courseid = :courseid AND' : '';
         $logbookentries = [];
         $sql = 'SELECT lb.id, lb.courseid, lb.exerciseid, lb.userid, lb.pirep, lb.callsign,
                     lb.flighttype, lb.flightdate, lb.depicao, lb.deptime, lb.arricao, lb.arrtime,
@@ -63,8 +65,8 @@ class logbook_vault implements logbook_vault_interface {
                 FROM {' . self::DB_LOGBOOKS . '} lb
                 INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.id = lb.exerciseid
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
-                WHERE courseid = :courseid
-                    AND userid = :userid
+                WHERE ' . $coursestatement . '
+                    userid = :userid
                 ORDER BY lb.flightdate DESC';
 
         $param = ['courseid'=>$courseid, 'userid'=>$userid];

@@ -107,7 +107,8 @@
                         <td>{{instructortime}}</td>
                         <td>{{picustime}}</td>
                         <td>{{fstd}}</td>
-                        <td>{{remarks}}</td>
+                        <td>{{trainingflight}}{{#checkflight}}{{#passedcheck}}[{{#str}} checkpassed , local_booking{{/str}}]{{/passedcheck}}{{^passedcheck}}[{{#str}} checkfailed , local_booking{{/str}}]{{/passedcheck}}{{/checkflight}}. {{remarks}}
+                        </td>
                     </tr>
                     {{/entries}}
                 </tbody>

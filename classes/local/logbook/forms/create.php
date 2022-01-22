@@ -163,12 +163,11 @@ class create extends \moodleform {
                                                         $subscriber->trainingtype == 'Dual' ? 'SE' : 'ME'), false);
         $this->add_element($mform, 'nighttime', null, false);
         // add landings elements for new and edit logentries
-        if ($newlogentry) {
-            $this->add_element($mform, 'landingsp1', null, false);
+        $this->add_element($mform, 'landingsp1', null, false);
+        if ($newlogentry)
             $this->add_element($mform, 'landingsp2', null, false);
-        } else {
-            $this->add_element($mform, 'landings', null, false);
-        }
+
+        // add remaining elements
         $this->add_element($mform, 'callsign', array($this->get_pilot_info('callsign', $subscriber->get_id(), $p1id)), false);
         $this->add_element($mform, 'remarks', null, false);
         $this->add_element($mform, 'fstd', array($this->get_pilot_info('simulator', $subscriber->get_id(), $p2id)), false);
@@ -377,7 +376,6 @@ class create extends \moodleform {
                     $mform->setAdvanced('checkpilottime');
                 break;
 
-            case 'landings':
             case 'landingsp1':
             case 'landingsp2':
                 // Landings group Day/Night

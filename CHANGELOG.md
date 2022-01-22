@@ -1,5 +1,21 @@
 # Change log
 
+## [2022012200] - RELEASED 2022-01-22
+
+### Fixed
+
+- Dual time not showing in logbook course format for students
+- Hide ground time in logbook course format for students in solo flights
+- PICUS time not being recorded in multicrew link check
+
+### Added
+
+- Exercise info in the Remarks in dual training flights in EASA format
+
+### Changed
+
+- EASA format to include logbook entries from all courses
+
 ## [2022012101] - UNRELEASED 2022-01-21
 
 ### Fixed

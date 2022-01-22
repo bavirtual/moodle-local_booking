@@ -78,24 +78,34 @@
     <div class="col-6">{{p2name}}</div>
 </div>
 {{/soloflight}}
+
 <div class="row mt-1">
     <div class="col-1"></div>
     <div class="col-5">{{#str}} flighttype, local_booking {{/str}}</div>
-    <div class="col-6">{{trainingflight}}</div>
+    <div class="col-6">{{trainingflight}}
+        {{#checkflight}}
+            {{#passedcheck}}<span class="logbook-check-pass">[{{#str}} checkpassed , local_booking{{/str}}]</span>{{/passedcheck}}
+            {{^passedcheck}}<span class="logbook-check-fail">[{{#str}} checkfailed , local_booking{{/str}}]</span>{{/passedcheck}}
+        {{/checkflight}}
+    </div>
 </div>
 <div class="row mt-1">
     <div class="col-1"></div>
     <div class="col-5">{{#str}} pirep, local_booking {{/str}}</div>
     <div class="col-6">{{pirep}}</div>
 </div>
+
 {{^soloflight}}
 <hr/>
+{{^checkflight}}
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
     <div class="col-5">{{#str}} groundtime, local_booking {{/str}}</div>
     <div class="col-6">{{groundtime}}</div>
 </div>
+{{/checkflight}}
 {{/soloflight}}
+
 {{#haspictime}}
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
@@ -103,26 +113,62 @@
     <div class="col-6">{{pictime}}</div>
 </div>
 {{/haspictime}}
+
 {{^soloflight}}
 {{#dualops}}
-{{^haspictime}}
+{{^checkflight}}
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
     <div class="col-5">{{#str}} dualtime, local_booking {{/str}}</div>
     <div class="col-6">{{dualtime}}</div>
 </div>
-{{/haspictime}}
+{{/checkflight}}
 {{/dualops}}
 {{^dualops}}
-{{^haspictime}}
+{{^passedcheck}}
 <div class="row mt-1">
     <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
     <div class="col-5">{{#str}} copilottime, local_booking {{/str}}</div>
     <div class="col-6">{{copilottime}}</div>
 </div>
-{{/haspictime}}
+{{/passedcheck}}
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
+    <div class="col-5">{{#str}} ifrtime, local_booking {{/str}}</div>
+    <div class="col-6">{{ifrtime}}</div>
+</div>
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
+    <div class="col-5">{{#str}} nighttime, local_booking {{/str}}</div>
+    <div class="col-6">{{nighttime}}</div>
+</div>
 {{/dualops}}
 {{/soloflight}}
+
+{{#checkflight}}
+
+{{^isstudent}}
+{{#passedcheck}}
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
+    <div class="col-5">{{#str}} checkpilottime, local_booking {{/str}}</div>
+    <div class="col-6">{{checkpilottime}}</div>
+</div>
+{{/passedcheck}}
+{{/isstudent}}
+
+{{#isstudent}}
+{{#passedcheck}}
+<div class="row mt-1">
+    <div class="col-1">{{#pix}} i/calendareventtime, core {{/pix}}</div>
+    <div class="col-5">{{#str}} picustime, local_booking {{/str}}</div>
+    <div class="col-6">{{picustime}}</div>
+</div>
+{{/passedcheck}}
+{{/isstudent}}
+
+{{/checkflight}}
+
 <hr/>
 <div class="row mt-1">
     <div class="col-1">{{#pix}} booking, local_booking {{/pix}}</div>

@@ -62,9 +62,11 @@
         {{#str}} totalinstructortime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalinstructortime}}</span>
         {{#str}} totalcheckpilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalcheckpilottime}}</span>
         {{/isstudent}}
+        {{#checkflight}}
         {{#isstudent}}
         {{#str}} totalpicustime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpicustime}}</span>
         {{/isstudent}}
+        {{/checkflight}}
 
         {{#str}} totallandingsday, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsday}}</span>
         {{#str}} totallandingsnight, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsnight}}</span>
@@ -74,17 +76,31 @@
 {{#entries}}
     <div class="logbook-card logbook-shadow1">
     <h2 class="logbook-h2">{{{sectionname}}}</h2><h4>{{{exercisename}}}</h4><br/>
-        <pre>{{#str}} logentry, local_booking {{/str}}:
+        <pre><strong>{{#str}} logentry, local_booking {{/str}}:</strong>
         {{#str}} flightdate, local_booking {{/str}}&#09;&#09;&#09;&#09;{{flightdate}}
-        {{#str}} flighttype, local_booking {{/str}}&#09;&#09;&#09;&#09;{{trainingflight}}
+        {{#str}} flighttype, local_booking {{/str}}&#09;&#09;&#09;&#09;{{trainingflight}} {{#checkflight}}{{#passedcheck}}<span class="logbook-check-pass">[{{#str}} checkpassed , local_booking{{/str}}]</span>{{/passedcheck}}{{^passedcheck}}<span class="logbook-check-fail">[{{#str}} checkfailed , local_booking{{/str}}]</span>{{/passedcheck}}{{/checkflight}}
         {{#str}} p1, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{p1name}}
         {{#str}} p2, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{p2name}}
 
+        {{^soloflight}}
         {{#str}} groundtime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{groundtime}}
+        {{/soloflight}}
+        {{#soloflight}}
         {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{pictime}}
+        {{/soloflight}}
+        {{^isstudent}}
+        {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{pictime}}
+        {{/isstudent}}
+        {{^isstudent}}
+        {{^checkflight}}
+        {{#str}} instructortime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{instructortime}}
+        {{/checkflight}}
+        {{/isstudent}}
         {{#dualops}}
         {{#isstudent}}
+        {{^soloflight}}
         {{#str}} dualtime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{dualtime}}
+        {{/soloflight}}
         {{/isstudent}}
         {{/dualops}}
         {{^dualops}}
@@ -94,18 +110,24 @@
         {{#str}} copilottime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{copilottime}}
         {{/isstudent}}
         {{/dualops}}
+        {{#str}} ifrtime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{ifrtime}}
+        {{#checkflight}}
         {{#isstudent}}
         {{#str}} picustime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{picustime}}
         {{/isstudent}}
         {{^isstudent}}
-        {{#str}} instructortime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{instructortime}}
+        {{#str}} checkpilottime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{checkpilottime}}
         {{/isstudent}}
+        {{/checkflight}}
 
         {{#str}} aircraft, local_booking {{/str}}&#09;&#09;&#09;&#09;{{aircraft}}
         {{#str}} callsign, local_booking {{/str}}&#09;&#09;&#09;&#09;{{callsign}}
         {{#str}} pirep, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{pirep}}
         {{#str}} depicao, local_booking {{/str}}&#09;&#09;&#09;&#09;{{depicao}} - {{deptime}}
         {{#str}} arricao, local_booking {{/str}}&#09;&#09;&#09;&#09;{{arricao}} - {{arrtime}}
+
+        {{#str}} remarks, local_booking {{/str}}:
+        &#09;{{remarks}}
         </pre>
   </div>
 {{/entries}}

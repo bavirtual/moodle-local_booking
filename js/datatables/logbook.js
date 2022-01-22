@@ -58,7 +58,7 @@ $(document).ready(function() {
             {"width": "45px", "targets": DUALTIME}, // Column: dualtime
             {"width": "45px", "targets": INSTTIME}, // Column: instructortime
             {"width": "45px", "targets": PICUSTIME}, // Column: picustime
-            {"width": "10px", "targets": FSTD}, // Column: fstd
+            {"width": "15px", "targets": FSTD}, // Column: fstd
             {"width": "160px", "targets": REMARKS} // Column: remarks
         ],
         "footerCallback": function(row, data, start, end, display) {

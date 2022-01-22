@@ -260,6 +260,10 @@ function local_booking_output_fragment_logentry_form($args) {
         $data = $formdata;
         $data['flightdate'] = $logentry->get_flightdate();
         $data['p1pirep'] = $logentry->get_pirep();
+        $data['landingsp1day'] = $logentry->get_landingsday();
+        $data['landingsp1night'] = $logentry->get_landingsnight();
+        if ($logentry->get_flighttype() == 'check')
+            $data['passfail'] = !empty($logentry->get_checkpilottime()) || !empty($logentry->get_picustime()) ? 'pass' : 'fail';
         $mform = new update_logentry_form(null, $formoptions, 'post', '', null, true, $formdata);
     } else {
         $logentry = $logbook->create_logentry();
@@ -401,10 +405,6 @@ function get_booking_confirm_view($courseid, $studentid) {
 function get_logbook_view($courseid, $userid, $templateformat) {
     global $PAGE;
 
-    // get summary information (not requested by the webservice)
-    $logbook = new logbook($courseid, $userid);
-    $totals = (array) $logbook->get_summary(true);
-
     $renderer = $PAGE->get_renderer('local_booking');
 
     if (empty($templateformat)) {
@@ -415,16 +415,22 @@ function get_logbook_view($courseid, $userid, $templateformat) {
             set_user_preferences(array('local_booking_logbookformat'=>$templateformat));
     }
 
+    // indicate whether to get logbook entries for all courses
     $template = 'local_booking/logbook_' . $templateformat;
+
+    // get summary information (not requested by the webservice)
     $pilot = new participant($courseid, $userid);
+    $logbook = $pilot->get_logbook(true, $templateformat == 'easa');
+    $totals = (array) $logbook->get_summary(true);
     $data = [
-        'courseid'  => $courseid,
-        'userid'  => $userid,
-        'username'  => $pilot->get_fullname($userid),
-        'isstudent'  => $pilot->is_student(),
+        'courseid'      => $courseid,
+        'userid'        => $userid,
+        'username'      => $pilot->get_fullname($userid),
+        'logbook'       => $logbook,
+        'isstudent'     => $pilot->is_student(),
         'easaformaturl' => $PAGE->url . '&format=easa',
-        'stdformaturl' => $PAGE->url . '&format=std',
-        'shortdate' => $templateformat == 'easa'
+        'stdformaturl'  => $PAGE->url . '&format=std',
+        'shortdate'     => $templateformat == 'easa'
     ];
 
     $logbook = new logbook_exporter($data + $totals, ['context' => \context_course::instance($courseid)]);
@@ -463,6 +469,7 @@ function get_logentry_view(int $courseid, int $userid, array $formdata = null) {
     // add training type to the data sent to the exporter
     $subscriber = new subscriber($courseid);
     $data['trainingtype'] = $subscriber->trainingtype;
+    $data['isstudent'] = (new participant($courseid, $userid))->is_student();
 
     $logentryexp = new logentry_exporter($data, ['context' => $context]);
     $data = $logentryexp->export($renderer);

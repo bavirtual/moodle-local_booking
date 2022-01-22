@@ -542,20 +542,15 @@ table.logbook-easa td.border-less {
     border-bottom: 0px solid #FFFFFF;
     border-right: 0px solid #FFFFFF;
 }
-.logbook-easa-lg {
-    width: 200px;
+.logbook-check-pass {
+    color: green;
+    font-weight: bolder;
+    text-transform: uppercase;
 }
-.logbook-easa-bg {
-    width: 100px;
-}
-.logbook-easa-md {
-    width: 45px;
-}
-.logbook-easa-sm {
-    width: 35px;
-}
-.logbook-easa-xs {
-    width: 20px;
+.logbook-check-fail {
+    color: maroon;
+    font-weight: bolder;
+    text-transform: uppercase;
 }
 table.logbook-easa tbody {
     font-size: x-small;

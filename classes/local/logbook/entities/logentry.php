@@ -960,7 +960,8 @@ class logentry implements logentry_interface {
                     $this->$key = logbook::convert_time($value, 'TIME_TO_TS', $this->flightdate);
                     break;
                 default:
-                    $this->$key = $value;
+                    if (!is_null($value))
+                        $this->$key = $value;
                     break;
                 }
         }

@@ -1,6 +1,12 @@
 # Change log
 
-## [2022012200] - RELEASED 2022-01-22
+## [2022012201] - RELEASED 2022-01-22
+
+### Fixed
+
+- Ignore null values retrieved get_pireps
+
+## [2022012200] - UNRELEASED 2022-01-22
 
 ### Fixed
 

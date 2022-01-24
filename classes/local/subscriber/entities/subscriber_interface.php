@@ -37,20 +37,43 @@ interface subscriber_interface {
     public function get_id();
 
     /**
-     * Get all active students.
+     * Get the subscriber's course shortname.
+     *
+     * @return string $shortname
+     */
+    public function get_shortname();
+
+    /**
+     * Get an active participant.
+     *
+     * @param int $participantid A participant user id.
+     * @return participant       The participant object
+     */
+    public function get_active_participant(int $participantid);
+
+    /**
+     * Get an active student.
      *
      * @param int $studentid    A specific student for booking confirmation
-     * @return {Object}         Array of active students.
+     * @return student $student The active student object.
      */
-    public function get_active_student(int $studentid = 0);
+    public function get_active_student(int $studentid);
 
     /**
      * Get all active students.
      *
-     * @param bool $includeonhold   Whether to include on-hold students as well
-     * @return {Object}[]           Array of active students.
+     * @param bool $includeonhold    Whether to include on-hold students as well
+     * @return array $activestudents Array of active students.
      */
     public function get_active_students(bool $includeonhold = false);
+
+    /**
+     * Get an active instructor.
+     *
+     * @param int $instructorid An instructor user id.
+     * @return instructor       The instructor object
+     */
+    public function get_active_instructor(int $instructorid);
 
     /**
      * Get all active instructors for the course.

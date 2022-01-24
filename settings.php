@@ -57,12 +57,6 @@ if ($hassiteconfig) {
             5, PARAM_INT)
         );
 
-        // availability posting restriction to prevent posting before x amount of wait days had passed after student's last session
-        $settingspage->add(new admin_setting_configtext('local_booking/nextsessionwaitdays',
-            new lang_string('nextsessionwaitdays', 'local_booking'), new lang_string('nextsessionwaitdaysdesc', 'local_booking'),
-            12, PARAM_INT)
-        );
-
         // last session recency days weight multiplier
         $settingspage->add(new admin_setting_configtext('local_booking/recencydaysweight',
             new lang_string('recencydaysweight', 'local_booking'), new lang_string('recencydaysweightdesc', 'local_booking'),

@@ -79,10 +79,6 @@ define('LOCAL_BOOKING_LASTSLOT', 23);
  */
 define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);
 /**
- * LOCAL_BOOKING_DAYSFROMLASTSESSION - default value of the days allowed to mark since last session
- */
-define('LOCAL_BOOKING_DAYSFROMLASTSESSION', 12);
-/**
  * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades)
  */
 define('LOCAL_BOOKING_PASTDATACUTOFF', 730); // 365
@@ -102,26 +98,6 @@ define('LOCAL_BOOKING_INACTIVEGROUP', 'Inactive Instructors');
  * LOCAL_BOOKING_GRADUATESGROUP - constant string value for graduated students for group quering purposes
  */
 define('LOCAL_BOOKING_GRADUATESGROUP', 'Graduates');
-/**
- * LOCAL_BOOKING_ONHOLDWAITMULTIPLIER - constant for multiplying wait period (in days) for placing students on-hold: 3x wait period
- */
-define('LOCAL_BOOKING_ONHOLDWAITMULTIPLIER', 3);
-/**
- * LOCAL_BOOKING_SUSPENDWAITMULTIPLIER - constant for multiplying wait period (in days) for suspending inactive students: 9x wait period
- */
-define('LOCAL_BOOKING_SUSPENDWAITMULTIPLIER', 9);
-/**
- * LOCAL_BOOKING_SESSIONOVERDUEMULTIPLIER - constant for multiplying wait period (in days) for overdue sessions: 3x wait period
- */
-define('LOCAL_BOOKING_SESSIONOVERDUEMULTIPLIER', 2);
-/**
- * LOCAL_BOOKING_SESSIONLATEMULTIPLIER - constant for multiplying wait period (in days) for late sessions: 4x wait period
- */
-define('LOCAL_BOOKING_SESSIONLATEMULTIPLIER', 3);
-/**
- * LOCAL_BOOKING_INSTRUCTORINACTIVEMULTIPLIER - constant for multiplying wait period (in days) for late sessions: 3x wait period
- */
-define('LOCAL_BOOKING_INSTRUCTORINACTIVEMULTIPLIER', 2);
 /**
  * LOCAL_BOOKING_SLOTCOLOR - constant for standard slot color
  */
@@ -150,9 +126,13 @@ function local_booking_extend_navigation(global_navigation $navigation) {
 
     $courseid = $COURSE->id;
     $context = context_course::instance($courseid);
-    $course = new subscriber($courseid);
 
-    if (!empty($course->subscribed) && $course->subscribed) {
+    // define subscriber globally
+    if (empty($COURSE->subscriber))
+        $COURSE->subscriber = new subscriber($courseid);
+
+
+    if ($COURSE->subscriber->subscribed) {
         // Add student log book navigation node
         if (has_capability('local/booking:logbookview', $context)) {
             $node = $navigation->find('logbook', navigation_node::NODETYPE_LEAF);
@@ -183,7 +163,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
                     $params['view'] = 'all';
                     $nodename = get_string('availabilityinst', 'local_booking');
                 } else {
-                    $student = new student($courseid, $USER->id);
+                    $student = $COURSE->subscriber->get_active_student($USER->id);
                     $params['time'] = $student->get_next_allowed_session_date()->getTimestamp();
                     $params['action'] = 'post';
                     $nodename = get_string('availability', 'local_booking');
@@ -403,7 +383,7 @@ function get_booking_confirm_view($courseid, $studentid) {
  * @return  array[array, string]
  */
 function get_logbook_view($courseid, $userid, $templateformat) {
-    global $PAGE;
+    global $PAGE, $COURSE;
 
     $renderer = $PAGE->get_renderer('local_booking');
 
@@ -419,13 +399,14 @@ function get_logbook_view($courseid, $userid, $templateformat) {
     $template = 'local_booking/logbook_' . $templateformat;
 
     // get summary information (not requested by the webservice)
-    $pilot = new participant($courseid, $userid);
+    $pilot = $COURSE->subscriber->get_active_participant($userid);
     $logbook = $pilot->get_logbook(true, $templateformat == 'easa');
     $totals = (array) $logbook->get_summary(true);
     $data = [
         'courseid'      => $courseid,
         'userid'        => $userid,
         'username'      => $pilot->get_fullname($userid),
+        'courseshortname' => $PAGE->course->shortname,
         'logbook'       => $logbook,
         'isstudent'     => $pilot->is_student(),
         'easaformaturl' => $PAGE->url . '&format=easa',
@@ -449,10 +430,9 @@ function get_logbook_view($courseid, $userid, $templateformat) {
  * @return  array[array, string]     Exporter output
  */
 function get_logentry_view(int $courseid, int $userid, array $formdata = null) {
-    global $PAGE;
+    global $PAGE, $COURSE;
 
     $context = \context_course::instance($courseid);
-    $PAGE->set_context($context);
     $renderer = $PAGE->get_renderer('local_booking');
 
     if (!empty($formdata)) {
@@ -467,9 +447,9 @@ function get_logentry_view(int $courseid, int $userid, array $formdata = null) {
     }
 
     // add training type to the data sent to the exporter
-    $subscriber = new subscriber($courseid);
-    $data['trainingtype'] = $subscriber->trainingtype;
-    $data['isstudent'] = (new participant($courseid, $userid))->is_student();
+    $data['trainingtype'] = $COURSE->subscriber->trainingtype;
+    $data['isstudent'] = $COURSE->subscriber->get_active_participant($userid)->is_student();
+    $data['courseshortname'] = $PAGE->course->shortname;
 
     $logentryexp = new logentry_exporter($data, ['context' => $context]);
     $data = $logentryexp->export($renderer);

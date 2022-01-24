@@ -141,17 +141,17 @@ class week_exporter extends exporter {
             'time' => $calendar->time,
         ]);
         if ($this->calendar->course && SITEID !== $this->calendar->course->id) {
-            $this->url->param('course', $this->calendar->course->id);
+            $this->url->param('courseid', $this->calendar->course->id);
             $this->courseid = $this->calendar->course->id;
         } else if ($this->calendar->categoryid) {
-            $this->url->param('category', $this->calendar->categoryid);
+            $this->url->param('categoryid', $this->calendar->categoryid);
         }
 
         // identify the student to view the slots (single student view 'user' or 'all' students)
         if ($view == 'user') {
             if ($actiondata['action'] == 'book') {
                 // view the slot for the student id passed in action data
-                $this->studentid = $actiondata['studentid'];
+                $this->studentid = $actiondata['student']->get_id();
             } else {
                 $this->studentid = $USER->id;
             }
@@ -161,9 +161,9 @@ class week_exporter extends exporter {
 
         $data = [
             'url'         => $this->url->out(false),
-            'username'    => $this->actiondata['action'] == 'book' ? student::get_fullname($this->actiondata['studentid']) : '',
+            'username'    => $this->actiondata['action'] == 'book' ? $this->actiondata['student']->get_fullname($this->actiondata['student']->get_id()) : '',
             'action'      => $this->actiondata['action'],
-            'studentid'   => $this->actiondata['studentid'],
+            'studentid'   => $this->actiondata['student']->get_id(),
             'exerciseid'  => $this->actiondata['exerciseid'],
             'editing'     => $this->view == 'user' && $this->actiondata['action'] != 'book',    // Editing is not allowed if user id is passed for booking
             'groupview'   => $this->view == 'all',                                              // Group view no editing or booking buttons
@@ -301,10 +301,11 @@ class week_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
+        global $COURSE;
 
         // notify student if wait period restriction since last session is not up yet
         if ($this->actiondata['action'] != 'book' & $this->view == 'user') {
-            $student = new student($this->courseid, $this->studentid);
+            $student = $COURSE->subscriber->get_active_student($this->studentid);
             // show a notification if the user is on-hold
             if ($student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP)) {
                 \core\notification::ERROR(get_string('studentonhold', 'local_booking'));
@@ -385,6 +386,8 @@ class week_exporter extends exporter {
      * @return  $timeslots[]
      */
     protected function get_time_slots(renderer_base $output) {
+        global $COURSE;
+
         // Get daily slots from settings
         $firstsessionhour = (get_config('local_booking', 'firstsession')) ? substr(get_config('local_booking', 'firstsession'), 0, 2) : LOCAL_BOOKING_FIRSTSLOT;
         $lastsessionhour = (get_config('local_booking', 'lastsession')) ? substr(get_config('local_booking', 'lastsession'), 0, 2) : LOCAL_BOOKING_LASTSLOT;
@@ -395,21 +398,23 @@ class week_exporter extends exporter {
         $usertimezoneoffset = intval($usertz->getOffset($usertime)) / 3600;
 
         // get the lanes containing student(s) slots
-        $weeklanes = $this->get_week_slot_lanes();
+        $weeklanes = $this->get_week_slot_lanes($COURSE->subscriber);
+        $student = $this->studentid != 0 ? $COURSE->subscriber->get_active_student($this->studentid) : null;
+        $data = [
+            'student'   => $student,
+            'days'      => $this->days,
+            'maxlanes'  => $this->maxlanes,
+            'groupview' => $this->view == 'all',
+            'bookview'  => $this->actiondata['action'] == 'book'
+        ];
 
         $slots = [];
         for ($i = $firstsessionhour; $i <= $lastsessionhour; $i++) {
             $daydata = [];
             $daydata['timeslot'] = substr('00' . $i, -2) . ':00';
             $daydata['usertimeslot'] = substr('00' . ($i + $usertimezoneoffset) % 24, -2) . ':00';
-            $daydata['studentid'] = $this->actiondata['studentid'];
-            $daydata['courseid'] = $this->calendar->courseid;
             $daydata['hour'] = $i;
-            $daydata['days'] = $this->days;
-            $daydata['maxlanes'] = $this->maxlanes;
-            $daydata['groupview'] = $this->view == 'all';
-            $daydata['bookview'] = $this->actiondata['action'] == 'book';
-            $timeslot = new week_timeslot_exporter($this->calendar, $daydata, $weeklanes, $this->related);
+            $timeslot = new week_timeslot_exporter($this->calendar, $data, $daydata, $weeklanes, $this->related);
 
             $slots[] = $timeslot->export($output);
         }
@@ -423,7 +428,7 @@ class week_exporter extends exporter {
      *
      * @return array
      */
-    protected function get_week_slot_lanes() {
+    protected function get_week_slot_lanes(subscriber $course) {
         // show minimum lanes for all students view or 1 lane for user view
         $this->maxlanes = $this->view == 'all' ? LOCAL_BOOKING_MINLANES : 1;
         $weeklanes = [];
@@ -431,10 +436,9 @@ class week_exporter extends exporter {
 
         // check students that have slot(s) on each day
         if ($this->studentid != 0) {
-            $student = new student($this->courseid, $this->studentid);
+            $student = $course->get_active_student($this->studentid);
             $studentsslots[$this->studentid] = $student->get_slots($this->weekofyear, $this->GMTdate['year']);
         } else {
-            $course = new subscriber($this->courseid);
             // check students that have slot(s) on this day
             $students = $course->get_active_students();
             foreach ($students as $student) {
@@ -528,12 +532,12 @@ class week_exporter extends exporter {
         $periodlink->param('time', $newperioddate[0]);
         $periodlink->param('week', intval(strftime('%W', $newperioddate[0])));
         $periodlink->param('view', $this->view);
+        $periodlink->param('action', $this->actiondata['action']);
 
         // Pass the user and exercise ids for booking actions
         if ($this->actiondata['action'] == 'book') {
-            $periodlink->param('userid', $this->actiondata['studentid']);
+            $periodlink->param('userid', $this->actiondata['student']->get_id());
             $periodlink->param('exid', $this->actiondata['exerciseid']);
-            $periodlink->param('action', 'book');
         }
 
         return [$newperioddate, $periodlink];

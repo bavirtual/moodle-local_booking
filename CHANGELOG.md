@@ -1,5 +1,23 @@
 # Change log
 
+## [2022012400] - RELEASED 2022-01-24
+
+### Fixed
+
+- Save button status showing inactive in Availability posting by student after slot selection
+- Inability to enter a logbook entry without a PIREP
+
+### Added
+
+- Course short name prefix in logbook entry
+- Subscriber to global $COURSE
+
+### Changed
+
+- Restriction and instructor notifications from plugin settings to course custom fields
+- References to subscriber to map to $COURSE->subscriber
+- Prevent placing On-hold for students that completed lessons and have availability
+
 ## [2022012201] - RELEASED 2022-01-22
 
 ### Fixed

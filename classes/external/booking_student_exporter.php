@@ -45,11 +45,6 @@ use local_booking\local\participant\entities\student;
 class booking_student_exporter extends exporter {
 
     /**
-     * @var int $course An id of the current course.
-     */
-    protected $courseid;
-
-    /**
      * @var student $student The student.
      */
     protected $student;
@@ -65,10 +60,14 @@ class booking_student_exporter extends exporter {
      * @param mixed $data An array of student data.
      * @param array $related Related objects.
      */
-    public function __construct($data, $courseid, $related) {
-        $this->courseid = $courseid;
-        $this->student = new student($courseid, $data['studentid']);
+    public function __construct($data, $related) {
+        $this->student = $data['student'];
         $this->courseexercises = $related['courseexercises'];
+        $data['studentid'] = $this->student->get_id();
+        $data['studentname'] = $this->student->get_name();
+        $data['dayssincelast'] = $this->student->get_priority()->get_recency_days();
+        $data['recencytooltip'] = $this->student->get_priority()->get_recency_info();
+        $data['simulator'] = $this->student->get_simulator();
 
         parent::__construct($data, $related);
     }
@@ -252,7 +251,7 @@ class booking_student_exporter extends exporter {
         } else {
             $refexerciseid = $activebooking->get_exerciseid();
         }
-        $action = new action($actiontype, $this->courseid, $this->student->get_id(), $refexerciseid);
+        $action = new action($actiontype, $this->student->get_course()->get_id(), $this->student->get_id(), $refexerciseid);
 
         return $action;
     }

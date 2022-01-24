@@ -362,7 +362,7 @@ define([
     function postSlots(root, action, target, overridePost = false) {
         // Change marked state
         if (typeof target !== 'undefined' && (postActive || overridePost)) {
-            if (!target.is(SELECTORS.DAY_TIME_SLOT) && action !== 'all') {
+            if (!target.is(SELECTORS.DAY_TIME_SLOT) && action !== 'all' && action !== '') {
                 setSlot(target, root, action);
                 setSaveButtonState(root, action);
             }

@@ -29,7 +29,6 @@ namespace local_booking\external;
 defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
-use local_booking\local\participant\entities\instructor;
 use local_booking\local\subscriber\entities\subscriber;
 use renderer_base;
 use moodle_url;
@@ -92,6 +91,7 @@ class bookings_exporter extends exporter {
      * @param int   $studentid optional parameter for confirming a student booking.
      */
     public function __construct($data, $related, $studentid = 0) {
+        global $COURSE;
 
         $url = new moodle_url('/local/booking/view.php', [
                 'courseid' => $data['courseid'],
@@ -101,9 +101,8 @@ class bookings_exporter extends exporter {
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
         $this->viewtype = $data['view'];
-        $this->subscribedcourse = new subscriber($data['courseid']);
-        $this->exercises = $this->subscribedcourse->get_exercises();
-        $data['trainingtype'] = $this->subscribedcourse->trainingtype;
+        $this->exercises = $COURSE->subscriber->get_exercises();
+        $data['trainingtype'] = $COURSE->subscriber->trainingtype;
         if ($this->viewtype == 'confirm')
             $this->bookingstudentid = $studentid;
 
@@ -189,10 +188,11 @@ class bookings_exporter extends exporter {
      * @return array
      */
     protected function get_exercises($output) {
+        global $COURSE;
         // get titles from the course custom fields exercise titles array
         $exercisesexports = [];
 
-        $titlevalue = array_values($this->subscribedcourse->exercisetitles);
+        $titlevalue = array_values($COURSE->subscriber->exercisetitles);
         foreach($this->exercises as $exercise) {
             // break down each setting title by <br/> tag, until a better way is identified
             $customtitle = array_shift($titlevalue);
@@ -218,6 +218,7 @@ class bookings_exporter extends exporter {
      * @return  student_exporter[]
      */
     protected function get_students($output) {
+        global $COURSE;
         $activestudentsexports = [];
 
         // get all active students or student to be confirmed (session booking or booking confirmation)
@@ -229,9 +230,9 @@ class bookings_exporter extends exporter {
             } else {
                 set_user_preferences(array('local_booking_sorttype'=>$sorttype));
             }
-            $this->activestudents = $this->prioritize($this->subscribedcourse->get_active_students(), $sorttype);
+            $this->activestudents = $this->prioritize($COURSE->subscriber->get_active_students(), $sorttype);
         } elseif ($this->viewtype == 'confirm') {
-            $this->activestudents[] = $this->subscribedcourse->get_active_student($this->bookingstudentid);
+            $this->activestudents[] = $COURSE->subscriber->get_active_student($this->bookingstudentid);
         }
 
         $i = 0;
@@ -250,16 +251,12 @@ class bookings_exporter extends exporter {
             $data = [
                 'sequence'        => $i,
                 'sequencetooltip' => get_string('sequencetooltip', 'local_booking', $sequencetooltip),
-                'studentid'       => $student->get_id(),
-                'studentname'     => $student->get_name(),
-                'dayssincelast'   => $student->get_priority()->get_recency_days(),
-                'recencytooltip'  => $student->get_priority()->get_recency_info(),
+                'student'         => $student,
                 'overduewarning'  => $waringflag == self::OVERDUEWARNING,
                 'latewarning'     => $waringflag == self::LATEWARNING,
-                'simulator'       => $student->get_simulator(),
                 'view'            => $this->viewtype,
             ];
-            $studentexporter = new booking_student_exporter($data, $this->data['courseid'], [
+            $studentexporter = new booking_student_exporter($data, [
                 'context' => \context_system::instance(),
                 'courseexercises' => $this->exercises,
             ]);
@@ -343,12 +340,12 @@ class bookings_exporter extends exporter {
      * @return  mybooking_exporter[]
      */
     protected function get_bookings($output) {
-        global $USER;
+        global $USER, $COURSE;
         $bookingexports = [];
 
         // get active bookings if the view is session booking
         if ($this->viewtype == 'sessions') {
-            $instructor = new instructor($this->data['courseid'], $USER->id);
+            $instructor = $COURSE->subscriber->get_active_instructor($USER->id);
             $bookings = $instructor->get_bookings(false, true, true);
             foreach ($bookings as $booking) {
                 $bookingexport = new booking_mybookings_exporter(['booking'=>$booking], $this->related);
@@ -369,13 +366,19 @@ class bookings_exporter extends exporter {
      * @return  int $flag       The delay flag
      */
     protected function get_warning($dayssincelast) {
+        global $COURSE;
         $warning = 0;
-        $waitdays = get_config('local_booking', 'nextsessionwaitdays') ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
+        $waitdays = intval($COURSE->subscriber->postingwait);
+        $onholdperiod = intval($COURSE->subscriber->onholdperiod);
 
-        if ($dayssincelast >= ($waitdays * LOCAL_BOOKING_SESSIONOVERDUEMULTIPLIER) &&  $dayssincelast < ($waitdays * LOCAL_BOOKING_SESSIONLATEMULTIPLIER)) {
-            $warning = self::OVERDUEWARNING;
-        } else if ($dayssincelast >= ($waitdays * LOCAL_BOOKING_SESSIONLATEMULTIPLIER)) {
-            $warning = self::LATEWARNING;
+        // Color code amber and red for inactivity one week after waitperiod
+        // since last session (amber) and one week before on-hold date (red)
+        if ($waitdays > 0 && $onholdperiod > 0) {
+            if (($dayssincelast > ($waitdays + 7)) &&  $dayssincelast < ($onholdperiod - 7)) {
+                $warning = self::OVERDUEWARNING;
+            } else if ($dayssincelast >= ($onholdperiod - 7)) {
+                $warning = self::LATEWARNING;
+            }
         }
 
         return $warning;

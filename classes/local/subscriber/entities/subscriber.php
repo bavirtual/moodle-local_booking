@@ -31,6 +31,7 @@ require_once($CFG->dirroot . '/group/lib.php');
 use local_booking\local\subscriber\data_access\subscriber_vault;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\participant\entities\instructor;
+use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 
 defined('MOODLE_INTERNAL') || die();
@@ -49,12 +50,29 @@ class subscriber implements subscriber_interface {
     protected $courseid;
 
     /**
+     * @var string $shortname The subscribed course shortname.
+     */
+    protected $shortname;
+
+    /**
+     * @var array $activestudents An array of course active students.
+     */
+    protected $activestudents;
+
+    /**
+     * @var array $activeinstructorss An array of course active instructors.
+     */
+    protected $activeinstructors;
+
+    /**
      * Constructor.
      *
      * @param string $courseid  The description's value.
      */
     public function __construct($courseid) {
+        global $COURSE;
         $this->courseid = $courseid;
+        $this->shortname = $COURSE->shortname;
 
         // define course custom fields globally
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
@@ -104,20 +122,44 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Get all active students.
+     * Get the subscriber's course shortname.
      *
-     * @param bool $includeonhold   Whether to include on-hold students as well
-     * @param int $studentid        A specific student for booking confirmation
-     * @return {Object}[]           Array of active students.
+     * @return string $shortname
      */
-    public function get_active_student(int $studentid = 0) {
-        $studentrec = participant_vault::get_active_student($this->courseid, $studentid);
-        $colors = (array) get_booking_config('colors', true);
+    public function get_shortname() {
+        return $this->shortname;
+    }
 
-        // add a color for the student slots from the config.json file for each student
-        $student = new student($this->courseid, $studentrec->userid);
-        $student->populate($studentrec);
-        $student->set_slot_color(count($colors) > 0 ? array_values($colors)[1 % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
+    /**
+     * Get an active participant.
+     *
+     * @param int $participantid A participant user id.
+     * @return participant       The participant object
+     */
+    public function get_active_participant($participantid) {
+        // instantiate the participant object
+        return new participant($this, $participantid);
+    }
+
+    /**
+     * Get an active student.
+     *
+     * @param int $studentid    A specific student for booking confirmation
+     * @return student $student The active student object.
+     */
+    public function get_active_student(int $studentid) {
+        $student = (!empty($this->activestudents) && !empty($studentid) && array_key_exists($studentid, $this->activestudents)) ? $this->activestudents[$studentid] : null;
+
+        if (empty($student)) {
+            $studentrec = participant_vault::get_active_student($this->courseid, $studentid);
+            $colors = (array) get_booking_config('colors', true);
+
+            // add a color for the student slots from the config.json file for each student
+            $student = new student($this, $studentrec->userid);
+            $student->populate($studentrec);
+            $student->set_slot_color(count($colors) > 0 ? array_values($colors)[1 % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
+            $this->activestudents[$studentid] = $student;
+        }
 
         return $student;
     }
@@ -125,9 +167,8 @@ class subscriber implements subscriber_interface {
     /**
      * Get all active students.
      *
-     * @param bool $includeonhold   Whether to include on-hold students as well
-     * @param int $studentid        A specific student for booking confirmation
-     * @return {Object}[]           Array of active students.
+     * @param bool $includeonhold    Whether to include on-hold students as well
+     * @return array $activestudents Array of active students.
      */
     public function get_active_students(bool $includeonhold = false) {
         $activestudents = [];
@@ -137,14 +178,33 @@ class subscriber implements subscriber_interface {
         // add a color for the student slots from the config.json file for each student
         $i = 0;
         foreach ($studentrecs as $studentrec) {
-            $student = new student($this->courseid, $studentrec->userid);
+            $student = new student($this, $studentrec->userid);
             $student->populate($studentrec);
             $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
             $activestudents[] = $student;
             $i++;
         }
+        $this->activestudents = $activestudents;
 
-        return $activestudents;
+        return $this->activestudents;
+    }
+
+    /**
+     * Get an active instructor.
+     *
+     * @param int $instructorid An instructor user id.
+     * @return instructor       The instructor object
+     */
+    public function get_active_instructor(int $instructorid) {
+        $instructor = (!empty($this->activeinstructors) && !empty($instructorid) && array_key_exists($instructorid, $this->activeinstructors)) ? $this->activeinstructors[$instructorid] : null;
+
+        if (empty($instructor)) {
+            // instantiate the instructor object and add to the list of activeinstructors
+            $instructor = new instructor($this, $instructorid);
+            $this->activeinstructors[$instructorid] = $instructor;
+        }
+
+        return $instructor;
     }
 
     /**
@@ -158,12 +218,13 @@ class subscriber implements subscriber_interface {
         $instructorrecs = participant_vault::get_active_instructors($this->courseid, $courseadmins);
 
         foreach ($instructorrecs as $instructorrec) {
-            $instructor = new instructor($this->courseid, $instructorrec->userid);
+            $instructor = new instructor($this, $instructorrec->userid);
             $instructor->populate($instructorrec);
             $activeinstructors[] = $instructor;
         }
+        $this->activeinstructors = $activeinstructors;
 
-        return $activeinstructors;
+        return $this->activeinstructors;
     }
 
     /**

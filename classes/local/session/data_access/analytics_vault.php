@@ -26,8 +26,8 @@
 namespace local_booking\local\session\data_access;
 
 use DateTime;
-use local_booking\local\participant\entities\student;
 use local_booking\local\slot\data_access\slot_vault;
+use local_booking\local\subscriber\entities\subscriber;
 
 class analytics_vault implements analytics_vault_interface {
 
@@ -56,6 +56,8 @@ class analytics_vault implements analytics_vault_interface {
      * @return array            The number of days since last session and recency source information
      */
     public static function get_session_recency(int $courseid, int $studentid) {
+        global $COURSE;
+
         list($lastsession, $beforelastsession) = slot_vault::get_last_booked_slot($courseid, $studentid);
         $today = new DateTime('@' . time());
         $info = [];
@@ -70,7 +72,7 @@ class analytics_vault implements analytics_vault_interface {
             $lastsessiondate = new DateTime('@' . $lastsession);
             $info['source'] = 'booking';
         } else {
-            $student = new student($courseid, $studentid);
+            $student = $COURSE->subscriber->get_active_student($studentid);
             $lastgraded = $student->get_last_graded_date();
             $lastsessiondate = $lastgraded ?: $student->get_enrol_date($studentid);
             $info['source'] = empty($lastgraded) ? 'enrol' : 'grade';

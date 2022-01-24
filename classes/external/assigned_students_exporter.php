@@ -124,10 +124,10 @@ class assigned_students_exporter extends exporter {
      * @return  assigned_student_exporter[]
      */
     protected function get_assigned_students($output) {
-        global $USER;
+        global $USER, $COURSE;
         $assignedstudents = [];
 
-        $instructor = new instructor($this->data['courseid'], $USER->id);
+        $instructor = $COURSE->subscriber->get_active_instructor($USER->id);
         $students = $instructor->get_assigned_students();
         foreach ($students as $student) {
             list($nextexercise, $exercisesection) = $student->get_next_exercise();

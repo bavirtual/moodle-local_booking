@@ -86,7 +86,7 @@ interface logbook_vault_interface {
     /**
      * Insert/Update then link two logentries.
      *
-     * @param int $$courseid
+     * @param int $courseid
      * @param logentry $logentry1
      * @param logentry $logentry2
      * @return bool

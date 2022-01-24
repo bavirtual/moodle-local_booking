@@ -95,9 +95,9 @@ class instructor_participation_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
+        global $COURSE;
         $courseid = $this->data['courseid'];
-        $course = new subscriber($courseid);
-        $instructors = $course->get_active_instructors();
+        $instructors = $COURSE->subscriber->get_active_instructors();
         $today = new DateTime('@'.time());
 
         $participation = [];

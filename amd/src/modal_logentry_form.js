@@ -565,7 +565,8 @@ define([
         var flighttime = $('#id_pictime').val();
         var flighttype = $("input[name='flighttype']:checked").val(),
             passfail = $("input[name='passfail']:checked").val(),
-            editmode = this.getLogentryId() != 0;
+            editmode = this.getLogentryId() != 0,
+            nopirep = $('#id_p1pirep').val() == '';
 
         // Toggle the display of elements depending on flight type
         var toggle = function(div, element, show, value) {
@@ -574,14 +575,16 @@ define([
             } else {
                 $(div).slideUp('fast');
             }
+            // Process the passed value
             if (typeof value !== 'undefined') {
                 reset(element, show, value);
             }
         };
 
-        // Reset the value of the elements depending display
+        // Set the value of the element depending display
         var reset = function(element, show, value) {
-            if (show) {
+            // Set the element value if not manual PIREP entry
+            if (show && !nopirep) {
                 if ((!$(element).val() || !$(element).val() == 0) && !editmode) {
                     $(element).val('');
                 }
@@ -606,16 +609,18 @@ define([
             toggle('#fitem_id_dualtime', '#id_dualtime', rule == 'Dual' && (!editmode ||
                 (editmode && $('#id_dualtime').val() != '')), rule == 'Dual' ? flighttime : 0);
 
-            // Toggle PIC time in new and edit instructor
-            toggle('#fitem_id_pictime', '#id_pictime', (!editmode || (editmode &&
-                $('#id_pictime').val() != '')), editmode || flighttype == 'check' ? 0 : flighttime);
+            // Toggle PIC time in new and edit instructor unless if it's manual entry (no PIREP)
+            if (nopirep) {
+                toggle('#fitem_id_pictime', '#id_pictime', (!editmode || (editmode &&
+                    $('#id_pictime').val() != '')), editmode || flighttype == 'check' ? 0 : flighttime);
+            }
 
             // Toggle instructor time in new and edit instructor
             toggle('#fitem_id_instructortime', '#id_instructortime', ((!editmode && flighttype != 'check') || (editmode &&
                 $('#id_instructortime').val() != '')), editmode || flighttype == 'check' ? 0 : flighttime);
 
             // Toggle ground time for training flight types only
-            toggle('#fitem_id_groundtime', '#id_groundtime', flighttype == 'training', 0);
+            toggle('#fitem_id_groundtime', '#id_groundtime', flighttype == 'training', (nopirep ? $('#id_groundtime').val() : 0));
 
             // Toggle for multicrew flights and default the value for multicrew flights
             toggle('#fitem_id_multipilottime', '#id_multipilottime', rule == 'Multicrew', rule == 'Multicrew' ? flighttime : 0);

@@ -28,10 +28,10 @@ namespace local_booking\local\participant\entities;
 use DateTime;
 use moodle_exception;
 use local_booking\local\session\entities\priority;
-use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\booking;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\slot\entities\slot;
+use local_booking\local\subscriber\entities\subscriber;
 
 class student extends participant {
 
@@ -88,11 +88,11 @@ class student extends participant {
     /**
      * Constructor.
      *
-     * @param int $courseid The course id.
-     * @param int $studentid The student id.
+     * @param subscriber $course The subscribing course the student is enrolled in.
+     * @param int $studentid     The student id.
      */
-    public function __construct(int $courseid, int $studentid, string $studentname = '', int $enroldate = 0) {
-        parent::__construct($courseid, $studentid);
+    public function __construct(subscriber $course, int $studentid, string $studentname = '', int $enroldate = 0) {
+        parent::__construct($course, $studentid);
         $this->username = $studentname;
         $this->enroldate = $enroldate;
         $this->slotcolor = self::SLOT_COLOR;
@@ -116,13 +116,13 @@ class student extends participant {
         $transaction = $DB->start_delegated_transaction();
 
         // remove all week/year slots for the user to avoid updates
-        $result = slot_vault::delete_slots($this->courseid, $year, $week, $this->userid);
+        $result = slot_vault::delete_slots($this->course->get_id(), $year, $week, $this->userid);
 
         if ($result) {
             foreach ($slots as $slot) {
                 $newslot = new slot(0,
                     $this->userid,
-                    $this->courseid,
+                    $this->course->get_id(),
                     $slot['starttime'],
                     $slot['endtime'],
                     $year,
@@ -159,7 +159,7 @@ class student extends participant {
         $transaction = $DB->start_delegated_transaction();
 
         // remove all week/year slots for the user to avoid updates
-        $result = slot_vault::delete_slots($this->courseid, $this->userid, $year, $week);
+        $result = slot_vault::delete_slots($this->course->get_id(), $this->userid, $year, $week);
         if ($result) {
             $transaction->allow_commit();
         } else {
@@ -178,8 +178,8 @@ class student extends participant {
     public function get_grades() {
         if (empty($this->grades)) {
             // join both graded assignments and attempted quizes into one grades array
-            $assignments = $this->vault->get_student_assignment_grades($this->courseid, $this->userid);
-            $quizes = $this->vault->get_student_quizes_grades($this->courseid, $this->userid);
+            $assignments = $this->vault->get_student_assignment_grades($this->course->get_id(), $this->userid);
+            $quizes = $this->vault->get_student_quizes_grades($this->course->get_id(), $this->userid);
             $this->grades = $assignments + $quizes;
         }
 
@@ -244,18 +244,19 @@ class student extends participant {
      * @return  DateTime
      */
     public function get_next_allowed_session_date() {
+
         if (empty($this->restrictiondate)) {
             // get wait time restriction waiver if exists
             $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $this->userid);
             $sessiondate = new DateTime('@' . time());
 
-            if (!$hasrestrictionwaiver) {
-                $daysfromlast = (get_config('local_booking', 'nextsessionwaitdays')) ? get_config('local_booking', 'nextsessionwaitdays') : LOCAL_BOOKING_DAYSFROMLASTSESSION;
+            // process restriction if posting wait restriction is enabled for this course or the student doesn't have a waiver
+            if ($this->course->postingwait > 0 || !$hasrestrictionwaiver) {
 
-                $lastsession = slot::get_last_booking($this->courseid, $this->userid);
+                $lastsession = slot::get_last_booking($this->course->get_id(), $this->userid);
                 $sessiondatets = $lastsession ?: time();
                 $sessiondate = new DateTime('@' . $sessiondatets);
-                date_add($sessiondate, date_interval_create_from_date_string($daysfromlast . ' days'));
+                date_add($sessiondate, date_interval_create_from_date_string($this->course->postingwait . ' days'));
 
                 // advance by one day if it is Sunday to avoid showing a restricted week
                 if ((getdate($sessiondate->getTimestamp()))['wday'] == 0) {
@@ -281,7 +282,7 @@ class student extends participant {
      */
     public function get_active_booking() {
         if (empty($this->activebooking)) {
-            $booking = new booking(0, $this->courseid, $this->userid);
+            $booking = new booking(0, $this->course->get_id(), $this->userid);
             if ($booking->load())
                 $this->activebooking = $booking;
         }
@@ -296,7 +297,7 @@ class student extends participant {
      */
     public function get_next_exercise() {
         if (empty($this->next_exercise)) {
-            $this->next_exercise = $this->vault->get_next_student_exercise($this->courseid, $this->userid);
+            $this->next_exercise = $this->vault->get_next_student_exercise($this->course->get_id(), $this->userid);
         }
         return $this->next_exercise;
     }
@@ -308,7 +309,7 @@ class student extends participant {
      */
     public function get_priority() {
         if (empty($this->priority)) {
-            $this->priority = new priority($this->courseid, $this->userid);
+            $this->priority = new priority($this->course->get_id(), $this->userid);
         }
         return $this->priority;
     }
@@ -320,8 +321,16 @@ class student extends participant {
      */
     public function get_total_posts() {
         if (empty($this->total_posts))
-            $this->total_posts = slot_vault::get_slot_count($this->courseid, $this->userid);
+            $this->total_posts = slot_vault::get_slot_count($this->course->get_id(), $this->userid);
         return $this->total_posts;
+    }
+
+    /**
+     * Get the date timestamp of the last booked slot
+     *
+     */
+    public function get_last_booking() {
+        return slot::get_last_booking($this->course->get_id(), $this->userid);
     }
 
     /**
@@ -354,6 +363,6 @@ class student extends participant {
         if (empty($this->nextexercise))
             $this->nextexercise = $this->get_next_exercise();
         list($exerciseid, $section) = $this->nextexercise;
-        return !empty($this->nextexercise) ? $this->vault->get_student_lessons_complete($this->userid, $this->courseid, $section) : false;
+        return !empty($this->nextexercise) ? $this->vault->get_student_lessons_complete($this->userid, $this->course->get_id(), $section) : false;
     }
 }

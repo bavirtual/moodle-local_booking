@@ -37,11 +37,11 @@ interface participant_interface {
     public function get_id();
 
     /**
-     * Get course id.
+     * Get participant's subscribed course.
      *
-     * @return int $courseid
+     * @return subscriber $course
      */
-    public function get_courseid();
+    public function get_course();
 
     /**
      * Get fullname.

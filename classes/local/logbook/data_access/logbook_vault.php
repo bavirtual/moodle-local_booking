@@ -164,7 +164,7 @@ class logbook_vault implements logbook_vault_interface {
     /**
      * Insert/Update then link two logentries.
      *
-     * @param int $$courseid
+     * @param int courseid
      * @param logentry $logentry1
      * @param logentry $logentry2
      * @return bool
@@ -180,7 +180,7 @@ class logbook_vault implements logbook_vault_interface {
         if (!empty($logentry1->get_id()) && !empty($logentry2->get_id())) {
             $result = ($logentry1id = self::update_logentry($courseid, $logentry1->get_userid(), $logentry1));
             $logentry1->set_id($logentry1id);
-            if ($$result) {
+            if ($result) {
                 $logentry2->set_linkedlogentryid($logentry1id);
                 $result = ($logentry2id = self::update_logentry($courseid, $logentry2->get_userid(), $logentry2));
                 $logentry2->set_id($logentry2id);
@@ -215,7 +215,7 @@ class logbook_vault implements logbook_vault_interface {
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
-     * @return array    $totaldualtime, $totalgroundtime, $totalpictime
+     * @return object    $totaldualtime, $totalgroundtime, $totalpictime
      */
     public static function get_logbook_summary(int $courseid, int $userid) {
         global $DB;

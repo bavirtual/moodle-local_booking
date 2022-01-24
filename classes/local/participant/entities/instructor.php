@@ -25,16 +25,18 @@
 
 namespace local_booking\local\participant\entities;
 
+use local_booking\local\subscriber\entities\subscriber;
+
 class instructor extends participant {
 
     /**
      * Constructor.
      *
-     * @param int $courseid The course id.
+     * @param subscriber $course The subscribing course the student is enrolled in.
      * @param int $instructorid The instructor id.
      */
-    public function __construct(int $courseid, int $instructorid) {
-        parent::__construct($courseid, $instructorid);
+    public function __construct(subscriber $course, int $instructorid) {
+        parent::__construct($course, $instructorid);
         $this->is_student = false;
     }
 
@@ -45,10 +47,9 @@ class instructor extends participant {
      */
     public function get_assigned_students() {
         $assignedstudents = [];
-        $studentrecs = $this->vault->get_assigned_students($this->courseid, $this->userid);
+        $studentrecs = $this->vault->get_assigned_students($this->course->get_id(), $this->userid);
         foreach ($studentrecs as $studentrec) {
-            $student = new student($this->courseid, $studentrec->userid);
-            $student->populate($studentrec);
+            $student = $this->course->get_active_student($studentrec->userid);
             $assignedstudents[$student->userid] = $student;
         }
         return $assignedstudents;

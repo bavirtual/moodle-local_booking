@@ -30,6 +30,7 @@ use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\booking;
 use local_booking\local\logbook\entities\logbook;
+use local_booking\local\subscriber\entities\subscriber;
 
 require_once($CFG->dirroot . "/lib/completionlib.php");
 
@@ -41,9 +42,9 @@ class participant implements participant_interface {
     protected $vault;
 
     /**
-     * @var int $courseid The participant enrolment course id.
+     * @var subscriber $course The participant enrolment course id.
      */
-    protected $courseid;
+    protected $course;
 
     /**
      * @var int $userid The participant user id.
@@ -93,15 +94,16 @@ class participant implements participant_interface {
     /**
      * Constructor.
      *
-     * @param int $courseid The course id.
+     * @param subscriber $course The subscribing course the participant is enrolled in.
      * @param int $userid The user id.
      */
-    public function __construct(int $courseid, int $userid) {
+    public function __construct(subscriber $course, int $userid) {
         $this->vault = new participant_vault();
-        $this->courseid = $courseid;
+        $this->course = $course;
         $this->userid = $userid;
-        $context = \context_course::instance($courseid);
-        $this->is_student = count(get_user_roles($context, $userid)) > 0 && current(get_user_roles($context, $userid))->shortname == 'student' ? true : false;
+        $context = \context_course::instance($course->get_id());
+        if ($userid != 0)
+            $this->is_student = count(get_user_roles($context, $userid)) > 0 && current(get_user_roles($context, $userid))->shortname == 'student' ? true : false;
     }
 
     /**
@@ -114,12 +116,21 @@ class participant implements participant_interface {
     }
 
     /**
+     * Get participant's subscribed course.
+     *
+     * @return subscriber $course
+     */
+    public function get_course() {
+        return $this->course;
+    }
+
+    /**
      * Get course id.
      *
-     * @return int $courseid
+     * @return int $course->id
      */
     public function get_courseid() {
-        return $this->courseid;
+        return $this->course->get_id();
     }
 
     /**
@@ -143,7 +154,7 @@ class participant implements participant_interface {
 
         if (empty($this->bookings)) {
             $bookings = [];
-            $bookingobjs = booking_vault::get_bookings($this->courseid, $this->userid, $isstudent, $oldestfirst, $activeonly);
+            $bookingobjs = booking_vault::get_bookings($this->course->get_id(), $this->userid, $isstudent, $oldestfirst, $activeonly);
             foreach ($bookingobjs as $bookingobj) {
                 $booking = new booking();
                 $booking->load($bookingobj);
@@ -164,7 +175,7 @@ class participant implements participant_interface {
      */
     public function get_logbook(bool $loadentries = false, bool $allentries = false) {
         if (empty($this->logbook)) {
-            $logbook = new logbook($this->courseid, $this->userid);
+            $logbook = new logbook($this->course->get_id(), $this->userid);
             if ($loadentries)
                 $logbook->load($allentries);
             $this->logbook = $logbook;
@@ -178,7 +189,7 @@ class participant implements participant_interface {
      * @return DateTime $enroldate  The enrolment date of the participant.
      */
     public function get_enrol_date() {
-        $enrol = $this->enroldate ?: ($this->vault->get_enrol_date($this->courseid, $this->userid))->timecreated;
+        $enrol = $this->enroldate ?: ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->timecreated;
         $enrolmentdate = new DateTime('@' . $enrol);
         return $enrolmentdate;
     }
@@ -200,7 +211,7 @@ class participant implements participant_interface {
      * @return  DateTime    The timestamp of the last grading
      */
     public function get_last_graded_date() {
-        $lastgraded = $this->vault->get_last_graded_date($this->userid, $this->courseid, $this->is_student);
+        $lastgraded = $this->vault->get_last_graded_date($this->userid, $this->course->get_id(), $this->is_student);
 
         $lastgradeddate = !empty($lastgraded) ? new DateTime('@' . $lastgraded->timemodified) : null;
 
@@ -215,6 +226,8 @@ class participant implements participant_interface {
      * @return string   $fullusername The full participant username
      */
     public static function get_fullname(int $participantid, bool $alternate = true) {
+        // $this->$fullname ?: participant_vault::get_participant_name($participantid, $alternate);
+        // return $this->$fullname;
         return participant_vault::get_participant_name($participantid, $alternate);
     }
 
@@ -224,7 +237,7 @@ class participant implements participant_interface {
      * @return string   The participant callsign
      */
     public function get_simulator() {
-        $this->simulator = $this->simulator ?: participant_vault::get_customfield_data($this->courseid, $this->userid, 'simulator');
+        $this->simulator = $this->simulator ?: participant_vault::get_customfield_data($this->course->get_id(), $this->userid, 'simulator');
         return $this->simulator;
     }
 
@@ -234,7 +247,7 @@ class participant implements participant_interface {
      * @return string   The participant callsign
      */
     public function get_callsign() {
-        $this->callsign = empty($this->callsign) ? participant_vault::get_customfield_data($this->courseid, $this->userid, 'callsign') : $this->callsign;
+        $this->callsign = empty($this->callsign) ? participant_vault::get_customfield_data($this->course->get_id(), $this->userid, 'callsign') : $this->callsign;
         return $this->callsign;
     }
 
@@ -253,7 +266,7 @@ class participant implements participant_interface {
      * @return bool The result of the suspension action.
      */
     public function suspend() {
-        return $this->vault->suspend($this->courseid, $this->userid);
+        return $this->vault->suspend($this->course->get_id(), $this->userid);
     }
 
     /**
@@ -262,8 +275,6 @@ class participant implements participant_interface {
      * @param string   The participant callsign
      */
     public function populate($record) {
-        $this->courseid = $record->courseid;
-        $this->userid = $record->userid;
         $this->fullname = $record->fullname;
         $this->enroldate = $record->enroldate;
         $this->lastlogin = $record->lastlogin;
@@ -277,7 +288,7 @@ class participant implements participant_interface {
      * @return bool             The result of the being a member of the passed group.
      */
     public function is_member_of(string $groupname) {
-        $groupid = groups_get_group_by_name($this->courseid, $groupname);
+        $groupid = groups_get_group_by_name($this->course->get_id(), $groupname);
         return groups_is_member($groupid, $this->userid);
     }
 

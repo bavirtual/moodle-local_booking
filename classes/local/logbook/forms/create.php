@@ -51,14 +51,11 @@ class create extends \moodleform {
      * The form definition
      */
     public function definition() {
-        global $PAGE;
+        global $PAGE, $COURSE;
 
         $mform = $this->_form;
         $logentry = isset($this->_customdata['logentry']) ? $this->_customdata['logentry'] : null;
         $courseid = isset($this->_customdata['courseid']) ? $this->_customdata['courseid'] : null;
-
-        // get subscribing course info
-        $subscriber = new subscriber($courseid);
 
         $mform->setDisableShortforms();
         $mform->disable_form_change_checker();
@@ -66,8 +63,8 @@ class create extends \moodleform {
         // Empty string so that the element doesn't get rendered.
         $mform->addElement('header', 'general', '');
 
-        $this->add_default_hidden_elements($mform, $subscriber->trainingtype);
-        $this->add_elements($mform, $subscriber, $logentry);
+        $this->add_default_hidden_elements($mform, $COURSE->subscriber->trainingtype);
+        $this->add_elements($mform, $COURSE->subscriber, $logentry);
 
         // Add the javascript required to enhance this mform.
         $PAGE->requires->js_call_amd('local_booking/modal_logentry_form');
@@ -168,9 +165,9 @@ class create extends \moodleform {
             $this->add_element($mform, 'landingsp2', null, false);
 
         // add remaining elements
-        $this->add_element($mform, 'callsign', array($this->get_pilot_info('callsign', $subscriber->get_id(), $p1id)), false);
+        $this->add_element($mform, 'callsign', array($this->get_pilot_info('callsign', $subscriber->get_active_participant($p1id))), false);
         $this->add_element($mform, 'remarks', null, false);
-        $this->add_element($mform, 'fstd', array($this->get_pilot_info('simulator', $subscriber->get_id(), $p2id)), false);
+        $this->add_element($mform, 'fstd', array($this->get_pilot_info('simulator', $subscriber->get_active_participant($p2id))), false);
     }
 
     /**
@@ -489,13 +486,11 @@ class create extends \moodleform {
      * Get pilot information depending on the profile
      * information requested.
      *
-     * @param string  $infotype The type of pilot information
-     * @param int     $courseid The course id
-     * @param int     $userid   The pilot id
-     * @return string $callsign The instructor's callsign
+     * @param string      $infotype The type of pilot information
+     * @param participant $pilot    The pilot user
+     * @return string    $callsign The instructor's callsign
      */
-    protected function get_pilot_info($infotype, $courseid, $userid) {
-        $pilot = new participant($courseid, $userid);
+    protected function get_pilot_info($infotype, $pilot) {
         $info = '';
 
         switch ($infotype) {

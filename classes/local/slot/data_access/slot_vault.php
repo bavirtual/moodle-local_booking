@@ -54,7 +54,6 @@ class slot_vault implements slot_vault_interface {
     public static function get_slots($studentid, $week = 0, $year = 0) {
         global $DB;
 
-
         $condition = [
             'userid' => $studentid,
             'week'   => $week,

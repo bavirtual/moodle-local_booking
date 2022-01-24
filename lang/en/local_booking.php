@@ -63,12 +63,12 @@ $string['grade'] = 'Grade';
 $string['incompletelessontooltip'] = 'The student has not completed ground lesson';
 $string['instructors'] = 'Instructors';
 $string['lastsessiondate'] = 'Last VFC Flight/Lesson';
-$string['participation'] = 'Instructor participation';
-$string['pluginname'] = 'Session Booking';
-$string['progression'] = 'Students Progression';
 $string['mystudents'] = 'My assigned students';
 $string['nextlesson'] = 'Next Lesson';
 $string['nobookingtoconfirm'] = 'You have no booking to confirm.';
+$string['participation'] = 'Instructor participation';
+$string['pluginname'] = 'Session Booking';
+$string['progression'] = 'Students Progression';
 $string['role'] = 'Role';
 $string['sequencetooltip'] = 'Score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
 <br/>Availability: {$a->slots} posts<br/>Completion: {$a->completion} lessons';
@@ -412,8 +412,16 @@ $string['useplugin'] = 'Use Session Booking';
 $string['homeicao'] = 'Home airport ICAO';
 $string['exercisetitles'] = 'Course exercise titles:';
 $string['exercisetitlesdesc'] = 'Use to improve the display of long exercise titles on the instructors dashboard page (one title per line, use &lt;br/&gt; tag to break a title)';
+$string['overdueperiod'] = 'Instructor session overdue notification';
+$string['overdueperioddesc'] = 'A period in days after which inactive instructors will be automatically sent a notification (0 = disable restriction)';
+$string['onholdperiod'] = 'On-hold restriction';
+$string['onholdperioddesc'] = 'A restriction period in days after which inactive students will be automatically placed on-hold (0 = disable restriction)';
+$string['postingwait'] = 'Posting wait restriction';
+$string['postingwaitdesc'] = 'A restriction period in days between the last conducted session and the next time a student can post availability (0 = disable restriction)';
 $string['trainingaircraft'] = 'Training Aircraft ICAO';
 $string['trainingaircraftdesc'] = '(one per line)';
+$string['suspensionperiod'] = 'Suspension restriction';
+$string['suspensionperioddesc'] = 'A restriction period in days after which inactive students will be automatically suspended from the course (0 = disable restriction)';
 
 // APIs
 $string['googleaccesstokenerror'] = 'Error: Failed to receieve Google access token';

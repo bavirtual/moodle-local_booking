@@ -298,13 +298,13 @@ class logentry_exporter extends exporter {
         if (!empty($this->logentry)) {
             switch ($this->logentry->get_flighttype()) {
                 case 'training':
-                    $trainingflight = get_string('flighttraining', 'local_booking');
+                    $trainingflight = $this->data['courseshortname'] . ' ' . get_string('flighttraining', 'local_booking');
                     break;
                 case 'solo':
-                    $trainingflight = get_string('flightsolo', 'local_booking');
+                    $trainingflight = $this->data['courseshortname'] . ' ' . get_string('flightsolo', 'local_booking');
                     break;
                 case 'check':
-                    $trainingflight = $dualops ? get_string('flightcheckride', 'local_booking') : get_string('flightlinecheck', 'local_booking');
+                    $trainingflight = $this->data['courseshortname'] . ' ' . ($dualops ? get_string('flightcheckride', 'local_booking') : get_string('flightlinecheck', 'local_booking'));
                     $passed = !empty($this->logentry) ? !empty($this->logentry->get_picustime()) || !empty($this->logentry->get_checkpilottime()) : false;
                     break;
             }

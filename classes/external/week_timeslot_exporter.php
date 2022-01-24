@@ -49,14 +49,9 @@ class week_timeslot_exporter extends exporter {
     protected $calendar;
 
     /**
-     * @var int $courseid - The course id of in context.
+     * @var student $student - The student id for the view.
      */
-    protected $courseid;
-
-    /**
-     * @var int $studentid - The student id for the view.
-     */
-    protected $studentid;
+    protected $student;
 
     /**
      * @var array $timeslot - A timeslot for the work_exporter objects.
@@ -92,21 +87,22 @@ class week_timeslot_exporter extends exporter {
      * Constructor.
      *
      * @param \calendar_information $calendar The calendar information for the period being displayed
-     * @param mixed $data Either an stdClass or an array of values.
+     * @param array $data       Data needed to process global values
+     * @param array $daydata    Data needed to process day export
+     * @param array $weeklanes  Contains the week lanes information
      * @param array $related Related objects.
      */
-    public function __construct(\calendar_information $calendar, $data, $weeklanes, $related) {
+    public function __construct(\calendar_information $calendar, $data, $daydata, $weeklanes, $related) {
         $this->calendar      = $calendar;
         $this->weeklanes     = $weeklanes;
-        $this->studentid     = $data['studentid'];
-        $this->courseid      = $data['courseid'];
-        $this->timeslot      = $data['timeslot'];
-        $this->usertimeslot  = $data['usertimeslot'];
-        $this->hour          = $data['hour'];
+        $this->student       = $data['student'];
         $this->days          = $data['days'];
         $this->groupview     = $data['groupview'];
         $this->bookview      = $data['bookview'];
         $this->maxlanes      = $data['maxlanes'];
+        $this->timeslot      = $daydata['timeslot'];
+        $this->usertimeslot  = $daydata['usertimeslot'];
+        $this->hour          = $daydata['hour'];
 
         parent::__construct([], $related);
     }
@@ -171,6 +167,7 @@ class week_timeslot_exporter extends exporter {
 
         // get the days and their slots in each hour timeslot
         foreach ($this->days as $daydata) {
+
             // get this day's data basedon GMT time
             $slotdaydata = $type->timestamp_to_date_array(gmmktime($this->hour, 0, 0, $daydata['mon'], $daydata['mday'], $daydata['year']));
             $daylanes = $this->weeklanes[$daydata['wday']];
@@ -237,10 +234,9 @@ class week_timeslot_exporter extends exporter {
         if ($this->groupview || $this->bookview) {
             $lastsessionwait = false;
         } else {
-            $student = new student($this->courseid, $this->studentid);
-            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $student->get_id());
+            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $this->student->get_id());
             if (!$hasrestrictionwaiver) {
-                $nextsessiondt = $student->get_next_allowed_session_date();
+                $nextsessiondt = $this->student->get_next_allowed_session_date();
                 $nextsessiondate = $this->related['type']->timestamp_to_date_array($nextsessiondt->getTimestamp());
                 $lastsessionwait = $lastsessionwait && $nextsessiondate['year'] >= $date['year'];
                 $lastsessionwait = $lastsessionwait && $nextsessiondate['yday'] >= $date['yday'];

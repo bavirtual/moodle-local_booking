@@ -176,8 +176,9 @@ class logbook_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
-        $subscriber = new subscriber($this->courseid);
-        $trainingtype = $subscriber->trainingtype;
+        global $COURSE;
+
+        $trainingtype = $COURSE->subscriber->trainingtype;
         return [
             'dualops' => $trainingtype=="Dual",
             'entries' => $this->get_logbook_entries($trainingtype, $output)
@@ -205,6 +206,7 @@ class logbook_exporter extends exporter {
             $data['trainingtype'] = $trainingtype;
             $data['isstudent'] = $this->data['isstudent'];
             $data['shortdate'] = $this->data['shortdate'];
+            $data['courseshortname'] = $this->data['courseshortname'];
             $entry = new logentry_exporter($data, $this->related);
             $entries[] = $entry->export($output);
         }

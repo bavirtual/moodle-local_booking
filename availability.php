@@ -31,32 +31,41 @@ require_once($CFG->dirroot . '/calendar/lib.php');
 
 defined('MOODLE_INTERNAL') || die();
 
-use local_booking\local\participant\entities\student;
+use local_booking\local\subscriber\entities\subscriber;
 
-global $USER;
+global $USER, $COURSE;
 
 // Set up the page.
-$categoryid = optional_param('category', null, PARAM_INT);
+$categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
+$course = get_course($courseid);
+$context = context_course::instance($courseid);
+
+require_login($course, false);
+require_capability('local/booking:availabilityview', $context);
+
 $action =  optional_param('action', null, PARAM_RAW);
 $view =  optional_param('view', 'user', PARAM_RAW);
-$studentid = optional_param('userid', $USER->id, PARAM_INT);
+$userid = optional_param('userid', $USER->id, PARAM_INT);
 $exerciseid = optional_param('exid', 0, PARAM_INT);
 $course = get_course($courseid);
 $pluginname = $course->shortname . ' ' . get_booking_config('ATO') . ' ' . get_string('pluginname', 'local_booking');
 $title = get_string('weeklytitle', 'local_booking');
 $week = get_string('week', 'local_booking');
 $time = optional_param('time', 0, PARAM_INT);
-$course = get_course($courseid);
-$context = context_course::instance($courseid);
 
 $url = new moodle_url('/local/booking/availability.php');
 $url->param('courseid', $courseid);
+
 // view all capability for instructors
 if (has_capability('local/booking:view', $context)) {
     $url->param('view', 'all');
 } else {
-    $student = new student($courseid, $USER->id);
+    // define subscriber globally
+    if (empty($COURSE->subscriber))
+        $COURSE->subscriber = new subscriber($courseid);
+
+    $student = $COURSE->subscriber->get_active_student($USER->id);
     $url->param('time', $student->get_next_allowed_session_date()->getTimestamp());
     $url->param('action', 'post');
 }
@@ -76,10 +85,7 @@ if (empty($time)) {
     $time = time();
 }
 
-require_login($course, false);
-require_capability('local/booking:availabilityview', $context);
-
-$calendar = calendar_information::create($time, $courseid, $categoryid);
+$calendar = calendar_information::create($time, $courseid, !empty($categoryid) ? $categoryid : $course->category);
 
 $PAGE->navbar->add(userdate($time, get_string('strftimeweekinyear','local_booking')));
 $PAGE->set_pagelayout('standard');
@@ -97,9 +103,9 @@ echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
 
 // action data for booking view
 $actiondata = [
-    'action'        => $action,
-    'studentid'     => $studentid,
-    'exerciseid'    => $exerciseid,
+    'action'     => $action,
+    'student'    => $COURSE->subscriber->get_active_participant($userid),
+    'exerciseid' => $exerciseid,
     ];
 
 list($data, $template) = get_weekly_view($calendar, $actiondata, $view);

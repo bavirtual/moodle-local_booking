@@ -20,7 +20,7 @@ Session Booking provides a workflow for posting availability slots, booking agai
 - Provides simple course specific logbook and EASA format.
 - Allows for Administration and flight time analysis reporting.
 - Allows for configuration-specific integration with external data sources for PIREP, aircraft, and fleet lookup.
-- Provides automatic notification for student inactivity warnings, placement on-hold, suspension and instructor inactivity.
+- Provides automatic notification of student inactivity warnings, placement on-hold and warning, suspension and instructor inactivity warning communication.
 - Provides course-specific student profile with relevant information along with administration functions to manage logbook entries, on-hold management, overdue restriction override, keep alive for inactive students placed on-hold.
 
 ## Setup
@@ -52,6 +52,7 @@ There are three areas of configurations:
 1. Plugin configuration (moodle administrators)
 
    - User custom fields (primary & secondary simulators, and callsign)
+   - Course custom fields (restrictions, home airport and training aircraft ICAOs, course titles)
    - ## Session Booking Configurations:
    - Capability and role assignment: the plugin should have the same configuration as what is shown below. Note that the `Beta User` role is meant for beta rollout, afterwhich the `student` role should have the same capability as the `Beta User`:
      <img src="pix/capability.png" alt="capabilities">

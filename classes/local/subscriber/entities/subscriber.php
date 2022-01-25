@@ -155,10 +155,12 @@ class subscriber implements subscriber_interface {
             $colors = (array) get_booking_config('colors', true);
 
             // add a color for the student slots from the config.json file for each student
-            $student = new student($this, $studentrec->userid);
-            $student->populate($studentrec);
-            $student->set_slot_color(count($colors) > 0 ? array_values($colors)[1 % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
-            $this->activestudents[$studentid] = $student;
+            if (!empty($studentrec->userid)) {
+                $student = new student($this, $studentrec->userid);
+                $student->populate($studentrec);
+                $student->set_slot_color(count($colors) > 0 ? array_values($colors)[1 % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
+                $this->activestudents[$studentid] = $student;
+            }
         }
 
         return $student;

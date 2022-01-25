@@ -1,5 +1,11 @@
 # Change log
 
+## [2022012500] - RELEASED 2022-01-25 - hotfix
+
+### Fixed
+
+- Handling of no students in get_active_students()
+
 ## [2022012400] - RELEASED 2022-01-24
 
 ### Fixed
@@ -14,7 +20,7 @@
 
 ### Changed
 
-- Restriction and instructor notifications from plugin settings to course custom fields
+- Restrictions and instructor notifications from plugin settings to course custom fields
 - References to subscriber to map to $COURSE->subscriber
 - Prevent placing On-hold for students that completed lessons and have availability
 

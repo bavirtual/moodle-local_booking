@@ -164,7 +164,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
                     $nodename = get_string('availabilityinst', 'local_booking');
                 } else {
                     $student = $COURSE->subscriber->get_active_student($USER->id);
-                    $params['time'] = $student->get_next_allowed_session_date()->getTimestamp();
+                    $params['time'] = !empty($student) ? $student->get_next_allowed_session_date()->getTimestamp() : time();
                     $params['action'] = 'post';
                     $nodename = get_string('availability', 'local_booking');
                 }

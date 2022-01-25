@@ -1,5 +1,11 @@
 # Change log
 
+## [2022012501] - RELEASED 2022-01-25 - hotfix
+
+### Fixed
+
+- Handling of null student in get_next_allowed_session_date() navigation
+
 ## [2022012500] - RELEASED 2022-01-25 - hotfix
 
 ### Fixed

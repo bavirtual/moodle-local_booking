@@ -109,7 +109,7 @@ class participant implements participant_interface {
         $context = \context_course::instance($course->get_id());
         if ($userid != 0)
             $this->is_student = count(get_user_roles($context, $userid)) > 0 && current(get_user_roles($context, $userid))->shortname == 'student' ? true : false;
-            $this->is_active = !\core_user::get_user($userid, 'suspended');
+            $this->is_active = !boolval(current(\core_user::get_user($userid, 'suspended')));
     }
 
     /**

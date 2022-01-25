@@ -1,6 +1,12 @@
 # Change log
 
-## [2022012502] - RELEASED 2022-01-25 - hotfix
+## [2022012503] - RELEASED 2022-01-25 - hotfix3
+
+### Fixed
+
+- is_active always returning false
+
+## [2022012502] - RELEASED 2022-01-25 - hotfix2
 
 ### Fixed
 

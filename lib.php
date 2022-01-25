@@ -135,23 +135,21 @@ function local_booking_extend_navigation(global_navigation $navigation) {
         // for checking if the participant is active
         $participant = $COURSE->subscriber->get_active_participant($USER->id);
 
-        // Add student log book navigation node for active participants
-        if ($participant->is_active()) {
-            if (has_capability('local/booking:logbookview', $context)) {
-                $node = $navigation->find('logbook', navigation_node::NODETYPE_LEAF);
-                if (!$node && $courseid!==SITEID) {
-                    // form URL and parameters
-                    $params = array('courseid'=>$courseid);
-                    $url = new moodle_url('/local/booking/logbook.php', $params);
+        // Add student log book navigation node for all participants regardless if suspended
+        if (has_capability('local/booking:logbookview', $context)) {
+            $node = $navigation->find('logbook', navigation_node::NODETYPE_LEAF);
+            if (!$node && $courseid!==SITEID) {
+                // form URL and parameters
+                $params = array('courseid'=>$courseid);
+                $url = new moodle_url('/local/booking/logbook.php', $params);
 
-                    $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
-                    $node = navigation_node::create(get_string('logbook', 'local_booking'), $url);
-                    $node->key = 'logbook';
-                    $node->type = navigation_node::NODETYPE_LEAF;
-                    $node->forceopen = true;
-                    $node->icon = new  pix_icon('logbook', '', 'local_booking');
-                    $parent->add_node($node);
-                }
+                $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
+                $node = navigation_node::create(get_string('logbook', 'local_booking'), $url);
+                $node->key = 'logbook';
+                $node->type = navigation_node::NODETYPE_LEAF;
+                $node->forceopen = true;
+                $node->icon = new  pix_icon('logbook', '', 'local_booking');
+                $parent->add_node($node);
             }
         }
 

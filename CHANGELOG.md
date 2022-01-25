@@ -1,5 +1,11 @@
 # Change log
 
+## [2022012502] - RELEASED 2022-01-25 - hotfix
+
+### Fixed
+
+- Hiding navigation from course suspended participants
+
 ## [2022012501] - RELEASED 2022-01-25 - hotfix
 
 ### Fixed

@@ -131,66 +131,79 @@ function local_booking_extend_navigation(global_navigation $navigation) {
     if (empty($COURSE->subscriber))
         $COURSE->subscriber = new subscriber($courseid);
 
-
     if ($COURSE->subscriber->subscribed) {
-        // Add student log book navigation node
-        if (has_capability('local/booking:logbookview', $context)) {
-            $node = $navigation->find('logbook', navigation_node::NODETYPE_LEAF);
-            if (!$node && $courseid!==SITEID) {
-                // form URL and parameters
-                $params = array('courseid'=>$courseid);
-                $url = new moodle_url('/local/booking/logbook.php', $params);
+        // for checking if the participant is active
+        $participant = $COURSE->subscriber->get_active_participant($USER->id);
 
-                $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
-                $node = navigation_node::create(get_string('logbook', 'local_booking'), $url);
-                $node->key = 'logbook';
-                $node->type = navigation_node::NODETYPE_LEAF;
-                $node->forceopen = true;
-                $node->icon = new  pix_icon('logbook', '', 'local_booking');
-                $parent->add_node($node);
+        // Add student log book navigation node for active participants
+        if ($participant->is_active()) {
+            if (has_capability('local/booking:logbookview', $context)) {
+                $node = $navigation->find('logbook', navigation_node::NODETYPE_LEAF);
+                if (!$node && $courseid!==SITEID) {
+                    // form URL and parameters
+                    $params = array('courseid'=>$courseid);
+                    $url = new moodle_url('/local/booking/logbook.php', $params);
+
+                    $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
+                    $node = navigation_node::create(get_string('logbook', 'local_booking'), $url);
+                    $node->key = 'logbook';
+                    $node->type = navigation_node::NODETYPE_LEAF;
+                    $node->forceopen = true;
+                    $node->icon = new  pix_icon('logbook', '', 'local_booking');
+                    $parent->add_node($node);
+                }
             }
         }
 
-        // Add student availability navigation node
-        if (has_capability('local/booking:availabilityview', $context)) {
-            $nodename = '';
-            $node = $navigation->find('availability', navigation_node::NODETYPE_LEAF);
-            if (!$node && $courseid!==SITEID) {
-                // form URL and parameters
-                $params = array('courseid'=>$courseid);
-                // view all capability for instructors
-                if (has_capability('local/booking:view', $context)) {
-                    $params['view'] = 'all';
-                    $nodename = get_string('availabilityinst', 'local_booking');
-                } else {
-                    $student = $COURSE->subscriber->get_active_student($USER->id);
-                    $params['time'] = !empty($student) ? $student->get_next_allowed_session_date()->getTimestamp() : time();
-                    $params['action'] = 'post';
-                    $nodename = get_string('availability', 'local_booking');
-                }
-                $url = new moodle_url('/local/booking/availability.php', $params);
+        // Add student availability navigation node for active participants
+        if ($participant->is_active()) {
+            if (has_capability('local/booking:availabilityview', $context)) {
+                $activeparticipant = true;
+                $nodename = '';
+                $node = $navigation->find('availability', navigation_node::NODETYPE_LEAF);
+                if (!$node && $courseid!==SITEID) {
+                    // form URL and parameters
+                    $params = array('courseid'=>$courseid);
+                    // view all capability for instructors
+                    if (has_capability('local/booking:view', $context)) {
+                        $params['view'] = 'all';
+                        $nodename = get_string('availabilityinst', 'local_booking');
+                    } else {
+                        $student = $COURSE->subscriber->get_active_student($USER->id);
+                        $params['time'] = !empty($student) ? $student->get_next_allowed_session_date()->getTimestamp() : time();
+                        $params['action'] = 'post';
+                        $nodename = get_string('availability', 'local_booking');
+                        $activeparticipant = !empty($student);
+                    }
 
-                $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
-                $node = navigation_node::create($nodename, $url);
-                $node->key = 'availability';
-                $node->type = navigation_node::NODETYPE_LEAF;
-                $node->forceopen = true;
-                $node->icon = new  pix_icon('availability', '', 'local_booking');
-                $parent->add_node($node);
+                    if ($activeparticipant) {
+                        $url = new moodle_url('/local/booking/availability.php', $params);
+
+                        $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
+                        $node = navigation_node::create($nodename, $url);
+                        $node->key = 'availability';
+                        $node->type = navigation_node::NODETYPE_LEAF;
+                        $node->forceopen = true;
+                        $node->icon = new  pix_icon('availability', '', 'local_booking');
+                        $parent->add_node($node);
+                    }
+                }
             }
         }
 
         // Add instructor booking navigation node
-        if (has_capability('local/booking:view', $context)) {
-            $node = $navigation->find('bookings', navigation_node::NODETYPE_LEAF);
-            if (!$node && $courseid!==SITEID) {
-                $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
-                $node = navigation_node::create(get_string('bookings', 'local_booking'), new moodle_url('/local/booking/view.php', array('courseid'=>$courseid)));
-                $node->key = 'bookings';
-                $node->type = navigation_node::NODETYPE_LEAF;
-                $node->forceopen = true;
-                $node->icon = new  pix_icon('booking', '', 'local_booking');
-                $parent->add_node($node);
+        if ($participant->is_active()) {
+            if (has_capability('local/booking:view', $context)) {
+                $node = $navigation->find('bookings', navigation_node::NODETYPE_LEAF);
+                if (!$node && $courseid!==SITEID) {
+                    $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
+                    $node = navigation_node::create(get_string('bookings', 'local_booking'), new moodle_url('/local/booking/view.php', array('courseid'=>$courseid)));
+                    $node->key = 'bookings';
+                    $node->type = navigation_node::NODETYPE_LEAF;
+                    $node->forceopen = true;
+                    $node->icon = new  pix_icon('booking', '', 'local_booking');
+                    $parent->add_node($node);
+                }
             }
         }
     }

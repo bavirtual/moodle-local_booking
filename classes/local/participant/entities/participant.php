@@ -77,9 +77,14 @@ class participant implements participant_interface {
     protected $simulator;
 
     /**
-     * @var bool $isstudent The participant is a student.
+     * @var bool $is_student The participant is a student.
      */
     protected $is_student;
+
+    /**
+     * @var bool $is_active The participant is active.
+     */
+    protected $is_active;
 
     /**
      * @var booking[] $bookings The student array of bookings.
@@ -104,6 +109,7 @@ class participant implements participant_interface {
         $context = \context_course::instance($course->get_id());
         if ($userid != 0)
             $this->is_student = count(get_user_roles($context, $userid)) > 0 && current(get_user_roles($context, $userid))->shortname == 'student' ? true : false;
+            $this->is_active = !\core_user::get_user($userid, 'suspended');
     }
 
     /**
@@ -299,5 +305,14 @@ class participant implements participant_interface {
      */
     public function is_student() {
         return $this->is_student;
+    }
+
+    /**
+     * check if the participant is active
+     *
+     * @return bool $is_active.
+     */
+    public function is_active() {
+        return $this->is_active;
     }
 }

@@ -76,7 +76,7 @@ class subscriber implements subscriber_interface {
 
         // define course custom fields globally
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
-        $customfields = $handler->get_instance_data($courseid);
+        $customfields = $handler->get_instance_data($courseid, true);
 
         foreach ($customfields as $customfield) {
             $cat = $customfield->get_field()->get_category()->get('name');

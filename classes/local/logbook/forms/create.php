@@ -156,8 +156,10 @@ class create extends \moodleform {
         $defaultarrttime = logbook::convert_time(($flightdate + (90 * 60)), 'TS_TO_TIME');
         $this->add_element($mform, 'departure', array($subscriber->homeicao, $defaultdepttime), false);
         $this->add_element($mform, 'arrival', array($subscriber->homeicao, $defaultarrttime), false);
-        $this->add_element($mform, 'aircraft', array($subscriber->aircrafticao, ['SE'=>'Single engine', 'ME'=>'Multi-engine'],
-                                                        $subscriber->trainingtype == 'Dual' ? 'SE' : 'ME'), false);
+        $this->add_element($mform, 'aircraft', array($subscriber->aircrafticao, [
+            'SE'=>get_string('logbooksedesc', 'local_booking'),
+            'ME'=>get_string('logbookmedesc', 'local_booking')
+            ], $this->get_enginetype($subscriber)), false);
         $this->add_element($mform, 'nighttime', null, false);
         // add landings elements for new and edit logentries
         $this->add_element($mform, 'landingsp1', null, false);
@@ -502,5 +504,26 @@ class create extends \moodleform {
                 break;
         }
         return $info;
+    }
+
+    /**
+     * Get the engine type of the default aircraft
+     *
+     * @param subscriber $course   The subscriber course
+     * @return array $enginetype The engine type of the default aircraft
+     */
+    protected function get_enginetype($course) {
+        $enginetype = 'SE';
+
+        if (!empty($course->aircrafticao)) {
+            $aircrafticao = current($course->aircrafticao);
+
+            if ($course->has_integration('aircraft')) {
+                $engintyperec = subscriber::get_integrated_data('aircraft', 'enginetype', $aircrafticao);
+                $enginetype = $engintyperec['engine_type'] == 'single' ? 'SE' : 'ME';
+            }
+        }
+
+        return $enginetype;
     }
 }

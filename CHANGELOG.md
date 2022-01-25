@@ -1,5 +1,12 @@
 # Change log
 
+## [2022012505] - RELEASED 2022-01-25
+
+### Added
+
+- forced display of hidden course fields
+- engine type look up of default aircraft in integration mode
+
 ## [2022012504] - RELEASED 2022-01-25 - hotfix4
 
 ### Fixed

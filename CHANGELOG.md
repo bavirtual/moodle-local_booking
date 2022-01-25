@@ -1,5 +1,11 @@
 # Change log
 
+## [2022012504] - RELEASED 2022-01-25 - hotfix4
+
+### Fixed
+
+- cron suspension using onhold period instead
+
 ## [2022012503] - RELEASED 2022-01-25 - hotfix3
 
 ### Fixed

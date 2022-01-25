@@ -195,7 +195,7 @@ class cron_task extends \core\task\scheduled_task {
     private function processon_suspension_restriction($course, $students, $seniorinstructors) {
 
         // check for suspension restriction is enabled
-        $suspensiondays = intval($course->onholdperiod);
+        $suspensiondays = intval($course->suspensionperiod);
         mtrace('');
         mtrace('        #### SUSPENSION RESTRICTION ' . ($suspensiondays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
         if ($suspensiondays > 0) {

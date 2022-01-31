@@ -29,7 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 use core_calendar\external\date_exporter;
-use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 use renderer_base;
 use moodle_url;
@@ -304,7 +303,7 @@ class week_exporter extends exporter {
         global $COURSE;
 
         // notify student if wait period restriction since last session is not up yet
-        if ($this->actiondata['action'] != 'book' & $this->view == 'user') {
+        if ($this->actiondata['action'] != 'book' && $this->view == 'user') {
             $student = $COURSE->subscriber->get_active_student($this->studentid);
             // show a notification if the user is on-hold
             if ($student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP)) {

@@ -486,7 +486,8 @@ class participant_vault implements participant_vault_interface {
     public function get_last_graded_date(int $userid, int $courseid, bool $is_student) {
         global $DB;
 
-        $usertypesql = $is_student ? 'userid' : 'grader';
+        // parameter for the grades being retrieved: the student graded by instructor or grader grades
+        $usertypesql = $is_student ? 'grader != -1 AND userid' : 'grader';
         // Get the student's grades
         $sql = 'SELECT timemodified
                 FROM {' . self::DB_GRADES . '} ag

@@ -1,5 +1,15 @@
 # Change log
 
+## [2022013100] - RELEASED 2022-01-31
+
+### Fixed
+
+- Wait days to ignore exam attempts
+
+### Changed
+
+- view and action parameters handling excluded from URL
+
 ## [2022012505] - RELEASED 2022-01-25
 
 ### Added

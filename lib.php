@@ -166,12 +166,11 @@ function local_booking_extend_navigation(global_navigation $navigation) {
                     $params = array('courseid'=>$courseid);
                     // view all capability for instructors
                     if (has_capability('local/booking:view', $context)) {
-                        $params['view'] = 'all';
                         $nodename = get_string('availabilityinst', 'local_booking');
                     } else {
                         $student = $COURSE->subscriber->get_active_student($USER->id);
                         $params['time'] = !empty($student) ? $student->get_next_allowed_session_date()->getTimestamp() : time();
-                        $params['action'] = 'post';
+                        // $params['action'] = 'post';
                         $nodename = get_string('availability', 'local_booking');
                         $activeparticipant = !empty($student);
                     }

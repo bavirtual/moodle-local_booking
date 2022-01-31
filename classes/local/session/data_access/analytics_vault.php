@@ -62,7 +62,7 @@ class analytics_vault implements analytics_vault_interface {
         $today = new DateTime('@' . time());
         $info = [];
 
-        // check for sessions booked but not conducted yet, and if so revert to previous session, otherwise
+        // check for sessions booked but not conducted yet, and if non are there then revert to previous session, otherwise
         // use the last session booked date. If neither are available revert to last graded, then enrol date
         // for the newly enrolled.
         if (!empty($lastsession) && !empty($beforelastsession)) {

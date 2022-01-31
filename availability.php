@@ -59,15 +59,17 @@ $url->param('courseid', $courseid);
 
 // view all capability for instructors
 if (has_capability('local/booking:view', $context)) {
-    $url->param('view', 'all');
+    $view = $action == 'book' ? 'user' : 'all';
+    // $url->param('view', $view);
 } else {
     // define subscriber globally
     if (empty($COURSE->subscriber))
         $COURSE->subscriber = new subscriber($courseid);
 
     $student = $COURSE->subscriber->get_active_student($USER->id);
+    $action = 'post';
     $url->param('time', $student->get_next_allowed_session_date()->getTimestamp());
-    $url->param('action', 'post');
+    // $url->param('action', $action);
 }
 
 $PAGE->set_url($url);

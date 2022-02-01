@@ -34,7 +34,7 @@ use stdClass;
 class logbook_vault implements logbook_vault_interface {
 
     /** Bookings table name for the persistent. */
-    const DB_LOGBOOKS = 'local_booking_logbooks2';
+    const DB_LOGBOOKS = 'local_booking_logbooks';
 
     /** Course Modules table name for the persistent. */
     const DB_COURSE_MODULES = 'course_modules';

@@ -44,6 +44,13 @@ interface subscriber_interface {
     public function get_shortname();
 
     /**
+     * Set the subscriber's course shortname.
+     *
+     * @param string $shortname
+     */
+    public function set_shortname(string $shortname);
+
+    /**
      * Get an active participant.
      *
      * @param int $participantid A participant user id.

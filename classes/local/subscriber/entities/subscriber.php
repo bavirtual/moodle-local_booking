@@ -131,6 +131,15 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Set the subscriber's course shortname.
+     *
+     * @param string $shortname
+     */
+    public function set_shortname(string $shortname) {
+        $this->shortname = $shortname;
+    }
+
+    /**
      * Get an active participant.
      *
      * @param int $participantid A participant user id.

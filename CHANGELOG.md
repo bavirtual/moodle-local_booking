@@ -1,5 +1,15 @@
 # Change log
 
+## [2022020101] - RELEASED 2022-02-01
+
+### Added
+
+- Student posting overdue notification sent 10 days after not being active in posting or completing lessons
+
+### Changed
+
+- mdl_local_booking_logbooks2 to mdl_local_booking_logbooks and dropped old table, reflected in logbook_vault
+
 ## [2022020100] - RELEASED 2022-02-01 hotfix
 
 ### Fixed

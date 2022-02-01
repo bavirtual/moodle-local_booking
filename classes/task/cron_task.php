@@ -68,6 +68,7 @@ class cron_task extends \core\task\scheduled_task {
             if ($sitecourse->id != SITEID) {
                 // check if the course is using Session Booking
                 $course = new subscriber($sitecourse->id);
+                $course->set_shortname($sitecourse->shortname);
                 if (!empty($course->subscribed) && $course->subscribed) {
                     mtrace('');
                     mtrace('    Course: ' . $sitecourse->shortname . ' (id: ' . $sitecourse->id . ')');
@@ -87,6 +88,9 @@ class cron_task extends \core\task\scheduled_task {
                         // note students
                         mtrace('');
                         mtrace('    Students to evaluate: ' . count($students));
+
+                        // PROCESS POSTING RESTRICTION
+                        $this->processon_student_notifications($course, $students);
 
                         // PROCESS ON-HOLD RESTRICTION
                         $this->processon_onhold_restriction($course, $students, $seniorinstructors);
@@ -112,6 +116,61 @@ class cron_task extends \core\task\scheduled_task {
     }
 
     /**
+     * Process overdue lesson completion and availability posting notification.
+     *
+     * @param subscriber $course    The subscribed course
+     * @param array      $students  Array of all course students to be evaluated
+     */
+    private function processon_student_notifications($course, $students) {
+
+        // check if wait-period restriction is enabled
+        $postingwait = intval($course->postingwait);
+        mtrace('        #### POSTING WAIT RESTRICTION ' . ($postingwait > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+        if ($postingwait > 0) {
+            foreach ($students as $student) {
+
+                $studentname = participant::get_fullname($student->get_id());
+                mtrace('        ' . $studentname);
+
+                // get last booked date, otherwise use last graded date instead
+                $lastsessionts = $student->get_last_booking();
+                if (empty($lastsessionts)) {
+                    $lastgradeddate = $student->get_last_graded_date();
+                    $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
+                }
+
+                if (!empty($lastsessionts)) {
+                    // get status of already being on-hold or student is in active standings
+                    $alreayonhold = $student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP);
+                    $isactive = $student->has_completed_lessons() && $student->get_total_posts() > 0;
+
+                    // posting overdue date from last booked session
+                    $lastsessiondate = new DateTime('@' . $lastsessionts);
+                    $onholddate = new DateTime('@' . $lastsessionts);
+                    $postingoverduedate = new DateTime('@' . $lastsessionts);
+                    $today = getdate(time());
+
+                    // add a week to the posting wait period as the overdue date
+                    date_add($postingoverduedate, date_interval_create_from_date_string(($postingwait + LOCAL_BOOKING_OVERDUE_PERIOD) . ' days'));
+                    date_add($onholddate, date_interval_create_from_date_string($course->onholdperiod . ' days'));
+
+                    // POSTING OVERDUE WARNING NOTIFICATION
+                    // notify student a week before being placed
+                    mtrace('            posting overdue warning date: ' . $postingoverduedate->format('M d, Y'));
+                    mtrace('            on-hold date: ' . $onholddate->format('M d, Y'));
+                    $message = new notification();
+                    if (getdate($postingoverduedate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$isactive) {
+                        mtrace('        Sending student inactivity warning (10 days inactive after posting wait period)');
+                        $message->send_inactive_warning($student->get_id(), $lastsessiondate, $onholddate, $course->get_id(), $course->get_shortname());
+                    }
+                } else {
+                    mtrace('            last session: NONE ON RECORD!');
+                }
+            }
+        }
+    }
+
+    /**
      * Process on-hold restriction.
      *
      * @param subscriber $course    The subscribed course
@@ -129,7 +188,7 @@ class cron_task extends \core\task\scheduled_task {
                 $studentname = participant::get_fullname($student->get_id());
                 mtrace('        ' . $studentname);
 
-                // get on-hold date, otherwise use last graded date instead
+                // get last booked date, otherwise use last graded date instead
                 $lastsessionts = $student->get_last_booking();
                 if (empty($lastsessionts)) {
                     $lastgradeddate = $student->get_last_graded_date();
@@ -161,7 +220,7 @@ class cron_task extends \core\task\scheduled_task {
                     mtrace('            keep active status: ' . ($keepactive ? 'ON' : 'OFF'));
                     $message = new notification();
                     if (getdate($onholdwarningdate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$keepactive && !$isactive) {
-                        mtrace('                Notifying student becoming on-hold in a week...');
+                        mtrace('        Notifying student of becoming on-hold in a week');
                         $message->send_onhold_warning($student->get_id(), $onholddate, $course->get_id(), $course->get_shortname());
                     }
 

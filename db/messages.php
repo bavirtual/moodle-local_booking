@@ -55,6 +55,14 @@ $messageproviders = array(
         ),
     ),
 
+    // Notify student of being inactive after posting wait period had passed
+    'inactive_warning' => array(
+        'capability' => 'local/booking:studentnotification',
+        'defaults' => array(
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+        ),
+    ),
+
     // Notify student of upcoming placement on-hold (inactive)
     'onhold_warning' => array(
         'capability' => 'local/booking:studentnotification',

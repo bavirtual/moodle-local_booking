@@ -353,8 +353,18 @@ $string['emailcancelhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseur
     <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\'.</p><p><strong>Instructor\'s comment:</strong><br />{$a->comment}</p><p>
     <span style=\'color: red\'>Please note you will have to post new availability as current availability posts were purged.</span></p></p><hr />';
 
+// email to student: inactive warning
+$string['emailinactivewarning'] = '{$a->coursename}: Inactivity notification';
+$string['emailinactivewarningmsg'] = 'Since your last booking on \'{$a->lastbookeddate}\' you have not posted availability and/or completed next lesson.  Please post availability slots
+    and/or complete next lesson to avoid being automatically placed on-hold on \'{$a->onholddate}\'. You can post an availability slot for
+    the \'{$a->coursename}\' from the following link: {$a->slotsurl}';
+$string['emailinactivewarninghtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
+    <p>Since your last booking on <strong>\'{$a->lastbookeddate}\'</strong> you have not posted availability and/or completed next lesson.  Please post an availability slots
+    and/or complete next lesson to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong>.</p><p>You can post availability slot for
+    the \'{$a->coursename}\' course <a href="{$a->slotsurl}">here</a>.</p><hr />';
+
 // email to student: on-hold warning
-$string['emailonholdwarning'] = '{$a->coursename}: Inactivity notification';
+$string['emailonholdwarning'] = '{$a->coursename}: On-hold warning';
 $string['emailonholdwarningmsg'] = 'Please post an availability slot to avoid being automatically placed on-hold on \'{$a->onholddate}\'. You can post an availability slot for
     the \'{$a->coursename}\' from the following link: {$a->slotsurl}';
 $string['emailonholdwarninghtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />

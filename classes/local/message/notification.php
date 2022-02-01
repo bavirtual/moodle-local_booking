@@ -99,7 +99,7 @@ class notification extends \core\message\message {
      * @param int       $exerciseid the exercise id relating to the session.
      * @param Datetime  $sessionstart the start date time object for the session.
      * @param Datetime  $sessionend the end date time object for the session.
-     * @return bool  The notification message id.
+     * @return bool     The notification message id.
      */
     public function send_instructor_confirmation($studentid, $exerciseid, $sessionstart, $sessionend) {
         global $USER, $COURSE;
@@ -137,7 +137,7 @@ class notification extends \core\message\message {
      * @param int       $exerciseid the exercise id relating to the session.
      * @param Datetime  $sessiondatetime the date time object for the session.
      * @param int       $instructorid the instructor id receiving the message.
-     * @return bool  The notification message id.
+     * @return bool     The notification message id.
      */
     public function send_instructor_notification($courseid, $studentid, $exerciseid, $sessiondatetime, $instructorid) {
         global $COURSE;
@@ -178,7 +178,7 @@ class notification extends \core\message\message {
      * @param int       $exerciseid the exercise id relating to the session.
      * @param Datetime  $sessiondatetime the date time object for the session.
      * @param string    $comment the comment sent by the instructor to the student.
-     * @return bool  The notification message id.
+     * @return bool     The notification message id.
      */
     public function send_session_cancellation($studentid, $exerciseid, $sessiondate, $comment) {
         global $USER, $COURSE;
@@ -205,14 +205,49 @@ class notification extends \core\message\message {
     }
 
     /**
+     * Sends an email warning to the student for
+     * being inactive after posting wait period.
+     *
+     * @param int       $studentid the student id sending the notification message.
+     * @param Datetime  $lastbookeddate the date object the student last booked a session.
+     * @param Datetime  $onholddate the date object the student is to be put on hold.
+     * @param int       $courseid the course id.
+     * @param string    $coursename the course name.
+     * @return bool     The notification message id.
+     */
+    public function send_inactive_warning($studentid, $lastbookeddate, $onholddate, $courseid, $coursename) {
+        // notification message data
+        $data = (object) array(
+            'coursename'    => $coursename,
+            'lastbookeddate'=> $lastbookeddate->format('M d, Y'),
+            'onholddate'    => $onholddate->format('M d, Y'),
+            'courseurl'     => (new \moodle_url('/course/view.php', array(
+                'id'        => $courseid)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
+                'id'        => $courseid)))->out(false),
+            'slotsurl'      => (new \moodle_url('/local/booking/availability.php', array('courseid'=> $courseid)))->out(false),
+        );
+
+        $this->name              = 'inactive_warning';
+        $this->userto            = $studentid;
+        $this->subject           = get_string('emailinactivewarning', 'local_booking', $data);
+        $this->fullmessage       = get_string('emailinactivewarningmsg', 'local_booking', $data);
+        $this->fullmessagehtml   = get_string('emailinactivewarninghtml', 'local_booking', $data);
+        $this->contexturl        = $data->slotsurl;
+        $this->contexturlname    = get_string('studentavialability', 'local_booking');
+
+        return message_send($this) != 0;
+    }
+
+    /**
      * Sends an email warning to the student of
      * upcoming on-hold date.
      *
      * @param int       $studentid the student id sending the notification message.
-     * @param Datetime  $sessiondatetime the date time object the student being put on hold.
+     * @param Datetime  $onholddate the date time object the student being put on hold.
      * @param int       $courseid the course id.
      * @param string    $coursename the course name.
-     * @return bool  The notification message id.
+     * @return bool     The notification message id.
      */
     public function send_onhold_warning($studentid, $onholddate, $courseid, $coursename) {
         // notification message data
@@ -223,7 +258,7 @@ class notification extends \core\message\message {
                 'id'        => $courseid)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
                 'id'        => $courseid)))->out(false),
-            'slotsurl'      => (new \moodle_url('/local/booking/availability.php', array('course'=> $courseid)))->out(false),
+            'slotsurl'      => (new \moodle_url('/local/booking/availability.php', array('courseid'=> $courseid)))->out(false),
         );
 
         $this->name              = 'onhold_warning';
@@ -246,7 +281,7 @@ class notification extends \core\message\message {
      * @param Datetime  $suspenddate the date time of the student will be suspended.
      * @param string    $coursename the course name.
      * @param array     $seniorinstructors the list of senior instructors to be copied.
-     * @return bool  The notification message id.
+     * @return bool     The notification message id.
      */
     public function send_onhold_notification($studentid, $lastsessiondate, $suspenddate, $coursename, $seniorinstructors) {
         global $COURSE;
@@ -286,7 +321,7 @@ class notification extends \core\message\message {
      * @param Datetime  $lastsessiondate the date time of the last session taken by the student.
      * @param string    $coursename the course name.
      * @param array     $seniorinstructors the list of senior instructors to be copied.
-     * @return bool  The notification message id.
+     * @return bool     The notification message id.
      */
     public function send_suspension_notification($studentid, $lastsessiondate, $coursename, $seniorinstructors) {
         global $COURSE;
@@ -325,7 +360,7 @@ class notification extends \core\message\message {
      * @param string    $status the status of instructor activity.
      * @param int       $courseid the course id.
      * @param string    $coursename the course name.
-     * @return bool  The notification message id.
+     * @return bool     The notification message id.
      */
     public function send_session_overdue_notification($instructorid, $status, $courseid, $coursename, $seniorinstructors) {
         // notification message data

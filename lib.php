@@ -79,6 +79,10 @@ define('LOCAL_BOOKING_LASTSLOT', 23);
  */
 define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);
 /**
+ * LOCAL_BOOKING_OVERDUE_PERIOD - days from posting wait period to sent student inactivity warning
+ */
+define('LOCAL_BOOKING_OVERDUE_PERIOD', 10);
+/**
  * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades)
  */
 define('LOCAL_BOOKING_PASTDATACUTOFF', 730); // 365

@@ -1,5 +1,11 @@
 # Change log
 
+## [2022020100] - RELEASED 2022-02-01 hotfix
+
+### Fixed
+
+- included course id in active participants subquery
+
 ## [2022013100] - RELEASED 2022-01-31
 
 ### Fixed

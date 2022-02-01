@@ -233,11 +233,12 @@ class participant_vault implements participant_vault_interface {
                         SELECT userid
                         FROM {' . self::DB_GROUPS_MEM . '} gm
                         INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                        WHERE g.name = "' . LOCAL_BOOKING_INACTIVEGROUP . '"
+                        WHERE g.courseid= :gcourseid AND g.name = "' . LOCAL_BOOKING_INACTIVEGROUP . '"
                         )';
 
         $params = [
             'courseid'  => $courseid,
+            'gcourseid' => $courseid,
             'contextid' => \context_course::instance($courseid)->id
         ];
 
@@ -273,16 +274,18 @@ class participant_vault implements participant_vault_interface {
                         SELECT userid
                         FROM {' . self::DB_GROUPS_MEM . '} gm
                         INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                        WHERE g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"
+                        WHERE g.courseid = :g2courseid AND
+                        (g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"
                         OR g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
-                        )';
+                        ))';
 
         $params = [
             'courseid'  => $courseid,
             'contextid' => \context_course::instance($courseid)->id,
-            'role' => 'student',
+            'role'      => 'student',
             'status'    => 0,
-            'gcourseid'  => $courseid,
+            'gcourseid' => $courseid,
+            'g2courseid'=> $courseid,
             'instructorname' => instructor::get_fullname($userid, false)
         ];
 

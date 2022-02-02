@@ -1,5 +1,11 @@
 # Change log
 
+## [2022020200] - RELEASED 2022-02-02
+
+### Changed
+
+- handling of student next allowed session date to fallback to last graded then enrolled date
+
 ## [2022020101] - RELEASED 2022-02-01
 
 ### Added

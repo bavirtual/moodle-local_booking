@@ -248,28 +248,35 @@ class student extends participant {
         if (empty($this->restrictiondate)) {
             // get wait time restriction waiver if exists
             $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $this->userid);
-            $sessiondate = new DateTime('@' . time());
+            $nextsessiondate = new DateTime('@' . time());
 
-            // process restriction if posting wait restriction is enabled for this course or the student doesn't have a waiver
+            // process restriction if posting wait restriction is enabled or if the student doesn't have a waiver
             if ($this->course->postingwait > 0 || !$hasrestrictionwaiver) {
 
-                $lastsession = slot::get_last_booking($this->course->get_id(), $this->userid);
-                $sessiondatets = $lastsession ?: time();
-                $sessiondate = new DateTime('@' . $sessiondatets);
-                date_add($sessiondate, date_interval_create_from_date_string($this->course->postingwait . ' days'));
+                $lastsession = $this->get_last_booking();
 
-                // advance by one day if it is Sunday to avoid showing a restricted week
-                if ((getdate($sessiondate->getTimestamp()))['wday'] == 0) {
-                    date_add($sessiondate, date_interval_create_from_date_string('1 days'));
+                // fallback to last graded then enrollment date
+                if (!empty($lastsession)) {
+                    $nextsessiondate = new DateTime('@' . $lastsession);
+                } else {
+                    $lastgraded = $this->get_last_graded_date();
+                    if (!empty($lastgraded))
+                        $nextsessiondate = $lastgraded;
+                    else
+                        $nextsessiondate = $this->get_enrol_date();
                 }
+
+                // add posting wait period to last session
+                date_add($nextsessiondate, date_interval_create_from_date_string($this->course->postingwait . ' days'));
             }
 
-            // return today's date if the last next allowed session is in the past
-            if ($sessiondate->getTimestamp() < time()) {
-                $sessiondate = new DateTime('@' . time());
-            }
-            $sessiondate->settime(0,0);
-            $this->restrictiondate = $sessiondate;
+            // return today's date if the posting wait restriction date had passed
+            if ($nextsessiondate->getTimestamp() < time())
+                $nextsessiondate = new DateTime('@' . time());
+
+            // rest the hours to start of the day
+            $nextsessiondate->settime(0,0);
+            $this->restrictiondate = $nextsessiondate;
         }
 
         return $this->restrictiondate;

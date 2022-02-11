@@ -282,6 +282,7 @@ $string['messageprovider:booking_notification'] = 'Session booked notification';
 $string['messageprovider:booking_confirmation'] = 'Booked session instructor confirmation';
 $string['messageprovider:instructor_notification'] = 'Student confirmation of booked session';
 $string['messageprovider:session_cancellation'] = 'Student session cancellation notification';
+$string['messageprovider:inactive_warning'] = 'Student inactive warning notification';
 $string['messageprovider:onhold_warning'] = 'Student on-hold warning notification';
 $string['messageprovider:onhold_notification'] = 'Student placed on-hold notification';
 $string['messageprovider:suspension_notification'] = 'Student suspended notification';

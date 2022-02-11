@@ -1,5 +1,11 @@
 # Change log
 
+## [2022021100] - RELEASED 2022-02-11
+
+### Changed
+
+- Keep Active for suspension as well
+
 ## [2022020200] - RELEASED 2022-02-02
 
 ### Changed

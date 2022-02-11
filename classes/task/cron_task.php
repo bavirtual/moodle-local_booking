@@ -273,13 +273,15 @@ class cron_task extends \core\task\scheduled_task {
                     // Suspension (unenrolment) date is 9x wait period from last session
                     $lastsessiondate = new DateTime('@' . $lastsessionts);
                     $suspenddate = new DateTime('@' . $lastsessionts);
+                    $keepactive =  $student->is_member_of(LOCAL_BOOKING_KEEPACTIVE);
+
                     date_add($suspenddate, date_interval_create_from_date_string($suspensiondays . ' days'));
 
                     // SUSPENSION NOTIFICATION
                     // suspend when passed on-hold by 9x wait days process suspension and notify student and senior instructor roles
                     mtrace('            suspension date: ' . $suspenddate->format('M d, Y'));
                     $message = new notification();
-                    if ($suspenddate->getTimestamp() <= time()) {
+                    if ($suspenddate->getTimestamp() <= time() && !$keepactive) {
                         // unenrol the student from the course
                         if ($student->suspend()) {
                             mtrace('                Suspended!');

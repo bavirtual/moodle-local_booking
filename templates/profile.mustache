@@ -61,13 +61,16 @@
             <span>Lesson completions    {{lessoncompletion}}</span>
         </pre>
     </div>
-    <div>Administration
+    <div class="custom-control custom-switch">Administration
         <pre>
             <span>Assigned instructor   {{instructor}}</span>
             <span>Restriction override  {{override}}</span>
-            <span>Keep active           {{keepactive}}</span>
-            <span>On-hold               {{onhold}}</span>
-            <span>Suspended             {{suspended}}</span>
+            <label class="custom-control-label" for="keepactive">Keep active</label>
+            <input type="checkbox" class="custom-control-input" id="keepactive" {{#keepactive}}checked{{/keepactive}}>
+            <label class="custom-control-label" for="onhold">On-hold</label>
+            <input type="checkbox" class="custom-control-input" id="onhold" {{#onhold}}checked{{/onhold}}>
+            <label class="custom-control-label" for="suspended">Suspended</label>
+            <input type="checkbox" class="custom-control-input" id="suspended" {{#suspended}}checked{{/suspended}}>
         </pre>
     </div>
     <div>Logbook

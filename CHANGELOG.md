@@ -1,5 +1,12 @@
 # Change log
 
+## [2022042800] - UNRELEASED 2022-02-28
+
+### Added
+
+- get/set preferences for user in Student object
+- 'Objective not met' handling for progressing sessions
+
 ## [2022021100] - RELEASED 2022-02-11
 
 ### Changed

@@ -33,6 +33,8 @@ require_once($CFG->dirroot . '/mod/assign/locallib.php');
 $courseid     = optional_param('courseid', 0, PARAM_INT);
 $exerciseid   = optional_param('exeid', 0, PARAM_INT);
 $studentid    = optional_param('userid', 0, PARAM_INT);
+$sessionpassed= optional_param('passed', 1, PARAM_INT);
+
 list ($course, $cm) = get_course_and_cm_from_cmid($exerciseid, 'assign');
 
 require_login($course, true, $cm);
@@ -59,11 +61,11 @@ $prefs = array(
 // clear any set filters
 set_user_preference('flextable_' . $uniqueid, json_encode($prefs));
 
-// redirect to the assignment feedback page
+// redirect to the assignment feedback page, check for progressing/objective not met feedback
 $redirect_url = new moodle_url('/mod/assign/view.php', [
     'id' => $exerciseid,
     'rownum' => 0,
     'userid' => $studentid,
-    'action' => 'grader',
+    'action' => ($sessionpassed ? 'grader' : 'grade'),
 ]);
 redirect($redirect_url);

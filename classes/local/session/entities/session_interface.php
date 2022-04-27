@@ -84,6 +84,13 @@ interface session_interface {
     public function hasgrade();
 
     /**
+     * Get whether the student passed the session.
+     *
+     * @return bool
+     */
+    public function haspassed();
+
+    /**
      * Get whether this session has a booking.
      *
      * @return bool

@@ -112,59 +112,127 @@ class grade implements grade_interface {
         $this->totalgrade   = $totalgrade;
     }
 
-    // Getter functions
+    /**
+     * Get the course exercise id for the grade.
+     *
+     * @return int
+     */
     public function get_exerciseid() {
         return $this->exerciseid;
     }
 
+    /**
+     * Get the course exercise type for the grade.
+     *
+     * @return string
+     */
     public function get_exercisetype() {
         return $this->exercisetype;
     }
 
+    /**
+     * Get the grader user id of the grade.
+     *
+     * @return int
+     */
     public function get_graderid() {
         return $this->graderid;
     }
 
+    /**
+     * Get the grader name of the grade.
+     *
+     * @return string
+     */
     public function get_gradername() {
         return $this->gradername;
     }
 
+    /**
+     * Get the studnet user id of the grade.
+     *
+     * @return int
+     */
     public function get_studentid() {
         return $this->studentid;
     }
 
+    /**
+     * Get the studnet name of the grade.
+     *
+     * @return string
+     */
     public function get_studentname() {
         return $this->studentname;
     }
 
+    /**
+     * Get the date timestamp of the grade.
+     *
+     * @return int
+     */
     public function get_gradedate() {
         return $this->gradedate;
     }
 
+    /**
+     * Get the student's final grade.
+     *
+     * @return int
+     */
     public function get_finalgrade() {
         return $this->finalgrade;
     }
 
-    public function get_total_grade() {
+    /**
+     * Get the total grade or passing grade of the assignment.
+     *
+     * @return int
+     */
+    public function get_totalgrade() {
         return $this->totalgrade;
     }
 
-    // setter functions
+    /**
+     * Is a passing grade.
+     *
+     * @param bool
+     */
+    public function is_passinggrade() {
+        // evaluate for Evaluation scale (totalgrade<0) and student passing with a grade of 3 or greater
+        // or if Point Rubric scale (totalgrade>0) and student passed by achieving total grade.
+        return ($this->totalgrade < 0 && $this->finalgrade >= 3) || ($this->totalgrade > 0 && $this->finalgrade == $this->totalgrade);
+    }
 
+    /**
+     * Set the exercise id of the grade.
+     *
+     * @param int
+     */
     public function set_exerciseid(int $exerciseid) {
         $this->exerciseid = $exerciseid;
     }
 
+    /**
+     * Set the exercise type of the grade.
+     *
+     * @param string
+     */
     public function set_exercisetype(string $exercisetype) {
         $this->exercisetype = $exercisetype;
     }
 
+    /**
+     * Set the grader user id for the grade.
+     *
+     * @param int
+     */
     public function set_graderid(int $graderid) {
         $this->graderid = $graderid;
     }
 
     /**
-     * Get the grader name of the grade.
+     * Get the grader name for the grade.
      *
      * @param string
      */

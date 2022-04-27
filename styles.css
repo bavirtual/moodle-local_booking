@@ -89,6 +89,9 @@
 .session-tentative {
     background-color: coral;
 }
+.session-objective-not-met {
+    background-color: purple;
+}
 .session-overdue {
     display: block;
     background-color: #f8f084;

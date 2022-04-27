@@ -93,6 +93,11 @@ class participant_vault implements participant_vault_interface {
     const DB_COURSE_SECTIONS = 'course_sections';
 
     /**
+     * Process user assignments table name.
+     */
+    const DB_ASSIGN = 'assign';
+
+    /**
      * Process user assignment grades table name.
      */
     const DB_GRADES = 'assign_grades';
@@ -303,13 +308,14 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // Get the student's grades
-        $sql = 'SELECT cm.id AS exerciseid, ag.assignment AS assignid,
-                    ag.userid, MAX(ag.grade) AS grade, 0 AS totalgrade,
+        $sql = 'SELECT cm.id AS exerciseid, a.id AS assignid,
+                    ag.userid, MAX(ag.grade) AS grade, a.grade AS totalgrade,
                     MAX(ag.timemodified) AS gradedate, m.name AS exercisetype,
                     MAX(u.id) AS instructorid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS instructorname
                 FROM {' . self::DB_GRADES . '} ag
-                INNER JOIN {' . self::DB_COURSE_MODS . '} cm ON ag.assignment = cm.instance
+                INNER JOIN {' . self::DB_ASSIGN . '} a ON ag.assignment = a.id
+                INNER JOIN {' . self::DB_COURSE_MODS . '} cm ON a.id = cm.instance
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
                 INNER JOIN {' . self::DB_MODULES . '} m ON m.id = cm.module
                 INNER JOIN {' . self::DB_USER . '} u ON ag.grader = u.id

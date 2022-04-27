@@ -155,6 +155,18 @@ class session implements session_interface {
     }
 
     /**
+     * Get whether the student passed the session.
+     *
+     * @return bool
+     */
+    public function haspassed() {
+        $haspassed = false;
+        if ($this->grade !== null) $haspassed = $this->grade->is_passinggrade();
+
+        return $haspassed;
+    }
+
+    /**
      * Get whether this session has a booking.
      *
      * @return bool

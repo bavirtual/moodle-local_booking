@@ -240,15 +240,30 @@ function(
      var registerRedirect = (root) => {
         root.on('click', BookingSelectors.actions.gotoFeedback, function(e) {
             // Fetch the exercise and user id and redirect to assignment submission & grading
-            var logentrySource = root.find(BookingSelectors.logentryitem),
-                courseId = logentrySource.data('courseId'),
-                exerciseId = logentrySource.data('exerciseId'),
-                userId = logentrySource.data('userId');
-                $('body').trigger(BookingSessions.gotoFeedback, [exerciseId]);
+            let target = e.target;
+            let SessionSource = target.closest(BookingSelectors.session),
+                LogentrySource = root.find(BookingSelectors.logentryitem),
+                courseId, exerciseId, sessionPassed, userId;
 
-                // Redirect to the grading and feedback page
-                location.href = M.cfg.wwwroot + '/local/booking/assign.php?courseid=' + courseId +
-                    '&exeid=' + exerciseId + '&rownum=0&userid=' + userId;
+            // Evaluate feedback request source: the session (progressing/objective not met) or the logentry
+            if (SessionSource != undefined) {
+                courseId = root.find(BookingSelectors.bookingwrapper).data('courseid');
+                exerciseId = SessionSource.dataset.exerciseId;
+                sessionPassed = SessionSource.dataset.sessionPassed;
+                userId = SessionSource.dataset.studentId;
+            } else if (LogentrySource != undefined) {
+                courseId = LogentrySource.data('courseId');
+                exerciseId = LogentrySource.data('exerciseId');
+                sessionPassed = 1;
+                userId = LogentrySource.data('userId');
+            }
+
+            // Trigger redirect to feedback
+            $('body').trigger(BookingSessions.gotoFeedback, [exerciseId]);
+
+            // Redirect to the grading and feedback page
+            location.href = M.cfg.wwwroot + '/local/booking/assign.php?courseid=' + courseId +
+                '&exeid=' + exerciseId + '&rownum=0&userid=' + userId + '&passed=' + sessionPassed;
 
             e.preventDefault();
         });

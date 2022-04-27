@@ -127,6 +127,10 @@ class booking_session_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
+            'passed' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
             'booked' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
@@ -181,6 +185,9 @@ class booking_session_exporter extends exporter {
             $this->student->has_completed_lessons() ? get_string('bookingnoposts', 'local_booking') : '';
 
         if (!empty($this->session)) {
+            $isquiz = $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() == 'quiz';
+            $graded = $this->session->hasgrade();
+            $passed = $this->session->haspassed() || $isquiz;
             $booked = $this->session->hasbooking() && $this->session->get_booking()->confirmed() && !$this->session->hasgrade();
             $tentative = $this->session->hasbooking() && !$this->session->get_booking()->confirmed() && !$this->session->hasgrade();
             $logentrymissing = empty($this->data['logentryid']) && $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() != 'quiz';
@@ -189,12 +196,13 @@ class booking_session_exporter extends exporter {
                 $this->session->get_sessiondate()->getTimestamp();
 
             $return = [
-                'graded'        => $this->session->hasgrade(),
+                'graded'        => $graded,
+                'passed'        => $passed,
                 'booked'        => $booked,
                 'tentative'     => $tentative,
-                'canlogentry'   => $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() != 'quiz',
-                'logentrymissing' => $logentrymissing,
-                'isquiz'        => $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() == 'quiz',
+                'canlogentry'   => $graded && !$isquiz,
+                'logentrymissing' => $this->session->haspassed() && $logentrymissing,
+                'isquiz'        => $isquiz,
                 'lastbookingts' => $lastbookingdate
             ];
         }
@@ -235,6 +243,7 @@ class booking_session_exporter extends exporter {
         $sessiondate = null;
         $sessionstatus = '';
         $sessiontooltip = '';
+
         // get grade info of this session if available
         if ($grade !== null) {
             $sessiondate = new DateTime('@' . (!empty($booking) ? $booking->get_slot()->get_starttime() : $grade->get_gradedate()));
@@ -244,10 +253,13 @@ class booking_session_exporter extends exporter {
                 'instructor'  => $grade->get_gradername(),
                 'gradedate'   => (new \DateTime('@' . $grade->get_gradedate()))->format('j M \'y'),
                 'sessiondate' => !empty($sessiondate) ? $sessiondate->format('j M \'y') . '<br/>' : '',
-                'grade'       => intval($grade->get_finalgrade()) . (!empty($grade->get_total_grade()) ? '/' . intval($grade->get_total_grade()) : '')
+                'grade'       => intval($grade->get_finalgrade()) . (!empty($grade->get_totalgrade()) ? '/' . intval($grade->get_totalgrade()) : '')
             ];
-            $sessiontooltip = $grade->get_exercisetype() == 'assign' ? get_string('sessiongradedby', 'local_booking', $gradeinfo) :
-                get_string('sessiongradeexampass', 'local_booking', $gradeinfo);
+
+            // get session tooltip for passing & progressing grades, and exam grades
+            $sessiontooltip = $grade->get_exercisetype() == 'assign' ? ($grade->is_passinggrade() ? get_string('sessiongradedby', 'local_booking', $gradeinfo) :
+                get_string('sessionprogressing', 'local_booking', $gradeinfo)) : get_string('sessiongradeexampass', 'local_booking', $gradeinfo);
+
         // get booking info of this session if a booking is available
         } else if (!empty($booking)) {
             $sessiondate = new DateTime('@' . $booking->get_slot()->get_starttime());

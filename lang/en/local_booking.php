@@ -77,6 +77,7 @@ $string['sessiondate'] = 'Session Date';
 $string['sessionbookedby'] = '{$a->sessiondate}<br/>{$a->bookingstatus}<br/>{$a->instructor}';
 $string['sessiongradedby'] = '{$a->sessiondate}Graded by:<br/>{$a->instructor}<br/>On: {$a->gradedate}';
 $string['sessiongradeexampass'] = 'Exam Results<br/>Grade: {$a->grade}<br/>Date: {$a->gradedate}';
+$string['sessionprogressing'] = 'Objective Not Met<br/>(click for feedback)<br/>{$a->sessiondate}{$a->instructor}';
 $string['sessionvenue'] = 'Discord';
 $string['simulator'] = 'Sim';
 $string['slots'] = 'slots';

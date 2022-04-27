@@ -37,6 +37,7 @@ define([], function() {
         logentryitem: '[data-type="logentry"]',
         today: '.today',
         day: '[data-region="day"]',
+        session: '[data-region="session-entry"]',
         bookingconfirmation: '[data-region="session-booking-confirmation"]',
         calendarwrapper: '.calendarwrapper',
         bookingwrapper: '.bookingwrapper',

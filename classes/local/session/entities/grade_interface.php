@@ -92,6 +92,20 @@ interface grade_interface {
     public function get_finalgrade();
 
     /**
+     * Get the total grade or passing grade of the assignment.
+     *
+     * @return int
+     */
+    public function get_totalgrade();
+
+    /**
+     * Is a passing grade.
+     *
+     * @param bool
+     */
+    public function is_passinggrade();
+
+    /**
      * Set the exercise id of the grade.
      *
      * @param int
@@ -106,14 +120,14 @@ interface grade_interface {
     public function set_exercisetype(string $exercisetype);
 
     /**
-     * Set the grader user id of the grade.
+     * Set the grader user id for the grade.
      *
      * @param int
      */
     public function set_graderid(int $graderid);
 
     /**
-     * Set the grader name of the grade.
+     * Set the grader name for the grade.
      *
      * @param string
      */

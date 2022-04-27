@@ -26,18 +26,24 @@
 define([
         'jquery',
         'core/str',
+        'core/pending',
+        'core/modal_factory',
         'local_booking/booking_view_manager',
         'local_booking/booking_actions',
-        'local_booking/logentry',
-        'local_booking/events'
+        'local_booking/events',
+        'local_booking/modal_logentry_form',
+        'local_booking/selectors'
     ],
     function(
         $,
         Str,
+        Pending,
+        ModalFactory,
         ViewManager,
         BookingActions,
-        Logentry,
-        BookingSessions
+        BookingEvents,
+        ModalLogentryEditForm,
+        Selectors
     ) {
 
     const SELECTORS = {
@@ -57,33 +63,22 @@ define([
      const registerBookingEventListeners = function(root) {
         const body = $('body');
 
-        body.on(BookingSessions.canceled, function() {
+        body.on(BookingEvents.canceled, function() {
             ViewManager.refreshInstructorDashboardContent(root);
             ViewManager.refreshMyBookingsContent(root);
         });
-        body.on(BookingSessions.created, function() {
+        body.on(BookingEvents.created, function() {
             ViewManager.refreshInstructorDashboardContent(root);
         });
-        body.on(BookingSessions.updated, function() {
+        body.on(BookingEvents.updated, function() {
             ViewManager.refreshInstructorDashboardContent(root);
         });
-        body.on(BookingSessions.deleted, function() {
+        body.on(BookingEvents.deleted, function() {
             ViewManager.refreshInstructorDashboardContent(root);
         });
-    };
 
-    /**
-     * Register event listeners for logbook entry,
-     * session cancellation, and restriction override actions
-     * in both 'Instructor dashboard' and 'Session selection' pages.
-     *
-     * @method  registerEventListeners
-     * @param   {object} root The booking root element
-     */
-     const registerEventListeners = function(root) {
-
-        // Register listeners to booking actions
-        registerBookingEventListeners(root);
+        // // Listen the click on the progression table of sessions for a goto feedback for Objective Not Met sessions.
+        BookingActions.registerRedirect(root);
 
         // Listen to the click on the Cancel booking buttons in 'Instructor dashboard' page.
         root.on('click', SELECTORS.CANCEL_BUTTON, function(e) {
@@ -103,10 +98,138 @@ define([
         });
     };
 
+    /**
+     * Register event listeners for session clicks.
+     *
+     * @param {object} root The root element.
+     */
+    const registerSessionEventListeners = (root) => {
+
+        // Get promise for the logentry form for create and edit
+        const contextId = $(Selectors.bookingwrapper).data('contextid'),
+        courseId = $(Selectors.bookingwrapper).data('courseid');
+
+        if (contextId) {
+            // Listen the click on the progression table of sessions for a logentry (new/view).
+            root.on('click', Selectors.actions.viewLogEntry, function(e) {
+                let logentryId = $(this).attr('data-logentry-id'),
+                userId = $(this).attr('data-student-id');
+
+                // A logentry needs to be created or edite, show the modal form.
+                e.preventDefault();
+                // We've handled the event so stop it from bubbling
+                // and causing the day click handler to fire.
+                e.stopPropagation();
+
+                if (logentryId == 0) {
+                    registerLogentryEditForm(null, e, contextId, courseId, userId, logentryId, true);
+                } else {
+                    registerLogentrySummaryForm(contextId, courseId, userId, logentryId);
+                }
+                e.stopImmediatePropagation();
+            });
+
+            // // Listen the click on the progression table of sessions for a goto feedback for Objective Not Met sessions.
+            // root.on('click', Selectors.actions.gotoFeedback, function(e) {
+            //     let logentryId = $(this).attr('data-logentry-id'),
+            //     userId = $(this).attr('data-student-id');
+
+            //     // A logentry needs to be created or edite, show the modal form.
+            //     e.preventDefault();
+            //     // We've handled the event so stop it from bubbling
+            //     // and causing the day click handler to fire.
+            //     e.stopPropagation();
+
+            //     if (logentryId == 0) {
+            //         registerLogentryEditForm(null, e, contextId, courseId, userId, logentryId, true);
+            //     } else {
+            //         registerLogentrySummaryForm(contextId, courseId, userId, logentryId);
+            //     }
+            //     e.stopImmediatePropagation();
+            // });
+        }
+    };
+
+    /**
+     * Register the form and listeners required for
+     * creating and editing logentries.
+     *
+     * @method registerLogentryEditForm
+     * @param  {object} root       The root element.
+     * @param  {object} e          The triggered event.
+     * @param  {Number} contextId  The course context id of the logentry.
+     * @param  {Number} courseId   The course id of the logentry.
+     * @param  {Number} userId     The user id the logentry belongs to.
+     * @param  {Number} logentryId The logentry id.
+     * @param  {bool}   isNew      Whether to register for edit mode.
+     */
+    const registerLogentryEditForm = (root, e, contextId, courseId, userId, logentryId, isNew) => {
+        const LogentryFormPromise = ModalFactory.create({
+            type: ModalLogentryEditForm.TYPE,
+            large: true
+        });
+
+        const target = e.target;
+        const pendingPromise = new Pending('local_booking/registerLogentryEditForm');
+
+        ViewManager.renderLogentryModal(root, e, LogentryFormPromise, target, contextId, courseId, userId, logentryId, isNew)
+        .then(pendingPromise.resolve())
+        .catch();
+    };
+
+    /**
+     * Register the form and listeners required for
+     * viewing the logentry summary form.
+     *
+     * @method registerLogentrySummaryForm
+     * @param  {Number} contextId  The course context id of the logentry.
+     * @param  {Number} courseId   The course id of the logentry.
+     * @param  {Number} userId     The user id the logentry belongs to.
+     * @param  {Number} logentryId The logentry id.
+     */
+    const registerLogentrySummaryForm = (contextId, courseId, userId, logentryId) => {
+        const pendingPromise = new Pending('local_booking/registerLogentrySummaryForm');
+
+        if (logentryId) {
+            ViewManager.renderLogentrySummaryModal(courseId, userId, logentryId)
+            .then(function(modal) {
+                $('body').on(BookingEvents.editLogentry, function(e, userId, logentryId) {
+                    registerLogentryEditForm(modal.getRoot(), e, contextId, courseId, userId, logentryId);
+                    e.stopImmediatePropagation();
+                });
+                $('body').on(BookingEvents.addLogentry, function(e, userId) {
+                    registerLogentryEditForm(modal.getRoot(), e, contextId, courseId, userId, 0);
+                    e.stopImmediatePropagation();
+                });
+                return modal;
+            })
+            .then(pendingPromise.resolve())
+            .catch();
+        } else {
+            pendingPromise.resolve();
+        }
+    };
+
+    /**
+     * Register event listeners for logbook entry,
+     * session cancellation, and restriction override actions
+     * in both 'Instructor dashboard' and 'Session selection' pages.
+     *
+     * @method  registerEventListeners
+     * @param   {object} root The booking root element
+     */
+     const registerEventListeners = function(root) {
+
+        // Register listeners to booking actions
+        registerBookingEventListeners(root);
+
+        // Register listeners to session click actions
+        registerSessionEventListeners(root);
+    };
+
     return {
         init: function(root) {
             root = $(root);
-            Logentry.init(root);
             registerEventListeners(root);
         }
     };

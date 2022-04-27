@@ -120,9 +120,11 @@
                 </td>
             {{#sessions}}
                 <td class="text-sm-center" style="max-width: 20px;"
-                    data-action="view-logentry"
+                    {{#graded}}data-action={{#passed}}"view-logentry"{{/passed}}{{^passed}}"feedback"{{/passed}}{{/graded}}
                     data-exercise-status="{{sessionstatus}}"
-                    {{#graded}}{{^isquiz}}data-region="session-entry"
+                    {{#graded}}{{^isquiz}}
+                    data-region="session-entry"
+                    data-session-passed="{{passed}}"
                     data-student-id="{{studentid}}"
                     data-exercise-id="{{exerciseid}}"
                     data-session-date="{{sessiondatets}}"
@@ -136,7 +138,8 @@
                     {{/sessionempty}}>
                     <div id="exercise-session" class="d-md-block text-xs-center{{#canlogentry}} clickable{{/canlogentry}}">
                         <span id="exercise-{{studentid}}-{{exerciseid}}" class="session-date media-body fa-inverse{{!
-                            }}{{#graded}} session-graded{{/graded}}{{!
+                            }}{{#graded}}{{#passed}} session-graded{{/passed}}{{!
+                            }}{{^passed}} session-objective-not-met{{/passed}}{{/graded}}{{!
                             }}{{#booked}} session-booked{{/booked}}{{!
                             }}{{#tentative}} session-tentative{{/tentative}}{{!
                             }}">{{^isquiz}}{{^logentrymissing}}{{^marknoposts}}&nbsp;{{/marknoposts}}{{/logentrymissing}}{{/isquiz}}

@@ -555,30 +555,31 @@ class participant_vault implements participant_vault_interface {
     }
 
     /**
-     * Returns the next upcoming exercise id
+     * Returns next or current upcoming exercise id
      * for the student and its associated course section.
      *
      * @param   int     The course id
      * @param   int     The student id
+     * @param   bool    Next or current exercise
      * @return  array   The next exercise id and associated course section
      */
-    public function get_next_student_exercise($courseid, $studentid) {
+    public function get_student_exercise($courseid, $studentid, $next = true) {
         global $DB;
         $result = [0,0];
 
         // Get first record of exercises not completed yet
-        $sql = 'SELECT cm.id AS nextexerciseid, cs.section AS section
+        $sql = 'SELECT cm.id AS exerciseid, cs.section AS section
                 FROM {' . self::DB_COURSE_MODS .'} cm
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
                 INNER JOIN {' . self::DB_MODULES . '} m ON m.id = cm.module
                 WHERE cm.course = :courseid
                     AND m.name = :assign
-                    AND cm.instance NOT IN (SELECT ag.assignment
-                                            FROM {' . self::DB_GRADES . '} ag
-                                            WHERE ag.userid = :studentid
-                                            AND ag.grade != -1
-                                            AND ag.timemodified > ' . $this->pastdatacutoff . ')
-                ORDER BY cs.section asc
+                    AND cm.instance ' . ($next ? 'NOT' : '') . ' IN (SELECT ag.assignment
+                    FROM {' . self::DB_GRADES . '} ag
+                    WHERE ag.userid = :studentid
+                    AND ag.grade != -1
+                    AND ag.timemodified > ' . $this->pastdatacutoff . ')
+                ORDER BY cs.section '  . ($next ? 'ASC' : 'DESC') . '
                 LIMIT 1';
 
         $params = [
@@ -591,7 +592,7 @@ class participant_vault implements participant_vault_interface {
 
         // check for last exercise in the course
         if (!empty($rs))
-            $result = [current($rs)->nextexerciseid, current($rs)->section];
+            $result = [current($rs)->exerciseid, current($rs)->section];
 
         return $result;
     }

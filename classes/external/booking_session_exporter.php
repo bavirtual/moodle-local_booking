@@ -180,7 +180,7 @@ class booking_session_exporter extends exporter {
         $return = [];
 
         // get student posts
-        list($nextexercise, $exercisesection) = $this->student->get_next_exercise();
+        list($nextexercise, $exercisesection) = $this->student->get_exercise(true);
         $noposts = $nextexercise == $this->data['exerciseid'] && $this->student->get_total_posts() == 0 &&
             $this->student->has_completed_lessons() ? get_string('bookingnoposts', 'local_booking') : '';
 

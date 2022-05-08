@@ -1,6 +1,16 @@
 # Change log
 
-## [2022042800] - UNRELEASED 2022-02-28
+## [2022050800] - RELEASED 2022-05-08
+
+### Added
+
+- Next exercise if not passed defaults to the correct exercise during booking confirmation
+
+### Changed
+
+- get_next_exercise to just get_exercise and passing next vs current parameter
+
+## [2022042800] - UNRELEASED 2022-04-28
 
 ### Added
 

@@ -29,6 +29,7 @@ use DateTime;
 use moodle_exception;
 use local_booking\local\session\entities\priority;
 use local_booking\local\session\entities\booking;
+use local_booking\local\session\entities\grade;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\slot\entities\slot;
 use local_booking\local\subscriber\entities\subscriber;
@@ -39,6 +40,16 @@ class student extends participant {
      * Process user enrollments table name.
      */
     const SLOT_COLOR = '#00e676';
+
+    /**
+     * @var array $exercises The student exercise grades.
+     */
+    protected $exercises;
+
+    /**
+     * @var array $quizes The student quize grades.
+     */
+    protected $quizes;
 
     /**
      * @var array $grades The student exercise/quize grades.
@@ -69,6 +80,11 @@ class student extends participant {
      * @var array $nextexercise The student's next exercise and section.
      */
     protected $nextexercise;
+
+    /**
+     * @var array $currentexercise The student's current exercise and section.
+     */
+    protected $currentexercise;
 
     /**
      * @var booking $activebooking The currently active booking for the student.
@@ -178,9 +194,9 @@ class student extends participant {
     public function get_grades() {
         if (empty($this->grades)) {
             // join both graded assignments and attempted quizes into one grades array
-            $assignments = $this->vault->get_student_assignment_grades($this->course->get_id(), $this->userid);
-            $quizes = $this->vault->get_student_quizes_grades($this->course->get_id(), $this->userid);
-            $this->grades = $assignments + $quizes;
+            $this->exercises = $this->vault->get_student_assignment_grades($this->course->get_id(), $this->userid);
+            $this->quizes = $this->vault->get_student_quizes_grades($this->course->get_id(), $this->userid);
+            $this->grades = $this->exercises + $this->quizes;
         }
 
         return $this->grades;
@@ -297,16 +313,19 @@ class student extends participant {
     }
 
     /**
-     * Returns the next upcoming exercise id and section
+     * Returns the next or current upcoming exercise id and section
      * for the student and its associated course section.
      *
-     * @return int The next exercise id and associated course section
+     * @return int The current or next exercise id and associated course section
      */
-    public function get_next_exercise() {
-        if (empty($this->next_exercise)) {
-            $this->next_exercise = $this->vault->get_next_student_exercise($this->course->get_id(), $this->userid);
+    public function get_exercise($next = true) {
+        $exerciseid = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, $next);
+        if ($next) {
+            $this->nextexercise = $exerciseid;
+        } else {
+            $this->currentexercise = $exerciseid;
         }
-        return $this->next_exercise;
+        return $exerciseid;
     }
 
     /**
@@ -330,6 +349,30 @@ class student extends participant {
         if (empty($this->total_posts))
             $this->total_posts = slot_vault::get_slot_count($this->course->get_id(), $this->userid);
         return $this->total_posts;
+    }
+
+    /**
+     * Get the last grade the student received
+     * assignments and quizes.
+     *
+     * @return grade The student last grade.
+     */
+    public function get_last_grade() {
+        $grade = null;
+        if (count($this->exercises) > 0) {
+            $lastgrade = end($this->exercises);
+            $grade = new grade(
+                    $lastgrade->exerciseid,
+                    'assign',
+                    $lastgrade->instructorid,
+                    $lastgrade->instructorname,
+                    $this->userid,
+                    $this->fullname,
+                    $lastgrade->gradedate,
+                    $lastgrade->grade,
+                    $lastgrade->totalgrade);
+        }
+        return $grade;
     }
 
     /**
@@ -368,7 +411,7 @@ class student extends participant {
      */
     public function has_completed_lessons() {
         if (empty($this->nextexercise))
-            $this->nextexercise = $this->get_next_exercise();
+            $this->nextexercise = $this->get_exercise(true);
         list($exerciseid, $section) = $this->nextexercise;
         return !empty($this->nextexercise) ? $this->vault->get_student_lessons_complete($this->userid, $this->course->get_id(), $section) : false;
     }

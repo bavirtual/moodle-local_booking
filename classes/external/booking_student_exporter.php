@@ -247,7 +247,10 @@ class booking_student_exporter extends exporter {
         $activebooking = $this->student->get_active_booking();
         $actiontype = !empty($activebooking) ? 'grade' : 'book';
         if ($actiontype == 'book') {
-            list($refexerciseid, $section) = $this->student->get_next_exercise();
+            // check if the session to book is the next exercise after passing the current session or the same
+            $lastgrade = $this->student->get_last_grade();
+            $getnextexercise = (!empty($lastgrade) ? $lastgrade->is_passinggrade() : true);
+            list($refexerciseid, $section) = $this->student->get_exercise($getnextexercise);
         } else {
             $refexerciseid = $activebooking->get_exerciseid();
         }

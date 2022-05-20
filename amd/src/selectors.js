@@ -43,6 +43,7 @@ define([], function() {
         bookingwrapper: '.bookingwrapper',
         logbookwrapper: '.logbookwrapper',
         mybookingswrapper: '.mybookingswrapper',
+        userprofilewrapper: '.userprofilewrapper',
         table: '.calendartable',
         links: {
             navLink: '.calendarwrapper .arrow_link',
@@ -51,5 +52,7 @@ define([], function() {
             loadingIcon: '[data-region="overlay-icon-container"]',
             summaryForm: '[data-region="summary-modal-container"]',
         },
+        toggle: '[toggle-input]',
+        onhold: '[onhold-toggle]',
     };
 });

@@ -71,18 +71,6 @@ $functions = array(
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
 
-    'local_booking_override_restriction' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'override_wait_restriction',
-        'description' => 'Overrides wait restriction for a student',
-        'type' => 'write',
-        'ajax' => true,
-        'capabilities' => '',
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
     'local_booking_get_weekly_view' => array(
         'classname' => 'local_booking_external',
         'classpath' => '/local/booking/externallib.php',
@@ -178,6 +166,42 @@ $functions = array(
         'loginrequired' => true,
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
+
+    'local_booking_update_suspended_status' => array(
+        'classname' => 'local_booking_external',
+        'classpath' => '/local/booking/externallib.php',
+        'methodname' => 'update_enrolement_status',
+        'description' => 'Suspended status update for the course',
+        'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
+
+    'local_booking_update_user_preferences' => array(
+        'classname' => 'local_booking_external',
+        'classpath' => '/local/booking/externallib.php',
+        'methodname' => 'update_user_preferences',
+        'description' => 'Update user preferences for the course',
+        'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
+
+    'local_booking_update_group_status' => array(
+        'classname' => 'local_booking_external',
+        'classpath' => '/local/booking/externallib.php',
+        'methodname' => 'update_user_group',
+        'description' => 'Update user group membership add/remove for the course',
+        'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
 );
 
 $services = array(
@@ -208,15 +232,6 @@ $services = array(
         'uploadfiles' => 0
     ),
 
-    'Overrides wait restriction for a student web service'  => array(
-        'functions' => array('local_booking_override_restriction'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'override_wait_restriction',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
     'Student Availability save slots web service'  => array(
         'functions' => array('local_booking_save_slots'), // Unused as we add the service in each function definition, third party services would use this.
         'enabled' => 1,         // if 0, then token linked to this service won't work
@@ -235,7 +250,7 @@ $services = array(
         'uploadfiles' => 0
     ),
 
-    'Student Availability delete slots web service'  => array(
+    'Student form submission web service'  => array(
         'functions' => array('local_booking_submit_create_update_form'), // Unused as we add the service in each function definition, third party services would use this.
         'enabled' => 1,         // if 0, then token linked to this service won't work
         'restrictedusers' => 0,
@@ -276,6 +291,33 @@ $services = array(
         'enabled' => 1,         // if 0, then token linked to this service won't work
         'restrictedusers' => 0,
         'shortname' => 'get_pirep',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
+    'Session Booking update user suspension for a course status'  => array(
+        'functions' => array('local_booking_update_suspended_status'), // Unused as we add the service in each function definition, third party services would use this.
+        'enabled' => 1,         // if 0, then token linked to this service won't work
+        'restrictedusers' => 0,
+        'shortname' => 'update_enrolement_status',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
+    'Session Booking update user preferences for a course'  => array(
+        'functions' => array('local_booking_update_user_preferences'), // Unused as we add the service in each function definition, third party services would use this.
+        'enabled' => 1,         // if 0, then token linked to this service won't work
+        'restrictedusers' => 0,
+        'shortname' => 'update_user_preferences',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
+    'Session Booking update user group membership add/remove for the course'  => array(
+        'functions' => array('local_booking_update_group_status'), // Unused as we add the service in each function definition, third party services would use this.
+        'enabled' => 1,         // if 0, then token linked to this service won't work
+        'restrictedusers' => 0,
+        'shortname' => 'update_user_group',
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),

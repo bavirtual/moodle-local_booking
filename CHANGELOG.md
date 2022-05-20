@@ -1,5 +1,19 @@
 # Change log
 
+## [2022052000] - UNRELEASED 2022-05-08
+
+### Added
+
+- student profile page
+- endorse, suspended, on hold, keep active, and restriction override handling in student profile
+- set user preference handling
+- webservices to handle user preferences, group membership, and enrolment status handling (suspend true/false)
+
+### Changed
+
+- get_active_students to get_students to include suspended students in participant_vault
+- get_active_participant to get_participant to include suspended students in participant_vault
+
 ## [2022050800] - RELEASED 2022-05-08
 
 ### Added

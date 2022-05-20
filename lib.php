@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 use local_booking\external\bookings_exporter;
+use local_booking\external\profile_exporter;
 use local_booking\external\assigned_students_exporter;
 use local_booking\external\instructor_participation_exporter;
 use local_booking\external\logbook_exporter;
@@ -38,7 +39,6 @@ use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\external\week_exporter;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\logbook\entities\logentry;
-use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 
@@ -91,9 +91,9 @@ define('LOCAL_BOOKING_PASTDATACUTOFF', 730); // 365
  */
 define('LOCAL_BOOKING_ONHOLDGROUP', 'OnHold');
 /**
- * LOCAL_BOOKING_KEEPACTIVE - constant string value for students to stay active even if they match on-hold criteria
+ * LOCAL_BOOKING_KEEPACTIVEGROUP - constant string value for students to stay active even if they match on-hold criteria
  */
-define('LOCAL_BOOKING_KEEPACTIVE', 'Keep Active');
+define('LOCAL_BOOKING_KEEPACTIVEGROUP', 'Keep Active');
 /**
  * LOCAL_BOOKING_INACTIVEGROUP - constant string value for inactive instructors for group quering purposes
  */
@@ -137,7 +137,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
 
     if ($COURSE->subscriber->subscribed) {
         // for checking if the participant is active
-        $participant = $COURSE->subscriber->get_active_participant($USER->id);
+        $participant = $COURSE->subscriber->get_participant($USER->id);
 
         // Add student log book navigation node for active participants
         if ($participant->is_active()) {
@@ -341,6 +341,34 @@ function get_weekly_view(\calendar_information $calendar, $actiondata, $view = '
  * @param   int     $courseid the associated course.
  * @return  array[array, string]
  */
+function get_profile_view($courseid, $userid) {
+    global $PAGE, $COURSE;
+
+    $renderer = $PAGE->get_renderer('local_booking');
+    $COURSE->subscriber = new subscriber($courseid);
+    $user = $COURSE->subscriber->get_student($userid, true, false);
+
+    $template = 'local_booking/profile';
+    $data = [
+        'courseid'=>$courseid,
+        'user'  => $user,
+    ];
+    $related = [
+        'context'   => \context_course::instance($courseid),
+    ];
+
+    $profile = new profile_exporter($data, $related);
+    $data = $profile->export($renderer);
+
+    return [$data, $template];
+}
+
+/**
+ * Get the student's progression view output.
+ *
+ * @param   int     $courseid the associated course.
+ * @return  array[array, string]
+ */
 function get_bookings_view($courseid, $sorttype = '') {
     global $PAGE;
 
@@ -415,7 +443,7 @@ function get_logbook_view($courseid, $userid, $templateformat) {
     $template = 'local_booking/logbook_' . $templateformat;
 
     // get summary information (not requested by the webservice)
-    $pilot = $COURSE->subscriber->get_active_participant($userid);
+    $pilot = $COURSE->subscriber->get_participant($userid);
     $logbook = $pilot->get_logbook(true, $templateformat == 'easa');
     $totals = (array) $logbook->get_summary(true);
     $data = [
@@ -464,7 +492,7 @@ function get_logentry_view(int $courseid, int $userid, array $formdata = null) {
 
     // add training type to the data sent to the exporter
     $data['trainingtype'] = $COURSE->subscriber->trainingtype;
-    $data['isstudent'] = $COURSE->subscriber->get_active_participant($userid)->is_student();
+    $data['isstudent'] = $COURSE->subscriber->get_participant($userid)->is_student();
     $data['courseshortname'] = $PAGE->course->shortname;
 
     $logentryexp = new logentry_exporter($data, ['context' => $context]);
@@ -561,7 +589,7 @@ function save_booking($params) {
 
     if ($result) {
         // remove restriciton override for the user
-        set_user_preference('local_booking_availabilityoverride', false, $studentid);
+        set_user_preference('local_booking_' .$courseid . '_availabilityoverride', false, $studentid);
 
         // send emails to both student and instructor
         $sessionstart = new DateTime('@' . $slottobook['starttime']);
@@ -672,23 +700,23 @@ function cancel_booking($bookingid, $comment) {
 }
 
 /**
- * Overrides wait time restriction for a student, where the
- * restriction is waived until the instructor books a session
- * with that student.
+ * Set the user preferences
  *
- * @param   int   $studentid  The student id being waived.
- * @return  bool  $resut      The override operation result.
+ * @param string $preference The preference key of to be set.
+ * @param string $value      The value of the preference to be set.
+ * @param int $courseid      The course id.
+ * @param int $studentid     The student id.
+ * @return  bool  $result    The override operation result.
  */
-function override_availability_restriction($studentid) {
+function set_user_prefs($preference, $value, $courseid, $studentid) {
     $result = false;
+    $msgdata = ['preference' => $preference, 'value' => $value];
 
     // Get user preference to show local time column
-    $result = set_user_preference('local_booking_availabilityoverride', true, $studentid);
+    $result = set_user_preference('local_booking_' . $courseid . '_' . $preference, $value, $studentid);
 
-    if ($result) {
-        \core\notification::success(get_string('bookingavailabilityoverridesuccess', 'local_booking'));
-    } else {
-        \core\notification::warning(get_string('bookingavailabilityoverrideunable', 'local_booking'));
+    if (!$result) {
+        \core\notification::warning(get_string('bookingsetpreferencesunable', 'local_booking', $msgdata));
     }
 
     return $result;

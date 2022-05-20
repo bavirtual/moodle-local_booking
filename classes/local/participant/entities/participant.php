@@ -106,10 +106,12 @@ class participant implements participant_interface {
         $this->vault = new participant_vault();
         $this->course = $course;
         $this->userid = $userid;
-        $context = \context_course::instance($course->get_id());
+
+        // lookup user type and active status
         if ($userid != 0)
-            $this->is_student = count(get_user_roles($context, $userid)) > 0 && current(get_user_roles($context, $userid))->shortname == 'student' ? true : false;
-            $this->is_active = !boolval(current(\core_user::get_user($userid, 'suspended')));
+            $this->is_student = count(get_user_roles($course->get_context(), $userid)) > 0 && current(get_user_roles($course->get_context(), $userid))->shortname == 'student' ? true : false;
+            $info = new \completion_info(get_course($course->get_id()));
+            $this->is_active = $info->is_tracked_user($userid);
     }
 
     /**
@@ -269,10 +271,11 @@ class participant implements participant_interface {
     /**
      * Suspends the student's enrolment to a course.
      *
-     * @return bool The result of the suspension action.
+     * @param bool $status  The status of the enrolment suspended = true
+     * @return bool         The result of the suspension action.
      */
-    public function suspend() {
-        return $this->vault->suspend($this->course->get_id(), $this->userid);
+    public function suspend(bool $status = true) {
+        return $this->vault->suspend($this->course->get_id(), $this->userid, (int)$status);
     }
 
     /**

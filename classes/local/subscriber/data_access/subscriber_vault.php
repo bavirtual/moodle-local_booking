@@ -77,8 +77,33 @@ class subscriber_vault implements subscriber_vault_interface {
     }
 
     /**
+     * Returns the subscribed course last exercise
+     *
+     * @param int $courseid The course id of the section
+     * @return string  The section name of a course associated with the exercise
+     */
+    public static function get_subscriber_last_exercise(int $courseid) {
+        global $DB;
+
+        // Get the full user name
+        $sql = 'SELECT cm.id AS exerciseid
+                FROM mdl_course_modules cm
+                INNER JOIN mdl_modules m ON m.id = cm.module
+                INNER JOIN mdl_course_sections cs ON cs.id = cm.section
+                WHERE  m.name = :assign
+                    AND cm.course = :courseid
+                ORDER BY cs.section DESC
+                LIMIT 1';
+
+        $exercises = $DB->get_record_sql($sql, ['assign' => 'assign', 'courseid' => $courseid]);
+
+        return $exercises->exerciseid;
+    }
+
+    /**
      * Retrieves exercises for the course
      *
+     * @param int $courseid The course id of the section
      * @return array
      */
     public static function get_subscriber_exercises(int $courseid) {
@@ -125,5 +150,26 @@ class subscriber_vault implements subscriber_vault_interface {
         $param = ['exerciseid'=>$exerciseid];
 
         return $DB->get_record_sql($sql, $param)->exercisename;
+    }
+
+    /**
+     * Retrieves the number of modules for a specific exercise course.
+     *
+     * @param int $courseid The course id
+     * @return int
+     */
+    public static function get_subscriber_modules_count(int $courseid) {
+        global $DB;
+
+        // Get the student's grades
+        $sql = 'SELECT COUNT(cm.id) AS modules
+                FROM {' . self::DB_MODULES . '} m
+                INNER JOIN {' . self::DB_COURSE_MODULES . '} cm on m.id = cm.module
+                WHERE cm.course = :courseid
+                    AND m.name = :lesson
+                ';
+
+
+        return $DB->get_record_sql($sql, ['courseid' => $courseid, 'lesson' => 'lesson', ])->modules;
     }
 }

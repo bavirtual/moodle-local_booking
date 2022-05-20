@@ -106,7 +106,7 @@ echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
 // action data for booking view
 $actiondata = [
     'action'     => $action,
-    'student'    => $COURSE->subscriber->get_active_participant($userid),
+    'student'    => $COURSE->subscriber->get_participant($userid),
     'exerciseid' => $exerciseid,
     ];
 

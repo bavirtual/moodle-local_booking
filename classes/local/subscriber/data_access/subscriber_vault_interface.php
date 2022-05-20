@@ -41,9 +41,18 @@ interface subscriber_vault_interface {
     /**
      * Retrieves exercises for the course
      *
+     * @param int $courseid The course id of the section
      * @return array
      */
     public static function get_subscriber_exercises(int $courseid);
+
+    /**
+     * Returns the subscribed course last exercise
+     *
+     * @param int $courseid The course id of the section
+     * @return string  The section name of a course associated with the exercise
+     */
+    public static function get_subscriber_last_exercise(int $courseid);
 
     /**
      * Retrieves the exercise name of a specific exercise
@@ -53,4 +62,12 @@ interface subscriber_vault_interface {
      * @return string
      */
     public static function get_subscriber_exercise_name(int $exerciseid);
+
+    /**
+     * Retrieves the number of modules for a specific exercise course.
+     *
+     * @param int $courseid The course id
+     * @return int
+     */
+    public static function get_subscriber_modules_count(int $courseid);
 }

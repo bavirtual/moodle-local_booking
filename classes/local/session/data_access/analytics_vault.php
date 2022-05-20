@@ -27,7 +27,6 @@ namespace local_booking\local\session\data_access;
 
 use DateTime;
 use local_booking\local\slot\data_access\slot_vault;
-use local_booking\local\subscriber\entities\subscriber;
 
 class analytics_vault implements analytics_vault_interface {
 

@@ -46,6 +46,7 @@
         <table
             data-region="session-booking-confirmation"
             class="table-bordered"
+            data-courseid="{{courseid}}"
             data-studentid="{{studentid}}">
             <thead>
                 <tr>
@@ -81,7 +82,7 @@
                         <span class="media-body small" aria-hidden="true">{{sequence}}</span>
                     </td>
                     <td class="booking-truncate">
-                        <span>{{studentname}}</span><br/>
+                        <span><a href="{{profileurl}}">{{studentname}}</a></span><br/>
                     </td>
                     <td class="day text-sm-center">
                         <span class="media-body small{{#overduewarning}} session-overdue{{/overduewarning}}{{#latewarning}} session-late{{/latewarning}}"

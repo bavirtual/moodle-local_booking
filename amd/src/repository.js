@@ -120,23 +120,6 @@ import Ajax from 'core/ajax';
 };
 
 /**
- * Overrides wait time restriction for a student.
- *
- * @param {int} studentId   The student id to waive restiction for.
- * @return {promise}
- */
- export const overrideWaitRestriction = (studentId) => {
-    const request = {
-        methodname: 'local_booking_override_restriction',
-        args: {
-            studentid: studentId,
-        }
-    };
-
-    return Ajax.call([request])[0];
-};
-
-/**
  * Send marked availability posts (time slots)
  * to the server to be persisted
  *
@@ -278,13 +261,84 @@ import Ajax from 'core/ajax';
  * @param  {string} pirep The passed PIREP number
  * @param  {number} courseId The logbook entry user id.
  * @param  {number} userId The logbook entry course id.
-* @return  {promise} Resolved with the pirep data
+ * @return  {promise} Resolved with the pirep data
  */
  export const findPirep = (pirep, courseId, userId) => {
     const request = {
         methodname: 'local_booking_get_pirep',
         args: {
             pirep: pirep,
+            courseid: courseId,
+            userid: userId
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
+ * Update Suspended status from the user profile.
+ *
+ * @method updateSuspended
+ * @param  {bool}   status   Suspended true or false.
+ * @param  {number} courseId The profile user id.
+ * @param  {number} userId   The profile course id.
+ * @return {promise}         Resolved with suspension true/false promise
+ */
+ export const updateSuspendedStatus = (status, courseId, userId) => {
+    const request = {
+        methodname: 'local_booking_update_suspended_status',
+        args: {
+            status: status,
+            courseid: courseId,
+            userid: userId
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
+ * Update group membership status for Onhold and Keep Active groups for the user profile.
+ *
+ * @method updateGroup
+ * @param  {string} group    Group name.
+ * @param  {bool}   ismember Membership true or false.
+ * @param  {number} courseId The profile user id.
+ * @param  {number} userId   The profile course id.
+ * @return {promise}         Resolved with group membership true/false promise
+ */
+ export const updateGroup = (group, ismember, courseId, userId) => {
+    const request = {
+        methodname: 'local_booking_update_group_status',
+        args: {
+            group: group,
+            ismember: ismember,
+            courseid: courseId,
+            userid: userId
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
+ * Update user preferences for restrictions override or
+ * endorsement status.
+ *
+ * @method updateUserPreferences
+ * @param  {string} preference  Preference name.
+ * @param  {string} value       User preference value.
+ * @param  {number} courseId    The profile user id.
+ * @param  {number} userId      The profile course id.
+ * @return {promise}            Resolved with preference set promise
+ */
+ export const updateUserPreferences = (preference, value, courseId, userId) => {
+    const request = {
+        methodname: 'local_booking_update_user_preferences',
+        args: {
+            preference: preference,
+            value: value,
             courseid: courseId,
             userid: userId
         }

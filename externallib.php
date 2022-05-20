@@ -25,11 +25,13 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once($CFG->dirroot . '/group/lib.php');
 require_once($CFG->dirroot . '/local/booking/lib.php');
 
 use local_booking\external\logentry_exporter;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
+use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 
 /**
@@ -474,7 +476,7 @@ class local_booking_external extends external_api {
 
         $actiondata = [
             'action'    => $action,
-            'student' => $COURSE->subscriber->get_active_participant($userid),
+            'student' => $COURSE->subscriber->get_participant($userid),
             'exerciseid'=> $exerciseid == null ? 0 : $exerciseid,
         ];
 
@@ -618,30 +620,39 @@ class local_booking_external extends external_api {
      *
      * @return external_function_parameters.
      */
-    public static function override_wait_restriction_parameters() {
+    public static function update_user_preferences_parameters() {
         return new external_function_parameters(array(
-                'studentid' => new external_value(PARAM_INT, 'The booking id', VALUE_DEFAULT),
+                'preference' => new external_value(PARAM_RAW, 'The preference key', VALUE_DEFAULT),
+                'value' => new external_value(PARAM_RAW, 'The value of the preference', VALUE_DEFAULT),
+                'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
+                'userid' => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
             )
         );
     }
 
     /**
-     * Overrides the wait time restriction for a student
+     * Set the user preferences
      *
-     * @param int $studentid    The student id the restriciton waiver is for.
-     * @return bool $result     The result of the availability override operation.
+     * @param string $preference The preference key of to be set.
+     * @param string $value      The value of the preference to be set.
+     * @param int $courseid      The course id.
+     * @param int $studentid     The student id.
+     * @return bool $result      The result of the availability override operation.
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
-    public static function override_wait_restriction($studentid) {
+    public static function update_user_preferences($preference, $value, $courseid, $studentid) {
 
         // Parameter validation.
-        $params = self::validate_parameters(self::override_wait_restriction_parameters(), array(
-            'studentid' => $studentid,
+        $params = self::validate_parameters(self::update_user_preferences_parameters(), array(
+            'preference' => $preference,
+            'value'      => $value,
+            'courseid' => $courseid,
+            'userid'     => $studentid,
             )
         );
 
         $warnings = array();
-        $result = override_availability_restriction($studentid);
+        $result = set_user_prefs($preference, $value, $courseid, $studentid);
 
         return array(
             'result' => $result,
@@ -655,7 +666,142 @@ class local_booking_external extends external_api {
      * @return external_description.
      * @since Moodle 2.5
      */
-    public static function override_wait_restriction_returns() {
+    public static function update_user_preferences_returns() {
+        return new external_single_structure(
+            array(
+                'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters.
+     */
+    public static function update_enrolement_status_parameters() {
+        return new external_function_parameters(array(
+                'status' => new external_value(PARAM_BOOL, 'The suspension status', VALUE_DEFAULT),
+                'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
+                'userid' => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
+            )
+        );
+    }
+
+    /**
+     * Suspend or unsuspend a user course enrolement.
+     *
+     * @param bool $status       The suspend status true/false.
+     * @param int $courseid      The course id.
+     * @param int $studentid     The student id.
+     * @return bool $result      The result of the availability override operation.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function update_enrolement_status($status, $courseid, $studentid) {
+        global $COURSE, $PAGE;
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::update_enrolement_status_parameters(), array(
+            'status' => $status,
+            'courseid' => $courseid,
+            'userid'  => $studentid,
+            )
+        );
+
+        $context = context_course::instance($courseid);
+        self::validate_context($context);
+        $PAGE->set_url('/local/booking/');
+
+        // define subscriber globally
+        if (empty($COURSE->subscriber))
+            $COURSE->subscriber = new subscriber($courseid);
+
+        // suspend a student
+        $student = new student($COURSE->subscriber, $studentid);
+        $result = $student->suspend($status);
+        $warnings = array();
+
+        return array(
+            'result' => $result,
+            'warnings' => $warnings
+        );
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function update_enrolement_status_returns() {
+        return new external_single_structure(
+            array(
+                'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters.
+     */
+    public static function update_user_group_parameters() {
+        return new external_function_parameters(array(
+                'group' => new external_value(PARAM_RAW, 'The preference key', VALUE_DEFAULT),
+                'ismember' => new external_value(PARAM_BOOL, 'The value of the preference', VALUE_DEFAULT),
+                'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
+                'userid' => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
+            )
+        );
+    }
+
+    /**
+     * Update user group membership add/remove for the course.
+     *
+     * @param string $group      The user group.
+     * @param bool $ismember       Add/remove to/from group.
+     * @param int $courseid      The course id.
+     * @param int $studentid     The student id.
+     * @return bool $result      The result of the availability override operation.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function update_user_group($group, $ismember, $courseid, $studentid) {
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::update_user_group_parameters(), array(
+            'group' => $group,
+            'ismember' => $ismember,
+            'courseid' => $courseid,
+            'userid'  => $studentid,
+            )
+        );
+
+        $warnings = array();
+
+        // add/remove student to group
+        $groupid = groups_get_group_by_name($courseid, $group);
+        if ($ismember) {
+            $result = groups_add_member($groupid, $studentid);
+        } else {
+            $result = groups_remove_member($groupid, $studentid);
+        }
+
+        return array(
+            'result' => $result,
+            'warnings' => $warnings
+        );
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function update_user_group_returns() {
         return new external_single_structure(
             array(
                 'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),
@@ -882,7 +1028,7 @@ class local_booking_external extends external_api {
 
         // if the operation is an update, get the logentry
         if (!empty($data['id'])) {
-            $logentryuser = $COURSE->subscriber->get_active_participant($userid);
+            $logentryuser = $COURSE->subscriber->get_participant($userid);
             $logbook = new logbook($courseid, $userid);
             $logentry = $logbook->get_logentry(clean_param($data['id'], PARAM_INT));
             $formoptions['logentry'] = $logentry;

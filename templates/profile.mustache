@@ -31,50 +31,147 @@
     {
     }
 }}
-<div>
-    <div>Profile
-        <pre>
-            <span>Name                  {{studentname}}</span>
-            <span>Country               {{country}}</span>
-            <span>Timezone              {{timezone}}</span>
-            <span>Primary simulator     {{sim1}}</span>
-            <span>Secondary simulator   {{sim2}}</span>
-            <span>Moodle profile</span>
-        </pre>
-    </div>
-    <div>Course Activity
-        <pre>
-            <span>Enrol date            {{enroldate}}</span>
-            <span>Last session booked   {{lastbookeddate}}</span>
-            <span>Last lesson completed {{lastlessondate}}</span>
-            <span>Login as</span>
-            <span>Feedback report</span>
-            <span>Outline report</span>
-            <span>Complete report</span>
-        </pre>
-    </div>
-    <div>Score
-        <pre>
-            <span>Recency               {{recency}}</span>
-            <span>Course activity       {{courseactivity}}</span>
-            <span>Slots                 {{slots}}</span>
-            <span>Lesson completions    {{lessoncompletion}}</span>
-        </pre>
-    </div>
-    <div class="custom-control custom-switch">Administration
-        <pre>
-            <span>Assigned instructor   {{instructor}}</span>
-            <span>Restriction override  {{override}}</span>
-            <label class="custom-control-label" for="keepactive">Keep active</label>
-            <input type="checkbox" class="custom-control-input" id="keepactive" {{#keepactive}}checked{{/keepactive}}>
-            <label class="custom-control-label" for="onhold">On-hold</label>
-            <input type="checkbox" class="custom-control-input" id="onhold" {{#onhold}}checked{{/onhold}}>
-            <label class="custom-control-label" for="suspended">Suspended</label>
-            <input type="checkbox" class="custom-control-input" id="suspended" {{#suspended}}checked{{/suspended}}>
-        </pre>
-    </div>
-    <div>Logbook
-        {{> local_booking/logbook_std}}
+<div id="user-profile-{{uniqid}}">
+    <div class="userprofile userprofilewrapper"
+        data-courseid="{{courseid}}"
+        data-userid="{{userid}}"
+        data-onholdgroup="{{onholdgroup}}"
+        data-keepactivegroup="{{keepactivegroup}}"
+        data-endorser="{{endorser}}">
+        <div class="sb_profile_tree">
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} profile {{/str}}</h3>
+                    <dl><dt>{{#str}} name {{/str}}</dt><dd>{{fullname}}</dd></dl>
+                    <dl><dt>{{#str}} timezone {{/str}}</dt><dd>{{timezone}}</dd></dl>
+                    <dl><dt>{{#str}} sim1 , local_booking {{/str}}</dt><dd>{{sim1}}</dd></dl>
+                    <dl><dt>{{#str}} sim2 , local_booking {{/str}}</dt><dd>{{sim2}}</dd></dl>
+                    <span><a href="{{moodleprofileurl}}">{{#str}} moodleprofile , local_booking {{/str}}</a></span>
+                </div>
+            </section>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} score , local_booking {{/str}}</h3>
+                    <dl><dt>{{#str}} recency , local_booking {{/str}}</dt><dd>{{recency}} {{#str}} daysback , local_booking {{/str}}</dd></dl>
+                    <dl><dt>{{#str}} courseactivity , local_booking {{/str}}</dt><dd>{{courseactivity}} {{#str}} pageviews , local_booking {{/str}}</dd></dl>
+                    <dl><dt>{{#str}} slotsactive , local_booking {{/str}}</dt><dd>{{slots}}</dd></dl>
+                    <dl><dt>{{#str}} modulescompleted , local_booking {{/str}}</dt><dd>{{modulescompleted}}</dd></dl>
+                </div>
+            </section>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} courseactivity , local_booking {{/str}}</h3>
+                    <dl><dt>{{#str}} enroldate , local_booking {{/str}}</dt><dd>{{enroldate}}</dd></dl>
+                    <dl><dt>{{#str}} lastlogin {{/str}}</dt><dd>{{lastlogin}}</dd></dl>
+                    <dl><dt>{{#str}} lastgraded , local_booking{{/str}}</dt><dd>{{lastgraded}}</dd></dl>
+                    <dl><dt>{{#str}} lastlesson , local_booking {{/str}}</dt><dd>{{lastlesson}}</dd></dl>
+                    <dl><dt>{{#str}} lastlessoncompleted , local_booking {{/str}}</dt><dd>{{lastlessoncompleted}}</dd></dl>
+                </div>
+            </section>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} graduation , local_booking {{/str}}</h3>
+                    <dl>
+                        <dt>{{#str}} status {{/str}}</dt>
+                        <dd>
+                            {{#qualified}}{{#str}} qualified , local_booking {{/str}}{{/qualified}}
+                            {{^qualified}}{{#str}} notqualified , local_booking {{/str}}{{/qualified}}
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>{{#str}} endorsement , local_booking {{/str}}</dt>
+                        <dd>
+                            {{#qualified}}
+                            <div id="endorse-region" class="custom-control custom-switch">
+                                <input type="checkbox" class="toggle-input" id="endorse" {{#endorsed}}checked{{/endorsed}}>
+                                <label id="endorsement-label" class="toggle-label" for="endorse">{{endorsementmgs}}</label>
+                                {{> core/overlay_loading}}
+                            </div>
+                            {{/qualified}}
+                            {{^qualified}}{{#str}} notqualified , local_booking {{/str}}{{/qualified}}
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>{{#str}} skilltest , local_booking {{/str}}<dt>
+                        <dd>
+                            <button id="skillform" type="button" class="btn btn-primary btn-sm mr-3" {{^endorsed}}disabled="true"{{/endorsed}} onclick="location.href='{{{skilltestformurl}}}';">
+                            {{#str}} skilltestform, local_booking {{/str}}</button>
+                        </dd>
+                    </dl>
+                </div>
+            </section>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} administration {{/str}}</h3>
+                    <dl><dt><dd>
+                        <div id="suspend-region" class="custom-control custom-switch">
+                            <input type="checkbox" class="toggle-input" id="suspended" {{#suspended}}checked{{/suspended}}>
+                            <label class="toggle-label" for="suspended">{{#str}} suspended {{/str}}</label>
+                            {{> core/overlay_loading}}
+                        </div>
+                    </dd></dt></dl>
+                    {{#onholdrestrictionenabled}}
+                    <dl><dt><dd>
+                        <div id="onhold-region" class="custom-control custom-switch">
+                            <input type="checkbox" class="toggle-input" id="onhold" {{#onhold}}checked{{/onhold}}>
+                            <label class="toggle-label" for="onhold">On-hold</label>
+                            {{> core/overlay_loading}}
+                        </div>
+                    </dd></dt></dl>
+                    <dl><dt><dd>
+                        <div id="keep-active-region" class="custom-control custom-switch">
+                            <input type="checkbox" class="toggle-input" id="keepactive" {{#keepactive}}checked{{/keepactive}}>
+                            <label class="toggle-label" for="keepactive">{{#str}} keepactive , local_booking {{/str}}</label>
+                            {{> core/overlay_loading}}
+                        </div>
+                    </dd></dt></dl>
+                    {{/onholdrestrictionenabled}}
+                    {{#waitrestrictionenabled}}
+                    <dl><dt><dd>
+                        <div id="restriction-override-region" class="custom-control custom-switch">
+                            <input type="checkbox" class="toggle-input" id="availabilityoverride" {{#restrictionoverride}}checked{{/restrictionoverride}}>
+                            <label class="toggle-label" for="availabilityoverride">{{#str}} restrictionoverride , local_booking {{/str}}</label>
+                            {{> core/overlay_loading}}
+                        </div>
+                    </dd></dt></dl>
+                    {{/waitrestrictionenabled}}
+                    {{#admin}}
+                    </br><span><a href="{{loginasurl}}">{{#str}} loginas , local_booking {{/str}}</a></span>
+                    {{/admin}}
+                </div>
+            </section>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} reports {{/str}}</h3>
+                    <dl><dt>Moodle
+                        <dd><span><a href="{{outlinereporturl}}">{{#str}} outlinereport , local_booking {{/str}}</a></span></dd>
+                        <dd><span><a href="{{completereporturl}}">{{#str}} completereport , local_booking {{/str}}</a></span></dd>
+                        <dd><span><a href="{{logbookurl}}">{{#str}} logbookstudent , local_booking {{/str}}</a></span></dd>
+                    </dt></dl>
+                    <dl><dt>{{#str}} vatsim , local_booking {{/str}}
+                        <dd><span><a href="{{mentorreporturl}}">{{#str}} mentorreport , local_booking {{/str}}</a></span></dd>
+                        <dd><span><a href="{{theoryexamreporturl}}">{{#str}} theoryexamreport , local_booking {{/str}}</a></span></dd>
+                        <dd><span><a href="{{practicalexamreporturl}}">{{#str}} practicalexamreport , local_booking {{/str}}</a></span></dd>
+                    </dt></dl>
+                </div>
+            </section>
+        </div>
+        <div class="bottom" style="text-align: center;">
+            <div class="singlebutton">
+                <button type="button" onclick="window.history.back()"
+                    class="session-button-confirm"
+                    data-region="back-button"
+                    id="back_button"
+                    title="">
+                    {{#str}} back {{/str}}
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
+{{#js}}
+require(['jquery', 'local_booking/user_profile'], function($, UserProfile) {
+    UserProfile.init($("#user-profile-{{uniqid}}"));
+});
+{{/js}}

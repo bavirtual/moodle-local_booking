@@ -37,6 +37,13 @@ interface subscriber_interface {
     public function get_id();
 
     /**
+     * Get the subscriber's course context.
+     *
+     * @return \context_course $context
+     */
+    public function get_context();
+
+    /**
      * Get the subscriber's course shortname.
      *
      * @return string $shortname
@@ -54,9 +61,28 @@ interface subscriber_interface {
      * Get an active participant.
      *
      * @param int $participantid A participant user id.
+     * @param bool $populate     Whether to get the participant data.
+     * @param bool $active       Whether the participant is active.
      * @return participant       The participant object
      */
-    public function get_active_participant(int $participantid);
+    public function get_participant(int $participantid, bool $populate = false, bool $active = true);
+
+    /**
+     * Get all active instructors for the course.
+     *
+     * @return {Object}[]   Array of active instructors.
+     */
+    public function get_active_participants();
+
+    /**
+     * Get a student.
+     *
+     * @param int  $studentid   A participant user id.
+     * @param bool $populate    Whether to get the student data.
+     * @param bool $active      Whether the student has an active enrolment.
+     * @return student          The student object
+     */
+    public function get_student(int $studentid, bool $populate = false, bool $active = true);
 
     /**
      * Get an active student.
@@ -98,13 +124,6 @@ interface subscriber_interface {
     public function get_senior_instructors();
 
     /**
-     * Get all active instructors for the course.
-     *
-     * @return {Object}[]   Array of active instructors.
-     */
-    public function get_active_participants();
-
-    /**
      * Returns the course section name containing the exercise
      *
      * @param int $courseid The course id of the section
@@ -114,11 +133,26 @@ interface subscriber_interface {
     public static function get_section_name(int $courseid, int $exerciseid);
 
     /**
+     * Returns the course last exercise
+     *
+     * @param int $courseid The course id of the section
+     * @return string  The last exericse id
+     */
+    public function get_last_exercise();
+
+    /**
      * Retrieves exercises for the course
      *
      * @return array
      */
     public function get_exercises();
+
+    /**
+     * Retrieves the total number of modules in a course.
+     *
+     * @return int
+     */
+    public function get_modules_count();
 
     /**
      * Retrieves the exercise name of a specific exercise

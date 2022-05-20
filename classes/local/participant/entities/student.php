@@ -263,7 +263,7 @@ class student extends participant {
 
         if (empty($this->restrictiondate)) {
             // get wait time restriction waiver if exists
-            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $this->userid);
+            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->course->get_id() . '_availabilityoverride', false, $this->userid);
             $nextsessiondate = new DateTime('@' . time());
 
             // process restriction if posting wait restriction is enabled or if the student doesn't have a waiver
@@ -319,13 +319,13 @@ class student extends participant {
      * @return int The current or next exercise id and associated course section
      */
     public function get_exercise($next = true) {
-        $exerciseid = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, $next);
+        $exercise = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, $next);
         if ($next) {
-            $this->nextexercise = $exerciseid;
+            $this->nextexercise = $exercise;
         } else {
-            $this->currentexercise = $exerciseid;
+            $this->currentexercise = $exercise;
         }
-        return $exerciseid;
+        return $exercise;
     }
 
     /**

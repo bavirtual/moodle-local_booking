@@ -124,9 +124,10 @@ interface participant_interface {
     /**
      * Suspends the student's enrolment to a course.
      *
-     * @return bool             The result of the suspension action.
+     * @param bool $status  The status of the enrolment suspended = true
+     * @return bool         The result of the suspension action.
      */
-    public function suspend();
+    public function suspend(bool $status = true);
 
     /**
      * Loads participant's date from a table record

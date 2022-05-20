@@ -234,7 +234,7 @@ class week_timeslot_exporter extends exporter {
         if ($this->groupview || $this->bookview) {
             $lastsessionwait = false;
         } else {
-            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_availabilityoverride', false, $this->student->get_id());
+            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->course->id . '_availabilityoverride', false, $this->student->get_id());
             if (!$hasrestrictionwaiver) {
                 $nextsessiondt = $this->student->get_next_allowed_session_date();
                 $nextsessiondate = $this->related['type']->timestamp_to_date_array($nextsessiondt->getTimestamp());

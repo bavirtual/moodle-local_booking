@@ -132,7 +132,36 @@ class participant_vault implements participant_vault_interface {
     }
 
     /**
-     * Get all active students from the database.
+     * Get all active participant from the database.
+     *
+     * @param int $courseid The course id.
+     * @param int $userid   A specific user.
+     * @param bool $active  Whether the user is actively enrolled.
+     * @return {Object}         Array of database records.
+     */
+    public static function get_participant(int $courseid, int $userid = 0, bool $active = true) {
+        global $DB;
+
+        $activeclause = $active ? ' AND ue.status = 0' : '';
+        $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
+                    'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
+                    ue.timecreated AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
+                FROM {' . self::DB_USER . '} u
+                INNER JOIN {' . self::DB_USER_ENROL . '} ue on u.id = ue.userid
+                INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
+                WHERE en.courseid = :courseid
+                    AND u.id = :userid' . $activeclause;
+
+        $params = [
+            'courseid'  => $courseid,
+            'userid' => $userid
+        ];
+
+        return $DB->get_record_sql($sql, $params);
+    }
+
+    /**
+     * Get all active student from the database.
      *
      * @param int $courseid     The course id.
      * @param bool $studentid   A specific student for booking confirmation
@@ -170,13 +199,21 @@ class participant_vault implements participant_vault_interface {
      *
      * @param int $courseid         The course id.
      * @param bool $includeonhold   Whether to include on-hold students as well
+     * @param bool $includeoall     Whether to include on-hold students as well
      * @return {Object}[]           Array of database records.
      */
-    public static function get_active_students(int $courseid, bool $includeonhold = false) {
+    public static function get_students(int $courseid, bool $includeonhold = false, bool $includeall = false) {
         global $DB;
 
         // return $DB->get_records_sql($sql, $params);
-        $onhold_clause = $includeonhold ? '' : ' OR g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
+        $onholdclause = $includeonhold ? '' : ' OR g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
+        $activestudentsclause = $includeall ? '' : 'AND ue.status = 0
+            AND u.id NOT IN (
+                SELECT userid
+                FROM {' . self::DB_GROUPS_MEM . '} gm
+                INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                WHERE g.courseid = :gcourseid AND (g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
+                ' . $onholdclause . '))';
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                         'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
@@ -189,14 +226,7 @@ class participant_vault implements participant_vault_interface {
                     WHERE en.courseid = :courseid
                         AND ra.contextid = :contextid
                         AND r.shortname = :role
-                        AND ue.status = 0
-                        AND u.deleted != 1
-                        AND u.id NOT IN (
-                            SELECT userid
-                            FROM {' . self::DB_GROUPS_MEM . '} gm
-                            INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                            WHERE g.courseid = :gcourseid AND (g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
-                            ' . $onhold_clause . '))';
+                        AND u.deleted != 1 ' . $activestudentsclause;
 
         $params = [
             'courseid'  => $courseid,
@@ -308,7 +338,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // Get the student's grades
-        $sql = 'SELECT cm.id AS exerciseid, a.id AS assignid,
+        $sql = 'SELECT cm.id AS exerciseid, a.id AS assignid, cs.name AS section,
                     ag.userid, MAX(ag.grade) AS grade, a.grade AS totalgrade,
                     MAX(ag.timemodified) AS gradedate, m.name AS exercisetype,
                     MAX(u.id) AS instructorid, ' . $DB->sql_concat('u.firstname', '" "',
@@ -346,7 +376,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // Get the student's grades
-        $sql = 'SELECT cm.id AS exerciseid, qg.quiz AS assignid,
+        $sql = 'SELECT cm.id AS exerciseid, qg.quiz AS assignid, cs.name AS section,
                     qg.userid, qg.grade, q.grade AS totalgrade,
                     qg.timemodified AS gradedate,
                     0 AS instructorid, \'\' AS instructorname,
@@ -398,20 +428,22 @@ class participant_vault implements participant_vault_interface {
      *
      * @param int   $courseid   The course the student is being unenrolled from.
      * @param int   $studentid  The student id in reference
+     * @param int   $status     The status of the enrolment suspended = 1
      * @return bool             The result of the suspension action.
      */
-    public function suspend(int $courseid, int $studentid) {
+    public function suspend(int $courseid, int $studentid, int $status) {
         global $DB;
 
         $sql = 'UPDATE {' . static::DB_USER_ENROL . '} ue
                 INNER JOIN {' . static::DB_ENROL . '} e ON e.id = ue.enrolid
-                SET ue.status = 1
+                SET ue.status = :status
                 WHERE e.courseid = :courseid
                     AND ue.userid = :studentid';
 
         $params = [
             'courseid' => $courseid,
-            'studentid'  => $studentid
+            'studentid'  => $studentid,
+            'status'  => $studentid
         ];
 
         return $DB->execute($sql, $params);

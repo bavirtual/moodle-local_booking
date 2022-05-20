@@ -249,6 +249,7 @@ class bookings_exporter extends exporter {
 
             $waringflag = $this->get_warning($student->get_priority()->get_recency_days());
             $data = [
+                'courseid'        => $this->data['courseid'],
                 'sequence'        => $i,
                 'sequencetooltip' => get_string('sequencetooltip', 'local_booking', $sequencetooltip),
                 'student'         => $student,

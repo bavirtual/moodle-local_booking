@@ -26,12 +26,9 @@
 import $ from 'jquery';
 import 'local_booking/jquery.dataTables';
 import 'local_booking/dataTables.bootstrap4';
-// import 'local_booking/dataTables.responsive';
-// import 'local_booking/responsive.bootstrap4';
 import Notification from 'core/notification';
 import * as Repository from 'local_booking/repository';
 import * as ViewManager from 'local_booking/booking_view_manager';
-// import 'local_booking/dataTables.bootstrap';
 import 'local_booking/datatables';
 
 export const init = (root) => {

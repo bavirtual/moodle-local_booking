@@ -30,6 +30,16 @@ defined('MOODLE_INTERNAL') || die();
 interface participant_vault_interface {
 
     /**
+     * Get all active participant from the database.
+     *
+     * @param int $courseid The course id.
+     * @param int $userid   A specific user.
+     * @param bool $active  Whether the user is actively enrolled.
+     * @return {Object}         Array of database records.
+     */
+    public static function get_participant(int $courseid, int $userid = 0, bool $active = true);
+
+    /**
      * Get all active students from the database.
      *
      * @param int $courseid     The course id.
@@ -43,9 +53,10 @@ interface participant_vault_interface {
      *
      * @param int $courseid         The course id.
      * @param bool $includeonhold   Whether to include on-hold students as well
+     * @param bool $includeoall     Whether to include on-hold students as well
      * @return {Object}[]           Array of database records.
      */
-    public static function get_active_students(int $courseid, bool $includeonhold = false);
+    public static function get_students(int $courseid, bool $includeonhold = false, bool $includeall = false);
 
     /**
      * Get all active instructors for the course from the database.
@@ -96,9 +107,10 @@ interface participant_vault_interface {
      *
      * @param int   $courseid   The course the student is being unenrolled from.
      * @param int   $studentid  The student id in reference
+     * @param int   $status     The status of the enrolment suspended = 1
      * @return bool             The result of the suspension action.
      */
-    public function suspend(int $courseid, int $studentid);
+    public function suspend(int $courseid, int $studentid, int $status);
 
     /**
      * Returns full username

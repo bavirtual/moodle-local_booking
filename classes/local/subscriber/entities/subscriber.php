@@ -45,6 +45,11 @@ defined('MOODLE_INTERNAL') || die();
 class subscriber implements subscriber_interface {
 
     /**
+     * @var \context_course $context The subscribed course context.
+     */
+    protected $context;
+
+    /**
      * @var int $course The subscribed course.
      */
     protected $courseid;
@@ -71,6 +76,7 @@ class subscriber implements subscriber_interface {
      */
     public function __construct($courseid) {
         global $COURSE;
+        $this->context = \context_course::instance($courseid);
         $this->courseid = $courseid;
         $this->shortname = $COURSE->shortname;
 
@@ -122,6 +128,15 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Get the subscriber's course context.
+     *
+     * @return \context_course $context
+     */
+    public function get_context() {
+        return $this->context;
+    }
+
+    /**
      * Get the subscriber's course shortname.
      *
      * @return string $shortname
@@ -143,11 +158,52 @@ class subscriber implements subscriber_interface {
      * Get an active participant.
      *
      * @param int $participantid A participant user id.
+     * @param bool $populate     Whether to get the participant data.
+     * @param bool $active       Whether the participant is active.
      * @return participant       The participant object
      */
-    public function get_active_participant($participantid) {
+    public function get_participant(int $participantid, bool $populate = false, bool $active = true) {
         // instantiate the participant object
-        return new participant($this, $participantid);
+        $participant = new participant($this, $participantid);
+
+        if ($populate) {
+            $participantrec = participant_vault::get_participant($this->courseid, $participantid, $active);
+            if (!empty($participantrec->userid))
+                $participant->populate($participantrec);
+        }
+
+        return $participant;
+    }
+
+    /**
+     * Get all senior instructors for the course.
+     *
+     * @return {Object}[]   Array of course's senior instructors.
+     */
+    public function get_active_participants() {
+        $participants = array_merge(participant_vault::get_students($this->courseid), participant_vault::get_active_instructors($this->courseid));
+        return $participants;
+    }
+
+    /**
+     * Get a student.
+     *
+     * @param int  $studentid   A participant user id.
+     * @param bool $populate    Whether to get the student data.
+     * @param bool $active      Whether the student has an active enrolment.
+     * @return student          The student object
+     */
+    public function get_student(int $studentid, bool $populate = false, bool $active = true) {
+        // instantiate the participant object
+        $student = new student($this, $studentid);
+
+        if ($populate) {
+            $studentrec = participant_vault::get_participant($this->courseid, $studentid, $active);
+            if (!empty($studentrec->userid))
+                $student->populate($studentrec);
+        }
+
+        return $student;
     }
 
     /**
@@ -176,6 +232,30 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Get all students active, inactive, and suspended.
+     *
+     * @return array $allstudents Array of active students.
+     */
+    public function get_all_students() {
+        $allstudents = [];
+        $studentrecs = participant_vault::get_students($this->courseid, true, true);
+        $colors = (array) get_booking_config('colors', true);
+
+        // add a color for the student slots from the config.json file for each student
+        $i = 0;
+        foreach ($studentrecs as $studentrec) {
+            $student = new student($this, $studentrec->userid);
+            $student->populate($studentrec);
+            $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
+            $allstudents[] = $student;
+            $i++;
+        }
+        $this->allstudents = $allstudents;
+
+        return $this->allstudents;
+    }
+
+    /**
      * Get all active students.
      *
      * @param bool $includeonhold    Whether to include on-hold students as well
@@ -183,7 +263,7 @@ class subscriber implements subscriber_interface {
      */
     public function get_active_students(bool $includeonhold = false) {
         $activestudents = [];
-        $studentrecs = participant_vault::get_active_students($this->courseid, $includeonhold);
+        $studentrecs = participant_vault::get_students($this->courseid, $includeonhold);
         $colors = (array) get_booking_config('colors', true);
 
         // add a color for the student slots from the config.json file for each student
@@ -248,16 +328,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Get all senior instructors for the course.
-     *
-     * @return {Object}[]   Array of course's senior instructors.
-     */
-    public function get_active_participants() {
-        $participants = array_merge(participant_vault::get_active_students($this->courseid), participant_vault::get_active_instructors($this->courseid));
-        return $participants;
-    }
-
-    /**
      * Returns the subscribed course section name containing the exercise
      *
      * @param int $courseid The course id of the section
@@ -266,6 +336,16 @@ class subscriber implements subscriber_interface {
      */
     public static function get_section_name(int $courseid, int $exerciseid) {
         return subscriber_vault::get_subscriber_section_name($courseid, $exerciseid);
+    }
+
+    /**
+     * Returns the course last exercise
+     *
+     * @param int $courseid The course id of the section
+     * @return string  The last exericse id
+     */
+    public function get_last_exercise() {
+        return subscriber_vault::get_subscriber_last_exercise($this->courseid);
     }
 
     /**
@@ -302,6 +382,15 @@ class subscriber implements subscriber_interface {
      */
     public static function get_exercise_name($exerciseid) {
         return subscriber_vault::get_subscriber_exercise_name($exerciseid);
+    }
+
+    /**
+     * Retrieves the total number of modules in a course.
+     *
+     * @return int
+     */
+    public function get_modules_count() {
+        return subscriber_vault::get_subscriber_modules_count($this->courseid);
     }
 
     /**
@@ -402,11 +491,11 @@ class subscriber implements subscriber_interface {
         }
 
         // check if LOCAL_BOOKING_GRADUATESGROUP exists otherwise create it
-        $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_KEEPACTIVE);
+        $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_KEEPACTIVEGROUP);
         if (empty($groupid)) {
             $data = new \stdClass();
             $data->courseid = $this->courseid;
-            $data->name = LOCAL_BOOKING_KEEPACTIVE;
+            $data->name = LOCAL_BOOKING_KEEPACTIVEGROUP;
             $data->description = 'Group to track students from being placed on hold.';
             $data->descriptionformat = FORMAT_HTML;
             $graduatesgroupid = groups_create_group($data);

@@ -1,3 +1,4 @@
+/* stylelint-disable function-url-scheme-blacklist */
 /* stylelint-disable declaration-no-important */
 /**
  * @package    local_booking
@@ -69,6 +70,10 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #000;
+}
+.booking-truncate a {
+    color: inherit;
+    text-decoration: none;
 }
 .session {
     background-color: white;
@@ -205,6 +210,129 @@
     width: 25px;
     background-color: #eee;
     border-radius: 50%;
+}
+
+/* profile */
+.userprofile .sb_profile_tree {
+    column-count: 3;
+}
+
+/* custom switch checkbox */
+.toggle-input {
+    position: absolute;
+    left: 0;
+    z-index: -1;
+    width: 1.25rem;
+    height: 1.328125rem;
+    opacity: 0;
+}
+.toggle-input:checked ~ .toggle-label::before {
+    color: #fff;
+    border-color: #0f6fc5;
+    background-color: #0f6fc5;
+}
+.toggle-input:focus ~ .toggle-label::before {
+    outline: none !important;
+}
+.toggle-input:focus:not(:checked) ~ .toggle-label::before {
+    border-color: #6a737b;
+}
+.toggle-input:not(:disabled):active ~ .toggle-label::before {
+    color: #fff;
+    background-color: #90c6f7;
+    border-color: #90c6f7;
+}
+.toggle-input[disabled] ~ .toggle-label,
+.toggle-input:disabled ~ .toggle-label {
+    color: #6a737b;
+}
+.toggle-input[disabled] ~ .toggle-label::before,
+.toggle-input:disabled ~ .toggle-label::before {
+    background-color: #e9ecef;
+}
+.toggle-label {
+    position: relative;
+    margin-bottom: 0;
+    vertical-align: top;
+}
+.toggle-label::before {
+    position: absolute;
+    top: 0.078125rem;
+    left: -1.75rem;
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    pointer-events: none;
+    content: "";
+    background-color: #fff;
+    border: #8f959e solid 1px;
+}
+.toggle-label::after {
+    position: absolute;
+    top: 0.078125rem;
+    left: -1.75rem;
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    content: "";
+    background: 50% / 50% 50% no-repeat;
+}
+.custom-checkbox .toggle-input:checked ~ .toggle-label::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%23fff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26l2.974 2.99L8 2.193z'/%3e%3c/svg%3e");
+}
+.custom-checkbox .toggle-input:indeterminate ~ .toggle-label::before {
+    border-color: #0f6fc5;
+    background-color: #0f6fc5;
+}
+.custom-checkbox .toggle-input:indeterminate ~ .toggle-label::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3e%3cpath stroke='%23fff' d='M0 2h4'/%3e%3c/svg%3e");
+}
+.custom-checkbox .toggle-input:disabled:checked ~ .toggle-label::before {
+    background-color: rgba(15, 111, 197, 0.5);
+}
+.custom-checkbox .toggle-input:disabled:indeterminate ~ .toggle-label::before {
+    background-color: rgba(15, 111, 197, 0.5);
+}
+.custom-radio .toggle-label::before {
+    border-radius: 50%;
+}
+.custom-radio .toggle-input:checked ~ .toggle-label::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+.custom-radio .toggle-input:disabled:checked ~ .toggle-label::before {
+    background-color: rgba(15, 111, 197, 0.5);
+}
+.custom-switch {
+    padding-left: 2.6875rem;
+}
+.custom-switch .toggle-label::before {
+    left: -2.6875rem;
+    width: 2.1875rem;
+    pointer-events: all;
+    border-radius: 0.625rem;
+}
+.custom-switch .toggle-label::after {
+    top: calc(0.078125rem + 2px);
+    left: calc(-2.6875rem + 2px);
+    width: calc(1.25rem - 4px);
+    height: calc(1.25rem - 4px);
+    background-color: #8f959e;
+    border-radius: 0.625rem;
+    transition: transform 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.custom-switch .toggle-label::after {
+    transition: none;
+}
+.custom-switch .toggle-input:checked ~ .toggle-label::after {
+    background-color: #fff;
+    transform: translateX(0.9375rem);
+}
+.custom-switch .toggle-input:disabled:checked ~ .toggle-label::before {
+    background-color: rgba(15, 111, 197, 0.5);
+}
+
+.checkmark:focus {
+    outline: 0;
 }
 
 /* On mouse-over, add a grey background color */

@@ -29,9 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 
 use renderer_base;
 use core\external\exporter;
-use local_booking\local\participant\entities\participant;
-use local_booking\local\subscriber\entities\subscriber;
-use moodle_url;
 
 /**
  * Class for displaying a logbook entry.

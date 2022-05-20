@@ -61,6 +61,8 @@ class booking_student_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($data, $related) {
+        global $CFG;
+
         $this->student = $data['student'];
         $this->courseexercises = $related['courseexercises'];
         $data['studentid'] = $this->student->get_id();
@@ -68,6 +70,7 @@ class booking_student_exporter extends exporter {
         $data['dayssincelast'] = $this->student->get_priority()->get_recency_days();
         $data['recencytooltip'] = $this->student->get_priority()->get_recency_info();
         $data['simulator'] = $this->student->get_simulator();
+        $data['profileurl'] = $CFG->wwwroot . '/local/booking/profile.php?courseid=' . $data['courseid'] . '&userid=' . $this->student->get_id();
 
         parent::__construct($data, $related);
     }
@@ -104,6 +107,9 @@ class booking_student_exporter extends exporter {
                 'type' => PARAM_BOOL,
             ],
             'simulator' => [
+                'type' => PARAM_RAW,
+            ],
+            'profileurl' => [
                 'type' => PARAM_RAW,
             ],
         ];

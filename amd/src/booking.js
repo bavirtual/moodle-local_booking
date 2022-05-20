@@ -128,25 +128,6 @@ define([
                 }
                 e.stopImmediatePropagation();
             });
-
-            // // Listen the click on the progression table of sessions for a goto feedback for Objective Not Met sessions.
-            // root.on('click', Selectors.actions.gotoFeedback, function(e) {
-            //     let logentryId = $(this).attr('data-logentry-id'),
-            //     userId = $(this).attr('data-student-id');
-
-            //     // A logentry needs to be created or edite, show the modal form.
-            //     e.preventDefault();
-            //     // We've handled the event so stop it from bubbling
-            //     // and causing the day click handler to fire.
-            //     e.stopPropagation();
-
-            //     if (logentryId == 0) {
-            //         registerLogentryEditForm(null, e, contextId, courseId, userId, logentryId, true);
-            //     } else {
-            //         registerLogentrySummaryForm(contextId, courseId, userId, logentryId);
-            //     }
-            //     e.stopImmediatePropagation();
-            // });
         }
     };
 

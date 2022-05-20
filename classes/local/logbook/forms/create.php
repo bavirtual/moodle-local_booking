@@ -167,9 +167,9 @@ class create extends \moodleform {
             $this->add_element($mform, 'landingsp2', null, false);
 
         // add remaining elements
-        $this->add_element($mform, 'callsign', array($this->get_pilot_info('callsign', $subscriber->get_active_participant($p1id))), false);
+        $this->add_element($mform, 'callsign', array($this->get_pilot_info('callsign', $subscriber->get_participant($p1id))), false);
         $this->add_element($mform, 'remarks', null, false);
-        $this->add_element($mform, 'fstd', array($this->get_pilot_info('simulator', $subscriber->get_active_participant($p2id))), false);
+        $this->add_element($mform, 'fstd', array($this->get_pilot_info('simulator', $subscriber->get_participant($p2id))), false);
     }
 
     /**

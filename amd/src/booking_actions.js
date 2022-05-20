@@ -102,10 +102,11 @@ function(
         ViewManager.startLoading(root);
 
         // Get course id and booking id
-        const studentId = root.find(BookingSelectors.bookingconfirmation).data('studentid');
+        const studentId = root.find(BookingSelectors.bookingconfirmation).data('studentid'),
+              courseId = root.find(BookingSelectors.bookingconfirmation).data('courseid');
 
         // Send the request data to the server for processing.
-        return Repository.overrideWaitRestriction(studentId)
+        return Repository.updateUserPreferences('availabilityoverride', true, courseId, studentId)
             .then(function(response) {
                 if (response.validationerror) {
                     // eslint-disable-next-line no-alert

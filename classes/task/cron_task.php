@@ -198,7 +198,7 @@ class cron_task extends \core\task\scheduled_task {
                 if (!empty($lastsessionts)) {
                     // get status of already being on-hold, kept active, or student is in active standings
                     $alreayonhold = $student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP);
-                    $keepactive =  $student->is_member_of(LOCAL_BOOKING_KEEPACTIVE);
+                    $keepactive =  $student->is_member_of(LOCAL_BOOKING_KEEPACTIVEGROUP);
                     $isactive = $student->has_completed_lessons() && $student->get_total_posts() > 0;
 
                     // on-hold date from last booked session
@@ -273,7 +273,7 @@ class cron_task extends \core\task\scheduled_task {
                     // Suspension (unenrolment) date is 9x wait period from last session
                     $lastsessiondate = new DateTime('@' . $lastsessionts);
                     $suspenddate = new DateTime('@' . $lastsessionts);
-                    $keepactive =  $student->is_member_of(LOCAL_BOOKING_KEEPACTIVE);
+                    $keepactive =  $student->is_member_of(LOCAL_BOOKING_KEEPACTIVEGROUP);
 
                     date_add($suspenddate, date_interval_create_from_date_string($suspensiondays . ' days'));
 

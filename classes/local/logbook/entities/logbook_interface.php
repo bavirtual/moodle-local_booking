@@ -91,12 +91,30 @@ interface logbook_interface {
     public function get_logentry(int $logentryid);
 
     /**
+     * get an entry from the logbook entris by
+     * exercise id.
+     *
+     * @param int $exerciseid: The entry associated exercise id
+     * @return logentry $logentry The logbook entry db record
+     */
+    public function get_logentry_by_exericseid(int $exerciseid);
+
+    /**
      * Get the logbook entries time totals
      *
      * @param  bool $tostring The totals in string time format
      * @return array          The logbook time table totals
      */
     public function get_summary(bool $tostring = false);
+
+    /**
+     * Get the logbook entries time totals until a specific exercise
+     *
+     * @param int       $section    The section number of the exercise up until.
+     * @param  bool $tostring The totals in string time format
+     * @return array          The logbook time table totals
+     */
+    public function get_summary_to_exercise(int $section, bool $tostring = false);
 
     /**
      * Get the course id for the log entry.

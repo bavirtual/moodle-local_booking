@@ -15,7 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Session Booking Plugin
+ * Student session booking specific profile for instructors
+ * containing basic student course related information, administration,
+ * and reporting functions.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -34,7 +36,6 @@ $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $userid = optional_param('userid', 0, PARAM_INT);
-$title = $course->shortname . ' ' . get_string('pluginname', 'local_booking');
 $title = get_string('pluginname', 'local_booking');
 
 $url = new moodle_url('/local/booking/view.php');
@@ -48,7 +49,7 @@ require_login($course, false);
 require_capability('local/booking:view', $context);
 
 $navbartext = participant::get_fullname($userid);
-$PAGE->navbar->add($navbartext); //userdate(time(), get_string('strftimedate')));
+$PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title($title, 'local_booking');
 $PAGE->set_heading($title, 'local_booking');
@@ -65,5 +66,6 @@ list($data, $template) = get_profile_view($courseid, $userid);
 echo $renderer->render_from_template($template, $data);
 
 echo html_writer::end_tag('div');
+
 echo $renderer->complete_layout();
 echo $OUTPUT->footer();

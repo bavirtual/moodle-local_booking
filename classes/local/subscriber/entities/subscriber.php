@@ -55,6 +55,11 @@ class subscriber implements subscriber_interface {
     protected $courseid;
 
     /**
+     * @var string $fullname The subscribed course fullname.
+     */
+    protected $fullname;
+
+    /**
      * @var string $shortname The subscribed course shortname.
      */
     protected $shortname;
@@ -78,7 +83,9 @@ class subscriber implements subscriber_interface {
         global $COURSE;
         $this->context = \context_course::instance($courseid);
         $this->courseid = $courseid;
+        $this->fullname = $COURSE->fullname;
         $this->shortname = $COURSE->shortname;
+        $this->ato = get_booking_config('ATO');
 
         // define course custom fields globally
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
@@ -87,7 +94,7 @@ class subscriber implements subscriber_interface {
         foreach ($customfields as $customfield) {
             $cat = $customfield->get_field()->get_category()->get('name');
 
-            if ($cat == get_booking_config('ATO')) {
+            if ($cat == $this->ato->name) {
                 // split textarea values into cleaned up array values
                 if ($customfield->get_field()->get('type') == 'textarea') {
                     $fieldvalues = array_filter(preg_split('/\n|\r\n?/', format_text($customfield->get_value(), FORMAT_MARKDOWN)));
@@ -134,6 +141,15 @@ class subscriber implements subscriber_interface {
      */
     public function get_context() {
         return $this->context;
+    }
+
+    /**
+     * Get the subscriber's course fullname.
+     *
+     * @return string $fullname
+     */
+    public function get_fullname() {
+        return $this->fullname;
     }
 
     /**

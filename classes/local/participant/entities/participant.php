@@ -52,9 +52,14 @@ class participant implements participant_interface {
     protected $userid;
 
     /**
-     * @var string $fullname The participant user fullname.
+     * @var string $fullname The participant user fullname (first last alternate).
      */
     protected $fullname;
+
+    /**
+     * @var string $name The participant user first and last name.
+     */
+    protected $name;
 
     /**
      * @var int $enroldate The participant enrolment date timestamp.
@@ -108,10 +113,11 @@ class participant implements participant_interface {
         $this->userid = $userid;
 
         // lookup user type and active status
-        if ($userid != 0)
+        if ($userid != 0) {
             $this->is_student = count(get_user_roles($course->get_context(), $userid)) > 0 && current(get_user_roles($course->get_context(), $userid))->shortname == 'student' ? true : false;
             $info = new \completion_info(get_course($course->get_id()));
             $this->is_active = $info->is_tracked_user($userid);
+        }
     }
 
     /**
@@ -144,10 +150,18 @@ class participant implements participant_interface {
     /**
      * Get fullname.
      *
-     * @return string $fullname;
+     * @param bool $alternate returns either the fullname w/ alternate or just first/last name
+     * @return string $fullname/$name;
      */
-    public function get_name() {
-        return $this->fullname;
+    public function get_name(bool $alternate = true) {
+        // get profile user name information
+        if (empty($this->name)) {
+            $u = \core_user::get_user($this->userid);
+            // profile_load_data($u);
+            $this->name = $u->firstname . ' ' . $u->lastname;
+            $this->fullname = $this->name . ' ' . $u->alternatename;
+        }
+        return $alternate ? $this->fullname : $this->name;
     }
 
     /**
@@ -257,6 +271,19 @@ class participant implements participant_interface {
     public function get_callsign() {
         $this->callsign = empty($this->callsign) ? participant_vault::get_customfield_data($this->course->get_id(), $this->userid, 'callsign') : $this->callsign;
         return $this->callsign;
+    }
+
+    /**
+     * Returns a participant's user profile field
+     *
+     * @param string    The name of the field
+     * @return string   The participant custom field
+     */
+    public function get_profile_field(string $field) {
+        $u = \core_user::get_user($this->userid);
+        profile_load_data($u);
+        $fld = 'profile_field_' . $field;
+        return $u->$fld;
     }
 
     /**

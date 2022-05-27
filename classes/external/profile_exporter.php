@@ -61,8 +61,7 @@ class profile_exporter extends exporter {
     public function __construct($data, $related) {
 
         $url = new moodle_url('/local/booking/view.php', [
-                'courseid' => $data['courseid'],
-                'time' => time(),
+                'courseid' => $data['courseid']
             ]);
 
         $data['url'] = $url->out(false);
@@ -167,7 +166,7 @@ class profile_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true
             ],
-            'skilltestformurl' => [
+            'examinerurl' => [
                 'type' => PARAM_URL,
             ],
             'suspended' => [
@@ -197,6 +196,9 @@ class profile_exporter extends exporter {
             'admin' => [
                 'type'  => PARAM_BOOL,
             ],
+            'hasexams' => [
+                'type'  => PARAM_BOOL,
+            ],
             'loginasurl' => [
                 'type' => PARAM_URL,
             ],
@@ -204,6 +206,9 @@ class profile_exporter extends exporter {
                 'type' => PARAM_URL,
             ],
             'completereporturl' => [
+                'type' => PARAM_URL,
+            ],
+            'logbookurl' => [
                 'type' => PARAM_URL,
             ],
             'mentorreporturl' => [
@@ -250,14 +255,21 @@ class profile_exporter extends exporter {
 
         // qualified (next exercise is the course's last exercise) status
         list($exerciseid, $currentsection) = $this->user->get_exercise(true);
-        $qualified = $exerciseid == $COURSE->subscriber->get_last_exercise();
+        $qualified = $exerciseid == $COURSE->subscriber->get_last_exercise() || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
         $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $this->user->get_id());
+        $hasexams = count($this->user->get_quizes()) > 0;
 
         // moodle profile url
         $moodleprofile = new moodle_url('/user/view.php', [
             'id' => $this->user->get_id(),
             'course' => $this->courseid,
         ]);
+
+        // Course activity section
+        $lastlogindate = $this->user->get_last_login_date();
+        $lastlogindate = !empty($lastlogindate) ? $lastlogindate->format('M j\, Y') : '';
+        $lastgradeddate = $this->user->get_last_graded_date();
+        $lastgradeddate = !empty($lastgradeddate) ? $lastgradeddate->format('M j\, Y') : '';
 
         // log in as url
         $loginas = new moodle_url('/course/loginas.php', [
@@ -280,32 +292,38 @@ class profile_exporter extends exporter {
             'mode' => 'complete',
         ]);
 
+        // student logbook
+        $logbookurl = new moodle_url('/local/booking/logbook.php', [
+            'courseid' => $this->courseid,
+            'userid' => $this->user->get_id()
+        ]);
+
         // student mentor report
         $mentorreporturl = new moodle_url('/local/booking/report.php', [
-            'id' => $this->user->get_id(),
-            'course' => $this->courseid,
-            'mode' => 'mentor',
+            'courseid' => $this->courseid,
+            'userid' => $this->user->get_id(),
+            'report' => 'mentor',
         ]);
 
         // student theory exam report
         $theoryexamreporturl = new moodle_url('/local/booking/report.php', [
-            'id' => $this->user->get_id(),
-            'course' => $this->courseid,
-            'mode' => 'theoryexam',
+            'courseid' => $this->courseid,
+            'userid' => $this->user->get_id(),
+            'report' => 'theoryexam',
         ]);
 
         // student practical exam report
         $practicalexamreporturl = new moodle_url('/local/booking/report.php', [
-            'id' => $this->user->get_id(),
-            'course' => $this->courseid,
-            'mode' => 'practicalexam',
+            'courseid' => $this->courseid,
+            'userid' => $this->user->get_id(),
+            'report' => 'practicalexam',
         ]);
 
         // student skill test form
-        $skilltestformurl = new moodle_url('/local/booking/report.php', [
+        $examinerurl = new moodle_url('/local/booking/report.php', [
             'id' => $this->user->get_id(),
             'course' => $this->courseid,
-            'mode' => 'skilltestform',
+            'report' => 'examiner',
         ]);
 
         $return = [
@@ -319,15 +337,15 @@ class profile_exporter extends exporter {
             'slots'                    => $this->user->get_priority()->get_slot_count(),
             'modulescompleted'         => get_string('modscompletemsg', 'local_booking', $modsinfo),
             'enroldate'                => $this->user->get_enrol_date()->format('M j\, Y'),
-            'lastlogin'                => $this->user->get_last_login_date()->format('M j\, Y'),
-            'lastgraded'               => $this->user->get_last_graded_date()->format('M j\, Y'),
+            'lastlogin'                => $lastlogindate,
+            'lastgraded'               => $lastgradeddate,
             'lastlesson'               => $currentlesson,
             'lastlessoncompleted'      => $this->user->has_completed_lessons() ? get_string('yes') : get_string('no'),
             'qualified'                => $qualified,
             'endorsed'                 => $endorsed,
             'endorser'                 => \local_booking\local\participant\entities\participant::get_fullname($USER->id),
             'endorsementmgs'           => get_string($endorsed ? 'endorsementmgs' : 'skilltestendorse', 'local_booking', $endorsementmgs),
-            'skilltestformurl'         => $skilltestformurl->out(false),
+            'examinerurl'              => $examinerurl->out(false),
             'suspended'                => !$this->user->is_active(),
             'onholdrestrictionenabled' => $COURSE->subscriber->onholdperiod != 0,
             'onhold'                   => $this->user->is_member_of(LOCAL_BOOKING_ONHOLDGROUP),
@@ -337,9 +355,11 @@ class profile_exporter extends exporter {
             'waitrestrictionenabled'   => $COURSE->subscriber->postingwait != 0,
             'restrictionoverride'      => get_user_preferences('local_booking_' .$this->courseid . '_availabilityoverride', false, $this->user->get_id()),
             'admin'                    => has_capability('moodle/user:loginas', $this->related['context']),
+            'hasexams'                 => $hasexams,
             'loginasurl'               => $loginas->out(false),
             'outlinereporturl'         => $outlinereporturl->out(false),
             'completereporturl'        => $completereporturl->out(false),
+            'logbookurl'               => $logbookurl->out(false),
             'mentorreporturl'          => $mentorreporturl->out(false),
             'theoryexamreporturl'      => $theoryexamreporturl->out(false),
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),

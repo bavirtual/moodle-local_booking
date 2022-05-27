@@ -44,6 +44,13 @@ interface subscriber_interface {
     public function get_context();
 
     /**
+     * Get the subscriber's course fullname.
+     *
+     * @return string $fullname
+     */
+    public function get_fullname();
+
+    /**
      * Get the subscriber's course shortname.
      *
      * @return string $shortname

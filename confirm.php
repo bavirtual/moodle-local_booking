@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Session Booking Plugin
+ * Confirms a student; the confirmation is performed by the student
+ * and an notification email is sent to the instructor.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)

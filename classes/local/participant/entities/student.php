@@ -33,6 +33,7 @@ use local_booking\local\session\entities\grade;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\slot\entities\slot;
 use local_booking\local\subscriber\entities\subscriber;
+use stdClass;
 
 class student extends participant {
 
@@ -183,6 +184,24 @@ class student extends participant {
         }
 
         return $result;
+    }
+
+    /**
+     * Get records of a specific quiz for a student.
+     *
+     * @return {object}[]   The exam objects.
+     */
+    public function get_assignments() {
+        return $this->vault->get_student_assignment_grades($this->course->get_id(), $this->userid);
+    }
+
+    /**
+     * Get records of a specific quiz for a student.
+     *
+     * @return {object}[]   The exam objects.
+     */
+    public function get_quizes() {
+        return $this->vault->get_quizes($this->course->get_id(), $this->userid);
     }
 
     /**

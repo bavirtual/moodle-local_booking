@@ -77,7 +77,7 @@ interface participant_vault_interface {
     public function get_assigned_students(int $courseid, int $userid);
 
     /**
-     * Get grades for a specific student.
+     * Get assignment grades for a specific student.
      *
      * @param int       $courseid  The course id.
      * @param int       $studentid The student id.
@@ -86,13 +86,22 @@ interface participant_vault_interface {
     public function get_student_assignment_grades(int $courseid, int $studentid);
 
     /**
-     * Get grades for a specific student.
+     * Get quiz grades for a specific student.
      *
      * @param int       $courseid  The course id.
      * @param int $studentid  The student id.
      * @return grade[]        A student quizes.
      */
     public function get_student_quizes_grades(int $courseid, int $studentid);
+
+    /**
+     * Get quize records for a student.
+     *
+     * @param int $courseid The course in context.
+     * @param int $userid   The student user id.
+     * @return {object}[]   The exam objects.
+     */
+    public function get_quizes(int $courseid, int $userid);
 
     /**
      * Get student's enrolment date.

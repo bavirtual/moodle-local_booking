@@ -46,7 +46,7 @@ function delete_course_customfields() {
     $categories = api::get_categories_with_fields('core_course', 'course', 0);
     foreach ($categories as $coursecategory) {
         // delete ATO category and associated fields
-        if ($coursecategory->get('name') == get_booking_config('ATO')) {
+        if ($coursecategory->get('name') == get_booking_config('ATO')->name) {
             // Delete custom ATO category
             api::delete_category($coursecategory);
         }

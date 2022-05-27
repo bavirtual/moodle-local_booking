@@ -1,5 +1,8 @@
 {
-    "ATO" : "BA Virtual",
+    "ATO" : {
+        "name"        : "BA Virtual",
+        "logo"        : "https://bavms.bavirtual.co.uk/assets/img/logo.png"
+    },
     "colors" : {
         "red"         : "#d50000",
         "green"       : "#689f38",

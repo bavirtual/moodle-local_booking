@@ -15,7 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Booking Plugin
+ * Session booking availability slots view.
+ * Allows students to post slots and instructors
+ * to view all slots posted by students.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar
@@ -49,7 +51,7 @@ $view =  optional_param('view', 'user', PARAM_RAW);
 $userid = optional_param('userid', $USER->id, PARAM_INT);
 $exerciseid = optional_param('exid', 0, PARAM_INT);
 $course = get_course($courseid);
-$pluginname = $course->shortname . ' ' . get_booking_config('ATO') . ' ' . get_string('pluginname', 'local_booking');
+$pluginname = $course->shortname . ' ' . get_booking_config('ATO')->name . ' ' . get_string('pluginname', 'local_booking');
 $title = get_string('weeklytitle', 'local_booking');
 $week = get_string('week', 'local_booking');
 $time = optional_param('time', 0, PARAM_INT);

@@ -94,7 +94,7 @@
                     <dl>
                         <dt>{{#str}} skilltest , local_booking {{/str}}<dt>
                         <dd>
-                            <button id="skillform" type="button" class="btn btn-primary btn-sm mr-3" {{^endorsed}}disabled="true"{{/endorsed}} onclick="location.href='{{{skilltestformurl}}}';">
+                            <button id="skillform" type="button" class="btn btn-primary btn-sm mr-3" {{^endorsed}}disabled="true"{{/endorsed}} onclick="location.href='{{{examinerurl}}}';">
                             {{#str}} skilltestform, local_booking {{/str}}</button>
                         </dd>
                     </dl>
@@ -148,10 +148,22 @@
                         <dd><span><a href="{{completereporturl}}">{{#str}} completereport , local_booking {{/str}}</a></span></dd>
                         <dd><span><a href="{{logbookurl}}">{{#str}} logbookstudent , local_booking {{/str}}</a></span></dd>
                     </dt></dl>
-                    <dl><dt>{{#str}} vatsim , local_booking {{/str}}
+                    <dl><dt>{{#str}} auditreports , local_booking {{/str}}
                         <dd><span><a href="{{mentorreporturl}}">{{#str}} mentorreport , local_booking {{/str}}</a></span></dd>
+                        {{#hasexams}}
                         <dd><span><a href="{{theoryexamreporturl}}">{{#str}} theoryexamreport , local_booking {{/str}}</a></span></dd>
+                        {{/hasexams}}
+                        {{^hasexams}}
+                        <dd><span>{{#str}} theoryexamreport , local_booking {{/str}}</span></dd>
+                        {{/hasexams}}
+                        {{#qualified}}
                         <dd><span><a href="{{practicalexamreporturl}}">{{#str}} practicalexamreport , local_booking {{/str}}</a></span></dd>
+                        <dd><span><a href="{{examinerreporturl}}">{{#str}} examinerreport , local_booking {{/str}}</a></span></dd>
+                        {{/qualified}}
+                        {{^qualified}}
+                        <dd><span>{{#str}} practicalexamreport , local_booking {{/str}}</span></dd>
+                        <dd><span>{{#str}} examinerreport , local_booking {{/str}}</span></dd>
+                        {{/qualified}}
                     </dt></dl>
                 </div>
             </section>

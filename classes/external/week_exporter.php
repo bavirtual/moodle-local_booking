@@ -44,11 +44,6 @@ use moodle_url;
 class week_exporter extends exporter {
 
     /**
-     * Process user enrollments table name.
-     */
-    const DB_USER = 'user';
-
-    /**
      * @var \calendar_information $calendar The calendar to be rendered.
      */
     protected $calendar;

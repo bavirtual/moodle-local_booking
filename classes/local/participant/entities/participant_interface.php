@@ -51,6 +51,14 @@ interface participant_interface {
     public function get_name();
 
     /**
+     * Returns a participant's user profile field
+     *
+     * @param string    The name of the field
+     * @return string   The participant custom field
+     */
+    public function get_profile_field(string $field);
+
+    /**
      * Set user name.
      *
      * @param string $fullname;

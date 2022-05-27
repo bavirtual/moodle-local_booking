@@ -1,0 +1,161 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_booking/student_progression
+
+    Student progression view for instructor booking.
+
+    The purpose of this template is to render the main, detailed weekly view.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+    }
+}}
+<div{{!
+    }} class="bookingwrapper"{{!
+    }}{{#courseid}} data-courseid="{{courseid}}"{{/courseid}}{{!
+    }} data-contextid="{{contextid}}"{{!
+    }} data-trainingtype="{{trainingtype}}"{{!
+    }}>
+    <table class="booking-title">
+        <tr>
+            <td><h3>{{#str}} activestudents, local_booking {{/str}}</h3></td>
+            <td class="mdl-right"><h5>{{#str}} averagewaittime, local_booking {{/str}}: <strong>{{avgwait}}</strong></h5></td>
+        </tr>
+        <tr>
+            <td colspan="2" class="mdl-right">
+                <span style="font-size: small;">{{#str}} bookingsortby, local_booking {{/str}}:
+                    <a href="{{url}}&sort=a" data-toggle="tooltip" title="{{#str}} bookingsortbyavailabilitytooltip, local_booking {{/str}}">{{#str}} bookingsortbyavailability, local_booking {{/str}}</a>,
+                    <a href="{{url}}&sort=s" data-toggle="tooltip" title="{{#str}} bookingsortbyscoretooltip, local_booking {{/str}}">{{#str}} bookingsortbyscore, local_booking {{/str}}</a>
+                </span>
+            </td>
+        </tr>
+    </table>
+    </table><table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover table-bordered">
+        <thead>
+            <tr>
+                <th class="header booking-header booking-xsmall text-xs-center ">
+                    <span class="media-body" aria-hidden="true">#</span>
+                </th>
+                <th class="header booking-header text-xs-center">
+                    <span class="media-body" aria-hidden="true">{{#str}} students, local_booking {{/str}}</span>
+                </th>
+                <th class="header booking-header booking-small text-xs-center">
+                    <span class="media-body" aria-hidden="true">{{#str}} wait, local_booking {{/str}}</span>
+                </th>
+                <th class="header booking-header booking-med text-xs-center">
+                    <span class="media-body" aria-hidden="true">{{#str}} simulator, local_booking {{/str}}</span>
+                </th>
+                <th class="header booking-header booking-big text-xs-center">
+                    <span class="media-body" aria-hidden="true">{{#str}} sessionaction, local_booking {{/str}}</span>
+                </th>
+                {{#exercises}}
+                <th class="header booking-header booking-xbig text-xs-center"
+                    data-toggle="tooltip"
+                    title="{{{exercisename}}}"
+                    data-html="true"
+                    data-region="lesson-exercise">
+                    <span class="media-body small" aria-hidden="true">{{#shortentext}} 30, {{{exercisetitle}}} {{/shortentext}}</span>
+                </th>
+                {{/exercises}}
+            </tr>
+        </thead>
+        <tbody>
+        {{#activestudents}}
+            <tr data-region="student">
+                <td class="text-sm-center"
+                    data-toggle="tooltip"
+                    title="{{{sequencetooltip}}}"
+                    data-html="true">
+                    <span class="media-body small" aria-hidden="true">{{sequence}}</span>
+                </td>
+                <td class="booking-truncate">
+                    <span><a href="{{profileurl}}">{{studentname}}</a></span><br/>
+                </td>
+                <td class="day text-sm-center"
+                    data-toggle="tooltip"
+                    title="{{{recencytooltip}}}"
+                    data-html="true">
+                    <span class="media-body small{{#overduewarning}} session-overdue{{/overduewarning}}{{#latewarning}} session-late{{/latewarning}}"
+                    aria-hidden="true">{{dayssincelast}}</span>
+                </td>
+                <td class="day text-sm-center">
+                    <span class="media-body small" aria-hidden="true">{{simulator}}</span>
+                </td>
+                <td class="day"
+                    {{#lessonincomplete}}
+                    data-toggle="tooltip"
+                    data-html="true"
+                    title="{{#str}} incompletelessontooltip, local_booking {{/str}}"
+                    {{/lessonincomplete}}>
+                    <div id="action-button-{{studentid}}" class="singlebutton session-right">
+                        <a href="{{actionurl}}"{{#lessonincomplete}} class="disabled-link"{{/lessonincomplete}}>
+                            <button id="exercise-session" class="session-button session-button-{{actiontype}}"
+                                data-region="action-button">
+                                {{#pix}} {{#actionbook}}plane{{/actionbook}}{{^actionbook}}pencil-square{{/actionbook}}, local_booking {{/pix}}
+                                <span>&nbsp;&nbsp;{{actionname}}</span>
+                            </button>
+                         </a>
+                    </div>
+                </td>
+            {{#sessions}}
+                <td class="text-sm-center" style="max-width: 20px;"
+                    {{#graded}}data-action={{#passed}}"view-logentry"{{/passed}}{{^passed}}"feedback"{{/passed}}{{/graded}}
+                    data-exercise-status="{{sessionstatus}}"
+                    {{#graded}}{{^isquiz}}
+                    data-region="session-entry"
+                    data-session-passed="{{passed}}"
+                    data-student-id="{{studentid}}"
+                    data-exercise-id="{{exerciseid}}"
+                    data-session-date="{{sessiondatets}}"
+                    data-flight-date="{{lastbookingts}}"
+                    data-logentry-id="{{logentryid}}"
+                    {{/isquiz}}{{/graded}}
+                    {{^sessionempty}}
+                    data-toggle="tooltip"
+                    data-html="true"
+                    title="{{{sessiontooltip}}}"
+                    {{/sessionempty}}>
+                    <div id="exercise-session" class="d-md-block text-xs-center{{#canlogentry}} clickable{{/canlogentry}}">
+                        <span id="exercise-{{studentid}}-{{exerciseid}}" class="session-date media-body fa-inverse{{!
+                            }}{{#graded}}{{#passed}} session-graded{{/passed}}{{!
+                            }}{{^passed}} session-objective-not-met{{/passed}}{{/graded}}{{!
+                            }}{{#booked}} session-booked{{/booked}}{{!
+                            }}{{#tentative}} session-tentative{{/tentative}}{{!
+                            }}">{{^isquiz}}{{^logentrymissing}}{{^marknoposts}}&nbsp;{{/marknoposts}}{{/logentrymissing}}{{/isquiz}}
+                            {{#logentrymissing}}
+                            {{#pix}} info-circle, local_booking,{{#str}} logentrymissing, local_booking {{/str}} {{/pix}}
+                            {{/logentrymissing}}
+                            {{#isquiz}}
+                            {{#pix}} check, local_booking {{/pix}}
+                            {{/isquiz}}
+                            {{#marknoposts}}<span class="d-md-block session-posts">{{noposts}}</span>{{/marknoposts}}
+                        </span>
+                    </div>
+                </td>
+            {{/sessions}}
+            </tr>
+        {{/activestudents}}
+        </tbody>
+    </table>
+</div>

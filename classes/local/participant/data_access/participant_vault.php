@@ -108,9 +108,9 @@ class participant_vault implements participant_vault_interface {
     const DB_QUIZ = 'quiz';
 
     /**
-     * Process quiz grades table name.
+     * Process quiz attempts table name.
      */
-    const DB_QUIZ_GRADES = 'quiz_grades';
+    const DB_QUIZ_ATTEMPTS = 'quiz_attempts';
 
     /**
      * Process lesson completion in timer table.
@@ -137,7 +137,7 @@ class participant_vault implements participant_vault_interface {
      * @param int $courseid The course id.
      * @param int $userid   A specific user.
      * @param bool $active  Whether the user is actively enrolled.
-     * @return {Object}         Array of database records.
+     * @return {Object}     Array of database records.
      */
     public static function get_participant(int $courseid, int $userid = 0, bool $active = true) {
         global $DB;
@@ -164,10 +164,10 @@ class participant_vault implements participant_vault_interface {
      * Get all active student from the database.
      *
      * @param int $courseid     The course id.
-     * @param bool $studentid   A specific student for booking confirmation
+     * @param bool $userid      A specific student for booking confirmation
      * @return {Object}         Array of database records.
      */
-    public static function get_active_student(int $courseid, int $studentid = 0) {
+    public static function get_active_student(int $courseid, int $userid = 0) {
         global $DB;
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
@@ -179,14 +179,14 @@ class participant_vault implements participant_vault_interface {
                 INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
                 INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
                 WHERE en.courseid = :courseid
-                    AND u.id = :studentid
+                    AND u.id = :userid
                     AND ra.contextid = :contextid
                     AND r.shortname = :role
                     AND ue.status = 0';
 
         $params = [
             'courseid'  => $courseid,
-            'studentid' => $studentid,
+            'userid' => $userid,
             'contextid' => \context_course::instance($courseid)->id,
             'role'      => 'student'
         ];
@@ -331,10 +331,10 @@ class participant_vault implements participant_vault_interface {
      * Get grades for a specific student.
      *
      * @param int       $courseid  The course id.
-     * @param int       $studentid The student id.
+     * @param int       $userid    The student user id.
      * @return grade[]  A student grades.
      */
-    public function get_student_assignment_grades(int $courseid, int $studentid) {
+    public function get_student_assignment_grades(int $courseid, int $userid) {
         global $DB;
 
         // Get the student's grades
@@ -351,7 +351,7 @@ class participant_vault implements participant_vault_interface {
                 INNER JOIN {' . self::DB_USER . '} u ON ag.grader = u.id
                 WHERE m.name = :assign
                     AND cm.course = :courseid
-                    AND ag.userid = :studentid
+                    AND ag.userid = :userid
                     AND ag.grade > 0
                     AND ag.timemodified > ' . $this->pastdatacutoff . '
                 GROUP BY exerciseid, assignid, exercisetype
@@ -360,7 +360,7 @@ class participant_vault implements participant_vault_interface {
         $params = [
             'assign' => 'assign',
             'courseid'  => $courseid,
-            'studentid'  => $studentid
+            'userid'  => $userid
         ];
 
         return $DB->get_records_sql($sql, $params);
@@ -369,55 +369,78 @@ class participant_vault implements participant_vault_interface {
     /**
      * Get grades for a specific student.
      *
-     * @param int       $studentid  The student id.
+     * @param int       $userid  The student user id.
      * @return grade[]  A student quizes.
      */
-    public function get_student_quizes_grades(int $courseid, int $studentid) {
+    public function get_student_quizes_grades(int $courseid, int $userid) {
         global $DB;
 
         // Get the student's grades
-        $sql = 'SELECT cm.id AS exerciseid, qg.quiz AS assignid, cs.name AS section,
-                    qg.userid, qg.grade, q.grade AS totalgrade,
-                    qg.timemodified AS gradedate,
+        $sql = 'SELECT cm.id AS exerciseid, qa.quiz AS assignid, cs.name AS section,
+                    qa.userid, qa.sumgrades AS grade, MAX(q.grade) AS totalgrade,
+                    MAX(qa.timemodified) AS gradedate,
                     0 AS instructorid, \'\' AS instructorname,
                     m.name AS exercisetype
-                FROM {' . self::DB_QUIZ_GRADES . '} qg
-                INNER JOIN {' . self::DB_QUIZ . '} q on q.id = qg.quiz
-                INNER JOIN {' . self::DB_COURSE_MODS . '} cm on qg.quiz = cm.instance
+                FROM {' . self::DB_QUIZ_ATTEMPTS . '} qa
+                INNER JOIN {' . self::DB_QUIZ . '} q on q.id = qa.quiz
+                INNER JOIN {' . self::DB_COURSE_MODS . '} cm on qa.quiz = cm.instance
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
                 INNER JOIN {' . self::DB_MODULES . '} as m ON m.id = cm.module
                 WHERE m.name = :quiz
                     AND cm.course = :courseid
-                    AND qg.userid = :studentid
+                    AND qa.userid = :userid
                 ORDER BY cs.section';
 
         $params = [
             'quiz' => 'quiz',
             'courseid'  => $courseid,
-            'studentid'  => $studentid
+            'userid'  => $userid
         ];
 
         return $DB->get_records_sql($sql, $params);
     }
 
     /**
+     * Get records of a specific quiz for a student.
+     *
+     * @param int $courseid The course in context.
+     * @param int $userid   The student user id.
+     * @return {object}[]   The exam objects.
+     */
+    public function get_quizes(int $courseid, int $userid) {
+        global $DB;
+
+        $sql = 'SELECT q.id AS examid, q.name AS name, q.intro AS description,
+                    qa.sumgrades AS score, q.grade AS totalgrade,
+                    qa.timestart AS starttime, qa.timefinish AS endtime,
+                    attempt AS attempts
+                FROM {' . self::DB_QUIZ . '} AS q
+                INNER JOIN {' . self::DB_QUIZ_ATTEMPTS . '} qa ON qa.quiz = q.id
+                WHERE q.course = :courseid
+                    AND qa.userid = :userid
+                ORDER BY qa.id DESC
+                LIMIT 1';
+        return $DB->get_records_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
+    }
+
+    /**
      * Get student's enrolment date.
      *
-     * @param int       $studentid  The student id in reference
+     * @param int       $userid     The student user id in reference
      * @return DateTime $enroldate  The enrolment date of the student.
      */
-    public function get_enrol_date(int $courseid, int $studentid) {
+    public function get_enrol_date(int $courseid, int $userid) {
         global $DB;
 
         $sql = 'SELECT ue.timecreated
                 FROM {' . self::DB_USER_ENROL . '} ue
                 INNER JOIN {' . self::DB_ENROL . '} e ON e.id = ue.enrolid
                 WHERE e.courseid = :courseid
-                    AND ue.userid = :studentid';
+                    AND ue.userid = :userid';
 
         $params = [
             'courseid' => $courseid,
-            'studentid'  => $studentid
+            'userid'  => $userid
         ];
 
         return $DB->get_record_sql($sql, $params);
@@ -427,23 +450,23 @@ class participant_vault implements participant_vault_interface {
      * Suspends the student's enrolment to a course.
      *
      * @param int   $courseid   The course the student is being unenrolled from.
-     * @param int   $studentid  The student id in reference
+     * @param int   $userid     The student user id in reference
      * @param int   $status     The status of the enrolment suspended = 1
      * @return bool             The result of the suspension action.
      */
-    public function suspend(int $courseid, int $studentid, int $status) {
+    public function suspend(int $courseid, int $userid, int $status) {
         global $DB;
 
         $sql = 'UPDATE {' . static::DB_USER_ENROL . '} ue
                 INNER JOIN {' . static::DB_ENROL . '} e ON e.id = ue.enrolid
                 SET ue.status = :status
                 WHERE e.courseid = :courseid
-                    AND ue.userid = :studentid';
+                    AND ue.userid = :userid';
 
         $params = [
             'courseid' => $courseid,
-            'studentid'  => $studentid,
-            'status'  => $studentid
+            'userid'  => $userid,
+            'status'  => $status
         ];
 
         return $DB->execute($sql, $params);
@@ -452,9 +475,9 @@ class participant_vault implements participant_vault_interface {
     /**
      * Returns full username
      *
-     * @param int       $userid The user id.
+     * @param int       $userid           The user id.
      * @param bool      $includealternate Whether to include the user's alternate name.
-     * @return string   $fullusername The full participant username
+     * @return string   $fullusername     The full participant username
      */
     public static function get_participant_name(int $userid, bool $includealternate = true) {
         global $DB;
@@ -489,7 +512,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // Look for ATO category
-        $category = $DB->get_record('user_info_category', array('name'=>get_booking_config('ATO')));
+        $category = $DB->get_record('user_info_category', array('name'=>get_booking_config('ATO')->name));
         $categoryid = 0;
 
         if (empty($category)) {
@@ -552,12 +575,12 @@ class participant_vault implements participant_vault_interface {
      * all sessons prior to the upcoming next
      * exercise.
      *
-     * @param   int     The student id
+     * @param   int     The student user id
      * @param   int     The course id
      * @param   int     The upcoming next exercise id
      * @return  bool    Whether the lessones were completed or not.
      */
-    public function get_student_lessons_complete($studentid, $courseid, $nextexercisesection) {
+    public function get_student_lessons_complete($userid, $courseid, $nextexercisesection) {
         global $DB;
 
         // Get the student's grades
@@ -570,13 +593,13 @@ class participant_vault implements participant_vault_interface {
                 AND m.name = "lesson"
                 AND cm.instance NOT IN (SELECT lt.lessonid
                     FROM {' . self::DB_LESSON_TIMER . '} lt
-                    WHERE lt.userid = :studentid
+                    WHERE lt.userid = :userid
                     AND lt.completed = :completion)
                 ORDER BY cs.section ASC';
 
         $params = [
             'courseid' => $courseid,
-            'studentid'  => $studentid,
+            'userid'  => $userid,
             'nextexercisesection'  => $nextexercisesection,
             'completion'  => COMPLETION_COMPLETE
         ];
@@ -591,11 +614,11 @@ class participant_vault implements participant_vault_interface {
      * for the student and its associated course section.
      *
      * @param   int     The course id
-     * @param   int     The student id
+     * @param   int     The student user id
      * @param   bool    Next or current exercise
      * @return  array   The next exercise id and associated course section
      */
-    public function get_student_exercise($courseid, $studentid, $next = true) {
+    public function get_student_exercise($courseid, $userid, $next = true) {
         global $DB;
         $result = [0,0];
 
@@ -608,7 +631,7 @@ class participant_vault implements participant_vault_interface {
                     AND m.name = :assign
                     AND cm.instance ' . ($next ? 'NOT' : '') . ' IN (SELECT ag.assignment
                     FROM {' . self::DB_GRADES . '} ag
-                    WHERE ag.userid = :studentid
+                    WHERE ag.userid = :userid
                     AND ag.grade != -1
                     AND ag.timemodified > ' . $this->pastdatacutoff . ')
                 ORDER BY cs.section '  . ($next ? 'ASC' : 'DESC') . '
@@ -617,7 +640,7 @@ class participant_vault implements participant_vault_interface {
         $params = [
             'courseid' => $courseid,
             'assign' => 'assign',
-            'studentid'  => $studentid
+            'userid'  => $userid
         ];
 
         $rs = $DB->get_records_sql($sql, $params);

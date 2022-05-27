@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Session Booking Plugin
+ * Redirects calendar posting to various calender providers
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)

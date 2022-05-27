@@ -1,5 +1,20 @@
 # Change log
 
+## [2022052700] - UNRELEASED 2022-05-27
+
+### Added
+
+- require_capability to all base php accessible through base URLs
+- allow manager role access to availabilityview, logbookview, and studentnotification.
+- view student logbook
+- theory exam report
+- practical exam report if the student is qualified (finished last lesson)
+- mentored sessions report
+
+### Changed
+
+- get_student_quizes_grades to use quiz_attempts instead of quiz_grades
+
 ## [2022052000] - UNRELEASED 2022-05-08
 
 ### Added

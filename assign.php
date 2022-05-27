@@ -37,10 +37,12 @@ $sessionpassed= optional_param('passed', 1, PARAM_INT);
 
 list ($course, $cm) = get_course_and_cm_from_cmid($exerciseid, 'assign');
 
-require_login($course, true, $cm);
-
 // set context for the module and other requirements by the assignment
 $context = context_module::instance($cm->id);
+
+require_login($course, true, $cm);
+require_capability('local/booking:view', $context);
+
 $urlparams = array('id' => $exerciseid,
                   'action' => 'grading',
                   'tifirst' => '',

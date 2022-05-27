@@ -169,7 +169,7 @@ class logbook implements logbook_interface {
      * @param int $exerciseid: The entry associated exercise id
      * @return logentry $logentry The logbook entry db record
      */
-    protected function get_logentry_by_exericseid(int $exerciseid) {
+    public function get_logentry_by_exericseid(int $exerciseid) {
         $logentry = null;
         foreach ($this->entries as $entry) {
             if ($entry->get_exerciseid() == $exerciseid) {
@@ -188,6 +188,24 @@ class logbook implements logbook_interface {
      */
     public function get_summary(bool $tostring = false) {
         $totals = logbook_vault::get_logbook_summary($this->courseid, $this->userid);
+        if ($tostring) {
+            foreach ($totals as $key => $total) {
+                if ($key != 'totallandingsday' && $key != 'totallandingsnight')
+                    $totals->$key = self::convert_time($total, 'MINS_TO_TEXT') ?: '';
+            }
+        }
+        return $totals;
+    }
+
+    /**
+     * Get the logbook entries time totals until a specific exercise
+     *
+     * @param int $exerciseid  The exercise id to sum up to.
+     * @param  bool $tostring  The totals in string time format
+     * @return array           The logbook time table totals
+     */
+    public function get_summary_to_exercise(int $exerciseid, bool $tostring = false) {
+        $totals = logbook_vault::get_logbook_summary_to_exercise($this->courseid, $this->userid, $exerciseid);
         if ($tostring) {
             foreach ($totals as $key => $total) {
                 if ($key != 'totallandingsday' && $key != 'totallandingsnight')

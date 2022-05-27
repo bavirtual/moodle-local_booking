@@ -145,11 +145,11 @@ function local_booking_extend_navigation(global_navigation $navigation) {
                 $node = $navigation->find('logbook', navigation_node::NODETYPE_LEAF);
                 if (!$node && $courseid!==SITEID) {
                     // form URL and parameters
-                    $params = array('courseid'=>$courseid);
+                    $params = array('courseid'=>$courseid, 'userid'=>$USER->id);
                     $url = new moodle_url('/local/booking/logbook.php', $params);
 
                     $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
-                    $node = navigation_node::create(get_string('logbook', 'local_booking'), $url);
+                    $node = navigation_node::create(ucfirst(get_string('logbook', 'local_booking')), $url);
                     $node->key = 'logbook';
                     $node->type = navigation_node::NODETYPE_LEAF;
                     $node->forceopen = true;
@@ -316,7 +316,7 @@ function local_booking_get_fontawesome_icon_map() {
  * @param   string  $skipevents Whether to load the events or not
  * @return  array[array, string]
  */
-function get_weekly_view(\calendar_information $calendar, $actiondata, $view = 'user') {
+function get_weekly_view(\calendar_information $calendar, array $actiondata, string $view = 'user') {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('core_calendar');
@@ -338,10 +338,11 @@ function get_weekly_view(\calendar_information $calendar, $actiondata, $view = '
 /**
  * Get the student's progression view output.
  *
- * @param   int     $courseid the associated course.
+ * @param   int     $courseid the associated course id.
+ * @param   int     $userid the associated user id.
  * @return  array[array, string]
  */
-function get_profile_view($courseid, $userid) {
+function get_profile_view(int $courseid, int $userid) {
     global $PAGE, $COURSE;
 
     $renderer = $PAGE->get_renderer('local_booking');
@@ -367,9 +368,10 @@ function get_profile_view($courseid, $userid) {
  * Get the student's progression view output.
  *
  * @param   int     $courseid the associated course.
+ * @param   string  $sorttype student progression sorting.
  * @return  array[array, string]
  */
-function get_bookings_view($courseid, $sorttype = '') {
+function get_bookings_view(int $courseid, string $sorttype = '') {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
@@ -397,7 +399,7 @@ function get_bookings_view($courseid, $sorttype = '') {
  * @param   int     $studentid the student user id being confirmed.
  * @return  array[array, string]
  */
-function get_booking_confirm_view($courseid, $studentid) {
+function get_booking_confirm_view(int $courseid, int $studentid) {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
@@ -423,10 +425,9 @@ function get_booking_confirm_view($courseid, $studentid) {
  * @param   int     $courseid the associated course.
  * @param   int     $userid the logbook owner user id.
  * @param   string  $templateformat the logbook format.
- * @param   bool    $loadentries whether to load logbook entries or not.
  * @return  array[array, string]
  */
-function get_logbook_view($courseid, $userid, $templateformat) {
+function get_logbook_view(int $courseid, int $userid, string $templateformat) {
     global $PAGE, $COURSE;
 
     $renderer = $PAGE->get_renderer('local_booking');
@@ -505,10 +506,10 @@ function get_logentry_view(int $courseid, int $userid, array $formdata = null) {
 /**
  * Get instructor assigned students view output.
  *
- * @param   int     $courseid the associated course.
+ * @param   int     $courseid the associated course id.
  * @return  array[array, string]
  */
-function get_students_view($courseid) {
+function get_students_view(int $courseid) {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
@@ -540,7 +541,7 @@ function get_participation_view($courseid) {
         'courseid'  => $courseid,
     ];
 
-    $participation = new  instructor_participation_exporter($data, ['context' => \context_course::instance($courseid)]);
+    $participation = new instructor_participation_exporter($data, ['context' => \context_course::instance($courseid)]);
     $data = $participation->export($renderer);
 
     return [$data, $template];

@@ -211,7 +211,7 @@ class logbook_vault implements logbook_vault_interface {
     }
 
     /**
-     * Update a user's logbook entry
+     * Get summary of logentries of the entire logbook.
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
@@ -243,6 +243,58 @@ class logbook_vault implements logbook_vault_interface {
         $params = [
             'courseid' => $courseid,
             'userid' => $userid
+        ];
+
+        return $DB->get_record_sql($sql, $params);
+    }
+
+    /**
+     * Get summary of logentries up to a specific exercise.
+     *
+     * @param int       $courseid   The course id associated with the logbook.
+     * @param int       $userid     The user id associated with the logbook.
+     * @param int       $exerciseid The exercise id to sum up to.
+     * @return object
+     */
+    public static function get_logbook_summary_to_exercise(int $courseid, int $userid, int $exerciseid) {
+        global $DB;
+
+        // get the section of the exercise for the student logbook times summations
+        $sql = 'SELECT cs.section
+                FROM mdl_course_modules cm
+                INNER JOIN mdl_course_sections cs ON cs.id = cm.section
+                WHERE cs.course = :courseid
+                AND cm.id = :exerciseid';
+        $section = $DB->get_record_sql($sql, array('courseid'=>$courseid, 'exerciseid'=>$exerciseid))->section;
+
+        // get summations up until specified section for the student of a specific course
+        $sql = 'SELECT SUM(l.groundtime) as totalgroundtime,
+                    SUM(l.pictime) as totalpictime,
+                    SUM(l.dualtime) as totaldualtime,
+                    SUM(l.instructortime) as totalinstructortime,
+                    SUM(l.picustime) as totalpicustime,
+                    SUM(l.multipilottime) as totalmultipilottime,
+                    SUM(l.copilottime) as totalcopilottime,
+                    SUM(if(l.pictime!=0, pictime,
+                        if(l.dualtime!=0, dualtime,
+                        if(l.copilottime!=0, copilottime,
+                        if(l.picustime!=0, picustime, 0))))) as totaltime,
+                    SUM(l.nighttime) as totalnighttime,
+                    SUM(l.ifrtime) as totalifrtime,
+                    SUM(l.checkpilottime) as totalcheckpilottime,
+                    SUM(l.landingsday) as totallandingsday,
+                    SUM(l.landingsnight) as totallandingsnight
+                FROM {' . self::DB_LOGBOOKS .'} l
+                INNER JOIN {' . self::DB_COURSE_MODULES .'} cm ON cm.id = l.exerciseid
+                INNER JOIN {' . self::DB_COURSE_SECTIONS .'} cs ON cs.id = cm.section
+                WHERE l.courseid = :courseid
+                AND l.userid = :userid
+                AND cs.section <= :section';
+
+        $params = [
+            'courseid' => $courseid,
+            'userid' => $userid,
+            'section' => $section
         ];
 
         return $DB->get_record_sql($sql, $params);

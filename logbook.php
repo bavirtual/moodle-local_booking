@@ -15,13 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Session Booking Plugin
+ * Logbook entries view for pilots.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use local_booking\local\participant\entities\participant;
+use local_booking\local\session\entities\booking;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -32,15 +35,15 @@ defined('MOODLE_INTERNAL') || die();
 // Set up the page.
 global $COURSE, $USER;
 
-$userid = $USER->id;
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
+$userid = optional_param('userid', $USER->id, PARAM_INT);
+$username = participant::get_fullname($userid);
 $format = optional_param('format', null, PARAM_TEXT);
 $course = get_course($courseid);
-$title = $course->shortname . ' ' . get_string('logbook', 'local_booking');
-$title = get_string('logbook', 'local_booking');
+$title = $USER->id == $userid ? get_string('logbookmy', 'local_booking') : $username;
 
-$params = array('courseid'=>$courseid);
+$params = array('courseid'=>$courseid, 'userid'=>$userid);
 $url = new moodle_url('/local/booking/logbook.php', $params);
 
 $PAGE->set_url($url);
@@ -49,6 +52,10 @@ $context = context_course::instance($courseid);
 
 require_login($course, false);
 require_capability('local/booking:logbookview', $context);
+// deny access if not an instructor and not view own logbook
+if (!has_capability('local/booking:view', $context) && $USER->id != $userid) {
+    throw new required_capability_exception($context, $capability, 'nopermissions', '');
+}
 
 $PAGE->requires->jquery();
 // RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
@@ -62,7 +69,7 @@ $PAGE->requires->js(new \moodle_url('https://cdn.datatables.net/responsive/2.2.9
 $PAGE->requires->css(new \moodle_url('https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap4.min.css'));
 $PAGE->requires->js(new \moodle_url($CFG->wwwroot . '/local/booking/js/datatables/logbook.js'));
 
-$PAGE->navbar->add(get_string('logbook', 'local_booking'));
+$PAGE->navbar->add($USER->id == $userid ? get_string('logbookmy', 'local_booking') : ucfirst(get_string('logbook', 'local_booking')));
 $PAGE->set_pagelayout('standard');  // otherwise use 'standard' layout
 $PAGE->set_title($title, 'local_booking');
 $PAGE->set_heading($title, 'local_booking');

@@ -140,12 +140,12 @@ interface subscriber_interface {
     public static function get_section_name(int $courseid, int $exerciseid);
 
     /**
-     * Returns the course last exercise
+     * Returns the course graduation exercise the last exercise
+     * the student takes before graduating the course
      *
-     * @param int $courseid The course id of the section
-     * @return string  The last exericse id
+     * @return int The last exericse id
      */
-    public function get_last_exercise();
+    public function get_graduation_exercise();
 
     /**
      * Retrieves exercises for the course

@@ -31,9 +31,6 @@ $string['bookingdashboard'] = 'Instructor dashboard';
 $string['bookingfooter'] = '<p style="font-family:sans-serif"><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href="{$a->bookingurl}">Session Booking</a></p>';
 $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
 $string['bookingnoposts'] = 'No posts';
-$string['bookingoverride'] = 'Override';
-$string['bookingoverridelabel'] = 'Restriction wait period';
-$string['bookingoverridetooltip'] = 'Allows the student to post availability and override the restriction period';
 $string['bookingkeepactivetrue'] = 'Keep active ON';
 $string['bookingkeepactivefalse'] = 'Keep active OFF';
 $string['bookingkeepactivelabel'] = 'On-hold list';
@@ -79,6 +76,8 @@ $string['sessiongradedby'] = '{$a->sessiondate}Graded by:<br/>{$a->instructor}<b
 $string['sessiongradeexampass'] = 'Exam Results<br/>Grade: {$a->grade}<br/>Date: {$a->gradedate}';
 $string['sessionprogressing'] = 'Objective Not Met<br/>(click for feedback)<br/>{$a->sessiondate}{$a->instructor}';
 $string['sessionvenue'] = 'Discord';
+$string['showall'] = 'Show all students';
+$string['showuspeneded'] = 'Show suspended students';
 $string['simulator'] = 'Sim';
 $string['slots'] = 'slots';
 $string['statusbooked'] = 'confirmed';
@@ -270,8 +269,8 @@ $string['auditreports'] = 'Audit';
 $string['completereport'] = 'Complete report';
 $string['courseactivity'] = 'Course Activity';
 $string['daysback'] = 'days back';
-$string['endorsement'] = 'Skill Test Endorsement';
-$string['endorsementmgs'] = 'Endorsed by {$a->endorser} on {$a->endorsedate}';
+$string['endorsement'] = 'Skill Test Recommendation';
+$string['endorsementmgs'] = 'Recommended by {$a->endorser} on {$a->endorsedate}';
 $string['graduation'] = 'Graduation';
 $string['feedbackreport'] = 'Feedback report';
 $string['keepactive'] = 'Keep active';
@@ -296,8 +295,7 @@ $string['score'] = 'Score';
 $string['sim1'] = 'Primary simulator';
 $string['sim2'] = 'Secondary simulator';
 $string['skilltest']='Skill Test';
-$string['skilltestendorse']='Recommended for test by';
-$string['skilltestform']='Fill form';
+$string['skilltestendorse']='Recommend for skill test';
 $string['slots'] = 'Slots';
 $string['slotsactive'] = 'Slots active';
 $string['theoryexamreport']='Theory examination report';
@@ -490,6 +488,12 @@ $string['emailoverduenotifyinsthtml'] = '<font face="sans-serif"><p><a href=\'{$
     otherwise to request removal from the list of active instructors.</p><hr />';
 $string['emailoverduestatus'] = 'not booked a session since \'{$a}\'';
 
+// email endorsement to senior instructors
+$string['emailendorsementnotify'] = '{$a->coursename}: Skill test recommendation';
+$string['emailendorsementnotifymsg'] = 'Congradulations to {$a->studentname} for completing course work and qualifying cross-country flight. {$a->instructorname} has recommended {$a->studentname} for the skill test on {$a->endorsedon}.';
+$string['emailendorsementnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
+    <p>Congradulations to {$a->studentname} for completing course work and qualifying cross-country flight.</p><p>{$a->instructorname} has recommended {$a->studentname} for the skill test on {$a->endorsedon}.</p><hr />';
+
 // settings
 $string['activitycountweight'] = 'Course activity prioritization';
 $string['activitycountweightdesc'] = 'weight multiplier to calculate prioritization for course activity';
@@ -503,8 +507,9 @@ $string['slotcountweightdesc'] = 'weight multiplier to calculate prioritization 
 
 // install
 $string['useplugin'] = 'Use Session Booking';
+$string['trainingtype'] = 'Training type';
 $string['homeicao'] = 'Home airport ICAO';
-$string['exercisetitles'] = 'Course exercise titles:';
+$string['exercisetitles'] = 'Course exercise titles';
 $string['exercisetitlesdesc'] = 'Use to improve the display of long exercise titles on the instructors dashboard page (one title per line, use &lt;br/&gt; tag to break a title)';
 $string['overdueperiod'] = 'Instructor session overdue notification';
 $string['overdueperioddesc'] = 'A period in days after which inactive instructors will be automatically sent a notification (0 = disable restriction)';
@@ -514,8 +519,17 @@ $string['postingwait'] = 'Posting wait restriction';
 $string['postingwaitdesc'] = 'A restriction period in days between the last conducted session and the next time a student can post availability (0 = disable restriction)';
 $string['trainingaircraft'] = 'Training Aircraft ICAO';
 $string['trainingaircraftdesc'] = '(one per line)';
+$string['skilltestexercise']='Skill Test exercise name';
+$string['skilltestexercisedesc']='Exercise name as it appears in the main course page (i.e. Initial Flying Training Skill Test), required for graduation purposes';
 $string['suspensionperiod'] = 'Suspension restriction';
 $string['suspensionperioddesc'] = 'A restriction period in days after which inactive students will be automatically suspended from the course (0 = disable restriction)';
+
+// Groups
+$string['grouponholddesc'] = 'Group to track students put on hold.';
+$string['groupinactivedesc'] = 'Group to track inactive instructors.';
+$string['groupgraduatesdesc'] = 'Group to track graduated students.';
+$string['groupkeepactivedesc'] = 'Group to track students from being placed on hold.';
+$string['groupexaminersdesc'] = 'Group to identify examiner instructors.';
 
 // APIs
 $string['googleaccesstokenerror'] = 'Error: Failed to receieve Google access token';

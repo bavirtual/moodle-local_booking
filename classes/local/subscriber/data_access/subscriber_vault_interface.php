@@ -47,10 +47,19 @@ interface subscriber_vault_interface {
     public static function get_subscriber_exercises(int $courseid);
 
     /**
+     * Returns the subscribed course exercise by name
+     *
+     * @param int $courseid The course id of the section
+     * @param string $exercisename The graduation exercise name
+     * @return int  The exercise id of the graduation last exercise
+     */
+    public static function get_subscriber_exercise_by_name(int $courseid, string $exercisename);
+
+    /**
      * Returns the subscribed course last exercise
      *
      * @param int $courseid The course id of the section
-     * @return string  The section name of a course associated with the exercise
+     * @return int  The exercise id of the graduation last exercise
      */
     public static function get_subscriber_last_exercise(int $courseid);
 

@@ -62,7 +62,7 @@ class pdf_report_practicalexam extends pdf_report {
         parent::WriteContent();
 
         // get the exercise id (assignment id) for the practical exam assignment
-        $exerciseid = $this->course->get_last_exercise();
+        $exerciseid = $this->course->get_graduation_exercise();
 
         // write course name
         $this->SetFont($this->fontfamily, 'B', 18);

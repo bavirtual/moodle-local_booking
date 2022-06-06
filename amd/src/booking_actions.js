@@ -92,36 +92,6 @@ function(
     };
 
     /**
-     * Overrides the availability wait restriction for a student.
-     *
-     * @method  overrideRestriction
-     * @param   {object} root   The My Bookings root element
-     * @return  {bool}          The result of the webservice call
-     */
-    var overrideRestriction = (root) => {
-        ViewManager.startLoading(root);
-
-        // Get course id and booking id
-        const studentId = root.find(BookingSelectors.bookingconfirmation).data('studentid'),
-              courseId = root.find(BookingSelectors.bookingconfirmation).data('courseid');
-
-        // Send the request data to the server for processing.
-        return Repository.updateUserPreferences('availabilityoverride', true, courseId, studentId)
-            .then(function(response) {
-                if (response.validationerror) {
-                    // eslint-disable-next-line no-alert
-                    alert(Str.get_string('bookingavailabilityoverrideunable', 'local_booking'));
-                }
-                return;
-            })
-            .always(function() {
-                Notification.fetchNotifications();
-                ViewManager.stopLoading(root);
-            })
-            .fail(Notification.exception);
-    };
-
-    /**
      * Prepares the action for the summary modal's delete action.
      *
      * @method  confirmDeletion
@@ -274,7 +244,6 @@ function(
         registerBookingConfirm: registerBookingConfirm,
         registerRedirect: registerRedirect,
         registerDelete: registerDelete,
-        cancelBooking: cancelBooking,
-        overrideRestriction: overrideRestriction
+        cancelBooking: cancelBooking
     };
 });

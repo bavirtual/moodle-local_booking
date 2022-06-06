@@ -91,13 +91,6 @@
                             {{^qualified}}{{#str}} notqualified , local_booking {{/str}}{{/qualified}}
                         </dd>
                     </dl>
-                    <dl>
-                        <dt>{{#str}} skilltest , local_booking {{/str}}<dt>
-                        <dd>
-                            <button id="skillform" type="button" class="btn btn-primary btn-sm mr-3" {{^endorsed}}disabled="true"{{/endorsed}} onclick="location.href='{{{examinerurl}}}';">
-                            {{#str}} skilltestform, local_booking {{/str}}</button>
-                        </dd>
-                    </dl>
                 </div>
             </section>
             <section class="node_category card d-inline-block w-100 mb-3">
@@ -154,15 +147,15 @@
                         <dd><span><a href="{{theoryexamreporturl}}">{{#str}} theoryexamreport , local_booking {{/str}}</a></span></dd>
                         {{/hasexams}}
                         {{^hasexams}}
-                        <dd><span>{{#str}} theoryexamreport , local_booking {{/str}}</span></dd>
+                        <dd><span>{{#str}} theoryexamreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>
                         {{/hasexams}}
                         {{#qualified}}
                         <dd><span><a href="{{practicalexamreporturl}}">{{#str}} practicalexamreport , local_booking {{/str}}</a></span></dd>
                         <dd><span><a href="{{examinerreporturl}}">{{#str}} examinerreport , local_booking {{/str}}</a></span></dd>
                         {{/qualified}}
                         {{^qualified}}
-                        <dd><span>{{#str}} practicalexamreport , local_booking {{/str}}</span></dd>
-                        <dd><span>{{#str}} examinerreport , local_booking {{/str}}</span></dd>
+                        <dd><span>{{#str}} practicalexamreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>
+                        <dd><span>{{#str}} examinerreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>
                         {{/qualified}}
                     </dt></dl>
                 </div>

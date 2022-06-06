@@ -50,7 +50,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      * @since Moodle 2.5
      */
     public static function get_bookings_view_parameters() {
@@ -104,7 +104,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      * @since Moodle 2.5
      */
     public static function get_pilot_logbook_parameters() {
@@ -174,7 +174,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      * @since Moodle 2.5
      */
     public static function get_logentry_by_id_parameters() {
@@ -242,7 +242,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      * @since Moodle 2.5
      */
     public static function get_pirep_parameters() {
@@ -355,7 +355,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      * @since Moodle 2.5
      */
     public static function delete_logentry_parameters() {
@@ -497,7 +497,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      */
     public static function save_booking_parameters() {
         return new external_function_parameters(
@@ -564,7 +564,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      */
     public static function cancel_booking_parameters() {
         return new external_function_parameters(array(
@@ -618,7 +618,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      */
     public static function update_user_preferences_parameters() {
         return new external_function_parameters(array(
@@ -678,7 +678,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      */
     public static function update_enrolement_status_parameters() {
         return new external_function_parameters(array(
@@ -746,7 +746,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      */
     public static function update_user_group_parameters() {
         return new external_function_parameters(array(
@@ -813,7 +813,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      */
     public static function save_slots_parameters() {
         // Userid is always current user, so no need to get it from client.
@@ -898,7 +898,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      * @since Moodle 2.5
      */
     public static function delete_slots_parameters() {
@@ -974,7 +974,7 @@ class local_booking_external extends external_api {
     /**
      * Returns description of method parameters.
      *
-     * @return external_function_parameters.
+     * @return external_function_parameters
      */
     public static function submit_create_update_form_parameters() {
         return new external_function_parameters(

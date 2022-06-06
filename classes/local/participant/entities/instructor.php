@@ -54,4 +54,16 @@ class instructor extends participant {
         }
         return $assignedstudents;
     }
+
+    /**
+     * Check if the instructor is an examiner.
+     *
+     * @return bool Whether the instructor is an examiner or not.
+     */
+    public function is_examiner() {
+        // get skill test context id
+        $skilltestid = $this->course->get_graduation_exercise();
+        $context = \context_module::instance($skilltestid); //contextid=116
+        return has_capability('mod/assign:grade', $context, $this->userid);
+    }
 }

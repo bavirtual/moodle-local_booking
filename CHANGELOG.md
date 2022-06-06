@@ -1,11 +1,33 @@
 # Change log
 
+## [2022060600] - UNRELEASED 2002-06-06
+
+### Added
+
+- Skill test exercise course custom field for graduation qualification (install.php)
+- Examiners group to subscriber object to implement skill exam and assessment restrictions
+- is_examiner() method to check if an instructor has the examiner role for the skill test
+- shading to completed sessions in the interim page
+- Skill test report restriction requiring the skill test to be graded
+
+### Changed
+
+- removed Override button from the booking interim page
+- Interim page to show exercise Skill test for examiners only
+- Gray out graded sessions in interim page
+- Disabled grading in progression list for exercises requiring file submissions but no submission exists
+
+### Fixed
+
+- Participant is_active to lookup active enrolled courses from enrollib
+- install.php shortname for trainingtype
+
 ## [2022052700] - UNRELEASED 2022-05-27
 
 ### Added
 
 - require_capability to all base php accessible through base URLs
-- allow manager role access to availabilityview, logbookview, and studentnotification.
+- allow manager role access to availabilityview, logbookview, and studentnotification
 - view student logbook
 - theory exam report
 - practical exam report if the student is qualified (finished last lesson)

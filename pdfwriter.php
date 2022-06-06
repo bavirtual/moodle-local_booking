@@ -70,7 +70,8 @@ switch ($reporttype) {
         $theoryexamreport->Generate();
         break;
     case 'examiner':
-        // $report = new report_theoryexam_exporter($data, $related);
+        $theoryexamreport = new pdf_report_practicalexam($COURSE->subscriber, $student);
+        $theoryexamreport->Generate();
         break;
 }
 

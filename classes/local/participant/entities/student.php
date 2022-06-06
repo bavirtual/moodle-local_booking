@@ -286,7 +286,7 @@ class student extends participant {
             $nextsessiondate = new DateTime('@' . time());
 
             // process restriction if posting wait restriction is enabled or if the student doesn't have a waiver
-            if ($this->course->postingwait > 0 || !$hasrestrictionwaiver) {
+            if ($this->course->postingwait > 0 && !$hasrestrictionwaiver) {
 
                 $lastsession = $this->get_last_booking();
 
@@ -303,11 +303,11 @@ class student extends participant {
 
                 // add posting wait period to last session
                 date_add($nextsessiondate, date_interval_create_from_date_string($this->course->postingwait . ' days'));
-            }
 
-            // return today's date if the posting wait restriction date had passed
-            if ($nextsessiondate->getTimestamp() < time())
-                $nextsessiondate = new DateTime('@' . time());
+                // return today's date if the posting wait restriction date had passed
+                if ($nextsessiondate->getTimestamp() < time())
+                    $nextsessiondate = new DateTime('@' . time());
+            }
 
             // rest the hours to start of the day
             $nextsessiondate->settime(0,0);

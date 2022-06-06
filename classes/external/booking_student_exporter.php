@@ -273,15 +273,26 @@ class booking_student_exporter extends exporter {
      * @return {object} $sessionoptions
      */
     protected function get_session_options($action) {
+        global $COURSE;
+
         $sessionoptions = [];
+        $grades = $this->student->get_grades();
 
         if ($this->data['view'] == 'confirm') {
+
             foreach ($this->courseexercises as $exercise) {
-                $sessionoptions[] = [
-                    'nextsession' => ($action->get_exerciseid() == $exercise->exerciseid ? "checked" : ""),
-                    'bordered' => $action->get_exerciseid() == $exercise->exerciseid,
-                    'exerciseid'  => $exercise->exerciseid
-                ];
+
+                // show the graduation exercise booking option for examiners only
+                if (($exercise->exerciseid == $COURSE->subscriber->get_graduation_exercise() && ($this->data['instructor'])->is_examiner()) ||
+                    $exercise->exerciseid != $COURSE->subscriber->get_graduation_exercise()) {
+                    $sessionoptions[] = [
+                        'nextsession' => ($action->get_exerciseid() == $exercise->exerciseid ? "checked" : ""),
+                        'bordered' => $action->get_exerciseid() == $exercise->exerciseid,
+                        'graded'  => array_key_exists($exercise->exerciseid, $grades),
+                        'exerciseid'  => $exercise->exerciseid
+                    ];
+                }
+
             }
         }
 

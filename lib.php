@@ -135,7 +135,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
     if (empty($COURSE->subscriber))
         $COURSE->subscriber = new subscriber($courseid);
 
-    if ($COURSE->subscriber->subscribed) {
+        if ($COURSE->subscriber->subscribed) {
         // for checking if the participant is active
         $participant = $COURSE->subscriber->get_participant($USER->id);
 

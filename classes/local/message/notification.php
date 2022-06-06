@@ -360,6 +360,7 @@ class notification extends \core\message\message {
      * @param string    $status the status of instructor activity.
      * @param int       $courseid the course id.
      * @param string    $coursename the course name.
+     * @param array     $seniorinstructors the list of senior instructors to be copied.
      * @return bool     The notification message id.
      */
     public function send_session_overdue_notification($instructorid, $status, $courseid, $coursename, $seniorinstructors) {

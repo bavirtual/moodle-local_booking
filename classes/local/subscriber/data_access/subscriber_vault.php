@@ -77,30 +77,6 @@ class subscriber_vault implements subscriber_vault_interface {
     }
 
     /**
-     * Returns the subscribed course last exercise
-     *
-     * @param int $courseid The course id of the section
-     * @return string  The section name of a course associated with the exercise
-     */
-    public static function get_subscriber_last_exercise(int $courseid) {
-        global $DB;
-
-        // Get the full user name
-        $sql = 'SELECT cm.id AS exerciseid
-                FROM mdl_course_modules cm
-                INNER JOIN mdl_modules m ON m.id = cm.module
-                INNER JOIN mdl_course_sections cs ON cs.id = cm.section
-                WHERE  m.name = :assign
-                    AND cm.course = :courseid
-                ORDER BY cs.section DESC
-                LIMIT 1';
-
-        $exercises = $DB->get_record_sql($sql, ['assign' => 'assign', 'courseid' => $courseid]);
-
-        return $exercises->exerciseid;
-    }
-
-    /**
      * Retrieves exercises for the course
      *
      * @param int $courseid The course id of the section
@@ -150,6 +126,55 @@ class subscriber_vault implements subscriber_vault_interface {
         $param = ['exerciseid'=>$exerciseid];
 
         return $DB->get_record_sql($sql, $param)->exercisename;
+    }
+
+    /**
+     * Returns the subscribed course exercise by name
+     *
+     * @param int $courseid The course id of the section
+     * @param string $exercisename The graduation exercise name
+     * @return int  The exercise id of the graduation last exercise
+     */
+    public static function get_subscriber_exercise_by_name(int $courseid, string $exercisename) {
+        global $DB;
+
+        // Get the exercise id of the course based on the graduation exercise name
+        $sql = 'SELECT cm.id AS exerciseid
+            FROM {' . self::DB_ASSIGN . '} a
+            INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.instance = a.id
+            INNER JOIN {' . self::DB_MODULES . '} m ON m.id = cm.module
+            WHERE cm.course = :courseid
+            AND m.name = :assign
+            AND a.name = :exercisename';
+
+        $exercises = $DB->get_record_sql($sql, ['courseid' => $courseid, 'assign' => 'assign', 'exercisename' => $exercisename]);
+
+        return !empty($exercises) ? $exercises->exerciseid : 0;
+    }
+
+    /**
+     * Returns the subscribed course last exercise
+     *
+     * @param int $courseid The course id of the section
+     * @return int  The exercise id of the graduation last exercise
+     */
+    public static function get_subscriber_last_exercise(int $courseid) {
+        global $DB;
+
+        // Get the exercise id of the course based on the graduation exercise name
+        $sql = 'SELECT cm.id AS exerciseid
+            FROM {' . self::DB_ASSIGN . '} a
+            INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.instance = a.id
+            INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
+            INNER JOIN {' . self::DB_MODULES . '} m ON m.id = cm.module
+            WHERE cm.course = :courseid
+            AND m.name = :assign
+            ORDER BY cs.section DESC
+            LIMIT 1';
+
+        $exercises = $DB->get_record_sql($sql, ['courseid' => $courseid, 'assign' => 'assign']);
+
+        return !empty($exercises) ? $exercises->exerciseid : 0;
     }
 
     /**

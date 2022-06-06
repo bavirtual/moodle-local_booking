@@ -39,7 +39,7 @@ $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $userid = optional_param('userid', $USER->id, PARAM_INT);
 $username = participant::get_fullname($userid);
-$format = optional_param('format', null, PARAM_TEXT);
+$format = optional_param('format', '', PARAM_TEXT);
 $course = get_course($courseid);
 $title = $USER->id == $userid ? get_string('logbookmy', 'local_booking') : $username;
 
@@ -80,7 +80,7 @@ $renderer = $PAGE->get_renderer('local_booking');
 echo $OUTPUT->header();
 echo $renderer->start_layout();
 
-list($data, $template) = get_logbook_view($courseid, $userid, $format, true);
+list($data, $template) = get_logbook_view($courseid, $userid, $format);
 echo $renderer->render_from_template($template, $data);
 
 echo $renderer->complete_layout();

@@ -50,7 +50,12 @@ class subscriber implements subscriber_interface {
     protected $context;
 
     /**
-     * @var int $course The subscribed course.
+     * @var int $course The global course.
+     */
+    protected $course;
+
+    /**
+     * @var int $courseID The subscribed course.
      */
     protected $courseid;
 
@@ -82,6 +87,7 @@ class subscriber implements subscriber_interface {
     public function __construct($courseid) {
         global $COURSE;
         $this->context = \context_course::instance($courseid);
+        $this->course = $COURSE;
         $this->courseid = $courseid;
         $this->fullname = $COURSE->fullname;
         $this->shortname = $COURSE->shortname;
@@ -355,13 +361,20 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Returns the course last exercise
+     * Returns the course graduation exercise as specified in the settings
+     * otherwise retrieves the last exercise.
      *
-     * @param int $courseid The course id of the section
-     * @return string  The last exericse id
+     *
+     * @return int The last exericse id
      */
-    public function get_last_exercise() {
-        return subscriber_vault::get_subscriber_last_exercise($this->courseid);
+    public function get_graduation_exercise() {
+        $exerciseid = subscriber_vault::get_subscriber_exercise_by_name($this->courseid, $this->skilltestexercise);
+
+        // check if there is an exercise specified in the settings otherwise default to last exercise
+        if (empty($exerciseid))
+            $exerciseid = subscriber_vault::get_subscriber_last_exercise($this->courseid);
+
+        return $exerciseid;
     }
 
     /**
@@ -479,7 +492,7 @@ class subscriber implements subscriber_interface {
             $data = new \stdClass();
             $data->courseid = $this->courseid;
             $data->name = LOCAL_BOOKING_ONHOLDGROUP;
-            $data->description = 'Group to track students put on hold.';
+            $data->description = get_string('grouponholddesc', 'local_booking');
             $data->descriptionformat = FORMAT_HTML;
             $onholdgroupid = groups_create_group($data);
         }
@@ -490,7 +503,7 @@ class subscriber implements subscriber_interface {
             $data = new \stdClass();
             $data->courseid = $this->courseid;
             $data->name = LOCAL_BOOKING_INACTIVEGROUP;
-            $data->description = 'Group to track inactive instructors.';
+            $data->description = get_string('groupinactivedesc', 'local_booking');
             $data->descriptionformat = FORMAT_HTML;
             $inactivegroupid = groups_create_group($data);
         }
@@ -501,7 +514,7 @@ class subscriber implements subscriber_interface {
             $data = new \stdClass();
             $data->courseid = $this->courseid;
             $data->name = LOCAL_BOOKING_GRADUATESGROUP;
-            $data->description = 'Group to track graduated students.';
+            $data->description = get_string('groupgraduatesdesc', 'local_booking');
             $data->descriptionformat = FORMAT_HTML;
             $graduatesgroupid = groups_create_group($data);
         }
@@ -512,7 +525,7 @@ class subscriber implements subscriber_interface {
             $data = new \stdClass();
             $data->courseid = $this->courseid;
             $data->name = LOCAL_BOOKING_KEEPACTIVEGROUP;
-            $data->description = 'Group to track students from being placed on hold.';
+            $data->description = get_string('groupkeepactivedesc', 'local_booking');
             $data->descriptionformat = FORMAT_HTML;
             $graduatesgroupid = groups_create_group($data);
         }

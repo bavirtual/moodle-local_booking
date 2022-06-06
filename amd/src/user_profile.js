@@ -65,9 +65,6 @@ function(
         processUserPreference('endorse', endorse, courseId, userId, 'endorse');
         processUserPreference('endorser', endorse ? endorser : '', courseId, userId, 'endorse');
         processUserPreference('endorsedate', endorse ? endorsedate : '', courseId, userId, 'endorse');
-
-        // Set Skill Form button status
-        $('#skillform').prop('disabled', !endorse);
     };
 
     /**
@@ -221,7 +218,7 @@ function(
         });
 
         // Handle restriction override toggle clicks
-        $('#restrictionoverride').click(function() {
+        $('#availabilityoverride').click(function() {
             processSetting(courseId, userId, 'availabilityoverride', this.checked, root);
         });
     };

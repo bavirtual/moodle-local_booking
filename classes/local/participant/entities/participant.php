@@ -32,7 +32,8 @@ use local_booking\local\session\entities\booking;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
 
-require_once($CFG->dirroot . "/lib/completionlib.php");
+// require_once($CFG->dirroot . "/lib/completionlib.php");
+require_once($CFG->dirroot . "/lib/enrollib.php");
 
 class participant implements participant_interface {
 
@@ -92,6 +93,11 @@ class participant implements participant_interface {
     protected $is_active;
 
     /**
+     * @var bool $status The participant's enrolment status.
+     */
+    protected $status;
+
+    /**
      * @var booking[] $bookings The student array of bookings.
      */
     protected $bookings;
@@ -108,15 +114,26 @@ class participant implements participant_interface {
      * @param int $userid The user id.
      */
     public function __construct(subscriber $course, int $userid) {
+        global $PAGE;
+
         $this->vault = new participant_vault();
         $this->course = $course;
         $this->userid = $userid;
 
         // lookup user type and active status
         if ($userid != 0) {
-            $this->is_student = count(get_user_roles($course->get_context(), $userid)) > 0 && current(get_user_roles($course->get_context(), $userid))->shortname == 'student' ? true : false;
-            $info = new \completion_info(get_course($course->get_id()));
-            $this->is_active = $info->is_tracked_user($userid);
+            $this->is_student = count(get_user_roles($course->get_context(), $userid)) > 0 &&
+                current(get_user_roles($course->get_context(), $userid))->shortname == 'student' ? true : false;
+
+            // get active participant courses
+            $enroledcourses = enrol_get_users_courses($userid, true);
+            foreach ($enroledcourses as $ue) {
+                // Default status field label and value.
+                if ($ue->id == $course->get_id()) {
+                    $this->is_active = true;
+                    break;
+                }
+            }
         }
     }
 

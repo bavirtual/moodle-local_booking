@@ -29,6 +29,7 @@ namespace local_booking\external;
 defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
+use local_booking\local\participant\entities\instructor;
 use local_booking\local\subscriber\entities\subscriber;
 use renderer_base;
 use moodle_url;
@@ -52,6 +53,11 @@ class bookings_exporter extends exporter {
      * Warning flag of a late session past overdue
      */
     const LATEWARNING = 2;
+
+    /**
+     * @var instructor $instructor The viewing instructor.
+     */
+    protected $instructor;
 
     /**
      * @var string $viewtype The view type requested: session booking or session confirmation
@@ -91,7 +97,7 @@ class bookings_exporter extends exporter {
      * @param int   $studentid optional parameter for confirming a student booking.
      */
     public function __construct($data, $related, $studentid = 0) {
-        global $COURSE;
+        global $COURSE, $USER;
 
         $url = new moodle_url('/local/booking/view.php', [
                 'courseid' => $data['courseid'],
@@ -103,6 +109,7 @@ class bookings_exporter extends exporter {
         $this->viewtype = $data['view'];
         $this->exercises = $COURSE->subscriber->get_exercises();
         $data['trainingtype'] = $COURSE->subscriber->trainingtype;
+        $this->instructor = new instructor($COURSE->subscriber, $USER->id);
         if ($this->viewtype == 'confirm')
             $this->bookingstudentid = $studentid;
 
@@ -188,7 +195,7 @@ class bookings_exporter extends exporter {
      * @return array
      */
     protected function get_exercises($output) {
-        global $COURSE;
+        global $COURSE, $USER;
         // get titles from the course custom fields exercise titles array
         $exercisesexports = [];
 
@@ -203,8 +210,12 @@ class bookings_exporter extends exporter {
                 'exercisetitle' => $exercise->title,
             ];
 
-            $exercisename = new exercise_name_exporter($data);
-            $exercisesexports[] = $exercisename->export($output);
+            // show the graduation exercise booking option for examiners only
+            if ($this->viewtype == 'confirm' && $exercise->exerciseid == $COURSE->subscriber->get_graduation_exercise() && $this->instructor->is_examiner() ||
+                $this->viewtype != 'confirm' || $exercise->exerciseid != $COURSE->subscriber->get_graduation_exercise()) {
+                    $exercisename = new exercise_name_exporter($data);
+                    $exercisesexports[] = $exercisename->export($output);
+                }
         }
 
         return $exercisesexports;
@@ -252,6 +263,7 @@ class bookings_exporter extends exporter {
                 'courseid'        => $this->data['courseid'],
                 'sequence'        => $i,
                 'sequencetooltip' => get_string('sequencetooltip', 'local_booking', $sequencetooltip),
+                'instructor'      => $this->instructor,
                 'student'         => $student,
                 'overduewarning'  => $waringflag == self::OVERDUEWARNING,
                 'latewarning'     => $waringflag == self::LATEWARNING,

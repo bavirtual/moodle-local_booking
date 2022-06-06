@@ -93,7 +93,7 @@
                     </td>
                     {{#sessionoptions}}
                     <td class="text-sm-center"
-                        {{!}}{{#bordered}}style="border: 2px double cornflowerblue!important;"{{/bordered}}{{!}}
+                        {{!}}style="{{#graded}}background-color: #f5f5f5;"{{/graded}}{{^graded}}"background-color: white;"{{/graded}}{{#bordered}}"border: 2px double cornflowerblue!important;"{{/bordered}}{{!}}
                         data-type="session-options"
                         data-exercise-id="{{exerciseid}}">
                             <input type="radio" {{nextsession}} value={{exerciseid}} name="exid">
@@ -104,24 +104,6 @@
         </table>
         <p>
         <table class="booking-override">
-            <tr style="height: 80px;">
-                <td
-                    data-toggle="tooltip"
-                    data-html="true"
-                    title="{{#str}} bookingoverridetooltip, local_booking {{/str}}">
-                    <h4>{{#str}} bookingoverridelabel, local_booking {{/str}}:</h4>
-                </td>
-                <td class="mdl-right">
-                    <div class="singlebutton">
-                        <button type="button" class="session-button-confirm"
-                            data-region="override-button"
-                            id="override_button"
-                            title="override">
-                            {{#str}} bookingoverride, local_booking {{/str}}
-                        </button>
-                    </div>
-                </td>
-            </tr>
             <tr style="height: 80px;">
                 <td>
                     <h4>{{#str}} bookingavailabilityposts, local_booking {{/str}}:</h4>

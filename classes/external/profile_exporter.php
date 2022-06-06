@@ -255,7 +255,7 @@ class profile_exporter extends exporter {
 
         // qualified (next exercise is the course's last exercise) status
         list($exerciseid, $currentsection) = $this->user->get_exercise(true);
-        $qualified = $exerciseid == $COURSE->subscriber->get_last_exercise() || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
+        $qualified = $exerciseid == $COURSE->subscriber->get_graduation_exercise() || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
         $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $this->user->get_id());
         $hasexams = count($this->user->get_quizes()) > 0;
 

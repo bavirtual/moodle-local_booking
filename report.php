@@ -65,16 +65,34 @@ $renderer = $PAGE->get_renderer('local_booking');
 echo $OUTPUT->header();
 echo $renderer->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
-echo html_writer::start_tag('center');
+// echo html_writer::start_tag('center');
+
+// show loading icon
+echo html_writer::script('document.onreadystatechange = function () {
+    var state = document.readyState
+    if (state == "interactive") {
+        document.getElementById("report").style.visibility="hidden";
+    } else if (state == "complete") {
+        setTimeout(function(){
+            document.getElementById("loadingicon").remove();
+            document.getElementById("report").style.visibility="visible";
+        },1000);
+    }
+  }
+');
+echo html_writer::start_tag('div', array('id'=>'loadingicon', 'style'=>'height: 500px; text-align: center; line-height:150px;'));
+echo html_writer::start_tag('i', array('class'=>'fa fa-circle-o-notch fa-spin', 'style'=>'font-size:48px', 'title'=>'Loading', 'aria-label'=>'Loading'));
+echo html_writer::end_tag('i');
+echo html_writer::end_tag('div');
 
 // embed the pdf report
 $reporturl = new moodle_url('/local/booking/pdfwriter.php');
 $reporturl->param('courseid', $courseid);
 $reporturl->param('userid', $userid);
 $reporturl->param('report', $reporttype);
-echo html_writer::tag('embed', '', ['src'=>$reporturl->out(false), 'quality'=>'low', 'height'=>'1200', 'width'=>'100%']);
+echo html_writer::tag('embed', '', array('id'=>'report', 'src'=>$reporturl->out(false), 'quality'=>'low', 'height'=>'1200', 'width'=>'100%'));
 
-echo html_writer::end_tag('center');
+// echo html_writer::end_tag('center');
 echo html_writer::end_tag('div');
 echo $renderer->complete_layout();
 echo $OUTPUT->footer();

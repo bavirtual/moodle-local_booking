@@ -48,7 +48,6 @@ define([
 
     const SELECTORS = {
         CANCEL_BUTTON: "[data-region='cancel-button']",
-        OVERRIDE_BUTTON: "[data-region='override-button']",
     };
 
     /**
@@ -90,11 +89,6 @@ define([
                 }
                 return;
             }).catch(Notification.exception);
-        });
-
-        // Listen to the click on the Override button in the 'Session selection' page.
-        root.on('click', SELECTORS.OVERRIDE_BUTTON, function() {
-            return BookingActions.overrideRestriction(root);
         });
     };
 
@@ -193,8 +187,8 @@ define([
 
     /**
      * Register event listeners for logbook entry,
-     * session cancellation, and restriction override actions
-     * in both 'Instructor dashboard' and 'Session selection' pages.
+     * and session cancellation in both
+     * 'Instructor dashboard' and 'Session selection' pages.
      *
      * @method  registerEventListeners
      * @param   {object} root The booking root element

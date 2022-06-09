@@ -37,6 +37,7 @@
     }} data-contextid="{{contextid}}"{{!
     }} data-trainingtype="{{trainingtype}}"{{!
     }}>
+    {{> core/overlay_loading}}
     <table class="booking-title">
         <tr>
             <td><h3>{{#str}} activestudents, local_booking {{/str}}</h3></td>
@@ -81,7 +82,7 @@
             </tr>
         </thead>
         <tbody>
-        {{#activestudents}}
+            {{#activestudents}}
             <tr data-region="student">
                 <td class="text-sm-center"
                     data-toggle="tooltip"
@@ -118,7 +119,7 @@
                          </a>
                     </div>
                 </td>
-            {{#sessions}}
+                {{#sessions}}
                 <td class="text-sm-center" style="max-width: 20px;"
                     {{#graded}}data-action={{#passed}}"view-logentry"{{/passed}}{{^passed}}"feedback"{{/passed}}{{/graded}}
                     data-exercise-status="{{sessionstatus}}"
@@ -153,9 +154,25 @@
                         </span>
                     </div>
                 </td>
-            {{/sessions}}
+                {{/sessions}}
             </tr>
-        {{/activestudents}}
+            {{/activestudents}}
         </tbody>
+    </table>
+    <table class="booking-title mt-2">
+        <tr data-region="students-filter" >
+            <td class="text-sm-left small" style="width: 150px;">
+                <input type="radio" id="showactive" {{showactive}} value="active" name="studentsfilter"> {{#str}} showactive , local_booking {{/str}}
+            </td>
+            <td class="text-sm-left small" style="width: 150px;">
+                <input type="radio" id="showonhold" {{showonhold}} value="onhold" name="studentsfilter"> {{#str}} showonhold , local_booking {{/str}}
+            </td>
+            <td class="text-sm-left small" style="width: 150px;">
+                <input type="radio" id="showgraduates" {{showgraduates}} value="graduates" name="studentsfilter"> {{#str}} showgraduates , local_booking {{/str}}
+            </td>
+            <td class="text-sm-left small">
+                <input type="radio" id="showsuspended" {{showsuspended}} value="suspended" name="studentsfilter"> {{#str}} showsuspended , local_booking {{/str}}
+            </td>
+        </tr>
     </table>
 </div>

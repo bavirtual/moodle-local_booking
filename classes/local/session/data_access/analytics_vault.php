@@ -71,7 +71,7 @@ class analytics_vault implements analytics_vault_interface {
             $lastsessiondate = new DateTime('@' . $lastsession);
             $info['source'] = 'booking';
         } else {
-            $student = $COURSE->subscriber->get_active_student($studentid);
+            $student = $COURSE->subscriber->get_student($studentid);
             $lastgraded = $student->get_last_graded_date();
             $lastsessiondate = $lastgraded ?: $student->get_enrol_date($studentid);
             $info['source'] = empty($lastgraded) ? 'enrol' : 'grade';

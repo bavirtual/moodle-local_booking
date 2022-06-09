@@ -79,33 +79,26 @@ interface subscriber_interface {
      *
      * @return {Object}[]   Array of active instructors.
      */
-    public function get_active_participants();
+    public function get_participants();
 
     /**
      * Get a student.
      *
      * @param int  $studentid   A participant user id.
      * @param bool $populate    Whether to get the student data.
-     * @param bool $active      Whether the student has an active enrolment.
+     * @param string $filter    the filter to select the student.
      * @return student          The student object
      */
-    public function get_student(int $studentid, bool $populate = false, bool $active = true);
+    public function get_student(int $studentid, bool $populate = false, string $filter = 'active');
 
     /**
-     * Get an active student.
+     * Get students based on filter.
      *
-     * @param int $studentid    A specific student for booking confirmation
-     * @return student $student The active student object.
-     */
-    public function get_active_student(int $studentid);
-
-    /**
-     * Get all active students.
-     *
-     * @param bool $includeonhold    Whether to include on-hold students as well
+     * @param string $filter       The filter to show students, inactive (including graduates), suspended, and default to active.
+     * @param bool $includeonhold  Whether to include on-hold students as well
      * @return array $activestudents Array of active students.
      */
-    public function get_active_students(bool $includeonhold = false);
+    public function get_students(string $filter = 'active', bool $includeonhold = false);
 
     /**
      * Get an active instructor.
@@ -113,7 +106,7 @@ interface subscriber_interface {
      * @param int $instructorid An instructor user id.
      * @return instructor       The instructor object
      */
-    public function get_active_instructor(int $instructorid);
+    public function get_instructor(int $instructorid);
 
     /**
      * Get all active instructors for the course.
@@ -121,7 +114,7 @@ interface subscriber_interface {
      * @param bool $courseadmins Indicates whether the instructors returned are part of course admins
      * @return {Object}[]   Array of active instructors.
      */
-    public function get_active_instructors(bool $courseadmins = false);
+    public function get_instructors(bool $courseadmins = false);
 
     /**
      * Get subscribing course senior instructors list.

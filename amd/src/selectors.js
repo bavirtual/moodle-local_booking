@@ -54,5 +54,7 @@ define([], function() {
         },
         toggle: '[toggle-input]',
         onhold: '[onhold-toggle]',
+        cancelbutton: '[data-region="cancel-button"]',
+        studentsfilter: '[data-region="students-filter"]',
     };
 });

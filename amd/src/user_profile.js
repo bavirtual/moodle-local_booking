@@ -48,15 +48,25 @@ function(
      const setEndorsement = function(courseId, userId, endorse, root) {
         // Get endorsement information (endorser, date, and message) from template
         let userProfile = root.find(Selectors.userprofilewrapper),
+        endorsername = userProfile.data('endorsername'),
         endorser = userProfile.data('endorser'),
-        endorsedate = (new Date()).toDateString(),
+        endorsedate = new Date(),
+        endorsedon = endorsedate.toDateString(),
+        endorsedatets = Math.round(endorsedate.getTime() / 1000),
         endorsestr = endorse ? 'endorsementmgs' : 'skilltestendorse';
 
         // Process endorsement message
-        let endorsemsgPromise = Str.get_string(endorsestr, 'local_booking', {endorser: endorser, endorsedate: endorsedate});
+        let endorsemsgPromise = Str.get_string(endorsestr, 'local_booking', {endorser: endorsername, endorsedate: endorsedon});
         endorsemsgPromise.then(function(message) {
             // Set endorsement message
             $('#endorsement-label').html(message);
+            // Show/hide recommendation letter link
+            if (endorse) {
+                $('#endorsement-letter').removeClass('hidden');
+            } else {
+                $('#endorsement-letter').addClass('hidden');
+            }
+
             return message;
         }.bind(this))
         .fail(Notification.exception);
@@ -64,7 +74,7 @@ function(
         // Persist endorsement in user preferences
         processUserPreference('endorse', endorse, courseId, userId, 'endorse');
         processUserPreference('endorser', endorse ? endorser : '', courseId, userId, 'endorse');
-        processUserPreference('endorsedate', endorse ? endorsedate : '', courseId, userId, 'endorse');
+        processUserPreference('endorsedate', endorse ? endorsedatets : '', courseId, userId, 'endorse');
     };
 
     /**

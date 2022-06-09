@@ -28,7 +28,6 @@ namespace local_booking\external;
 defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
-use DateTime;
 
 /**
  * Class for displaying instructor's 'My assigned students' view.

@@ -46,17 +46,17 @@ interface participant_vault_interface {
      * @param bool $studentid   A specific student for booking confirmation
      * @return {Object}         Array of database records.
      */
-    public static function get_active_student(int $courseid, int $studentid = 0);
+    public static function get_student(int $courseid, int $studentid = 0);
 
     /**
      * Get all active students from the database.
      *
      * @param int $courseid         The course id.
+     * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
-     * @param bool $includeoall     Whether to include on-hold students as well
      * @return {Object}[]           Array of database records.
      */
-    public static function get_students(int $courseid, bool $includeonhold = false, bool $includeall = false);
+    public static function get_students(int $courseid, string $filter = 'active', bool $includeonhold = false);
 
     /**
      * Get all active instructors for the course from the database.
@@ -65,7 +65,7 @@ interface participant_vault_interface {
      * @param bool $courseadmins Indicates whether the instructor is an admin or not.
      * @return {Object}[]        Array of database records.
      */
-    public static function get_active_instructors(int $courseid, bool $courseadmins = false);
+    public static function get_instructors(int $courseid, bool $courseadmins = false);
 
     /**
      * Get students assigned to an instructor from the database.

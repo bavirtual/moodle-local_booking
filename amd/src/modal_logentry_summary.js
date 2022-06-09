@@ -24,27 +24,21 @@
  */
 define([
     'jquery',
-    'core/str',
-    'core/notification',
     'core/custom_interaction_events',
     'core/modal',
     'core/modal_registry',
-    'core/modal_factory',
     'core/modal_events',
+    'local_booking/modal_actions',
     'local_booking/events',
-    'local_booking/booking_actions',
 ],
 function(
     $,
-    Str,
-    Notification,
     CustomEvents,
     Modal,
     ModalRegistry,
-    ModalFactory,
     ModalEvents,
+    ModalActions,
     BookingEvents,
-    BookingActions
 ) {
 
     var registered = false;
@@ -203,8 +197,8 @@ function(
                 logentryId: this.getLogentryId(),
             })
             .attr('data-type', 'logentry');
-            BookingActions.registerDelete(this.getModal());
-            BookingActions.registerRedirect(this.getModal());
+            ModalActions.registerDelete(this.getModal());
+            ModalActions.registerRedirect(this.getModal());
             M.util.js_complete('local_booking/modal_logentry_summary:registerEventListeners:bodyRendered');
         }.bind(this));
 

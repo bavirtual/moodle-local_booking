@@ -299,7 +299,7 @@ class week_exporter extends exporter {
 
         // notify student if wait period restriction since last session is not up yet
         if ($this->actiondata['action'] != 'book' && $this->view == 'user') {
-            $student = $COURSE->subscriber->get_active_student($this->studentid);
+            $student = $COURSE->subscriber->get_student($this->studentid);
             // show a notification if the user is on-hold
             if ($student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP)) {
                 \core\notification::ERROR(get_string('studentonhold', 'local_booking'));
@@ -393,7 +393,7 @@ class week_exporter extends exporter {
 
         // get the lanes containing student(s) slots
         $weeklanes = $this->get_week_slot_lanes($COURSE->subscriber);
-        $student = $this->studentid != 0 ? $COURSE->subscriber->get_active_student($this->studentid) : null;
+        $student = $this->studentid != 0 ? $COURSE->subscriber->get_student($this->studentid) : null;
         $data = [
             'student'   => $student,
             'days'      => $this->days,
@@ -430,11 +430,11 @@ class week_exporter extends exporter {
 
         // check students that have slot(s) on each day
         if ($this->studentid != 0) {
-            $student = $course->get_active_student($this->studentid);
+            $student = $course->get_student($this->studentid);
             $studentsslots[$this->studentid] = $student->get_slots($this->weekofyear, $this->GMTdate['year']);
         } else {
             // check students that have slot(s) on this day
-            $students = $course->get_active_students();
+            $students = $course->get_students();
             foreach ($students as $student) {
                 $studentsslots[$student->get_id()] = $student->get_slots($this->weekofyear, $this->GMTdate['year']);
             }

@@ -49,7 +49,7 @@ class instructor extends participant {
         $assignedstudents = [];
         $studentrecs = $this->vault->get_assigned_students($this->course->get_id(), $this->userid);
         foreach ($studentrecs as $studentrec) {
-            $student = $this->course->get_active_student($studentrec->userid);
+            $student = $this->course->get_student($studentrec->userid);
             $assignedstudents[$student->userid] = $student;
         }
         return $assignedstudents;

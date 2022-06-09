@@ -167,7 +167,7 @@ class participant_vault implements participant_vault_interface {
      * @param bool $userid      A specific student for booking confirmation
      * @return {Object}         Array of database records.
      */
-    public static function get_active_student(int $courseid, int $userid = 0) {
+    public static function get_student(int $courseid, int $userid = 0) {
         global $DB;
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
@@ -181,8 +181,7 @@ class participant_vault implements participant_vault_interface {
                 WHERE en.courseid = :courseid
                     AND u.id = :userid
                     AND ra.contextid = :contextid
-                    AND r.shortname = :role
-                    AND ue.status = 0';
+                    AND r.shortname = :role';
 
         $params = [
             'courseid'  => $courseid,
@@ -198,22 +197,45 @@ class participant_vault implements participant_vault_interface {
      * Get all active students from the database.
      *
      * @param int $courseid         The course id.
+     * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
-     * @param bool $includeoall     Whether to include on-hold students as well
      * @return {Object}[]           Array of database records.
      */
-    public static function get_students(int $courseid, bool $includeonhold = false, bool $includeall = false) {
+    public static function get_students(int $courseid, string $filter = 'active', bool $includeonhold = false) {
         global $DB;
 
         // return $DB->get_records_sql($sql, $params);
-        $onholdclause = $includeonhold ? '' : ' OR g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
-        $activestudentsclause = $includeall ? '' : 'AND ue.status = 0
-            AND u.id NOT IN (
-                SELECT userid
-                FROM {' . self::DB_GROUPS_MEM . '} gm
-                INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                WHERE g.courseid = :gcourseid AND (g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
-                ' . $onholdclause . '))';
+        switch ($filter) {
+            case 'active':
+                $onholdclause = $includeonhold ? '' : ' OR g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
+                $filterclause = 'AND ue.status = 0
+                    AND u.id NOT IN (
+                        SELECT userid
+                        FROM {' . self::DB_GROUPS_MEM . '} gm
+                        INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                        WHERE g.courseid = :gcourseid AND (g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
+                        ' . $onholdclause . '))';
+                break;
+            case 'onhold':
+                $filterclause = 'AND ue.status = 0
+                    AND u.id IN (
+                        SELECT userid
+                        FROM {' . self::DB_GROUPS_MEM . '} gm
+                        INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                        WHERE g.courseid = :gcourseid AND g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '")';
+                break;
+            case 'suspended':
+                $filterclause = 'AND ue.status = 1 ORDER BY fullname';
+                break;
+            case 'graduates':
+                $filterclause = 'AND ue.status = 0
+                    AND u.id IN (
+                        SELECT userid
+                        FROM {' . self::DB_GROUPS_MEM . '} gm
+                        INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                        WHERE g.courseid = :gcourseid AND (g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"))';
+                break;
+        }
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                         'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
@@ -226,7 +248,7 @@ class participant_vault implements participant_vault_interface {
                     WHERE en.courseid = :courseid
                         AND ra.contextid = :contextid
                         AND r.shortname = :role
-                        AND u.deleted != 1 ' . $activestudentsclause;
+                        AND u.deleted != 1 ' . $filterclause;
 
         $params = [
             'courseid'  => $courseid,
@@ -245,7 +267,7 @@ class participant_vault implements participant_vault_interface {
      * @param bool $courseadmins Indicates whether the instructor is an admin or not.
      * @return {Object}[]   Array of database records.
      */
-    public static function get_active_instructors(int $courseid, bool $courseadmins = false) {
+    public static function get_instructors(int $courseid, bool $courseadmins = false) {
         global $DB;
         $roles = (!$courseadmins ? '"' . LOCAL_BOOKING_INSTRUCTORROLE . '", ' : '') . '"' .
                 LOCAL_BOOKING_SENIORINSTRUCTORROLE . '", "' .

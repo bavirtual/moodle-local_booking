@@ -172,7 +172,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
                     if (has_capability('local/booking:view', $context)) {
                         $nodename = get_string('availabilityinst', 'local_booking');
                     } else {
-                        $student = $COURSE->subscriber->get_active_student($USER->id);
+                        $student = $COURSE->subscriber->get_student($USER->id);
                         $params['time'] = !empty($student) ? $student->get_next_allowed_session_date()->getTimestamp() : time();
                         // $params['action'] = 'post';
                         $nodename = get_string('availability', 'local_booking');
@@ -347,7 +347,7 @@ function get_profile_view(int $courseid, int $userid) {
 
     $renderer = $PAGE->get_renderer('local_booking');
     $COURSE->subscriber = new subscriber($courseid);
-    $user = $COURSE->subscriber->get_student($userid, true, false);
+    $user = $COURSE->subscriber->get_student($userid, true);
 
     $template = 'local_booking/profile';
     $data = [
@@ -369,9 +369,10 @@ function get_profile_view(int $courseid, int $userid) {
  *
  * @param   int     $courseid the associated course.
  * @param   string  $sorttype student progression sorting.
+ * @param   string  $filter the filter to show students, inactive (including graduates), suspended, and default to active.
  * @return  array[array, string]
  */
-function get_bookings_view(int $courseid, string $sorttype = '') {
+function get_bookings_view(int $courseid, string $sorttype = '', string $filter = 'active') {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
@@ -380,7 +381,8 @@ function get_bookings_view(int $courseid, string $sorttype = '') {
     $data = [
         'courseid'=>$courseid,
         'view'      => 'sessions',
-        'sorttype'  => $sorttype
+        'sorttype'  => $sorttype,
+        'filter'  => $filter
     ];
     $related = [
         'context'   => \context_course::instance($courseid),

@@ -63,10 +63,11 @@
             "host"      : "localhost",
             "db"        : "bav_management",
             "data"      : {
-                "enginetype": {
+                "aircraftinfo": {
                     "table"     : "fleet",
                     "fields"    : {
-                        "engine_type": "engine_type"
+                        "engine_type": "engine_type",
+                        "description": "description"
                     },
                     "key"       : "icao"
                 },

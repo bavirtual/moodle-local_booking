@@ -97,7 +97,7 @@ class instructor_participation_exporter extends exporter {
     protected function get_other_values(renderer_base $output) {
         global $COURSE;
         $courseid = $this->data['courseid'];
-        $instructors = $COURSE->subscriber->get_active_instructors();
+        $instructors = $COURSE->subscriber->get_instructors();
         $today = new DateTime('@'.time());
 
         $participation = [];

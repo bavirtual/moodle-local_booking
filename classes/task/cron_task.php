@@ -81,8 +81,8 @@ class cron_task extends \core\task\scheduled_task {
                     // check if any of the restrictions are enabled
                     if ($onholddays > 0 || $suspensiondays > 0 || $overdueperiod > 0) {
                         // get active students
-                        $students = $course->get_active_students(true);
-                        $instructors = $course->get_active_instructors();
+                        $students = $course->get_students('active', true);
+                        $instructors = $course->get_instructors();
                         $seniorinstructors = $course->get_senior_instructors();
 
                         // note students

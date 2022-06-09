@@ -62,14 +62,15 @@ import Ajax from 'core/ajax';
  *
  * @method getBookingsData
  * @param {number} courseId The course id.
- * @param {number} categoryId The category id.
+ * @param {string} filter   The filter to show students, inactive (including graduates), suspended, and default to active.
  * @return {promise} Resolved with the month view data.
  */
- export const getBookingsData = (courseId) => {
+ export const getBookingsData = (courseId, filter) => {
     const request = {
         methodname: 'local_booking_get_bookings_view',
         args: {
             courseid: courseId,
+            filter: filter,
         }
     };
 

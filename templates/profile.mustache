@@ -37,7 +37,8 @@
         data-userid="{{userid}}"
         data-onholdgroup="{{onholdgroup}}"
         data-keepactivegroup="{{keepactivegroup}}"
-        data-endorser="{{endorser}}">
+        data-endorser="{{endorser}}"
+        data-endorsername="{{endorsername}}">
         <div class="sb_profile_tree">
             <section class="node_category card d-inline-block w-100 mb-3">
                 <div class="card-body">
@@ -83,9 +84,12 @@
                         <dd>
                             {{#qualified}}
                             <div id="endorse-region" class="custom-control custom-switch">
-                                <input type="checkbox" class="toggle-input" id="endorse" {{#endorsed}}checked{{/endorsed}}>
+                                <input type="checkbox" class="toggle-input" id="endorse" {{#endorsed}}checked{{/endorsed}} {{#endorsementlocked}}disabled{{/endorsementlocked}}>
                                 <label id="endorsement-label" class="toggle-label" for="endorse">{{endorsementmgs}}</label>
                                 {{> core/overlay_loading}}
+                            </div>
+                            <div id="endorsement-letter" class="{{^endorsed}}hidden {{/endorsed}}mt-2">
+                                <span><a href="{{recommendationletterlink}}">{{fullname}} - {{#str}} recommendationletterlink , local_booking {{/str}}</a></span>
                             </div>
                             {{/qualified}}
                             {{^qualified}}{{#str}} notqualified , local_booking {{/str}}{{/qualified}}

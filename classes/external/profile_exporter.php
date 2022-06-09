@@ -29,6 +29,8 @@ namespace local_booking\external;
 defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
+use local_booking\local\participant\entities\participant;
+use local_booking\local\participant\entities\student;
 use renderer_base;
 use moodle_url;
 
@@ -43,7 +45,7 @@ use moodle_url;
 class profile_exporter extends exporter {
 
     /**
-     * @var participant $user The user of the profile
+     * @var student $user The user of the profile
      */
     protected $user;
 
@@ -158,15 +160,22 @@ class profile_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
-            'endorser' => [
+            'endorsername' => [
                 'type' => PARAM_RAW,
                 'optional' => true
+            ],
+            'endorser' => [
+                'type' => PARAM_INT,
+                'optional' => true
+            ],
+            'endorsementlocked' => [
+                'type' => PARAM_BOOL,
             ],
             'endorsementmgs' => [
                 'type' => PARAM_RAW,
                 'optional' => true
             ],
-            'examinerurl' => [
+            'recommendationletterlink' => [
                 'type' => PARAM_URL,
             ],
             'suspended' => [
@@ -220,6 +229,9 @@ class profile_exporter extends exporter {
             'practicalexamreporturl' => [
                 'type' => PARAM_URL,
             ],
+            'examinerreporturl' => [
+                'type' => PARAM_URL,
+            ],
         ];
     }
 
@@ -248,16 +260,23 @@ class profile_exporter extends exporter {
             'coursemods' => $coursemods,
             'percent' => round(($usermods*100)/$coursemods)
         ];
-        $endorsementmgs = [
-            'endorser' => get_user_preferences('local_booking_' . $this->courseid . '_endorser', '', $this->user->get_id()),
-            'endorsedate' =>  get_user_preferences('local_booking_' . $this->courseid . '_endorsedate', '', $this->user->get_id())
-        ];
 
         // qualified (next exercise is the course's last exercise) status
         list($exerciseid, $currentsection) = $this->user->get_exercise(true);
         $qualified = $exerciseid == $COURSE->subscriber->get_graduation_exercise() || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
         $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $this->user->get_id());
         $hasexams = count($this->user->get_quizes()) > 0;
+
+        // endorsement information
+        if ($endorsed) {
+            $endorserid = get_user_preferences('local_booking_' . $this->courseid . '_endorser', '', $this->user->get_id());
+            $endorser = !empty($endorserid) ? participant::get_fullname($endorserid) : get_string('notfound', 'local_booking');
+            $endorseronts = !empty($endorserid) ? get_user_preferences('local_booking_' . $this->courseid . '_endorsedate', '', $this->user->get_id()) : time();
+            $endorsementmgs = [
+                'endorser' => $endorser,
+                'endorsedate' =>  (new \Datetime('@'.$endorseronts))->format('M j\, Y')
+            ];
+        }
 
         // moodle profile url
         $moodleprofile = new moodle_url('/user/view.php', [
@@ -276,6 +295,13 @@ class profile_exporter extends exporter {
             'id' => $this->courseid,
             'user' => $this->user->get_id(),
             'sesskey' => sesskey(),
+        ]);
+
+        // student skill test recommendation letter
+        $recommendationletterlink = new moodle_url('/local/booking/report.php', [
+            'courseid' => $this->courseid,
+            'userid' => $this->user->get_id(),
+            'report' => 'recommendation',
         ]);
 
         // student outline report
@@ -321,8 +347,8 @@ class profile_exporter extends exporter {
 
         // student skill test form
         $examinerurl = new moodle_url('/local/booking/report.php', [
-            'id' => $this->user->get_id(),
-            'course' => $this->courseid,
+            'courseid' => $this->courseid,
+            'userid' => $this->user->get_id(),
             'report' => 'examiner',
         ]);
 
@@ -343,9 +369,11 @@ class profile_exporter extends exporter {
             'lastlessoncompleted'      => $this->user->has_completed_lessons() ? get_string('yes') : get_string('no'),
             'qualified'                => $qualified,
             'endorsed'                 => $endorsed,
-            'endorser'                 => \local_booking\local\participant\entities\participant::get_fullname($USER->id),
+            'endorser'                 => $USER->id,
+            'endorsername'             => \local_booking\local\participant\entities\participant::get_fullname($USER->id),
+            'endorsementlocked'        => !empty($endorsed) && $endorsed && $endorserid != $USER->id,
             'endorsementmgs'           => get_string($endorsed ? 'endorsementmgs' : 'skilltestendorse', 'local_booking', $endorsementmgs),
-            'examinerurl'              => $examinerurl->out(false),
+            'recommendationletterlink' => $recommendationletterlink->out(false),
             'suspended'                => !$this->user->is_active(),
             'onholdrestrictionenabled' => $COURSE->subscriber->onholdperiod != 0,
             'onhold'                   => $this->user->is_member_of(LOCAL_BOOKING_ONHOLDGROUP),
@@ -363,6 +391,7 @@ class profile_exporter extends exporter {
             'mentorreporturl'          => $mentorreporturl->out(false),
             'theoryexamreporturl'      => $theoryexamreporturl->out(false),
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
+            'examinerreporturl'        => $examinerurl->out(false),
         ];
 
         return $return;

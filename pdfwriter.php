@@ -32,6 +32,8 @@ use local_booking\local\report\pdf_report_mentor;
 use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\report\pdf_report_theoryexam;
 use local_booking\local\report\pdf_report_practicalexam;
+use local_booking\local\report\pdf_report_skilltest;
+use local_booking\local\report\pdf_report_recommendletter;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -53,7 +55,7 @@ require_capability('local/booking:view', $context);
 if (empty($COURSE->subscriber))
     $COURSE->subscriber = new subscriber($courseid);
 
-$student = new student($COURSE->subscriber, $userid);
+$student = $COURSE->subscriber->get_student($userid, true);
 
 // create and output the pdf report
 switch ($reporttype) {
@@ -70,7 +72,11 @@ switch ($reporttype) {
         $theoryexamreport->Generate();
         break;
     case 'examiner':
-        $theoryexamreport = new pdf_report_practicalexam($COURSE->subscriber, $student);
+        $theoryexamreport = new pdf_report_skilltest($COURSE->subscriber, $student);
+        $theoryexamreport->Generate();
+        break;
+    case 'recommendation':
+        $theoryexamreport = new pdf_report_recommendletter($COURSE->subscriber, $student);
         $theoryexamreport->Generate();
         break;
 }

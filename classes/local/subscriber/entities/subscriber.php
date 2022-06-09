@@ -202,8 +202,8 @@ class subscriber implements subscriber_interface {
      *
      * @return {Object}[]   Array of course's senior instructors.
      */
-    public function get_active_participants() {
-        $participants = array_merge(participant_vault::get_students($this->courseid), participant_vault::get_active_instructors($this->courseid));
+    public function get_participants() {
+        $participants = array_merge(participant_vault::get_students($this->courseid), participant_vault::get_instructors($this->courseid));
         return $participants;
     }
 
@@ -212,33 +212,14 @@ class subscriber implements subscriber_interface {
      *
      * @param int  $studentid   A participant user id.
      * @param bool $populate    Whether to get the student data.
-     * @param bool $active      Whether the student has an active enrolment.
+     * @param string $filter    the filter to select the student.
      * @return student          The student object
      */
-    public function get_student(int $studentid, bool $populate = false, bool $active = true) {
-        // instantiate the participant object
-        $student = new student($this, $studentid);
-
-        if ($populate) {
-            $studentrec = participant_vault::get_participant($this->courseid, $studentid, $active);
-            if (!empty($studentrec->userid))
-                $student->populate($studentrec);
-        }
-
-        return $student;
-    }
-
-    /**
-     * Get an active student.
-     *
-     * @param int $studentid    A specific student for booking confirmation
-     * @return student $student The active student object.
-     */
-    public function get_active_student(int $studentid) {
+    public function get_student(int $studentid, bool $populate = false, string $filter = 'active') {
         $student = (!empty($this->activestudents) && !empty($studentid) && array_key_exists($studentid, $this->activestudents)) ? $this->activestudents[$studentid] : null;
 
         if (empty($student)) {
-            $studentrec = participant_vault::get_active_student($this->courseid, $studentid);
+            $studentrec = participant_vault::get_student($this->courseid, $studentid);
             $colors = (array) get_booking_config('colors', true);
 
             // add a color for the student slots from the config.json file for each student
@@ -254,38 +235,15 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Get all students active, inactive, and suspended.
+     * Get students based on filter.
      *
-     * @return array $allstudents Array of active students.
-     */
-    public function get_all_students() {
-        $allstudents = [];
-        $studentrecs = participant_vault::get_students($this->courseid, true, true);
-        $colors = (array) get_booking_config('colors', true);
-
-        // add a color for the student slots from the config.json file for each student
-        $i = 0;
-        foreach ($studentrecs as $studentrec) {
-            $student = new student($this, $studentrec->userid);
-            $student->populate($studentrec);
-            $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
-            $allstudents[] = $student;
-            $i++;
-        }
-        $this->allstudents = $allstudents;
-
-        return $this->allstudents;
-    }
-
-    /**
-     * Get all active students.
-     *
-     * @param bool $includeonhold    Whether to include on-hold students as well
+     * @param string $filter       The filter to show students, inactive (including graduates), suspended, and default to active.
+     * @param bool $includeonhold  Whether to include on-hold students as well
      * @return array $activestudents Array of active students.
      */
-    public function get_active_students(bool $includeonhold = false) {
+    public function get_students(string $filter = 'active', bool $includeonhold = false) {
         $activestudents = [];
-        $studentrecs = participant_vault::get_students($this->courseid, $includeonhold);
+        $studentrecs = participant_vault::get_students($this->courseid, $filter, $includeonhold);
         $colors = (array) get_booking_config('colors', true);
 
         // add a color for the student slots from the config.json file for each student
@@ -308,7 +266,7 @@ class subscriber implements subscriber_interface {
      * @param int $instructorid An instructor user id.
      * @return instructor       The instructor object
      */
-    public function get_active_instructor(int $instructorid) {
+    public function get_instructor(int $instructorid) {
         $instructor = (!empty($this->activeinstructors) && !empty($instructorid) && array_key_exists($instructorid, $this->activeinstructors)) ? $this->activeinstructors[$instructorid] : null;
 
         if (empty($instructor)) {
@@ -326,9 +284,9 @@ class subscriber implements subscriber_interface {
      * @param bool $courseadmins Indicates whether the instructors returned are part of course admins
      * @return {Object}[]   Array of active instructors.
      */
-    public function get_active_instructors(bool $courseadmins = false) {
+    public function get_instructors(bool $courseadmins = false) {
         $activeinstructors = [];
-        $instructorrecs = participant_vault::get_active_instructors($this->courseid, $courseadmins);
+        $instructorrecs = participant_vault::get_instructors($this->courseid, $courseadmins);
 
         foreach ($instructorrecs as $instructorrec) {
             $instructor = new instructor($this, $instructorrec->userid);
@@ -346,7 +304,7 @@ class subscriber implements subscriber_interface {
      * @return {Object}[]   Array of active instructors.
      */
     public function get_senior_instructors() {
-        return $this->get_active_instructors(true);
+        return $this->get_instructors(true);
     }
 
     /**

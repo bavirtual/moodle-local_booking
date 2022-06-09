@@ -76,8 +76,10 @@ $string['sessiongradedby'] = '{$a->sessiondate}Graded by:<br/>{$a->instructor}<b
 $string['sessiongradeexampass'] = 'Exam Results<br/>Grade: {$a->grade}<br/>Date: {$a->gradedate}';
 $string['sessionprogressing'] = 'Objective Not Met<br/>(click for feedback)<br/>{$a->sessiondate}{$a->instructor}';
 $string['sessionvenue'] = 'Discord';
-$string['showall'] = 'Show all students';
-$string['showuspeneded'] = 'Show suspended students';
+$string['showactive'] = 'Active students';
+$string['showonhold'] = 'On-hold students';
+$string['showgraduates'] = 'Graduated students';
+$string['showsuspended'] = 'Suspended students';
 $string['simulator'] = 'Sim';
 $string['slots'] = 'slots';
 $string['statusbooked'] = 'confirmed';
@@ -282,6 +284,7 @@ $string['mentorreport']='Mentored sessions report';
 $string['modulescompleted'] = 'Modules completed';
 $string['moodleprofile'] = 'Moodle profile';
 $string['modscompletemsg'] = '{$a->usermods} out of {$a->coursemods} ({$a->percent}% complete)';
+$string['notfound'] = 'Not found';
 $string['notqualified'] = 'Not qualified';
 $string['onhold'] = 'On-hold';
 $string['outlinereport'] = 'Outline report';
@@ -289,6 +292,7 @@ $string['pageviews'] = 'page views';
 $string['practicalexamreport']='Practical examination report';
 $string['qualified'] = 'Qualified';
 $string['recency'] = 'Recency';
+$string['recommendationletterlink'] = 'Recommendation letter';
 $string['reportdate'] = 'Report date';
 $string['restrictionoverride'] = 'Restriction override';
 $string['score'] = 'Score';
@@ -301,12 +305,25 @@ $string['slotsactive'] = 'Slots active';
 $string['theoryexamreport']='Theory examination report';
 
 // reports
+$string['aircrafttypelabel'] = 'Aircraft type/class course conducted in';
+$string['candidatedetails'] = 'Candidate\'s Details';
+$string['candidateflyinghours'] = 'Candidate\'s flying hours';
+$string['candidatename'] = 'Candidate name';
 $string['comments'] = 'Comments';
+$string['copyright'] = 'Copyright © {$a->ato} {$a->year}. All rights reserved.';
 $string['cumulative'] = 'Cumulative';
+$string['datecommenced'] = 'Date training commenced';
+$string['datecompleted'] = 'Date training completed';
+$string['declarationtlabel'] = 'Declaration';
+$string['declarationtext'] = 'I certify that the candidate has successfully completed all the required exercises to a satisfactory standard, meets the pre-requisite
+    requirements in accordance with {$a->ato} Flight Crew Standards and VATSIM PTD requirements, and I consider the candidate fully ready to undertake the Skill Test.';
+$string['dualflight'] = 'Dual fligt instruction';
 $string['duration'] = 'Duration';
 $string['examiner'] = 'Examiner';
 $string['examinerreport'] = 'Examiner Report';
 $string['examinerreportsubject'] = 'This is {$a->ato} ATO Examiner report for the skills test of the {$a->coursename} course.';
+$string['recommendationreport'] = 'Recommendation For Skill Test';
+$string['recommendationreportsubject'] = 'This is {$a->ato} ATO Recommendation for Skill Test letter compiled by the instructor recommending a student for a Skill Test.';
 $string['examend'] = 'Exam end';
 $string['examstart'] = 'Exam start';
 $string['flighttraining'] = 'Flight Training';
@@ -314,11 +331,16 @@ $string['mentorreport'] = 'Mentored Sessions Report';
 $string['mentorreportdesc'] = 'The theory examination is a multi-choice, randomly selected question paper that is time-limited. It is self-contained within the Moodle program for the {$a->ato}
     {$a->coursename} course. {$a->studentname} has completed the test successfully with {$a->attempts} attempt(s) achieving the pass mark of {$a->score} out of {$a->total} ({$a->percent}%) exactly.';
 $string['mentorreportsubject'] = 'This is {$a->ato} ATO Mentored Sessions report detailing student feedback for mentored sessions of the {$a->coursename} course.';
+$string['otherflyingtime'] = 'Other flying time';
 $string['practicalexamreport'] = 'Practical Examination Report';
 $string['practicalexamreportsubject'] = 'This is {$a->ato} ATO Practical Examination report detailing the examiner\'s feedback of the {$a->coursename} course.';
+$string['ratinglabel'] = 'Rating applied for';
+$string['recommendationletterver'] = 'Rev 1 25 Jun 08';
+$string['recommendedby'] = 'Recommended for skill test by';
 $string['theoryexamreport'] = 'Theory Examination Report';
 $string['theoryexamreportsubject'] = 'This is {$a->ato} ATO Theory Examination report summarizing the student\'s score in the {$a->coursename} course.';
 $string['trainingaudit'] = 'Flight Training Audit';
+$string['trainingcontent'] = 'Training Content';
 $string['vatsimid'] = 'VATSIM PID';
 $string['vatsimidmissing'] = 'VATSIM PID missing!';
 
@@ -487,12 +509,6 @@ $string['emailoverduenotifyinsthtml'] = '<font face="sans-serif"><p><a href=\'{$
     <p>Please note that {$a->instructorname} has {$a->status}.</p><p>The instructor has been notified to book a session with assigned student or any student from the list,
     otherwise to request removal from the list of active instructors.</p><hr />';
 $string['emailoverduestatus'] = 'not booked a session since \'{$a}\'';
-
-// email endorsement to senior instructors
-$string['emailendorsementnotify'] = '{$a->coursename}: Skill test recommendation';
-$string['emailendorsementnotifymsg'] = 'Congradulations to {$a->studentname} for completing course work and qualifying cross-country flight. {$a->instructorname} has recommended {$a->studentname} for the skill test on {$a->endorsedon}.';
-$string['emailendorsementnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Congradulations to {$a->studentname} for completing course work and qualifying cross-country flight.</p><p>{$a->instructorname} has recommended {$a->studentname} for the skill test on {$a->endorsedon}.</p><hr />';
 
 // settings
 $string['activitycountweight'] = 'Course activity prioritization';

@@ -475,7 +475,7 @@ class create extends \moodleform {
      * @return array $activepilots List of user ids for P1 & P2 pilots
      */
     protected function get_pilot_ids($course) {
-        $pilots = $course->get_active_participants();
+        $pilots = $course->get_participants();
 
         foreach ($pilots as $pilot) {
             $activepilots[$pilot->userid] = $pilot->fullname;
@@ -519,7 +519,7 @@ class create extends \moodleform {
             $aircrafticao = current($course->aircrafticao);
 
             if ($course->has_integration('aircraft')) {
-                $engintyperec = subscriber::get_integrated_data('aircraft', 'enginetype', $aircrafticao);
+                $engintyperec = subscriber::get_integrated_data('aircraft', 'aircraftinfo', $aircrafticao);
                 $enginetype = $engintyperec['engine_type'] == 'single' ? 'SE' : 'ME';
             }
         }

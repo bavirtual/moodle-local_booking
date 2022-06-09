@@ -68,7 +68,7 @@ if (has_capability('local/booking:view', $context)) {
     if (empty($COURSE->subscriber))
         $COURSE->subscriber = new subscriber($courseid);
 
-    $student = $COURSE->subscriber->get_active_student($USER->id);
+    $student = $COURSE->subscriber->get_student($USER->id);
     $action = 'post';
     $url->param('time', $student->get_next_allowed_session_date()->getTimestamp());
     // $url->param('action', $action);

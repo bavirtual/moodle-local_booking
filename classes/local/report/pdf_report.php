@@ -31,6 +31,7 @@ use pdf;
 use assign;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -61,6 +62,11 @@ class pdf_report extends pdf {
      * @var string $fontfamily The fontfamily for the report.
      */
     protected $fontfamily;
+
+    /**
+     * @var arrau $titlebkgrnd Contains title cell RGB background colors.
+     */
+    protected $titlebkgrnd;
 
     /**
      * Constructor.
@@ -112,6 +118,7 @@ class pdf_report extends pdf {
     /**
      * Generate the report and output it to the browser.
      *
+     * @param bool $coverpage      Whether to include a coverpage that doesn't have a logo
      */
     public function Generate(bool $coverpage = false) {
 
@@ -131,9 +138,14 @@ class pdf_report extends pdf {
      */
     public function WriteContent() {
         // write intro section
+        // title background RGB colors
+        if (empty($this->titlebkgrnd))
+            $this->titlebkgrnd = array('R' => 100, 'G' => 149, 'B' => 237);
+
         // report name
+        $titlebkgrnd = (object) $this->titlebkgrnd;
         $this->SetTextColor(255,255,255);
-        $this->SetFillColor(100,149,237);
+        $this->SetFillColor($titlebkgrnd->R, $titlebkgrnd->G, $titlebkgrnd->B);
         // $this->SetFillColor(35,24,118);
         $this->SetFont($this->fontfamily, 'B', 24);
         $this->Cell(0, 50, get_string($this->reporttype . 'report', 'local_booking'), 0, 1, 'C', 1);

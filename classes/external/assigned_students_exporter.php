@@ -127,7 +127,7 @@ class assigned_students_exporter extends exporter {
         global $USER, $COURSE;
         $assignedstudents = [];
 
-        $instructor = $COURSE->subscriber->get_active_instructor($USER->id);
+        $instructor = $COURSE->subscriber->get_instructor($USER->id);
         $students = $instructor->get_assigned_students();
         foreach ($students as $student) {
             list($nextexercise, $exercisesection) = $student->get_exercise(true);

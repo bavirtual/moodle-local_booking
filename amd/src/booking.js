@@ -46,10 +46,6 @@ define([
         Selectors
     ) {
 
-    const SELECTORS = {
-        CANCEL_BUTTON: "[data-region='cancel-button']",
-    };
-
     /**
      * Listen to and handle any logentry events fired by
      * Logentry and PIREP the modal forms.
@@ -63,24 +59,21 @@ define([
         const body = $('body');
 
         body.on(BookingEvents.canceled, function() {
-            ViewManager.refreshInstructorDashboardContent(root);
+            ViewManager.refreshBookingsContent(root);
             ViewManager.refreshMyBookingsContent(root);
         });
         body.on(BookingEvents.created, function() {
-            ViewManager.refreshInstructorDashboardContent(root);
+            ViewManager.refreshBookingsContent(root);
         });
         body.on(BookingEvents.updated, function() {
-            ViewManager.refreshInstructorDashboardContent(root);
+            ViewManager.refreshBookingsContent(root);
         });
         body.on(BookingEvents.deleted, function() {
-            ViewManager.refreshInstructorDashboardContent(root);
+            ViewManager.refreshBookingsContent(root);
         });
 
-        // // Listen the click on the progression table of sessions for a goto feedback for Objective Not Met sessions.
-        BookingActions.registerRedirect(root);
-
         // Listen to the click on the Cancel booking buttons in 'Instructor dashboard' page.
-        root.on('click', SELECTORS.CANCEL_BUTTON, function(e) {
+        root.on('click', Selectors.cancelbutton, function(e) {
             // eslint-disable-next-line no-alert
             Str.get_string('cancellationcomment', 'local_booking').then(function(promptMsg) {
                 const comment = prompt(promptMsg);
@@ -89,6 +82,22 @@ define([
                 }
                 return;
             }).catch(Notification.exception);
+        });
+
+        // Register the listeners required to redirect to
+        // $('input[name="studentsfilter"]').change(function() {
+        // $('input[type=radio][name=studentsfilter]').change(function() {
+        root.on('change', 'input[type=radio][name=studentsfilter]', function() {
+            // Call redirect to assignment feedback page
+            ViewManager.refreshBookingsContent(root, 0, 0, null, $('input[name="studentsfilter"]:checked').val());
+        });
+
+        // Register the listeners required to redirect to
+        root.on('click', Selectors.actions.gotoFeedback, function(e) {
+            // Call redirect to assignment feedback page
+            BookingActions.gotoFeedback(root, e);
+
+            e.preventDefault();
         });
     };
 
@@ -204,8 +213,9 @@ define([
 
     return {
         init: function(root) {
-            root = $(root);
+            var root = $(root);
             registerEventListeners(root);
+            ViewManager.stopLoading(root);
         }
     };
 });

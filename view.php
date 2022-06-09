@@ -67,9 +67,11 @@ echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
 
 // select the student progression booking view or the booking confirmation view
 if ($action=='book') {
+    // get students bookings and progression view
     list($data, $template) = get_bookings_view($courseid, $sorttype);
     echo $renderer->render_from_template($template, $data);
 
+    // get instructor's assigned students
     list($data, $template) = get_students_view($courseid);
     echo $renderer->render_from_template($template, $data);
 

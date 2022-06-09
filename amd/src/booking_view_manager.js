@@ -36,21 +36,23 @@ import * as Selectors from 'local_booking/selectors';
 /**
  * Refresh student progression content.
  *
- * @method  refreshInstructorDashboardContent
+ * @method  refreshBookingsContent
  * @param   {object} root The root element.
  * @param   {number} courseId The id of the course associated with the progression view shown
  * @param   {number} categoryId The id of the category associated with the progression view shown
  * @param   {object} target The element being replaced. If not specified, the bookingwrapper is used.
+ * @param   {string} filter The filter to show students, inactive (including graduates), suspended, and default to active.
  * @return  {promise}
  */
-export const refreshInstructorDashboardContent = (root, courseId, categoryId, target = null) => {
+export const refreshBookingsContent = (root, courseId, categoryId, target = null, filter = null) => {
     startLoading(root);
 
     const template = root.attr('data-template');
     target = target || root.find(Selectors.bookingwrapper);
     courseId = courseId || root.find(Selectors.bookingwrapper).data('courseid');
+    filter = filter || 'active';
     M.util.js_pending([root.get('id'), courseId, categoryId].join('-'));
-    return Repository.getBookingsData(courseId)
+    return Repository.getBookingsData(courseId, filter)
         .then((context) => {
             context.viewingbooking = true;
             return Templates.render(template, context);

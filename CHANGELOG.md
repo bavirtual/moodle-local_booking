@@ -1,5 +1,26 @@
 # Change log
 
+## [2022060900] - UNRELEASED 2002-06-06
+
+### Added
+
+- recommendation letter PDF
+- link to show after endorsement
+- only endorser can change toggle
+- lock endorsement option once graded
+
+## [2022060600] - UNRELEASED 2002-06-06
+
+### Added
+
+- filter to show active, on-hold, and suspended students in the progression table
+- modal_actions amd to register listenersa and handle additional logentry modal form actions
+
+### Changed
+
+- reorganized listeners in booking and booking_actions
+- took out _active_ from student, instructor, and participant methods made into a filter parameter
+
 ## [2022060600] - UNRELEASED 2002-06-06
 
 ### Added

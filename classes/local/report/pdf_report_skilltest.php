@@ -38,7 +38,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  BAVirtual.co.uk © 2021
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class pdf_report_theoryexam extends pdf_report {
+class pdf_report_skilltest extends pdf_report {
 
     /**
      * Constructor.

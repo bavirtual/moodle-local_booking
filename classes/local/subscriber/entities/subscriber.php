@@ -343,12 +343,12 @@ class subscriber implements subscriber_interface {
     public function get_exercises() {
         $exercises = [];
 
-        $exerciserecs = subscriber_vault::get_subscriber_exercises($this->courseid);
+        $exerciserecs = subscriber_vault::get_subscriber_exercises($this->courseid, $this->skilltestexercise);
 
         foreach ($exerciserecs as $exerciserec) {
             $exerciseitem = $exerciserec->modulename == 'assign' ? (object) [
                 'exerciseid'    => $exerciserec->exerciseid,
-                'exercisename'  => $exerciserec->assignname
+                'exercisename'  => $exerciserec->exercisename
             ] : (object) [
                 'exerciseid'    => $exerciserec->exerciseid,
                 'exercisename'  => $exerciserec->exam

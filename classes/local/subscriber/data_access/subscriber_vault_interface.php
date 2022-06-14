@@ -41,10 +41,12 @@ interface subscriber_vault_interface {
     /**
      * Retrieves exercises for the course
      *
-     * @param int $courseid The course id of the section
+     * @param int $courseid                  The course id of the section
+     * @param string $$skilltestexercisename The skill test exercise id required
+     *                                       to skip skill test assessment assignments
      * @return array
      */
-    public static function get_subscriber_exercises(int $courseid);
+    public static function get_subscriber_exercises(int $courseid, string $skilltestexercisename);
 
     /**
      * Returns the subscribed course exercise by name

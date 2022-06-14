@@ -1,6 +1,16 @@
 # Change log
 
-## [2022060900] - UNRELEASED 2002-06-06
+## [2022061400] - UNRELEASED 2022-06-14
+
+### Added
+
+- Skill test PDF including exercise sections and 'Further training' section in PDF form
+
+### Changed
+
+- Subscriber exercises to execlude skill test assignments other than the main one
+
+## [2022060900] - UNRELEASED 2002-06-09
 
 ### Added
 

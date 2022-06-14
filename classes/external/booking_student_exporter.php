@@ -67,7 +67,7 @@ class booking_student_exporter extends exporter {
         $this->courseexercises = $related['courseexercises'];
         $data['studentid'] = $this->student->get_id();
         $data['studentname'] = $this->student->get_name();
-        $data['dayssincelast'] = $data['filter'] != 'suspended' ? $this->student->get_priority()->get_recency_days() : 0;
+        $data['dayssincelast'] = $this->student->get_priority()->get_recency_days();
         $data['recencytooltip'] = $data['filter'] != 'suspended' ? $this->student->get_priority()->get_recency_info() : 'N/A';
         $data['simulator'] = $this->student->get_simulator();
         $data['profileurl'] = $CFG->wwwroot . '/local/booking/profile.php?courseid=' . $data['courseid'] . '&userid=' . $this->student->get_id();

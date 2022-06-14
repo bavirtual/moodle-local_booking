@@ -229,6 +229,10 @@ class profile_exporter extends exporter {
             'practicalexamreporturl' => [
                 'type' => PARAM_URL,
             ],
+            'tested' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
             'examinerreporturl' => [
                 'type' => PARAM_URL,
             ],
@@ -261,13 +265,17 @@ class profile_exporter extends exporter {
             'percent' => round(($usermods*100)/$coursemods)
         ];
 
-        // qualified (next exercise is the course's last exercise) status
+        // qualified (next exercise is the course's last exercise) and tested status
+        $grades = $this->user->get_exercises();
         list($exerciseid, $currentsection) = $this->user->get_exercise(true);
-        $qualified = $exerciseid == $COURSE->subscriber->get_graduation_exercise() || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
+        $testexerciseid = $COURSE->subscriber->get_graduation_exercise();
+        $tested = !empty($grades[$testexerciseid]);
+        $qualified = $exerciseid == $testexerciseid || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP) || $tested;
         $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $this->user->get_id());
         $hasexams = count($this->user->get_quizes()) > 0;
 
         // endorsement information
+        $endorsementmgs = array();
         if ($endorsed) {
             $endorserid = get_user_preferences('local_booking_' . $this->courseid . '_endorser', '', $this->user->get_id());
             $endorser = !empty($endorserid) ? participant::get_fullname($endorserid) : get_string('notfound', 'local_booking');
@@ -392,6 +400,7 @@ class profile_exporter extends exporter {
             'theoryexamreporturl'      => $theoryexamreporturl->out(false),
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
             'examinerreporturl'        => $examinerurl->out(false),
+            'tested'                   => $tested,
         ];
 
         return $return;

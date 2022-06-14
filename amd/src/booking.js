@@ -60,7 +60,6 @@ define([
 
         body.on(BookingEvents.canceled, function() {
             ViewManager.refreshBookingsContent(root);
-            ViewManager.refreshMyBookingsContent(root);
         });
         body.on(BookingEvents.created, function() {
             ViewManager.refreshBookingsContent(root);

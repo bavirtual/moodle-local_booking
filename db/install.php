@@ -203,7 +203,7 @@ function create_course_customfields() {
     save_course_customfield($category, 'text', 'homeicao',  get_string('homeicao', 'local_booking'),
         ',"visibility":"0","defaultvalue":"","displaysize":5,"maxlength":4,"ispassword":"0","link":""');
     save_course_customfield($category, 'text', 'skilltestexercise',  get_string('skilltestexercise', 'local_booking'),
-        ',"visibility":"1","defaultvalue":"","displaysize":50,"maxlength":4,"ispassword":"0","link":""', get_string('skilltestexercisedesc', 'local_booking'));
+        ',"visibility":"1","defaultvalue":"","displaysize":50,"maxlength":255,"ispassword":"0","link":""', get_string('skilltestexercisedesc', 'local_booking'));
     save_course_customfield($category, 'textarea', 'aircrafticao', get_string('trainingaircraft', 'local_booking'),
         ',"visibility":"0","defaultvalue":"","defaultvalueformat":"1"', get_string('trainingaircraftdesc', 'local_booking'));
     save_course_customfield($category, 'textarea', 'exercisetitles', get_string('exercisetitles', 'local_booking'),

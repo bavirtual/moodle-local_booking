@@ -25,6 +25,8 @@
 
 namespace local_booking\local\participant\entities;
 
+require_once($CFG->libdir . '/grade/grade_scale.php');
+
 use DateTime;
 use moodle_exception;
 use local_booking\local\session\entities\priority;
@@ -33,7 +35,6 @@ use local_booking\local\session\entities\grade;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\slot\entities\slot;
 use local_booking\local\subscriber\entities\subscriber;
-use stdClass;
 
 class student extends participant {
 
@@ -191,8 +192,8 @@ class student extends participant {
      *
      * @return {object}[]   The exam objects.
      */
-    public function get_assignments() {
-        return $this->vault->get_student_assignment_grades($this->course->get_id(), $this->userid);
+    public function get_exercises() {
+        return $this->vault->get_student_exercises_grades($this->course->get_id(), $this->userid);
     }
 
     /**
@@ -213,7 +214,7 @@ class student extends participant {
     public function get_grades() {
         if (empty($this->grades)) {
             // join both graded assignments and attempted quizes into one grades array
-            $this->exercises = $this->vault->get_student_assignment_grades($this->course->get_id(), $this->userid);
+            $this->exercises = $this->vault->get_student_exercises_grades($this->course->get_id(), $this->userid);
             $this->quizes = $this->vault->get_student_quizes_grades($this->course->get_id(), $this->userid);
             $this->grades = $this->exercises + $this->quizes;
         }
@@ -335,9 +336,10 @@ class student extends participant {
      * Returns the next or current upcoming exercise id and section
      * for the student and its associated course section.
      *
+     * @param bool $next  Whether to get the next exercise or current, default is next exercise
      * @return int The current or next exercise id and associated course section
      */
-    public function get_exercise($next = true) {
+    public function get_exercise(bool $next = true) {
         $exercise = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, $next);
         if ($next) {
             $this->nextexercise = $exercise;
@@ -345,6 +347,16 @@ class student extends participant {
             $this->currentexercise = $exercise;
         }
         return $exercise;
+    }
+
+    /**
+     * Returns the number of attempts for a specific exercise.
+     *
+     * @param int $exerciseid   The exercise id of the attempts
+     * @return int The current or next exercise id and associated course section
+     */
+    public function get_exercise_attempts(int $exerciseid) {
+        return $this->vault->get_student_exercise_attempts($this->course->get_id(), $this->userid, $exerciseid);
     }
 
     /**
@@ -400,6 +412,43 @@ class student extends participant {
      */
     public function get_last_booking() {
         return slot::get_last_booking($this->course->get_id(), $this->userid);
+    }
+
+    /**
+     * Get the skill test assessment including sections' exercises.
+     *
+     */
+    public function get_skilltest_assessment() {
+        $skilltestexerciseid = $this->course->get_graduation_exercise();
+        $skilltestsecname = $this->course->get_section_name($this->course->get_id(), $skilltestexerciseid);
+
+        // get skill test main assignments (sections) for the assessment
+        $sections = $this->vault->get_student_skilltest_assessment($this->course->get_id(), $this->userid, $skilltestsecname);
+        $scales = \grade_scale::fetch_all_local($this->course->get_id());
+
+        // get subsections (rubrics) for each section
+        $maxsubsections = 0;
+        foreach ($sections as $section) {
+
+            // get rubric (scale empty) otherwise update grade
+            if (empty($section->scaleid)) {
+
+                $subsections = $this->vault->get_student_skilltest_subsections($this->userid, $section->assignid);
+
+                // assign subsections back to the section
+                $section->subsections = $subsections;
+                $maxsubsections = max($maxsubsections, count($subsections));
+
+            } else {
+                // get the grade from the scale definitions
+                if (!empty($scales)) {
+                    $scaledefs = explode(',', $scales[$section->scaleid]->scale);
+                    $section->grade = trim($scaledefs[intval($section->grade)-1]);
+                }
+            }
+        }
+
+        return [$sections, $maxsubsections];
     }
 
     /**

@@ -265,8 +265,6 @@ class participant implements participant_interface {
      * @return string   $fullusername The full participant username
      */
     public static function get_fullname(int $participantid, bool $alternate = true) {
-        // $this->$fullname ?: participant_vault::get_participant_name($participantid, $alternate);
-        // return $this->$fullname;
         return participant_vault::get_participant_name($participantid, $alternate);
     }
 

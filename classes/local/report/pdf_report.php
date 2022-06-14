@@ -146,7 +146,6 @@ class pdf_report extends pdf {
         $titlebkgrnd = (object) $this->titlebkgrnd;
         $this->SetTextColor(255,255,255);
         $this->SetFillColor($titlebkgrnd->R, $titlebkgrnd->G, $titlebkgrnd->B);
-        // $this->SetFillColor(35,24,118);
         $this->SetFont($this->fontfamily, 'B', 24);
         $this->Cell(0, 50, get_string($this->reporttype . 'report', 'local_booking'), 0, 1, 'C', 1);
 

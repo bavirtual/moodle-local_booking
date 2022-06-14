@@ -79,14 +79,18 @@ class subscriber_vault implements subscriber_vault_interface {
     /**
      * Retrieves exercises for the course
      *
-     * @param int $courseid The course id of the section
+     * @param int $courseid                  The course id of the section
+     * @param string $$skilltestexercisename The skill test exercise id required
+     *                                       to skip skill test assessment assignments
      * @return array
      */
-    public static function get_subscriber_exercises(int $courseid) {
+    public static function get_subscriber_exercises(int $courseid, string $skilltestexercisename) {
         global $DB;
 
+        $graduationexerciseid = self::get_subscriber_exercise_by_name($courseid, $skilltestexercisename);
+        $graduationsecname = self::get_subscriber_section_name($courseid, $graduationexerciseid);
         // get assignments for this course based on sorted course topic sections
-        $sql = 'SELECT cm.id AS exerciseid, a.name AS assignname,
+        $sql = 'SELECT cm.id AS exerciseid, a.name AS exercisename,
                 q.name AS exam, m.name AS modulename
                 FROM {' . self::DB_COURSE_MODULES . '} cm
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
@@ -96,12 +100,16 @@ class subscriber_vault implements subscriber_vault_interface {
                 WHERE cm.course = :courseid
                     AND (m.name = :assign
                         OR m.name = :quiz)
+                    AND (cs.name != :skilltestsecname
+                    OR cm.id = :skilltestexercise)
                 ORDER BY cs.section, cm.id;';
 
         $params = [
-            'courseid'  => $courseid,
-            'assign'    => 'assign',
-            'quiz'      => 'quiz'
+            'courseid'         => $courseid,
+            'assign'           => 'assign',
+            'quiz'             => 'quiz',
+            'skilltestsecname' => $graduationsecname,
+            'skilltestexercise'=> $graduationexerciseid
         ];
         $recs = $DB->get_records_sql($sql, $params);
         return $recs;

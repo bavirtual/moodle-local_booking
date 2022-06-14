@@ -80,7 +80,7 @@ class pdf_report_recommendletter extends pdf_report {
         $logbook = new logbook($this->course->get_id(), $this->student->get_id());
         $logbooksummary = (object) $logbook->get_summary(true);
         $totaldualtime = $logbooksummary->totaldualtime;
-        $totalpictime = $logbooksummary->totalpictime;
+        $totalpictime = $logbooksummary->totalpictime ?: 0;
 
         // recommendation letter info
         $endorserid = get_user_preferences('local_booking_' . $this->course->get_id() . '_endorser', '', $this->student->get_id());
@@ -149,5 +149,22 @@ class pdf_report_recommendletter extends pdf_report {
         $html .= '</tr></table>';
 
         $this->writeHTML($html, true, false, true);
+    }
+
+    /**
+     * Overrides the TCPDF header method to write custom image URL.
+     *
+     */
+    public function Footer()
+    {
+        parent::Footer();
+
+        $footer = get_string('recommendationletterver', 'local_booking') . '<br />';
+        $footer .= get_string('copyright', 'local_booking', array('ato'=>$this->course->ato->name, 'year'=>(new \Datetime('@'.time()))->format('Y')));
+        $this->SetY(-50);
+        // Set font
+        $this->SetFont('helvetica', '', 10);
+        // Page number
+        $this->writeHTMLCell(0, 0, '', '', $footer, 0, 0, false,true, "C", true);
     }
 }

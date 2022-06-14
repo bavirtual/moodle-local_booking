@@ -89,11 +89,17 @@
                                 {{> core/overlay_loading}}
                             </div>
                             <div id="endorsement-letter" class="{{^endorsed}}hidden {{/endorsed}}mt-2">
-                                <span><a href="{{recommendationletterlink}}">{{fullname}} - {{#str}} recommendationletterlink , local_booking {{/str}}</a></span>
+                                <span><a href="{{recommendationletterlink}}">{{#str}} recommendationletterlink , local_booking {{/str}}</a></span>
                             </div>
                             {{/qualified}}
                             {{^qualified}}{{#str}} notqualified , local_booking {{/str}}{{/qualified}}
-                        </dd>
+                            {{#tested}}
+                            <dd><span><a href="{{examinerreporturl}}">{{#str}} examinerreport , local_booking {{/str}}</a></span></dd>
+                            {{/tested}}
+                            {{^tested}}
+                            <dd><span>{{#str}} examinerreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>
+                            {{/tested}}
+                            </dd>
                     </dl>
                 </div>
             </section>
@@ -153,14 +159,12 @@
                         {{^hasexams}}
                         <dd><span>{{#str}} theoryexamreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>
                         {{/hasexams}}
-                        {{#qualified}}
+                        {{#tested}}
                         <dd><span><a href="{{practicalexamreporturl}}">{{#str}} practicalexamreport , local_booking {{/str}}</a></span></dd>
-                        <dd><span><a href="{{examinerreporturl}}">{{#str}} examinerreport , local_booking {{/str}}</a></span></dd>
-                        {{/qualified}}
-                        {{^qualified}}
+                        {{/tested}}
+                        {{^tested}}
                         <dd><span>{{#str}} practicalexamreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>
-                        <dd><span>{{#str}} examinerreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>
-                        {{/qualified}}
+                        {{/tested}}
                     </dt></dl>
                 </div>
             </section>

@@ -62,7 +62,7 @@ class pdf_report_mentor extends pdf_report {
         parent::WriteContent();
 
         // get student exercises
-        $exercises = $this->student->get_assignments();
+        $exercises = $this->student->get_exercises();
         $totalexercises = count($exercises);
         $counter = 0;
 
@@ -100,15 +100,15 @@ class pdf_report_mentor extends pdf_report {
 
         // add entries to flight time array
         $flighttimes = array();
-        $flighttimes['dualtime'][0] = $logentry->get_dualtime(false);
+        $flighttimes['dualtime'][0] = !empty($logentry) ? $logentry->get_dualtime(false) : 0;
         $flighttimes['dualtime'][1] = $logbooksummary->totaldualtime;
-        $flighttimes['solotime'][0] = $logentry->get_pictime(false);
+        $flighttimes['solotime'][0] = !empty($logentry) ? $logentry->get_pictime(false) : 0;
         $flighttimes['solotime'][1] = $logbooksummary->totalpictime;
-        $flighttimes['groundtime'][0] = $logentry->get_groundtime(false);
+        $flighttimes['groundtime'][0] = !empty($logentry) ? $logentry->get_groundtime(false) : 0;
         $flighttimes['groundtime'][1] = $logbooksummary->totalgroundtime;
-        $flighttimes['landingsday'][0] = $logentry->get_landingsday();
+        $flighttimes['landingsday'][0] = !empty($logentry) ? $logentry->get_landingsday() : 0;
         $flighttimes['landingsday'][1] = $logbooksummary->totallandingsday;
-        $flighttimes['sessionlength'][0] = $logentry->get_totaltime(false);
+        $flighttimes['sessionlength'][0] = !empty($logentry) ? $logentry->get_totaltime(false) : 0;
         $flighttimes['sessionlength'][1] = '';
 
         // write student name and VATSIM ID
@@ -122,7 +122,10 @@ class pdf_report_mentor extends pdf_report {
         $this->writeHTML($html, true, false, true);
 
         // examiner information
-        $html = '<p><h4>' . get_string('examiner', 'local_booking') . ': ' . participant::get_fullname($logentry->get_p1id()) . '</h4></p>';
+        $examiner = '';
+        if (!empty($logentry))
+            participant::get_fullname($logentry->get_p1id());
+        $html = '<p><h4>' . get_string('examiner', 'local_booking') . ': ' . $examiner . '</h4></p>';
         $this->SetFont($this->fontfamily, 'B', 12);
         $this->SetTextColor(0, 0, 0);
         $this->writeHTML($html, true, false, true);

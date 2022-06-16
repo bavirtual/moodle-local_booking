@@ -1,5 +1,15 @@
 # Change log
 
+## [2022061600] - UNRELEASED 2022-06-16
+
+### Added
+
+- EASA and course tooltip
+
+### Changed
+
+- Logbook course button to show course shortname
+
 ## [2022061400] - UNRELEASED 2022-06-14
 
 ### Added

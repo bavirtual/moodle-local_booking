@@ -80,6 +80,10 @@ class logbook_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],
+            'courseshortname' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
             'easaformaturl' => [
                 'type' => PARAM_TEXT,
                 'optional' => true

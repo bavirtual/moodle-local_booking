@@ -1,5 +1,15 @@
 # Change log
 
+## [2022062700] - RELEASED 2022-06-27
+
+### Changed
+
+- student profile get_exercise call
+
+### Fixed
+
+- Examiner name in Mentored Sessions and Practical exam reports
+
 ## [2022061600] - UNRELEASED 2022-06-16
 
 ### Added

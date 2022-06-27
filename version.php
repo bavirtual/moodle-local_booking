@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2022061600;
+$plugin->version = 2022062700;
 $plugin->component = 'local_booking';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '1.1';

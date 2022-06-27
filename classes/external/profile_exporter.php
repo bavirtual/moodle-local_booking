@@ -267,7 +267,7 @@ class profile_exporter extends exporter {
 
         // qualified (next exercise is the course's last exercise) and tested status
         $grades = $this->user->get_exercises();
-        list($exerciseid, $currentsection) = $this->user->get_exercise(true);
+        list($exerciseid, $currentsection) = $this->user->get_exercise();
         $testexerciseid = $COURSE->subscriber->get_graduation_exercise();
         $tested = !empty($grades[$testexerciseid]);
         $qualified = $exerciseid == $testexerciseid || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP) || $tested;

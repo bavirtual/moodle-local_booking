@@ -339,6 +339,7 @@ $string['examstart'] = 'Exam start';
 $string['flighttraining'] = 'Flight Training';
 $string['flightttest'] = 'Flight Test';
 $string['footnote'] = '*These items may be combined at the discretion of the Examiner.';
+$string['instructor'] = 'Instructor';
 $string['mentorreport'] = 'Mentored Sessions Report';
 $string['mentorreportdesc'] = 'The theory examination is a multi-choice, randomly selected question paper that is time-limited. It is self-contained within the Moodle program for the {$a->ato}
     {$a->coursename} course. {$a->studentname} has completed the test successfully with {$a->attempts} attempt(s) achieving the pass mark of {$a->score} out of {$a->total} ({$a->percent}%) exactly.';

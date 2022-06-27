@@ -124,8 +124,8 @@ class pdf_report_mentor extends pdf_report {
         // examiner information
         $examiner = '';
         if (!empty($logentry))
-            participant::get_fullname($logentry->get_p1id());
-        $html = '<p><h4>' . get_string('examiner', 'local_booking') . ': ' . $examiner . '</h4></p>';
+            $examiner = participant::get_fullname($logentry->get_p1id());
+        $html = '<p><h4>' . get_string('instructor', 'local_booking') . ': ' . $examiner . '</h4></p>';
         $this->SetFont($this->fontfamily, 'B', 12);
         $this->SetTextColor(0, 0, 0);
         $this->writeHTML($html, true, false, true);

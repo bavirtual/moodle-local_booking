@@ -630,14 +630,15 @@ class participant_vault implements participant_vault_interface {
      *
      * @param   int     The student user id
      * @param   int     The course id
-     * @param   int     The upcoming next exercise id
+     * @param   int     The next section id
+     * @param   int     The next exercise id
      * @return  bool    Whether the lessones were completed or not.
      */
-    public function get_student_lessons_complete($userid, $courseid, $nextexercisesection) {
+    public function get_student_lessons_complete(int $userid, int $courseid, int $nextexercisesection, int $nextexercise) {
         global $DB;
 
         // Get the student's grades
-        $sql = 'SELECT cm.id, cm.course, cm.module, cm.instance, cs.section
+        $sql = 'SELECT cm.id, cm.course, cm.module, cm.instance, cs.section, cs.sequence
                 FROM {' . self::DB_COURSE_MODS .'} cm
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
                 INNER JOIN {' . self::DB_MODULES . '} as m ON m.id = cm.module
@@ -657,9 +658,18 @@ class participant_vault implements participant_vault_interface {
             'completion'  => COMPLETION_COMPLETE
         ];
 
-        $lessons_incompleted = $DB->get_records_sql($sql, $params);
+        $lessonsincompleted = $DB->get_records_sql($sql, $params);
+        $lessonscomplete = count($lessonsincompleted) == 0;
 
-        return count($lessons_incompleted) == 0;
+        // check the sequence for lessons with multiple assignments to make sure that
+        // only lessons prior to the completed exercise are evaluated for completion
+        if (!empty($lessonsincompleted)) {
+            $incompletesequence = explode(',', array_values($lessonsincompleted)[0]->sequence);
+            $lessonscomplete = array_search(array_values($lessonsincompleted)[0]->id, $incompletesequence) > array_search($nextexercise, $incompletesequence);
+        }
+
+
+        return $lessonscomplete;
     }
 
     /**

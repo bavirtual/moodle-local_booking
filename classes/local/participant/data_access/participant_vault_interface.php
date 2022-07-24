@@ -158,10 +158,11 @@ interface participant_vault_interface {
      *
      * @param   int     The student id
      * @param   int     The course id
-     * @param   int     The upcoming next exercise id
+     * @param   int     The next section id
+     * @param   int     The next exercise id
      * @return  bool    Whether the lessones were completed or not.
      */
-    public function get_student_lessons_complete(int $studentid, int $courseid, int $nextexercisesection);
+    public function get_student_lessons_complete(int $userid, int $courseid, int $nextexercisesection, int $nextexercise);
 
     /**
      * Returns next or current upcoming exercise id

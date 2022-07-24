@@ -1,5 +1,11 @@
 # Change log
 
+## [2022072400] - RELEASED 2022-07-24
+
+### Fixed
+
+- Lessons with multiple assignments showing disabled Book button even when the student completed the first exercise's module
+
 ## [2022062700] - RELEASED 2022-06-27
 
 ### Changed

@@ -471,7 +471,7 @@ class student extends participant {
 
     /**
      * Returns whether the student complete
-     * all sessons prior to the upcoming next
+     * all lessons prior to the upcoming next
      * exercise.
      *
      * @param   int     The upcoming next exercise id
@@ -481,6 +481,6 @@ class student extends participant {
         if (empty($this->nextexercise))
             $this->nextexercise = $this->get_exercise(true);
         list($exerciseid, $section) = $this->nextexercise;
-        return !empty($this->nextexercise) ? $this->vault->get_student_lessons_complete($this->userid, $this->course->get_id(), $section) : false;
+        return !empty($this->nextexercise) ? $this->vault->get_student_lessons_complete($this->userid, $this->course->get_id(), $section, $exerciseid) : false;
     }
 }

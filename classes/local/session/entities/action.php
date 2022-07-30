@@ -114,6 +114,7 @@ class action implements action_interface {
         $this->name = $name;
         $this->exerciseid = $exerciseid;
         $this->enabled = true;
+        $this->tooltip = '';
 
         // get action enabled status
         // check if the student to be book has incomplete lessons

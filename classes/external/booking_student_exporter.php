@@ -155,6 +155,7 @@ class booking_student_exporter extends exporter {
             ],
             'actiontooltip' => [
                 'type' => PARAM_RAW,
+                'default' => '',
             ],
             'sessionoptions' => [
                 'type' => PARAM_BOOL,

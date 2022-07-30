@@ -1,5 +1,11 @@
 # Change log
 
+## [2022073001] - RELEASED 2022-07-30 hotfix
+
+### Fixed
+
+- action tooltip returning null
+
 ## [2022073000] - RELEASED 2022-07-30
 
 ### Fixed

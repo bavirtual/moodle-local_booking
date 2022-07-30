@@ -104,6 +104,11 @@ class student extends participant {
     protected $priority;
 
     /**
+     * @var boolean $lessonsecomplete Whether the student completed all pending lessons.
+     */
+    protected $lessonsecomplete;
+
+    /**
      * Constructor.
      *
      * @param subscriber $course The subscribing course the student is enrolled in.
@@ -337,7 +342,7 @@ class student extends participant {
      * for the student and its associated course section.
      *
      * @param bool $next  Whether to get the next exercise or current, default is next exercise
-     * @return int The current or next exercise id and associated course section
+     * @return array The current or next exercise id and associated course section
      */
     public function get_exercise(bool $next = true) {
         $exercise = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, $next);
@@ -474,13 +479,27 @@ class student extends participant {
      * all lessons prior to the upcoming next
      * exercise.
      *
-     * @param   int     The upcoming next exercise id
      * @return  bool    Whether the lessones were completed or not.
      */
     public function has_completed_lessons() {
-        if (empty($this->nextexercise))
-            $this->nextexercise = $this->get_exercise(true);
-        list($exerciseid, $section) = $this->nextexercise;
-        return !empty($this->nextexercise) ? $this->vault->get_student_lessons_complete($this->userid, $this->course->get_id(), $section, $exerciseid) : false;
+
+        if (!isset($this->lessonsecomplete)) {
+            if (empty($this->nextexercise))
+                $this->nextexercise = $this->get_exercise(true);
+            list($exerciseid, $section) = $this->nextexercise;
+            $this->lessonsecomplete = !empty($this->nextexercise) ? $this->vault->get_student_lessons_complete($this->userid, $this->course->get_id(), $section, $exerciseid) : false;
+        }
+
+        return $this->lessonsecomplete;
+    }
+
+    /**
+     * Returns whether the student has graduated
+     * and in the graduates group.
+     *
+     * @return  bool    Whether the student had graduated.
+     */
+    public function graduated() {
+        return $this->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
     }
 }

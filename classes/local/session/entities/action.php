@@ -25,7 +25,9 @@
 
 namespace local_booking\local\session\entities;
 
+use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
+use local_booking\local\subscriber\entities\subscriber;
 use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
@@ -44,6 +46,11 @@ class action implements action_interface {
     protected $type;
 
     /**
+     * @var boolean $enabled The status of this action.
+     */
+    protected $enabled;
+
+    /**
      * @var url $url The name of this action.
      */
     protected $url;
@@ -59,12 +66,17 @@ class action implements action_interface {
     protected $exerciseid;
 
     /**
+     * @var string $tooltip The action's tooltip explaining its status.
+     */
+    protected $tooltip;
+
+    /**
      * Constructor.
      *
      * @param event_interface  $event  The event to delegate to.
      * @param action_interface $action The action associated with this event.
      */
-    public function __construct(string $actiontype, $courseid, int $studentid, int $exerciseid) {
+    public function __construct(string $actiontype, subscriber $course, student $student, int $exerciseid) {
         $actionurl = null;
         $name = '';
 
@@ -72,18 +84,18 @@ class action implements action_interface {
         switch ($actiontype) {
             case 'grade':
                 $actionurl = new moodle_url('/local/booking/assign.php', [
-                    'courseid' => $courseid,
+                    'courseid' => $course->get_id(),
                     'exeid' => $exerciseid,
-                    'userid' => $studentid,
+                    'userid' => $student->get_id(),
                 ]);
                 $name = get_string('grade', 'grades');
                 break;
             case 'book':
                 // Book action takes the instructor to the week of the firs slot or after waiting period
                 $actionurl = new moodle_url('/local/booking/view.php', [
-                    'courseid' => $courseid,
+                    'courseid' => $course->get_id(),
                     'exid'   => $exerciseid,
-                    'userid' => $studentid,
+                    'userid' => $student->get_id(),
                     'action' => 'confirm',
                     'view'   => 'user',
                 ]);
@@ -91,7 +103,7 @@ class action implements action_interface {
                 break;
             case 'cancel':
                 $actionurl = new moodle_url('/local/booking/view.php', [
-                    'course' => $courseid,
+                    'course' => $course->get_id(),
                 ]);
                 $name = get_string('bookingcancel', 'local_booking');
                 break;
@@ -101,6 +113,29 @@ class action implements action_interface {
         $this->url = $actionurl;
         $this->name = $name;
         $this->exerciseid = $exerciseid;
+        $this->enabled = true;
+
+        // get action enabled status
+        // check if the student to be book has incomplete lessons
+        if ($actiontype == 'book') {
+            if (!$student->has_completed_lessons()) {
+                $this->enabled = false;
+                $this->tooltip = get_string('actiondisabledincompletelessonstooltip', 'local_booking');
+
+            // check if student completed all lessons (graduated)
+            } else if ($student->graduated()) {
+                $this->enabled = false;
+                $this->tooltip = get_string('actiondisabledexercisescompletedtooltip', 'local_booking');
+
+            // check if the user is an examiner when the student's next exercise is a final exam
+            } else if (array_values($student->get_exercise(true))[0] == $course->get_graduation_exercise()) {
+                global $USER;
+
+                $instructor = new instructor($course, $USER->id);
+                $this->enabled = $instructor->is_examiner();
+                $this->tooltip = !$this->enabled ? get_string('actiondisabledexaminersonlytooltip', 'local_booking') : '';
+            }
+        }
     }
 
     /**
@@ -140,11 +175,20 @@ class action implements action_interface {
     }
 
     /**
-     * Set the action type.
+     * Get the action's tooltip explaining its status.
      *
-     * @param string $type the time to set the action to
+     * @return string
      */
-    public function set_type(string $type) {
-        $this->type = $type;
+    public function get_tooltip() {
+        return $this->tooltip;
+    }
+
+    /**
+     * Get the action's status.
+     *
+     * @return boolean the action's status
+     */
+    public function is_enabled() {
+        return $this->enabled;
     }
 }

@@ -56,9 +56,16 @@ interface action_interface {
     public function get_name();
 
     /**
-     * Set the action type.
+     * Get the action's tooltip explaining its status.
      *
-     * @param string $type the time to set the action to
+     * @return string
      */
-    public function set_type(string $type);
+    public function get_tooltip();
+
+    /**
+     * Get the action's status.
+     *
+     * @return boolean the action's status
+     */
+    public function is_enabled();
 }

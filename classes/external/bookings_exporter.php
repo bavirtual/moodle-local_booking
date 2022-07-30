@@ -302,7 +302,7 @@ class bookings_exporter extends exporter {
 
             $waringflag = $this->get_warning($this->filter != 'suspended' ?  $student->get_priority()->get_recency_days() : $COURSE->subscriber->onholdperiod);
             $data = [
-                'courseid'        => $this->data['courseid'],
+                'course'          => $COURSE->subscriber,
                 'sequence'        => $i,
                 'sequencetooltip' => get_string('sequencetooltip', 'local_booking', $sequencetooltip),
                 'instructor'      => $this->instructor,

@@ -33,6 +33,7 @@ use renderer_base;
 use core\external\exporter;
 use local_booking\local\session\entities\action;
 use local_booking\local\participant\entities\student;
+use local_booking\local\subscriber\entities\subscriber;
 
 /**
  * Class for displaying each student row in progression view.
@@ -43,6 +44,11 @@ use local_booking\local\participant\entities\student;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class booking_student_exporter extends exporter {
+
+    /**
+     * @var subscriber $course The subscribing course.
+     */
+    protected $course;
 
     /**
      * @var student $student The student.
@@ -63,6 +69,7 @@ class booking_student_exporter extends exporter {
     public function __construct($data, $related) {
         global $CFG;
 
+        $this->course = $data['course'];
         $this->student = $data['student'];
         $this->courseexercises = $related['courseexercises'];
         $data['studentid'] = $this->student->get_id();
@@ -70,7 +77,7 @@ class booking_student_exporter extends exporter {
         $data['dayssincelast'] = $this->student->get_priority()->get_recency_days();
         $data['recencytooltip'] = $data['filter'] != 'suspended' ? $this->student->get_priority()->get_recency_info() : 'N/A';
         $data['simulator'] = $this->student->get_simulator();
-        $data['profileurl'] = $CFG->wwwroot . '/local/booking/profile.php?courseid=' . $data['courseid'] . '&userid=' . $this->student->get_id();
+        $data['profileurl'] = $CFG->wwwroot . '/local/booking/profile.php?courseid=' . $this->course->get_id() . '&userid=' . $this->student->get_id();
 
         parent::__construct($data, $related);
     }
@@ -142,9 +149,12 @@ class booking_student_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
-            'lessonincomplete' => [
+            'actionenabled' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
+            ],
+            'actiontooltip' => [
+                'type' => PARAM_RAW,
             ],
             'sessionoptions' => [
                 'type' => PARAM_BOOL,
@@ -172,28 +182,22 @@ class booking_student_exporter extends exporter {
      */
     protected function get_other_values(renderer_base $output) {
         global $CFG;
-        $hasincompletelessons = false;
         $sessions = $this->get_sessions($output);
         $action = $this->get_next_action();
         $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;
 
-        // check if the student to be book has incomplete lessons
-        if ($action->get_type() == 'book') {
-            $hasincompletelessons = !$this->student->has_completed_lessons();
-            if ($hasincompletelessons) { $action->set_type('disabled'); }
-        }
-
         return [
-            'sessions'         => $sessions,
-            'actionurl'        => $action->get_url()->out(false),
-            'actiontype'       => $action->get_type(),
-            'actionname'       => $action->get_name(),
-            'actionbook'       => $action->get_name() == 'Book',
-            'lessonincomplete' => $hasincompletelessons,
-            'sessionoptions'   => $this->get_session_options($action),
-            'posts'            => $posts,
-            'week'             => $this->get_booking_week(),
-            'formaction'       => $CFG->httpswwwroot . '/local/booking/availability.php',
+            'sessions'          => $sessions,
+            'actionurl'         => $action->get_url()->out(false),
+            'actiontype'        => $action->get_type(),
+            'actionname'        => $action->get_name(),
+            'actionbook'        => $action->get_name() == 'Book',
+            'actionenabled'     => $action->is_enabled(),
+            'actiontooltip'     => $action->get_tooltip(),
+            'sessionoptions'    => $this->get_session_options($action),
+            'posts'             => $posts,
+            'week'              => $this->get_booking_week(),
+            'formaction'        => $CFG->httpswwwroot . '/local/booking/availability.php',
         ];
     }
 
@@ -249,9 +253,11 @@ class booking_student_exporter extends exporter {
      * @return {Object}
      */
     protected function get_next_action() {
+
         // next action depends if the student has any booking
         $activebooking = $this->student->get_active_booking();
         $actiontype = !empty($activebooking) ? 'grade' : 'book';
+
         if ($actiontype == 'book') {
             // check if the session to book is the next exercise after passing the current session or the same
             $lastgrade = $this->student->get_last_grade();
@@ -260,7 +266,8 @@ class booking_student_exporter extends exporter {
         } else {
             $refexerciseid = $activebooking->get_exerciseid();
         }
-        $action = new action($actiontype, $this->student->get_course()->get_id(), $this->student->get_id(), $refexerciseid);
+
+        $action = new action($actiontype, $this->course, $this->student, $refexerciseid);
 
         return $action;
     }

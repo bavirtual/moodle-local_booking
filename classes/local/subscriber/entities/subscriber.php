@@ -115,7 +115,7 @@ class subscriber implements subscriber_interface {
                         }
                     );
                     $finalvalues = array_combine($fieldvalues, $fieldvalues);
-                    $value = $finalvalues;
+                    $value = array_filter($finalvalues);
                 } else {
                     // get the field value checking dropdown selects as well
                     $value = $customfield->get_field()->get('type') == 'select' ? $customfield->export_value() : $customfield->get_value();

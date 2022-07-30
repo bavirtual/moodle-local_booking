@@ -9,6 +9,9 @@
  */
 
 // Booking
+$string['actiondisabledincompletelessonstooltip'] = 'The student has not completed ground lesson';
+$string['actiondisabledexaminersonlytooltip'] = 'Examiners only';
+$string['actiondisabledexercisescompletedtooltip'] = 'All exercises completed';
 $string['activestudents'] = 'Active students progression';
 $string['averagewaittime'] = 'Avg wait days';
 $string['book'] = 'Book';
@@ -57,7 +60,6 @@ $string['elapseddays'] = 'Elapsed Days';
 $string['enroldate'] = 'Enrol Date';
 $string['exercise'] = 'Exercise';
 $string['grade'] = 'Grade';
-$string['incompletelessontooltip'] = 'The student has not completed ground lesson';
 $string['instructors'] = 'Instructors';
 $string['lastsessiondate'] = 'Last VFC Flight/Lesson';
 $string['mystudents'] = 'My assigned students';

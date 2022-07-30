@@ -665,25 +665,40 @@ function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
  * @return  bool  $resut    The cancellation result.
  */
 function cancel_booking($bookingid, $comment) {
-    global $COURSE;
+    global $COURSE, $PAGE;
     $msg = '';
 
     // get the booking to be deleted
     if (!empty($bookingid)) {
+
         $booking = new booking($bookingid);
         $booking->load();
-        $courseid = $booking->get_courseid() ?: $COURSE->id;
         $sessiondate = new DateTime('@' . ($booking->get_slot())->get_starttime());
+        $courseid = $booking->get_courseid() ?: $COURSE->id;
 
         require_login($courseid, false);
 
+        $context = context_course::instance($courseid);
+        $PAGE->set_url('/local/booking/');
+        $PAGE->set_context($context);
+
+        // define subscriber globally
+        if (empty($COURSE->subscriber))
+            $COURSE->subscriber = new subscriber($courseid);
+
+        // delete the current booking
         $result = $booking->delete();
 
+        // notify the student
         $cancellationmsg = [
             'studentname' => student::get_fullname($booking->get_studentid()),
             'sessiondate' => $sessiondate->format('D M j\, H:i'),
         ];
         $msg = get_string('bookingcanceledsuccess', 'local_booking', $cancellationmsg);
+
+        // enable restriction override if enabled for the course to allow student to repost slots
+        if (intval($COURSE->subscriber->overdueperiod) > 0)
+            set_user_prefs('availabilityoverride', true, $courseid, $booking->get_studentid());
 
     } else {
         $msg = get_string('bookingcancelednotfound', 'local_booking');
@@ -730,10 +745,24 @@ function set_user_prefs($preference, $value, $courseid, $studentid) {
  *
  */
 function process_submission_graded_event($courseid, $studentid, $exerciseid) {
+    global $COURSE;
+
+    // define subscriber globally
+    if (empty($COURSE->subscriber))
+        $COURSE->subscriber = new subscriber($courseid);
+
     $booking = new booking(0, $courseid, $studentid, $exerciseid);
+
     $booking->load();
+
     // update the booking status from active to inactive
     $booking->deactivate();
+
+    // add student to graduates group if exercise is the course graduation exam
+    if ($exerciseid == $COURSE->subscriber->get_graduation_exercise()) {
+        $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_GRADUATESGROUP);
+        groups_add_member($groupid, $studentid);
+    }
 }
 
 /**

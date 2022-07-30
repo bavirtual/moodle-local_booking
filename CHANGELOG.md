@@ -1,5 +1,22 @@
 # Change log
 
+## [2022073000] - RELEASED 2022-07-30
+
+### Fixed
+
+- subscriber course arrays to exclude empty values
+- final exercise not showing in Session Booking in some courses
+- Book button should be inactive when the last exercise is graded or not examiner
+
+### Added
+
+- When a student passes graduation exercise he/she is automatically added to the Graduates group
+
+### Changed
+
+- has_completed_lessons in student class to reduce sql roundtrips
+- enabled Restriction Override once a session is canceled automatically
+
 ## [2022072400] - RELEASED 2022-07-24
 
 ### Fixed

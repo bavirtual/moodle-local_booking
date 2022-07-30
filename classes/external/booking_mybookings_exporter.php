@@ -50,8 +50,11 @@ class booking_mybookings_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($data, $related) {
+        global $COURSE;
+
         $booking = $data['booking'];
-        $action = new action('cancel', $booking->get_courseid(), $booking->get_studentid(), $booking->get_exerciseid());
+        $student = new student($COURSE->subscriber, $booking->get_studentid());
+        $action = new action('cancel', $COURSE->subscriber, $student, $booking->get_exerciseid());
         $sessiondate = new DateTime('@' . $booking->get_slot()->get_starttime());
 
         $data = [

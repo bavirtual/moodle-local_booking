@@ -87,9 +87,20 @@ class subscriber_vault implements subscriber_vault_interface {
     public static function get_subscriber_exercises(int $courseid, string $skilltestexercisename) {
         global $DB;
 
+        // to eliminate final assessment exercises from showing in the Session Booking grid,
+        // get the final exam and eliminate exericses after it in the section sequence
         $graduationexerciseid = self::get_subscriber_exercise_by_name($courseid, $skilltestexercisename);
-        $graduationsecname = self::get_subscriber_section_name($courseid, $graduationexerciseid);
+
+        // get the sequence for the final exam section and exclude assessment exercises
+        $sql = 'SELECT cs.sequence FROM {' . self::DB_COURSE_SECTIONS . '} cs
+                INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.section = cs.id
+                WHERE cm.course = :courseid AND cm.id = :moduleid';
+        $rec = $DB->get_records_sql($sql, ['courseid'=>$courseid, 'moduleid'=>$graduationexerciseid]);
+        $sequence = explode(',', (array_values($rec)[0])->sequence);
+        $excludesequence = array_slice($sequence, array_search($graduationexerciseid, $sequence) + 1);
+
         // get assignments for this course based on sorted course topic sections
+        // exclude final exercise skill test assessment section
         $sql = 'SELECT cm.id AS exerciseid, a.name AS exercisename,
                 q.name AS exam, m.name AS modulename
                 FROM {' . self::DB_COURSE_MODULES . '} cm
@@ -99,16 +110,14 @@ class subscriber_vault implements subscriber_vault_interface {
                 LEFT JOIN {' . self::DB_QUIZ . '} q ON q.id = cm.instance
                 WHERE cm.course = :courseid
                     AND (m.name = :assign
-                        OR m.name = :quiz)
-                    AND (cs.name != :skilltestsecname
-                    OR cm.id = :skilltestexercise)
-                ORDER BY cs.section, cm.id;';
+                        OR m.name = :quiz) ' . (!empty($excludesequence) ?
+                    'AND (cm.id NOT IN (' . implode(',', $excludesequence) . '))' : '') . '
+                    ORDER BY cs.section, cm.id;';
 
         $params = [
             'courseid'         => $courseid,
             'assign'           => 'assign',
             'quiz'             => 'quiz',
-            'skilltestsecname' => $graduationsecname,
             'skilltestexercise'=> $graduationexerciseid
         ];
         $recs = $DB->get_records_sql($sql, $params);

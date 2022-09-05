@@ -184,7 +184,17 @@ class booking_student_exporter extends exporter {
     protected function get_other_values(renderer_base $output) {
         global $CFG;
         $sessions = $this->get_sessions($output);
-        $action = $this->get_next_action();
+
+        // action is grading if the student has any active booking, completed coursework
+        // awaiting certification, or graduated already; otherwise it is a booking action
+        if (!empty($this->student->get_active_booking()))
+            $actiontype = 'grade';
+        else if ($this->student->has_completed_coursework() && !$this->student->graduated())
+            $actiontype = 'certify';
+        else
+            $actiontype = 'book';
+
+        $action = new action($this->course, $this->student, $actiontype);
         $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;
 
         return [
@@ -245,35 +255,6 @@ class booking_student_exporter extends exporter {
     }
 
     /**
-     * Retrieves the action object containing
-     * action name and url. Next action for
-     * students with booked session is a grading
-     * action, otherwise it is a booking action.
-     *
-     * @param  bool  $disable create a disabled action
-     * @return {Object}
-     */
-    protected function get_next_action() {
-
-        // next action depends if the student has any booking
-        $activebooking = $this->student->get_active_booking();
-        $actiontype = !empty($activebooking) ? 'grade' : 'book';
-
-        if ($actiontype == 'book') {
-            // check if the session to book is the next exercise after passing the current session or the same
-            $lastgrade = $this->student->get_last_grade();
-            $getnextexercise = (!empty($lastgrade) ? $lastgrade->is_passinggrade() : true);
-            list($refexerciseid, $section) = $this->student->get_exercise($getnextexercise);
-        } else {
-            $refexerciseid = $activebooking->get_exerciseid();
-        }
-
-        $action = new action($actiontype, $this->course, $this->student, $refexerciseid);
-
-        return $action;
-    }
-
-    /**
      * Returns an array of option default selected values
      * for session confirmation view.
      *
@@ -290,17 +271,21 @@ class booking_student_exporter extends exporter {
 
             foreach ($this->courseexercises as $exercise) {
 
-                // show the graduation exercise booking option for examiners only
-                if (($exercise->exerciseid == $COURSE->subscriber->get_graduation_exercise() && ($this->data['instructor'])->is_examiner()) ||
-                    $exercise->exerciseid != $COURSE->subscriber->get_graduation_exercise()) {
-                    $sessionoptions[] = [
-                        'nextsession' => ($action->get_exerciseid() == $exercise->exerciseid ? "checked" : ""),
-                        'bordered' => $action->get_exerciseid() == $exercise->exerciseid,
-                        'graded'  => array_key_exists($exercise->exerciseid, $grades),
-                        'exerciseid'  => $exercise->exerciseid
-                    ];
-                }
+                // check for assignment exercises
+                if ($exercise->exercisetype == 'assign') {
 
+                    // show the graduation exercise booking option for examiners only
+                    $gradexercise = $COURSE->subscriber->get_graduation_exercise();
+                    if (($exercise->exerciseid ==  $gradexercise && ($this->data['instructor'])->is_examiner()) ||
+                        $exercise->exerciseid != $gradexercise) {
+                        $sessionoptions[] = [
+                            'nextsession' => ($action->get_exerciseid() == $exercise->exerciseid ? "checked" : ""),
+                            'bordered' => $action->get_exerciseid() == $exercise->exerciseid,
+                            'graded'  => array_key_exists($exercise->exerciseid, $grades),
+                            'exerciseid'  => $exercise->exerciseid
+                        ];
+                    }
+                }
             }
         }
 

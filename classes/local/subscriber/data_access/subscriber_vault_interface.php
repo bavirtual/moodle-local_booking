@@ -34,19 +34,17 @@ interface subscriber_vault_interface {
      *
      * @param int $courseid The course id of the section
      * @param int $exerciseid The exercise id in the course inside the section
-     * @return string  The section name of a course associated with the exercise
+     * @return array  The section name of a course associated with the exercise
      */
-    public static function get_subscriber_section_name(int $courseid, int $exerciseid);
+    public static function get_subscriber_section(int $courseid, int $exerciseid);
 
     /**
      * Retrieves exercises for the course
      *
      * @param int $courseid                  The course id of the section
-     * @param string $$skilltestexercisename The skill test exercise id required
-     *                                       to skip skill test assessment assignments
      * @return array
      */
-    public static function get_subscriber_exercises(int $courseid, string $skilltestexercisename);
+    public static function get_subscriber_exercises(int $courseid);
 
     /**
      * Returns the subscribed course exercise by name
@@ -81,4 +79,13 @@ interface subscriber_vault_interface {
      * @return int
      */
     public static function get_subscriber_modules_count(int $courseid);
+
+    /**
+     * Returns the first file stored for the context id and grade id (itemid)
+     *
+     * @param int $contextid The context id for the exercise (assignment)
+     * @param int $itemid    The context id for the exercise (assignment)
+     * @return object  The file record
+     */
+    public static function get_file_info(int $contextid, int $itemid);
 }

@@ -150,6 +150,13 @@ interface logentry_interface {
     public function get_enginetype();
 
     /**
+     * Get the flight route.
+     *
+     * @return string
+     */
+    public function get_route();
+
+    /**
      * Get the multipilot time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
@@ -402,6 +409,13 @@ interface logentry_interface {
      * @return string
      */
     public function set_enginetype(string $enginetype) ;
+
+    /**
+     * Set the flight route.
+     *
+     * @return string
+     */
+    public function set_route(string $route);
 
     /**
      * Set the flight multipilot time in minutes.

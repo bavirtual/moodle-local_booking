@@ -192,6 +192,8 @@ function create_course_customfields() {
     save_course_customfield($category, 'select', 'trainingtype', get_string('trainingtype', 'local_booking'),',"visibility":"0","options":"' .
             get_string('customfielddual', 'local_booking') . '\r\n' . get_string('customfieldmulticrew', 'local_booking') . '","defaultvalue":"' .
             get_string('customfielddual', 'local_booking') . '"');
+    save_course_customfield($category, 'text', 'vatsimrating',  get_string('vatsimrating', 'local_booking'),
+        ',"visibility":"1","defaultvalue":"","displaysize":10,"maxlength":10,"ispassword":"0","link":""', get_string('vatsimratingdesc', 'local_booking'));
     save_course_customfield($category, 'text', 'postingwait',  get_string('postingwait', 'local_booking'),
         ',"visibility":"0","defaultvalue":"","displaysize":5,"maxlength":2,"ispassword":"0","link":""', get_string('postingwaitdesc', 'local_booking'));
     save_course_customfield($category, 'text', 'onholdperiod',  get_string('onholdperiod', 'local_booking'),
@@ -202,8 +204,8 @@ function create_course_customfields() {
         ',"visibility":"0","defaultvalue":"","displaysize":5,"maxlength":2,"ispassword":"0","link":""', get_string('overdueperioddesc', 'local_booking'));
     save_course_customfield($category, 'text', 'homeicao',  get_string('homeicao', 'local_booking'),
         ',"visibility":"0","defaultvalue":"","displaysize":5,"maxlength":4,"ispassword":"0","link":""');
-    save_course_customfield($category, 'text', 'skilltestexercise',  get_string('skilltestexercise', 'local_booking'),
-        ',"visibility":"1","defaultvalue":"","displaysize":50,"maxlength":255,"ispassword":"0","link":""', get_string('skilltestexercisedesc', 'local_booking'));
+    save_course_customfield($category, 'text', 'examinerformurl',  get_string('examinerformurl', 'local_booking'),
+        ',"visibility":"1","defaultvalue":"","displaysize":100,"maxlength":1333,"ispassword":"0","link":""', get_string('examinerformurldesc', 'local_booking'));
     save_course_customfield($category, 'textarea', 'aircrafticao', get_string('trainingaircraft', 'local_booking'),
         ',"visibility":"0","defaultvalue":"","defaultvalueformat":"1"', get_string('trainingaircraftdesc', 'local_booking'));
     save_course_customfield($category, 'textarea', 'exercisetitles', get_string('exercisetitles', 'local_booking'),

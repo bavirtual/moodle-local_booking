@@ -153,6 +153,11 @@ class logentry implements logentry_interface {
     protected $enginetype = '';
 
     /**
+     * @var string $route The flight route.
+     */
+    protected $route = '';
+
+    /**
      * @var int $landingsday The number of day landings for the flight.
      */
     protected $landingsday = 0;
@@ -349,6 +354,15 @@ class logentry implements logentry_interface {
      */
     public function get_enginetype() {
         return $this->enginetype;
+    }
+
+    /**
+     * Get the flight route.
+     *
+     * @return string
+     */
+    public function get_route() {
+        return $this->route;
     }
 
     /**
@@ -670,6 +684,15 @@ class logentry implements logentry_interface {
     }
 
     /**
+     * Set the flight route.
+     *
+     * @return string
+     */
+    public function set_route(string $route) {
+        $this->route = $route;
+    }
+
+    /**
      * Set the P1 (instructor) user id.
      *
      * @param int $p1id
@@ -874,6 +897,7 @@ class logentry implements logentry_interface {
         $this->aircraft = $formdata->aircraft;
         $this->aircraftreg = $formdata->aircraftreg;
         $this->enginetype = $formdata->enginetype;
+        $this->route = $formdata->route;
 
         // assign landings day/night of p1 to instructor, solo, or editing mode case otherwise use p2 for the student
         $this->landingsday = $isinstructor || $formdata->flighttype == 'solo' || $edit ? $formdata->landingsp1day : $formdata->landingsp2day;
@@ -922,6 +946,7 @@ class logentry implements logentry_interface {
         $logentryarray['aircraft'] = $this->aircraft;
         $logentryarray['aircraftreg'] = $this->aircraftreg;
         $logentryarray['enginetype'] = $this->enginetype;
+        $logentryarray['route'] = $this->route;
         $logentryarray['landingsday'] = $this->landingsday;
         $logentryarray['landingsnight'] = $this->landingsnight;
         $logentryarray['nighttime'] = $this->get_nighttime(!$formattostring) ?: ($nullable ? null : 0);

@@ -28,6 +28,8 @@
  */
 
 use local_booking\local\participant\entities\participant;
+use local_booking\local\participant\entities\student;
+use local_booking\local\subscriber\entities\subscriber;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -64,8 +66,39 @@ $renderer = $PAGE->get_renderer('local_booking');
 
 echo $OUTPUT->header();
 echo $renderer->start_layout();
+
+$COURSE->subscriber = new subscriber($courseid);
+$student = new student($COURSE->subscriber, $userid);
+
+// determine button action
+if ($reporttype != 'examiner' || $student->evaluated()) {
+
+    $nextactionurl = '/local/booking/profile.php';
+    $params = [
+        'courseid' => $courseid,
+        'userid'   => $userid
+    ];
+    $buttonlabel = get_string('back');
+
+} else {
+
+    $buttonlabel = get_string('uploadreport', 'local_booking');
+    $nextactionurl = '/mod/assign/view.php';
+    $params = [
+        'id'     => $COURSE->subscriber->get_graduation_exercise(),
+        'rownum' => 0,
+        'userid' => $userid,
+        'action' => 'grader'
+    ];
+}
+
+// add next action button
+echo html_writer::start_tag('div', array('class'=>'container d-flex align-items-center justify-content-center mb-2'));
+echo $OUTPUT->render(new single_button(new moodle_url($nextactionurl, $params), $buttonlabel, 'get', true));
+echo html_writer::end_tag('div');
+
+// report section
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
-// echo html_writer::start_tag('center');
 
 // show loading icon
 echo html_writer::script('document.onreadystatechange = function () {
@@ -86,13 +119,23 @@ echo html_writer::end_tag('i');
 echo html_writer::end_tag('div');
 
 // embed the pdf report
-$reporturl = new moodle_url('/local/booking/pdfwriter.php');
-$reporturl->param('courseid', $courseid);
-$reporturl->param('userid', $userid);
-$reporturl->param('report', $reporttype);
+if ($reporttype != 'examiner' || $student->evaluated()) {
+
+    // open custom reports
+    $reporturl = new moodle_url('/local/booking/pdfwriter.php');
+    $reporturl->param('courseid', $courseid);
+    $reporturl->param('userid', $userid);
+    $reporturl->param('report', $reporttype);
+
+} else {
+
+    // open external examiner evaluation form
+    $reporturl = new moodle_url($COURSE->subscriber->examinerformurl);
+
+}
+
 echo html_writer::tag('embed', '', array('id'=>'report', 'src'=>$reporturl->out(false), 'quality'=>'low', 'height'=>'1200', 'width'=>'100%'));
 
-// echo html_writer::end_tag('center');
 echo html_writer::end_tag('div');
 echo $renderer->complete_layout();
 echo $OUTPUT->footer();

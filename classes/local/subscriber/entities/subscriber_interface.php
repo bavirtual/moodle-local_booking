@@ -124,13 +124,12 @@ interface subscriber_interface {
     public function get_senior_instructors();
 
     /**
-     * Returns the course section name containing the exercise
+     * Returns the subscribed course section id and name that contains the exercise
      *
-     * @param int $courseid The course id of the section
      * @param int $exerciseid The exercise id in the course inside the section
-     * @return string  The section name of a course associated with the exercise
+     * @return array  The section name of a course associated with the exercise
      */
-    public static function get_section_name(int $courseid, int $exerciseid);
+    public function get_section(int $exerciseid);
 
     /**
      * Returns the course graduation exercise the last exercise
@@ -148,6 +147,15 @@ interface subscriber_interface {
     public function get_exercises();
 
     /**
+     * Retrieves the exercise name of a specific exercise
+     * based on its id statically.
+     *
+     * @param int $exerciseid The exercise id.
+     * @return string
+     */
+    public static function get_exercise_name(int $exerciseid);
+
+    /**
      * Retrieves the total number of modules in a course.
      *
      * @return int
@@ -155,11 +163,30 @@ interface subscriber_interface {
     public function get_modules_count();
 
     /**
-     * Retrieves the exercise name of a specific exercise
-     * based on its id statically.
+     * Retrieves the path for the graduation exercise's evaluation form file submission.
      *
-     * @param int $exerciseid The exercise id.
-     * @return string
+     * @param  int      The student id with the file submission
+     * @return object
      */
-    public static function get_exercise_name($exerciseid);
+    public function get_feedback_file(int $studentid);
+
+    /**
+     * Returns an array of records from integrated database
+     * that matches the passed criteria.
+     *
+     * @param string $key    The key associated with the integration.
+     * @param string $target The target data structure of the integration.
+     * @param string $value  The data selection criteria
+     * @return array
+     */
+    public static function get_integrated_data($key, $data, $value);
+
+    /**
+     * Checks if there is a database integration
+     * for the specified passed key.
+     *
+     * @param string $key The key associated with the integration.
+     * @return bool
+     */
+    public static function has_integration($key);
 }

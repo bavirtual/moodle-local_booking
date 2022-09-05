@@ -31,7 +31,8 @@ use pdf;
 use assign;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
-use stdClass;
+use moodle_url;
+use stored_file;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -64,9 +65,19 @@ class pdf_report extends pdf {
     protected $fontfamily;
 
     /**
-     * @var arrau $titlebkgrnd Contains title cell RGB background colors.
+     * @var array $titlebkgrnd Contains title cell RGB background colors.
      */
     protected $titlebkgrnd;
+
+    /**
+     * @var string $title The report's title.
+     */
+    protected $title;
+
+    /**
+     * @var boolean $includevatsimlogo Wether to print the VATSIM logo on the report.
+     */
+    protected $includevatsimlogo;
 
     /**
      * Constructor.
@@ -75,11 +86,18 @@ class pdf_report extends pdf {
      * @param student $student   The student for the report.
      * @param string $reporttype The report type.
      */
-    public function __construct(subscriber $course, student $student, string $reporttype) {
+    public function __construct(subscriber $course, student $student, string $reporttype, bool $includevatsimlogo = false) {
         parent::__construct('P', 'px');
 
+        // set report attributes
+        $this->course = $course;
+        $this->student = $student;
+        $this->reporttype = $reporttype;
+        $this->includevatsimlogo = $includevatsimlogo;
+        $this->title = $course->ato->name . ' ' . get_string($reporttype . 'report', 'local_booking');
+
         $this->fontfamily = 'helvetica';
-        $this->SetTitle($course->ato->name . ' ' . get_string($reporttype . 'report', 'local_booking'));
+        $this->SetTitle($this->title);
         $this->SetAuthor($course->ato->name);
         $this->SetCreator('local/booking/report.php');
         $this->SetKeywords(get_string('pluginname', 'local_booking') . ', PDF');
@@ -95,10 +113,6 @@ class pdf_report extends pdf {
         $this->setFooterMargin(50);
         $this->setFooterFont(array($this->fontfamily, '', 8));
 
-        // set report attributes
-        $this->course = $course;
-        $this->student = $student;
-        $this->reporttype = $reporttype;
     }
 
     /**
@@ -106,13 +120,19 @@ class pdf_report extends pdf {
      *
      */
     public function Header() {
-        global $PAGE;
+        global $PAGE, $CFG;
 
         parent::Header();
 
         // add the logo to the page header
         $logo = $PAGE->get_renderer('local_booking')->get_logo_url(null, 150);
         $this->Image($logo->out(false), 50, 34, 148, 18);
+
+        // add VATSIM logo
+        if ($this->includevatsimlogo) {
+            $vatsimlogo = new moodle_url($CFG->httpswwwroot .  '/local/booking/pix/vatsim_logo.png');
+            $this->Image($vatsimlogo->out(false), 408, 25, 148, 40);
+        }
     }
 
     /**
@@ -164,7 +184,8 @@ class pdf_report extends pdf {
     /**
      * Get the practical examination assignment feedback comment text.
      *
-     * @param int $exerciseid  The assignment id.
+     * @param  int $exerciseid  The assignment id.
+     * @return string
      */
     protected function get_feedback_text(int $exerciseid) {
 
@@ -198,4 +219,26 @@ class pdf_report extends pdf {
         // return the feedback comment text
         return $feedbackcomment->commenttext;
     }
+
+    /**
+     * Get the feedback file location.
+     *
+     * @return string $filepath
+     */
+    protected function get_feedback_filepath() {
+
+        // get the submitted evaluation file info from feedback file submission
+        $filerec = $this->course->get_feedback_file($this->student->get_id());
+        $file = new stored_file(get_file_storage(), (object) [
+            'contenthash' => $filerec->contenthash,
+            'filesize' => $filerec->filesize,
+        ]);
+
+        $fs = get_file_storage();
+        // $path = $fs->get_file_system()->filedir . '/' . substr($filehash, 0, 2) . '/' . substr($filehash, 2, 2) . '/' . $filehash;
+        $path = $fs->get_file_system()->get_local_path_from_storedfile($file);
+
+        return $path;
+    }
+
 }

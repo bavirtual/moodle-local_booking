@@ -167,6 +167,10 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true,
             ],
+            'route' => [
+                'type' => PARAM_RAW,
+                'optional' => true,
+            ],
             'landingsday' => [
                 'type' => PARAM_TEXT,
                 'optional' => true,
@@ -284,11 +288,13 @@ class logentry_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
+        global $COURSE;
+
         $exerciseid = !empty($this->logentry) ? $this->logentry->get_exerciseid() : $this->data['exerciseid'];
         $flightdate = !empty($this->logentry) ? $this->logentry->get_flightdate($this->data['view'] == 'summary') : $this->data['flightdate'];
         $p1id = !empty($this->logentry) ? $this->logentry->get_p1id() : $this->data['p1id'];
         $p2id = !empty($this->logentry) ? $this->logentry->get_p2id() : $this->data['p2id'];
-        $sectionname = !empty($this->logentry) ? '' : subscriber::get_section_name($this->data['courseid'], $exerciseid);
+        $sectionname = !empty($this->logentry) ? '' : array_values($COURSE->subscriber->get_section($exerciseid))[1];
         $dualops = $this->data['trainingtype'] == 'Dual';
         $haspictime = !empty($this->logentry) ? !empty($this->logentry->get_pictime()) : false;
         $flighttype = !empty($this->logentry) ? $this->logentry->get_flighttype() : 'training';

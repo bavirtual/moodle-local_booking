@@ -25,12 +25,9 @@
 
 namespace local_booking\local\report;
 
-require_once($CFG->dirroot . '/mod/assign/locallib.php');
-
 use DateTime;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\participant\entities\instructor;
-use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 

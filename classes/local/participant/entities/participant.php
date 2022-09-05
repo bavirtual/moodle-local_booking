@@ -90,7 +90,7 @@ class participant implements participant_interface {
     /**
      * @var bool $is_active The participant is active.
      */
-    protected $is_active;
+    protected $is_active = false;
 
     /**
      * @var bool $status The participant's enrolment status.
@@ -114,7 +114,6 @@ class participant implements participant_interface {
      * @param int $userid The user id.
      */
     public function __construct(subscriber $course, int $userid) {
-        global $PAGE;
 
         $this->vault = new participant_vault();
         $this->course = $course;
@@ -274,8 +273,7 @@ class participant implements participant_interface {
      * @return string   The participant callsign
      */
     public function get_simulator() {
-        $this->simulator = $this->simulator ?: participant_vault::get_customfield_data($this->course->get_id(), $this->userid, 'simulator');
-        return $this->simulator;
+        return $this->get_profile_field('simulator');
     }
 
     /**
@@ -284,21 +282,24 @@ class participant implements participant_interface {
      * @return string   The participant callsign
      */
     public function get_callsign() {
-        $this->callsign = empty($this->callsign) ? participant_vault::get_customfield_data($this->course->get_id(), $this->userid, 'callsign') : $this->callsign;
-        return $this->callsign;
+        return $this->get_profile_field('callsign');
     }
 
     /**
      * Returns a participant's user profile field
      *
-     * @param string    The name of the field
-     * @return string   The participant custom field
+     * @param string $field     The name of the field
+     * @param bool   $corefield Whether the field is a core Moodle field
+     * @return string           The participant custom field
      */
-    public function get_profile_field(string $field) {
+    public function get_profile_field(string $field, bool $corefield = false) {
         $u = \core_user::get_user($this->userid);
-        profile_load_data($u);
-        $fld = 'profile_field_' . $field;
-        return $u->$fld;
+
+        if (!$corefield) {
+            profile_load_data($u);
+            $fld = 'profile_field_' . $field;
+        }
+        return $corefield ? $u->$field : $u->$fld;
     }
 
     /**

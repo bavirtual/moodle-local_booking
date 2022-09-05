@@ -94,4 +94,12 @@ $messageproviders = array(
             'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
         ),
     ),
+
+    // Notify students and instructors of a student's graduation
+    'graduation_notification' => array(
+        'capability' => 'local/booking:studentnotification',
+        'defaults' => array(
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+        ),
+    ),
 );

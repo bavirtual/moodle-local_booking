@@ -55,52 +55,44 @@ class subscriber_vault implements subscriber_vault_interface {
     const DB_COURSE_SECTIONS = 'course_sections';
 
     /**
+     * Process course sections table name.
+     */
+    const DB_FILES = 'files';
+
+    /**
      * Returns the course section name containing the exercise
      *
      * @param int $courseid The course id of the section
      * @param int $exerciseid The exercise id in the course inside the section
-     * @return string  The section name of a course associated with the exercise
+     * @return array  The section name of a course associated with the exercise
      */
-    public static function get_subscriber_section_name(int $courseid, int $exerciseid) {
+    public static function get_subscriber_section(int $courseid, int $exerciseid) {
         global $DB;
+        $result = [0,0];
 
         // Get the full user name
-        $sql = 'SELECT name as sectionname
+        $sql = 'SELECT cs.id as sectionid, cs.name as sectionname
                 FROM {' . self::DB_COURSE_SECTIONS . '} cs
                 INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.section = cs.id
                 WHERE cm.id = ' . $exerciseid . '
+                AND cm.deletioninprogress = 0
                 AND cm.course = ' . $courseid;
 
         $section = $DB->get_record_sql($sql);
 
-        return $section->sectionname;
+        return [$section->sectionid, $section->sectionname];
     }
 
     /**
      * Retrieves exercises for the course
      *
      * @param int $courseid                  The course id of the section
-     * @param string $$skilltestexercisename The skill test exercise id required
-     *                                       to skip skill test assessment assignments
      * @return array
      */
-    public static function get_subscriber_exercises(int $courseid, string $skilltestexercisename) {
+    public static function get_subscriber_exercises(int $courseid) {
         global $DB;
 
-        // to eliminate final assessment exercises from showing in the Session Booking grid,
-        // get the final exam and eliminate exericses after it in the section sequence
-        $graduationexerciseid = self::get_subscriber_exercise_by_name($courseid, $skilltestexercisename);
-
-        // get the sequence for the final exam section and exclude assessment exercises
-        $sql = 'SELECT cs.sequence FROM {' . self::DB_COURSE_SECTIONS . '} cs
-                INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.section = cs.id
-                WHERE cm.course = :courseid AND cm.id = :moduleid';
-        $rec = $DB->get_records_sql($sql, ['courseid'=>$courseid, 'moduleid'=>$graduationexerciseid]);
-        $sequence = explode(',', (array_values($rec)[0])->sequence);
-        $excludesequence = array_slice($sequence, array_search($graduationexerciseid, $sequence) + 1);
-
         // get assignments for this course based on sorted course topic sections
-        // exclude final exercise skill test assessment section
         $sql = 'SELECT cm.id AS exerciseid, a.name AS exercisename,
                 q.name AS exam, m.name AS modulename
                 FROM {' . self::DB_COURSE_MODULES . '} cm
@@ -109,16 +101,16 @@ class subscriber_vault implements subscriber_vault_interface {
                 LEFT JOIN {' . self::DB_ASSIGN . '} a ON a.id = cm.instance
                 LEFT JOIN {' . self::DB_QUIZ . '} q ON q.id = cm.instance
                 WHERE cm.course = :courseid
+                    AND cm.deletioninprogress = 0
                     AND (m.name = :assign
-                        OR m.name = :quiz) ' . (!empty($excludesequence) ?
-                    'AND (cm.id NOT IN (' . implode(',', $excludesequence) . '))' : '') . '
+                        OR m.name = :quiz)
+                    AND deletioninprogress = 0
                     ORDER BY cs.section, cm.id;';
 
         $params = [
             'courseid'         => $courseid,
             'assign'           => 'assign',
-            'quiz'             => 'quiz',
-            'skilltestexercise'=> $graduationexerciseid
+            'quiz'             => 'quiz'
         ];
         $recs = $DB->get_records_sql($sql, $params);
         return $recs;
@@ -138,7 +130,8 @@ class subscriber_vault implements subscriber_vault_interface {
         $sql = 'SELECT a.name AS exercisename
                 FROM {' . self::DB_ASSIGN . '} a
                 INNER JOIN {' . self::DB_COURSE_MODULES . '} cm on a.id = cm.instance
-                WHERE cm.id = :exerciseid;';
+                WHERE cm.id = :exerciseid
+                AND deletioninprogress = 0;';
 
         $param = ['exerciseid'=>$exerciseid];
 
@@ -161,6 +154,7 @@ class subscriber_vault implements subscriber_vault_interface {
             INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.instance = a.id
             INNER JOIN {' . self::DB_MODULES . '} m ON m.id = cm.module
             WHERE cm.course = :courseid
+            AND cm.deletioninprogress = 0
             AND m.name = :assign
             AND a.name = :exercisename';
 
@@ -178,20 +172,45 @@ class subscriber_vault implements subscriber_vault_interface {
     public static function get_subscriber_last_exercise(int $courseid) {
         global $DB;
 
+        $exerciseid = 0;
+
         // Get the exercise id of the course based on the graduation exercise name
-        $sql = 'SELECT cm.id AS exerciseid
-            FROM {' . self::DB_ASSIGN . '} a
-            INNER JOIN {' . self::DB_COURSE_MODULES . '} cm ON cm.instance = a.id
+        $sql = 'SELECT cs.sequence
+            FROM {' . self::DB_COURSE_MODULES . '} cm
             INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
             INNER JOIN {' . self::DB_MODULES . '} m ON m.id = cm.module
             WHERE cm.course = :courseid
+            AND cm.deletioninprogress = 0
             AND m.name = :assign
             ORDER BY cs.section DESC
             LIMIT 1';
 
-        $exercises = $DB->get_record_sql($sql, ['courseid' => $courseid, 'assign' => 'assign']);
+        $section = $DB->get_record_sql($sql, ['courseid' => $courseid, 'assign' => 'assign']);
 
-        return !empty($exercises) ? $exercises->exerciseid : 0;
+        // get the last exercise in the section's sequence of exercises
+        if (!empty($section)) {
+
+            $sequence = explode(',', $section->sequence);
+
+            // handle course modules being deleted
+            $sql = 'SELECT cm.id AS deletedid
+                FROM {' . self::DB_COURSE_MODULES . '} cm
+                INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
+                INNER JOIN {' . self::DB_MODULES . '} m ON m.id = cm.module
+                WHERE cm.course = :courseid
+                AND cm.deletioninprogress != 0
+                AND m.name = :assign';
+
+            $deleted = $DB->get_records_sql($sql, ['courseid' => $courseid, 'assign' => 'assign']);
+            $deletedmods = array_keys($deleted);
+
+            if (!empty($deletedmods))
+                $exerciseid = array_values(array_diff($sequence, $deletedmods))[0];
+            else
+                $exerciseid = end($sequence);
+        }
+
+        return $exerciseid;
     }
 
     /**
@@ -208,10 +227,41 @@ class subscriber_vault implements subscriber_vault_interface {
                 FROM {' . self::DB_MODULES . '} m
                 INNER JOIN {' . self::DB_COURSE_MODULES . '} cm on m.id = cm.module
                 WHERE cm.course = :courseid
+                    AND cm.deletioninprogress = 0
                     AND m.name = :lesson
                 ';
 
 
         return $DB->get_record_sql($sql, ['courseid' => $courseid, 'lesson' => 'lesson', ])->modules;
+    }
+
+    /**
+     * Returns the first file stored for the context id and grade id (itemid)
+     *
+     * @param int $contextid The context id for the exercise (assignment)
+     * @param int $itemid    The context id for the exercise (assignment)
+     * @return object  The file record
+     */
+    public static function get_file_info(int $contextid, int $itemid) {
+        global $DB;
+
+        // Get the full user name
+        $sql = 'SELECT * FROM {' . self::DB_FILES . '}
+                WHERE
+                    contextid = :contextid AND
+                    itemid = :itemid AND
+                    component = :component AND
+                    filearea = :filearea AND
+                    filesize > 0
+                LIMIT 1';
+
+        $params = [
+            'contextid' => $contextid,
+            'itemid'    => $itemid,
+            'component' => 'assignfeedback_file',
+            'filearea'  => 'feedback_files'
+        ];
+
+        return $DB->get_record_sql($sql, $params);
     }
 }

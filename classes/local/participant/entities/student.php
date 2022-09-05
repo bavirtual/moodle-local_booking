@@ -27,6 +27,7 @@ namespace local_booking\local\participant\entities;
 
 require_once($CFG->libdir . '/grade/grade_scale.php');
 
+use assign;
 use DateTime;
 use moodle_exception;
 use local_booking\local\session\entities\priority;
@@ -35,6 +36,7 @@ use local_booking\local\session\entities\grade;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\slot\entities\slot;
 use local_booking\local\subscriber\entities\subscriber;
+use mod_assign_external;
 
 class student extends participant {
 
@@ -107,6 +109,16 @@ class student extends participant {
      * @var boolean $lessonsecomplete Whether the student completed all pending lessons.
      */
     protected $lessonsecomplete;
+
+    /**
+     * @var boolean $courseworkcomplete Whether the student completed all course work including lessons.
+     */
+    protected $courseworkcomplete;
+
+    /**
+     * @var boolean $evaluated Whether the student was evaluated for the skill test after completion.
+     */
+    protected $evaluated;
 
     /**
      * Constructor.
@@ -217,6 +229,7 @@ class student extends participant {
      * @return {object}[] The student grades.
      */
     public function get_grades() {
+
         if (empty($this->grades)) {
             // join both graded assignments and attempted quizes into one grades array
             $this->exercises = $this->vault->get_student_exercises_grades($this->course->get_id(), $this->userid);
@@ -228,11 +241,29 @@ class student extends participant {
     }
 
     /**
+     * Get student grade for a specific exercise.
+     *
+     * @return grade The student exercise grade.
+     */
+    public function get_grade(int $exerciseid) {
+
+        $grade = null;
+        if (!empty($this->grades) && array_search($exerciseid, array_column($this->grades, 'exerciseid'))) {
+            $grade = new grade($this->grades[$exerciseid], $this->userid);
+        } else {
+            $grade = new grade($this->vault->get_student_exercises_grade($this->course->get_id(), $this->userid, $exerciseid), $this->userid);
+        }
+
+        return $grade;
+    }
+
+    /**
      * Return student slots for a particular week/year.
      *
      * @return array array of days
      */
     public function get_slots($weekno, $year) {
+
         if (empty($this->slots)) {
             $this->slots = slot_vault::get_slots($this->userid, $weekno, $year);
 
@@ -338,20 +369,36 @@ class student extends participant {
     }
 
     /**
-     * Returns the next or current upcoming exercise id and section
-     * for the student and its associated course section.
+     * Returns the current exercise id for the student.
      *
      * @param bool $next  Whether to get the next exercise or current, default is next exercise
-     * @return array The current or next exercise id and associated course section
+     * @return int The current exercise id
      */
-    public function get_exercise(bool $next = true) {
-        $exercise = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, $next);
-        if ($next) {
-            $this->nextexercise = $exercise;
-        } else {
-            $this->currentexercise = $exercise;
+    public function get_current_exercise() {
+
+        if (empty($this->currentexercise)) {
+
+            $this->currentexercise = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, false);
+
+            // check for newly enrolled student
+            if ($this->currentexercise == 0)
+                $this->currentexercise = array_values($this->course->get_exercises())[0]->exerciseid;
         }
-        return $exercise;
+
+        return $this->currentexercise;
+    }
+
+    /**
+     * Returns the next exercise id for the student.
+     *
+     * @return int The next exercise id
+     */
+    public function get_next_exercise() {
+
+        if (empty($this->nextexercise))
+            $this->nextexercise = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, true);
+
+        return $this->nextexercise;
     }
 
     /**
@@ -370,9 +417,11 @@ class student extends participant {
      * @return priority The student's priority object
      */
     public function get_priority() {
+
         if (empty($this->priority)) {
             $this->priority = new priority($this->course->get_id(), $this->userid);
         }
+
         return $this->priority;
     }
 
@@ -382,8 +431,10 @@ class student extends participant {
      * @return int The number of active posts
      */
     public function get_total_posts() {
+
         if (empty($this->total_posts))
             $this->total_posts = slot_vault::get_slot_count($this->course->get_id(), $this->userid);
+
         return $this->total_posts;
     }
 
@@ -395,19 +446,12 @@ class student extends participant {
      */
     public function get_last_grade() {
         $grade = null;
+
         if (count($this->exercises) > 0) {
             $lastgrade = end($this->exercises);
-            $grade = new grade(
-                    $lastgrade->exerciseid,
-                    'assign',
-                    $lastgrade->instructorid,
-                    $lastgrade->instructorname,
-                    $this->userid,
-                    $this->fullname,
-                    $lastgrade->gradedate,
-                    $lastgrade->grade,
-                    $lastgrade->totalgrade);
+            $grade = new grade($lastgrade, $this->userid);
         }
+
         return $grade;
     }
 
@@ -417,43 +461,6 @@ class student extends participant {
      */
     public function get_last_booking() {
         return slot::get_last_booking($this->course->get_id(), $this->userid);
-    }
-
-    /**
-     * Get the skill test assessment including sections' exercises.
-     *
-     */
-    public function get_skilltest_assessment() {
-        $skilltestexerciseid = $this->course->get_graduation_exercise();
-        $skilltestsecname = $this->course->get_section_name($this->course->get_id(), $skilltestexerciseid);
-
-        // get skill test main assignments (sections) for the assessment
-        $sections = $this->vault->get_student_skilltest_assessment($this->course->get_id(), $this->userid, $skilltestsecname);
-        $scales = \grade_scale::fetch_all_local($this->course->get_id());
-
-        // get subsections (rubrics) for each section
-        $maxsubsections = 0;
-        foreach ($sections as $section) {
-
-            // get rubric (scale empty) otherwise update grade
-            if (empty($section->scaleid)) {
-
-                $subsections = $this->vault->get_student_skilltest_subsections($this->userid, $section->assignid);
-
-                // assign subsections back to the section
-                $section->subsections = $subsections;
-                $maxsubsections = max($maxsubsections, count($subsections));
-
-            } else {
-                // get the grade from the scale definitions
-                if (!empty($scales)) {
-                    $scaledefs = explode(',', $scales[$section->scaleid]->scale);
-                    $section->grade = trim($scaledefs[intval($section->grade)-1]);
-                }
-            }
-        }
-
-        return [$sections, $maxsubsections];
     }
 
     /**
@@ -475,7 +482,7 @@ class student extends participant {
     }
 
     /**
-     * Returns whether the student complete
+     * Returns whether the student completed
      * all lessons prior to the upcoming next
      * exercise.
      *
@@ -484,13 +491,53 @@ class student extends participant {
     public function has_completed_lessons() {
 
         if (!isset($this->lessonsecomplete)) {
-            if (empty($this->nextexercise))
-                $this->nextexercise = $this->get_exercise(true);
-            list($exerciseid, $section) = $this->nextexercise;
-            $this->lessonsecomplete = !empty($this->nextexercise) ? $this->vault->get_student_lessons_complete($this->userid, $this->course->get_id(), $section, $exerciseid) : false;
+
+            // check if the student is not graduating
+            if (!$this->has_completed_coursework()) {
+
+                // exercise associated withe completed lessons depends on whether the student passed the current exercise
+                $exerciseid = ($this->get_grade($this->get_current_exercise())->is_passinggrade()) ? $this->get_next_exercise() : $this->get_current_exercise();
+
+                // get lessons complete
+                $this->lessonsecomplete = $this->vault->is_student_lessons_complete($this->userid, $this->course->get_id(), $exerciseid);
+            } else {
+                $this->lessonsecomplete = true;
+            }
         }
 
         return $this->lessonsecomplete;
+    }
+
+    /**
+     * Returns whether the student completed
+     * all course work including skill test.
+     *
+     * @return  bool    Whether the course work has been completed.
+     */
+    public function has_completed_coursework(grade $grade = null) {
+
+        if (!isset($this->courseworkcomplete)) {
+            $this->courseworkcomplete = !empty($this->get_grade($this->course->get_graduation_exercise())->get_finalgrade());
+        }
+
+        return $this->courseworkcomplete;
+    }
+
+    /**
+     * Returns whether the student has been evaluated
+     * where by the evaluation form is uploaded to
+     * the feedback file submission of the skill test exercise.
+     *
+     * @return  bool    Whether the student has been evaluated.
+     */
+    public function evaluated() {
+
+        if (!isset($this->evaluated)) {
+            $this->evaluated = !empty($this->course->get_feedback_file($this->userid));
+        }
+
+        // return whethere there are feedback files
+        return $this->evaluated;
     }
 
     /**

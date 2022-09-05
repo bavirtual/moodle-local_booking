@@ -180,7 +180,7 @@ class booking_session_exporter extends exporter {
         $return = [];
 
         // get student posts
-        list($nextexercise, $exercisesection) = $this->student->get_exercise(true);
+        $nextexercise = $this->student->get_next_exercise();
         $noposts = $nextexercise == $this->data['exerciseid'] && $this->student->get_total_posts() == 0 &&
             $this->student->has_completed_lessons() ? get_string('bookingnoposts', 'local_booking') : '';
 
@@ -288,20 +288,12 @@ class booking_session_exporter extends exporter {
      * @return grade $grade The grade object for the session
      */
     protected function find_grade($grades, $exerciseid) {
+
         $grade = null;
         // Get student's grade for this session if available
         if (count($grades) > 0) {
             if (array_search($exerciseid, array_column($grades, 'exerciseid')) !== false) {
-                $grade = new grade(
-                        $exerciseid,
-                        $grades[$exerciseid]->exercisetype,
-                        $grades[$exerciseid]->instructorid,
-                        $grades[$exerciseid]->instructorname,
-                        $this->student->get_id(),
-                        $this->student->get_name(),
-                        $grades[$exerciseid]->gradedate,
-                        $grades[$exerciseid]->grade,
-                        $grades[$exerciseid]->totalgrade);
+                $grade = new grade($grades[$exerciseid], $this->student->get_id());
             }
         }
         return $grade;

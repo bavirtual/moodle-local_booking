@@ -161,6 +161,9 @@ class create extends \moodleform {
             'ME'=>get_string('logbookmedesc', 'local_booking')
             ], $this->get_enginetype($subscriber)), false);
         $this->add_element($mform, 'nighttime', null, false);
+        // add route
+        $this->add_element($mform, 'route', null, false);
+
         // add landings elements for new and edit logentries
         $this->add_element($mform, 'landingsp1', null, false);
         if ($newlogentry)
@@ -402,9 +405,17 @@ class create extends \moodleform {
                     $mform->setAdvanced('callsign');
                 break;
 
+            case 'route':
+                // Route advanced element
+                $mform->addElement('textarea', 'route', get_string('route', "local_booking"), 'wrap="virtual" rows="5" cols="50"');
+                $mform->setType('route', PARAM_TEXT);
+                if (!$maindisplay)
+                    $mform->setAdvanced('route');
+                break;
+
             case 'remarks':
                 // Remarks advanced element
-                $mform->addElement('textarea', 'remarks', get_string("remarks", "local_booking"), 'wrap="virtual" rows="20" cols="50"');
+                $mform->addElement('textarea', 'remarks', get_string('remarks', "local_booking"), 'wrap="virtual" rows="20" cols="50"');
                 $mform->setType('remarks', PARAM_TEXT);
                 if (!$maindisplay)
                     $mform->setAdvanced('remarks');

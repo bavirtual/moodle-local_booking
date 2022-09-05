@@ -25,8 +25,6 @@
 
 namespace local_booking\local\report;
 
-require_once($CFG->dirroot . '/mod/assign/locallib.php');
-
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 

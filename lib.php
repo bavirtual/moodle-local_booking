@@ -135,7 +135,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
     if (empty($COURSE->subscriber))
         $COURSE->subscriber = new subscriber($courseid);
 
-        if ($COURSE->subscriber->subscribed) {
+    if ($COURSE->subscriber->subscribed) {
         // for checking if the participant is active
         $participant = $COURSE->subscriber->get_participant($USER->id);
 
@@ -289,14 +289,15 @@ function local_booking_output_fragment_logentry_form($args) {
 function local_booking_get_fontawesome_icon_map() {
     return [
         'local_booking:availability' => 'fa-calendar-plus-o',
+        'local_booking:book' => 'fa-plane',
         'local_booking:booking' => 'fa-plane',
+        'local_booking:certify' => 'fa-graduation-cap',
         'local_booking:check' => 'fa-check',
         'local_booking:copy' => 'fa-copy',
+        'local_booking:grade' => 'fa-pencil-square',
         'local_booking:info-circle' => 'fa-info-circle',
         'local_booking:logbook' => 'fa-address-book-o',
         'local_booking:paste' => 'fa-paste',
-        'local_booking:pencil-square' => 'fa-pencil-square',
-        'local_booking:plane' => 'fa-plane',
         'local_booking:plus-square' => 'fa-plus-square',
         'local_booking:question-circle' => 'fa-question-circle',
         'local_booking:save' => 'fa-save',
@@ -741,28 +742,15 @@ function set_user_prefs($preference, $value, $courseid, $studentid) {
 }
 
 /**
- * Respond to submission graded events
+ * Respond to submission graded events by deactivating the active booking.
  *
  */
 function process_submission_graded_event($courseid, $studentid, $exerciseid) {
-    global $COURSE;
-
-    // define subscriber globally
-    if (empty($COURSE->subscriber))
-        $COURSE->subscriber = new subscriber($courseid);
-
     $booking = new booking(0, $courseid, $studentid, $exerciseid);
-
     $booking->load();
-
     // update the booking status from active to inactive
-    $booking->deactivate();
-
-    // add student to graduates group if exercise is the course graduation exam
-    if ($exerciseid == $COURSE->subscriber->get_graduation_exercise()) {
-        $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_GRADUATESGROUP);
-        groups_add_member($groupid, $studentid);
-    }
+    if ($booking->active())
+        $booking->deactivate();
 }
 
 /**

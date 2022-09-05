@@ -393,6 +393,32 @@ class notification extends \core\message\message {
     }
 
     /**
+     * Sends an email notifying the students and instructors
+     * of a newly graduating student.
+     *
+     * @param array     $coursemembers  A list of all course members.
+     * @param array     $data data tags.
+     * @return bool     The notification message id.
+     */
+    public function send_graduation_notification($coursemembers, array $data) {
+
+        $result = true;
+
+        foreach ($coursemembers as $coursemember) {
+            $msg = new notification();
+            $msg->name              = 'graduation_notification';
+            $msg->userto            = $coursemember->get_id();
+            $msg->subject           = get_string('emailgraduationnotify', 'local_booking', $data);
+            $msg->fullmessage       = get_string('emailgraduationnotifyymsg', 'local_booking', $data);
+            $msg->fullmessagehtml   = get_string('emailgraduationnotifyhtml', 'local_booking', $data);
+
+            $result = $result && (message_send($msg) != 0);
+        }
+
+        return $result;
+    }
+
+    /**
      * Copies the instructor on communications.
      *
      * @param string    $msgid the message id string.

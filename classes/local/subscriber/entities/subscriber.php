@@ -26,8 +26,10 @@
 namespace local_booking\local\subscriber\entities;
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
+require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once($CFG->dirroot . '/group/lib.php');
 
+use assign;
 use local_booking\local\subscriber\data_access\subscriber_vault;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\participant\entities\instructor;
@@ -80,6 +82,16 @@ class subscriber implements subscriber_interface {
     protected $activeinstructors;
 
     /**
+     * @var int $graduationexercise The exercise id for graduations. Assumes it's the last.
+     */
+    protected $graduationexercise;
+
+    /**
+     * @var array $exercises The subscribing course's exercises.
+     */
+    protected $exercises = [];
+
+    /**
      * Constructor.
      *
      * @param string $courseid  The description's value.
@@ -125,6 +137,7 @@ class subscriber implements subscriber_interface {
             }
         }
 
+        // verify that the subscribing course has needed course groups for Session Booking
         if ($this->subscribed)
             // verify groups exist
             if (!$this->verify_groups())
@@ -308,14 +321,13 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Returns the subscribed course section name containing the exercise
+     * Returns the subscribed course section id and name that contains the exercise
      *
-     * @param int $courseid The course id of the section
      * @param int $exerciseid The exercise id in the course inside the section
-     * @return string  The section name of a course associated with the exercise
+     * @return array  The section name of a course associated with the exercise
      */
-    public static function get_section_name(int $courseid, int $exerciseid) {
-        return subscriber_vault::get_subscriber_section_name($courseid, $exerciseid);
+    public function get_section(int $exerciseid) {
+        return subscriber_vault::get_subscriber_section($this->courseid, $exerciseid);
     }
 
     /**
@@ -326,13 +338,12 @@ class subscriber implements subscriber_interface {
      * @return int The last exericse id
      */
     public function get_graduation_exercise() {
-        $exerciseid = subscriber_vault::get_subscriber_exercise_by_name($this->courseid, $this->skilltestexercise);
 
         // check if there is an exercise specified in the settings otherwise default to last exercise
-        if (empty($exerciseid))
-            $exerciseid = subscriber_vault::get_subscriber_last_exercise($this->courseid);
+        if (!isset($this->graduationexercise))
+            $this->graduationexercise = subscriber_vault::get_subscriber_last_exercise($this->courseid);
 
-        return $exerciseid;
+        return $this->graduationexercise;
     }
 
     /**
@@ -341,23 +352,27 @@ class subscriber implements subscriber_interface {
      * @return array
      */
     public function get_exercises() {
-        $exercises = [];
 
-        $exerciserecs = subscriber_vault::get_subscriber_exercises($this->courseid, $this->skilltestexercise);
+        // check if exercises are already loaded
+        if (count($this->exercises) == 0) {
 
-        foreach ($exerciserecs as $exerciserec) {
-            $exerciseitem = $exerciserec->modulename == 'assign' ? (object) [
-                'exerciseid'    => $exerciserec->exerciseid,
-                'exercisename'  => $exerciserec->exercisename
-            ] : (object) [
-                'exerciseid'    => $exerciserec->exerciseid,
-                'exercisename'  => $exerciserec->exam
-            ];
+            $exerciserecs = subscriber_vault::get_subscriber_exercises($this->courseid);
 
-            $exercises[$exerciserec->exerciseid] = $exerciseitem;
+            foreach ($exerciserecs as $exerciserec) {
+                $exerciseitem = $exerciserec->modulename == 'assign' ? (object) [
+                    'exerciseid'    => $exerciserec->exerciseid,
+                    'exercisename'  => $exerciserec->exercisename
+                ] : (object) [
+                    'exerciseid'    => $exerciserec->exerciseid,
+                    'exercisename'  => $exerciserec->exam
+                ];
+                $exerciseitem->exercisetype = $exerciserec->modulename;
+
+                $this->exercises[$exerciserec->exerciseid] = $exerciseitem;
+            }
         }
 
-        return $exercises;
+        return $this->exercises;
     }
 
     /**
@@ -367,7 +382,7 @@ class subscriber implements subscriber_interface {
      * @param int $exerciseid The exercise id.
      * @return string
      */
-    public static function get_exercise_name($exerciseid) {
+    public static function get_exercise_name(int $exerciseid) {
         return subscriber_vault::get_subscriber_exercise_name($exerciseid);
     }
 
@@ -381,15 +396,29 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Checks if there is a database integration
-     * for the specified passed key.
+     * Retrieves the path for the graduation exercise's evaluation form file submission.
      *
-     * @param string $key The key associated with the integration.
-     * @return bool
+     * @param  int      The student id with the file submission
+     * @return object
      */
-    public static function has_integration($key) {
-        $integrations = get_booking_config('integrations');
-        return !empty($integrations->$key->enabled);
+    public function get_feedback_file(int $studentid) {
+
+        // get course and associate module to find the practical exam skill test assignment
+        list ($course, $cm) = get_course_and_cm_from_cmid($this->get_graduation_exercise(), 'assign');
+
+        // set context for the module and other requirements by the assignment
+        $context = \context_module::instance($cm->id);
+
+        // get the practical exam assignment to get the associated feedback file
+        $assign = new assign($context, $cm, $course);
+
+        // get the grade associated with the assignment
+        $grade = $assign->get_user_grade($studentid, false, 0);
+
+        // get the file name
+        $file = subscriber_vault::get_file_info($context->id, $grade->id);
+
+        return $file;
     }
 
     /**
@@ -432,6 +461,18 @@ class subscriber implements subscriber_interface {
         }
 
         return $record;
+    }
+
+    /**
+     * Checks if there is a database integration
+     * for the specified passed key.
+     *
+     * @param string $key The key associated with the integration.
+     * @return bool
+     */
+    public static function has_integration($key) {
+        $integrations = get_booking_config('integrations');
+        return !empty($integrations->$key->enabled);
     }
 
     /**

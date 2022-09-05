@@ -48,7 +48,7 @@ class action implements action_interface {
     /**
      * @var boolean $enabled The status of this action.
      */
-    protected $enabled;
+    protected $enabled = true;
 
     /**
      * @var url $url The name of this action.
@@ -73,70 +73,123 @@ class action implements action_interface {
     /**
      * Constructor.
      *
-     * @param event_interface  $event  The event to delegate to.
-     * @param action_interface $action The action associated with this event.
+     * @param subscriber $course     The subscribing course.
+     * @param student    $student    The student behind the action.
+     * @param string     $actiontype The type of action requested.
+     * @param int        $refid      The reference exercise id if available.
      */
-    public function __construct(string $actiontype, subscriber $course, student $student, int $exerciseid) {
-        $actionurl = null;
-        $name = '';
+    public function __construct(subscriber $course, student $student, string $actiontype, int $refid = 0) {
 
-        // Load student(s) availability slots
+        $enabled =  $student->is_active();
+        $tooltip = '';
+        $params = [];
+
+        // get the next student action if this is not a cancel booking action
         switch ($actiontype) {
-            case 'grade':
-                $actionurl = new moodle_url('/local/booking/assign.php', [
-                    'courseid' => $course->get_id(),
-                    'exeid' => $exerciseid,
-                    'userid' => $student->get_id(),
-                ]);
-                $name = get_string('grade', 'grades');
-                break;
+
+            // book action
             case 'book':
+
+                // check if the session to book is the next exercise after passing the current session or the same
+                $lastgrade = $student->get_last_grade();
+                $getnextexercise = (!empty($lastgrade) ? $lastgrade->is_passinggrade() : true);
+                $exerciseid = $getnextexercise ? $student->get_next_exercise() : $student->get_current_exercise();
+                $tooltip = get_string('actionbooksession', 'local_booking');
+
+                // get action enabled status by checking if there are more exercises to book and if instructor
+                // is an examiner in the case of graduation skill tests
+
+                // get action enabled status and tooltip
+                if (!$student->has_completed_lessons()) {
+
+                    $enabled = false;
+                    $tooltip = get_string('actiondisabledincompletelessonstooltip', 'local_booking');
+
+                // check if student completed all lessons (graduated)
+                } else if ($student->graduated()) {
+
+                    $enabled = false;
+                    $tooltip = get_string('actiondisabledexercisescompletedtooltip', 'local_booking');
+
+                // check if the user is an examiner when the student's next exercise is a final exam
+                } else if ($student->get_next_exercise() == $course->get_graduation_exercise()) {
+                    global $USER;
+
+                    $instructor = new instructor($course, $USER->id);
+                    $enabled = $instructor->is_examiner() && $student->is_active();
+                    $tooltip = !$this->enabled ? get_string('actiondisabledexaminersonlytooltip', 'local_booking') : '';
+
+                }
+
                 // Book action takes the instructor to the week of the firs slot or after waiting period
-                $actionurl = new moodle_url('/local/booking/view.php', [
-                    'courseid' => $course->get_id(),
+                $actionurl = '/local/booking/view.php';
+                $params = [
                     'exid'   => $exerciseid,
-                    'userid' => $student->get_id(),
                     'action' => 'confirm',
                     'view'   => 'user',
-                ]);
+                ];
                 $name = get_string('book', 'local_booking');
                 break;
-            case 'cancel':
-                $actionurl = new moodle_url('/local/booking/view.php', [
-                    'course' => $course->get_id(),
-                ]);
-                $name = get_string('bookingcancel', 'local_booking');
+
+            case 'grade':
+
+                // get exercise to be graded
+                $exerciseid = $student->get_next_exercise();
+
+                // set grading url
+                $actionurl = '/local/booking/assign.php';
+                $params = ['exeid' => $exerciseid];
+                $name = get_string('grade', 'grades');
+                $tooltip = get_string('actiongradesession', 'local_booking');
+
+                // check if the exercise to be graded is the final skill test or assessments
+                if ($student->has_completed_coursework() || $student->get_next_exercise() == $course->get_graduation_exercise()) {
+                    global $USER;
+                    $instructor = new instructor($course, $USER->id);
+                    $enabled =  $instructor->is_examiner();
+                    $tooltip = !$enabled ? get_string('actiondisabledexaminersonlytooltip', 'local_booking') : $tooltip;
+                }
                 break;
+
+            case 'certify':
+
+                // evaluate the student's next grading action, which will be 'grade' for exercises
+                // set url to the student's skill test form
+                $exerciseid = 0;
+                $actionurl = '/local/booking/certify.php';
+                $actiontype = 'certify';
+                $name = get_string('certify', 'local_booking');
+                $tooltip = get_string('actioncertifytooltip', 'local_booking', ['studentname'=>$student->get_name(false)]);
+
+                // check if the certifer is the examiner
+                if ($student->has_completed_coursework() || $student->get_current_exercise() == $course->get_graduation_exercise()) {
+                    global $USER;
+                    $examinerid = $student->get_grade($course->get_graduation_exercise())->get_graderid();
+                    $enabled =  $examinerid == $USER->id;
+                    $tooltip = !$enabled ? get_string('actiondisabledexaminersonlytooltip', 'local_booking') : $tooltip;
+                }
+                break;
+
+            case 'cancel':
+
+                // cancel action
+                $exerciseid = $refid;
+                $actiontype = 'cancel';
+                $actionurl = '/local/booking/view.php';
+                $name = get_string('bookingcancel', 'local_booking');
+                $tooltip = get_string('actioncancelsession', 'local_booking');
+                break;
+
         }
 
+        $params += ['courseid' => $course->get_id(), 'userid' => $student->get_id()];
+        $this->url = new moodle_url($actionurl, $params);
         $this->type = $actiontype;
-        $this->url = $actionurl;
         $this->name = $name;
         $this->exerciseid = $exerciseid;
-        $this->enabled = true;
-        $this->tooltip = '';
+        $this->enabled = $enabled;
+        $this->tooltip = $tooltip;
 
-        // get action enabled status
-        // check if the student to be book has incomplete lessons
-        if ($actiontype == 'book') {
-            if (!$student->has_completed_lessons()) {
-                $this->enabled = false;
-                $this->tooltip = get_string('actiondisabledincompletelessonstooltip', 'local_booking');
-
-            // check if student completed all lessons (graduated)
-            } else if ($student->graduated()) {
-                $this->enabled = false;
-                $this->tooltip = get_string('actiondisabledexercisescompletedtooltip', 'local_booking');
-
-            // check if the user is an examiner when the student's next exercise is a final exam
-            } else if (array_values($student->get_exercise(true))[0] == $course->get_graduation_exercise()) {
-                global $USER;
-
-                $instructor = new instructor($course, $USER->id);
-                $this->enabled = $instructor->is_examiner();
-                $this->tooltip = !$this->enabled ? get_string('actiondisabledexaminersonlytooltip', 'local_booking') : '';
-            }
-        }
     }
 
     /**

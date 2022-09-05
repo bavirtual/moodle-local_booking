@@ -152,6 +152,10 @@ class profile_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true
             ],
+            'graduationstatus' => [
+                'type' => PARAM_RAW,
+                'optional' => true,
+            ],
             'qualified' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
@@ -253,8 +257,8 @@ class profile_exporter extends exporter {
         $customfields = profile_user_record($this->user->get_id());
 
         // student current lesson
-        list($exerciseid, $currentsection) = $this->user->get_exercise(false);
-        $currentlesson = get_section_name($this->courseid, $currentsection);
+        $exerciseid = $this->user->get_current_exercise();
+        $currentlesson = array_values($COURSE->subscriber->get_section($exerciseid))[1];
 
         // module completion information
         $usermods = $this->user->get_priority()->get_completions();
@@ -267,10 +271,10 @@ class profile_exporter extends exporter {
 
         // qualified (next exercise is the course's last exercise) and tested status
         $grades = $this->user->get_exercises();
-        list($exerciseid, $currentsection) = $this->user->get_exercise();
+        $nextexerciseid = $this->user->get_next_exercise();
         $testexerciseid = $COURSE->subscriber->get_graduation_exercise();
         $tested = !empty($grades[$testexerciseid]);
-        $qualified = $exerciseid == $testexerciseid || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP) || $tested;
+        $qualified = $nextexerciseid == $testexerciseid || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP) || $tested;
         $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $this->user->get_id());
         $hasexams = count($this->user->get_quizes()) > 0;
 
@@ -297,6 +301,10 @@ class profile_exporter extends exporter {
         $lastlogindate = !empty($lastlogindate) ? $lastlogindate->format('M j\, Y') : '';
         $lastgradeddate = $this->user->get_last_graded_date();
         $lastgradeddate = !empty($lastgradeddate) ? $lastgradeddate->format('M j\, Y') : '';
+        if ($this->user->graduated())
+            $graduationstatus = get_string('graduated', 'local_booking') . ' ' .  $lastgradeddate;
+        else
+            $graduationstatus = $qualified ? get_string('qualified', 'local_booking') : get_string('notqualified', 'local_booking');
 
         // log in as url
         $loginas = new moodle_url('/course/loginas.php', [
@@ -375,6 +383,7 @@ class profile_exporter extends exporter {
             'lastgraded'               => $lastgradeddate,
             'lastlesson'               => $currentlesson,
             'lastlessoncompleted'      => $this->user->has_completed_lessons() ? get_string('yes') : get_string('no'),
+            'graduationstatus'         => $graduationstatus,
             'qualified'                => $qualified,
             'endorsed'                 => $endorsed,
             'endorser'                 => $USER->id,

@@ -184,7 +184,7 @@ class logbook implements logbook_interface {
      * Get the logbook entries time totals
      *
      * @param  bool $tostring The totals in string time format
-     * @return array          The logbook time table totals
+     * @return object         The logbook time table totals
      */
     public function get_summary(bool $tostring = false) {
         $totals = logbook_vault::get_logbook_summary($this->courseid, $this->userid);

@@ -25,6 +25,8 @@
 
 namespace local_booking\local\session\entities;
 
+use local_booking\local\participant\entities\participant;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -83,33 +85,19 @@ class grade implements grade_interface {
     /**
      * Constructor.
      *
-     * @param int       $graderid       The grader user id of this grade.
-     * @param string    $gradername     The grader name of this grade.
+     * @param {object}  $exercisegrade  The grader user id of this grade.
      * @param int       $studentid      The user id of the student of this grade.
-     * @param string    $studentname    The student name of this grade.
-     * @param int       $gradedate      The date of this grade.
-     * @param int       $grade          The final grade.
      */
-    public function __construct(
-        $exerciseid     = 0,
-        $exercisetype   = 'assign',
-        $graderid       = 0,
-        $gradername     = '',
-        $studentid      = 0,
-        $studentname    = '',
-        $gradedate      = 0,
-        $finalgrade     = 0,
-        $totalgrade     = 0
-        ) {
-        $this->exerciseid   = $exerciseid;
-        $this->exercisetype = $exercisetype;
-        $this->graderid     = $graderid;
-        $this->gradername   = $gradername;
+    public function __construct(object $exercisegrade, int $studentid) {
+        $this->exerciseid   = $exercisegrade->exerciseid;
+        $this->exercisetype = $exercisegrade->exercisetype;
+        $this->graderid     = $exercisegrade->instructorid;
+        $this->gradername   = $exercisegrade->instructorname;
         $this->studentid    = $studentid;
-        $this->studentname  = $studentname;
-        $this->gradedate    = $gradedate;
-        $this->finalgrade   = $finalgrade;
-        $this->totalgrade   = $totalgrade;
+        $this->studentname  = participant::get_fullname($studentid);
+        $this->gradedate    = $exercisegrade->gradedate;
+        $this->finalgrade   = $exercisegrade->grade;
+        $this->totalgrade   = $exercisegrade->totalgrade;
     }
 
     /**

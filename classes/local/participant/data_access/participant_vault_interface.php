@@ -131,16 +131,6 @@ interface participant_vault_interface {
     public static function get_participant_name(int $userid, bool $includealternate = true);
 
     /**
-     * Returns custom field value from the user's profile
-     *
-     * @param int $courseid         The course id
-     * @param int $participantid    The participant id
-     * @param string $field         The field name associated with the rquested data
-     * @return string               The full participatn username
-     */
-    public static function get_customfield_data(int $courseid, int $participantid, string $field);
-
-    /**
      * Returns the timestamp of the last
      * graded session.
      *
@@ -156,22 +146,20 @@ interface participant_vault_interface {
      * all sessons prior to the upcoming next
      * exercise.
      *
-     * @param   int     The student id
+     * @param   int     The student user id
      * @param   int     The course id
-     * @param   int     The next section id
      * @param   int     The next exercise id
      * @return  bool    Whether the lessones were completed or not.
      */
-    public function get_student_lessons_complete(int $userid, int $courseid, int $nextexercisesection, int $nextexercise);
+    public function is_student_lessons_complete(int $userid, int $courseid, int $nextexercise);
 
     /**
-     * Returns next or current upcoming exercise id
-     * for the student and its associated course section.
+     * Returns current or next upcoming exercise id for the student.
      *
      * @param   int     The course id
      * @param   int     The student id
      * @param   bool    Next or current exercise
-     * @return  array   The next exercise id and associated course section
+     * @return  int    The next exercise id
      */
     public function get_student_exercise($courseid, $studentid, $next = true);
 

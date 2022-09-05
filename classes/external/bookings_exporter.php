@@ -236,6 +236,13 @@ class bookings_exporter extends exporter {
 
         $titlevalue = array_values($COURSE->subscriber->exercisetitles);
         foreach($this->exercises as $exercise) {
+
+            // exclude quizes from interim booking view
+            if ($this->viewtype == 'confirm' && $exercise->exercisetype == 'quiz') {
+                $customtitle = array_shift($titlevalue);
+                continue;
+            }
+
             // break down each setting title by <br/> tag, until a better way is identified
             $customtitle = array_shift($titlevalue);
             $exercise->title = $customtitle ?: $exercise->exercisename;
@@ -250,7 +257,7 @@ class bookings_exporter extends exporter {
                 $this->viewtype != 'confirm' || $exercise->exerciseid != $COURSE->subscriber->get_graduation_exercise()) {
                     $exercisename = new exercise_name_exporter($data);
                     $exercisesexports[] = $exercisename->export($output);
-                }
+            }
         }
 
         return $exercisesexports;

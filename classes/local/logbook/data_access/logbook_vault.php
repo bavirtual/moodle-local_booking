@@ -58,7 +58,7 @@ class logbook_vault implements logbook_vault_interface {
         $logbookentries = [];
         $sql = 'SELECT lb.id, lb.courseid, lb.exerciseid, lb.userid, lb.pirep, lb.callsign,
                     lb.flighttype, lb.flightdate, lb.depicao, lb.deptime, lb.arricao, lb.arrtime,
-                    lb.aircraft, lb.aircraftreg, lb.enginetype, lb.multipilottime, lb.p1id, lb.p2id,
+                    lb.aircraft, lb.aircraftreg, lb.enginetype, lb.route, lb.multipilottime, lb.p1id, lb.p2id,
                     lb.landingsday, lb.landingsnight, lb.groundtime, lb.nighttime, lb.ifrtime,
                     lb.pictime, lb.copilottime, lb.dualtime, lb.instructortime, lb.picustime, lb.checkpilottime,
                     lb.fstd, lb.remarks, lb.linkedlogentryid, lb.createdby, lb.timecreated, lb.timemodified
@@ -67,6 +67,7 @@ class logbook_vault implements logbook_vault_interface {
                 INNER JOIN {' . self::DB_COURSE_SECTIONS . '} cs ON cs.id = cm.section
                 WHERE ' . $coursestatement . '
                     userid = :userid
+                    AND cm.deletioninprogress = 0
                 ORDER BY lb.flightdate DESC';
 
         $param = ['courseid'=>$courseid, 'userid'=>$userid];
@@ -288,6 +289,7 @@ class logbook_vault implements logbook_vault_interface {
                 INNER JOIN {' . self::DB_COURSE_MODULES .'} cm ON cm.id = l.exerciseid
                 INNER JOIN {' . self::DB_COURSE_SECTIONS .'} cs ON cs.id = cm.section
                 WHERE l.courseid = :courseid
+                AND cm.deletioninprogress = 0
                 AND l.userid = :userid
                 AND cs.section <= :section';
 
@@ -335,6 +337,7 @@ class logbook_vault implements logbook_vault_interface {
         $logentryobj->aircraft = $logentry->get_aircraft();
         $logentryobj->aircraftreg = $logentry->get_aircraftreg();
         $logentryobj->enginetype = $logentry->get_enginetype();
+        $logentryobj->route = $logentry->get_route();
         $logentryobj->landingsday = $logentry->get_landingsday();
         $logentryobj->landingsnight = $logentry->get_landingsnight();
         $logentryobj->nighttime = $logentry->get_nighttime();
@@ -385,6 +388,7 @@ class logbook_vault implements logbook_vault_interface {
             $logentry->set_aircraft($dataobj->aircraft);
             $logentry->set_aircraftreg($dataobj->aircraftreg);
             $logentry->set_enginetype($dataobj->enginetype);
+            $logentry->set_route($dataobj->route);
             $logentry->set_landingsday($dataobj->landingsday);
             $logentry->set_landingsnight($dataobj->landingsnight);
             $logentry->set_nighttime($dataobj->nighttime);

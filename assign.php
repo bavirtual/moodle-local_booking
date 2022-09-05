@@ -64,10 +64,10 @@ $prefs = array(
 set_user_preference('flextable_' . $uniqueid, json_encode($prefs));
 
 // redirect to the assignment feedback page, check for progressing/objective not met feedback
-$redirect_url = new moodle_url('/mod/assign/view.php', [
+$redirecturl = new moodle_url('/mod/assign/view.php', [
     'id' => $exerciseid,
     'rownum' => 0,
     'userid' => $studentid,
     'action' => ($sessionpassed ? 'grader' : 'grade'),
 ]);
-redirect($redirect_url);
+redirect($redirecturl);

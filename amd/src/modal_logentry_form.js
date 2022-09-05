@@ -516,6 +516,7 @@ define([
                         $('#id_aircraft').val(response.logentry.aircraft);
                         $('#id_aircraftreg').val(response.logentry.aircraftreg);
                         $('#id_enginetype').val(response.logentry.enginetype);
+                        $('#id_route').val(response.logentry.route);
                         $('#id_fstd').val(response.logentry.fstd);
                         if ($("input[name='flighttype']:checked").val() == 'check') {
                             $('#id_picustime').val(response.logentry.pictime);

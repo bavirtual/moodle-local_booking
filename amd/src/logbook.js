@@ -52,6 +52,7 @@ export const init = (root) => {
                 (logentry.enginetype == 'ME') ? 'X' : '',
                 (logentry.multipilot !== undefined ? logentry.multipilot : ''),
                 logentry.pictime,
+                logentry.route,
                 logentry.p1name,
                 logentry.landingsday,
                 logentry.landingsnight,
@@ -70,7 +71,7 @@ export const init = (root) => {
         // Define column constants
         const FLIGHTDATE = 0, DEPICAO = 1, DEPTIME = 2, ARRICAO = 3, ARRTIME = 4, AIRCRAFT = 5,
               AIRCRAFTREG = 6, ENGINETYPE_SE = 7, ENGINETYPE_ME = 8, MULTIPILOT = 9, TOTALTIME = 10,
-              P1NAME = 11, LANDINGSDAY = 12, LANDINGSNIGHT = 13, NIGHTTIME = 14, IFRTIME = 15,
+              P1NAME = 11, ROUTE = 22, LANDINGSDAY = 12, LANDINGSNIGHT = 13, NIGHTTIME = 14, IFRTIME = 15,
               PICTIME = 16, COPILOTTIME = 17, DUALTIME = 18, INSTTIME = 19, PICUSTIME = 20,
               FSTD = 21, REMARKS = 22;
 
@@ -91,6 +92,7 @@ export const init = (root) => {
                 {"width": "45px", "targets": MULTIPILOT}, // Column: multipilot
                 {"width": "45px", "targets": TOTALTIME}, // Column: totaltime
                 {"width": "160px", "targets": P1NAME}, // Column: p1name
+                {"width": "200px", "targets": ROUTE}, // Column: route
                 {"width": "35px", "className": "dt-center", "targets": LANDINGSDAY}, // Column: landingsday
                 {"width": "35px", "className": "dt-center", "targets": LANDINGSNIGHT}, // Column: landingsnight
                 {"width": "50px", "targets": NIGHTTIME}, // Column: nighttime

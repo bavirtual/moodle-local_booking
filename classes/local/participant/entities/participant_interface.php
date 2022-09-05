@@ -53,10 +53,11 @@ interface participant_interface {
     /**
      * Returns a participant's user profile field
      *
-     * @param string    The name of the field
-     * @return string   The participant custom field
+     * @param string $field     The name of the field
+     * @param bool   $corefield Whether the field is a core Moodle field
+     * @return string           The participant custom field
      */
-    public function get_profile_field(string $field);
+    public function get_profile_field(string $field, bool $corefield = false);
 
     /**
      * Set user name.

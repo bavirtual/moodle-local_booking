@@ -1,5 +1,29 @@
 # Change log
 
+## [2022090504] - RELEASED 2022-09-05 - hotfix
+
+### Fixed
+
+- Handling of course modules where deletion is in progress
+- Congratulations message formatting
+- Grading of final skill test exam is to be conducted by the examiner only
+- Excluded course modules with deletion in progress on from subscriber exercises list
+- Book button disabled for students with 'Objective Not Met' sessions although exercise prerequiste lessons are completed
+- Quizes (i.e. PoF) showing in interim booking page
+- Back button in student profile doesn't reload Session Booking
+
+### Added
+
+- Added certify capability to graduate a student sending badges, certificate, and message students broadcast
+
+### Changed
+
+- course subscriber section retrieval
+- student current & next exercise methods
+- removed assessment exercises and handling. Skill test assessments are submitted through the VATSIM from in exercise feedback file submission
+- updated action class behavior for Book, Grade, and Certify actions
+- course get_graduation exercise, last exercise in the course
+
 ## [2022073001] - RELEASED 2022-07-30 hotfix
 
 ### Fixed

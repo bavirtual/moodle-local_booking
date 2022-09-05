@@ -54,7 +54,7 @@ class booking_mybookings_exporter extends exporter {
 
         $booking = $data['booking'];
         $student = new student($COURSE->subscriber, $booking->get_studentid());
-        $action = new action('cancel', $COURSE->subscriber, $student, $booking->get_exerciseid());
+        $action = new action($COURSE->subscriber, $student, 'cancel', $booking->get_exerciseid());
         $sessiondate = new DateTime('@' . $booking->get_slot()->get_starttime());
 
         $data = [

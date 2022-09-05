@@ -75,8 +75,7 @@
                     <dl>
                         <dt>{{#str}} status {{/str}}</dt>
                         <dd>
-                            {{#qualified}}{{#str}} qualified , local_booking {{/str}}{{/qualified}}
-                            {{^qualified}}{{#str}} notqualified , local_booking {{/str}}{{/qualified}}
+                            {{graduationstatus}}
                         </dd>
                     </dl>
                     <dl>
@@ -171,7 +170,7 @@
         </div>
         <div class="bottom" style="text-align: center;">
             <div class="singlebutton">
-                <button type="button" onclick="window.history.back()"
+                <button type="button" onclick="location.href='{{url}}'"
                     class="session-button-confirm"
                     data-region="back-button"
                     id="back_button"

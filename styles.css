@@ -159,6 +159,12 @@
 .session-button-cancel:hover {
     background-color: #9b2828;
 }
+.session-button-certify {
+    background-color: black;
+}
+.session-button-certify:hover {
+    background-color: rgb(64, 63, 63);
+}
 .session-button-confirm {
     background-color: #1565c0;
     width: 100px;

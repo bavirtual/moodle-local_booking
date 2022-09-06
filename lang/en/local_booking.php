@@ -11,11 +11,12 @@
 // Booking
 $string['actionbooksession'] = 'Book session';
 $string['actioncancelsession'] = 'Cancel session';
-$string['actioncertifytooltip'] = 'Certify \'{$a->studentname} \' for graduation';
 $string['actiondisabledincompletelessonstooltip'] = 'The student has not completed prerequisite lesson module';
 $string['actiondisabledexaminersonlytooltip'] = 'Examiners only';
 $string['actiondisabledexercisescompletedtooltip'] = 'All exercises completed';
+$string['actionevaluatetooltip'] = 'Evaluate \'{$a->studentname}\' Skill Test';
 $string['actiongradesession'] = 'Grade session';
+$string['actiongraduatetooltip'] = 'Graduate \'{$a->studentname}\' from the course';
 $string['activestudents'] = 'Active students progression';
 $string['assess'] = 'Assess';
 $string['averagewaittime'] = 'Avg wait days';
@@ -57,7 +58,8 @@ $string['bookingsortbyavailability'] = 'availability';
 $string['bookingsortbyavailabilitytooltip'] = 'Sorts by students with availability posts, then no posts, then incomplete lessons';
 $string['booksave'] = 'Save Booking';
 $string['cancellationcomment'] = 'Please provide the student with a short comment on this cancellation:';
-$string['certify'] = 'Certify';
+$string['evaluate'] = 'Eval.';
+$string['graduate'] = 'Grad.';
 $string['configmissing'] = 'Failed to open {$a}';
 $string['crontask'] = 'Background processing for session booking';
 $string['customfielddual'] = 'Dual';
@@ -285,7 +287,7 @@ $string['graduated'] = 'Graduated';
 $string['endorsement'] = 'Skill Test Recommendation';
 $string['endorsementmgs'] = 'Recommended by {$a->endorser} on {$a->endorsedate}';
 $string['graduation'] = 'Graduation';
-$string['graduationconfirmation'] = '<p><strong>Process completed successfully...</strong></p><p>&nbsp;\'{$a->fullname}\' certification is complete and the following actions were performed:</p><ul>
+$string['graduationconfirmation'] = '<p><strong>Process completed successfully...</strong></p><p>&nbsp;\'{$a->fullname}\' graduation is complete and the following actions were performed:</p><ul>
     <li style="padding-bottom: 20px;"><strong>Badges</strong> for {$a->courseshortname} completion were generate and sent via email to {$a->firstname}.&nbsp; A copy of the badge generation was sent to you as well.</li>
     <li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to all course active members, both students and instructors.</li>
     <li style="padding-bottom: 20px;">{$a->firstname} has been added to the <strong>Graduates group</strong>.</li></ul>';
@@ -372,7 +374,9 @@ $string['theoryexamreportsubject'] = 'This is {$a->ato} ATO Theory Examination r
 $string['tobecompletedbyexaminer'] = 'to be completed by the examiner';
 $string['trainingaudit'] = 'Flight Training Audit';
 $string['trainingcontent'] = 'Training Content';
-$string['uploadreport'] = 'Upload to feedback';
+$string['uploadreport'] = 'Submit Feedback File';
+$string['uploadreportmsg1'] = '<span class"mt-4" style="color: darkred;">Upon completion of the form below, please save it to your local drive using the download button from the PDF menu.';
+$string['uploadreportmsg2'] = '<br />Afterwards submit the saved file to the <strong>Feedback files</strong> section of the Skill Test exercise accessible from the button above.</span>';
 $string['vatsimid'] = 'VATSIM PID';
 $string['vatsimidmissing'] = 'VATSIM PID missing!';
 

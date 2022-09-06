@@ -93,8 +93,16 @@ if ($reporttype != 'examiner' || $student->evaluated()) {
 }
 
 // add next action button
-echo html_writer::start_tag('div', array('class'=>'container d-flex align-items-center justify-content-center mb-2'));
+echo html_writer::start_tag('div', array('class'=>'container d-flex align-items-center justify-content-center text-center flex-column mb-2'));
 echo $OUTPUT->render(new single_button(new moodle_url($nextactionurl, $params), $buttonlabel, 'get', true));
+
+// show evaluation message
+if ($reporttype == 'examiner' || !$student->evaluated()) {
+    echo get_string('uploadreportmsg1', 'local_booking');
+    echo '&nbsp;&nbsp;<i class="icon fa fa-download fa-fw " aria-hidden="true"></i>';
+    echo get_string('uploadreportmsg2', 'local_booking');
+}
+
 echo html_writer::end_tag('div');
 
 // report section

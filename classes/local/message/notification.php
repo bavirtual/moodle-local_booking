@@ -404,15 +404,19 @@ class notification extends \core\message\message {
 
         $result = true;
 
+        // sent to all except the graduating student
         foreach ($coursemembers as $coursemember) {
-            $msg = new notification();
-            $msg->name              = 'graduation_notification';
-            $msg->userto            = $coursemember->get_id();
-            $msg->subject           = get_string('emailgraduationnotify', 'local_booking', $data);
-            $msg->fullmessage       = get_string('emailgraduationnotifyymsg', 'local_booking', $data);
-            $msg->fullmessagehtml   = get_string('emailgraduationnotifyhtml', 'local_booking', $data);
 
-            $result = $result && (message_send($msg) != 0);
+            if ($coursemember->get_id() != $data['graduateid']) {
+                $msg = new notification();
+                $msg->name              = 'graduation_notification';
+                $msg->userto            = $coursemember->get_id();
+                $msg->subject           = get_string('emailgraduationnotify', 'local_booking', $data);
+                $msg->fullmessage       = get_string('emailgraduationnotifyymsg', 'local_booking', $data);
+                $msg->fullmessagehtml   = get_string('emailgraduationnotifyhtml', 'local_booking', $data);
+
+                $result = $result && (message_send($msg) != 0);
+            }
         }
 
         return $result;

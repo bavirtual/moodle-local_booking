@@ -1,5 +1,13 @@
 # Change log
 
+## [2022090600] - RELEASED 2022-09-06
+
+### Changed
+
+- Graduate no longer recieves a copy of the congratuary message
+- Use of Evaluate and Graduate actions vs. Certify
+- Formatting text part of the graduation process
+
 ## [2022090504] - RELEASED 2022-09-05 - hotfix
 
 ### Fixed

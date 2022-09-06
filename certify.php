@@ -112,6 +112,7 @@ if ($evaluationrequired && !$student->evaluated()) {
         $logbook->load();
         $summary = $logbook->get_summary(true);
         $data = [
+            'graduateid'      => $student->get_id(),
             'firstname'       => $student->get_profile_field('firstname', true),
             'fullname'        => $student->get_name(),
             'courseshortname' => $COURSE->subscriber->get_shortname(),
@@ -133,7 +134,7 @@ if ($evaluationrequired && !$student->evaluated()) {
             'congrats2pic'    => $CFG->wwwroot . '/local/booking/pix/congrats2.png',
             'calendarpic'     => $CFG->wwwroot . '/local/booking/pix/calendar.svg',
             'planepic'        => $CFG->wwwroot . '/local/booking/pix/book.svg',
-            'cappic'          => $CFG->wwwroot . '/local/booking/pix/certify.svg'
+            'cappic'          => $CFG->wwwroot . '/local/booking/pix/graduate.svg'
         ];
         $message = new notification();
         $message->send_graduation_notification($coursemembers, $data);

@@ -151,15 +151,15 @@ class action implements action_interface {
                 }
                 break;
 
-            case 'certify':
+            case 'evaluate':
+            case 'graduate':
 
-                // evaluate the student's next grading action, which will be 'grade' for exercises
+                // evaluate or graduate the student's next grading action, which will be 'grade' for exercises
                 // set url to the student's skill test form
                 $exerciseid = 0;
                 $actionurl = '/local/booking/certify.php';
-                $actiontype = 'certify';
-                $name = get_string('certify', 'local_booking');
-                $tooltip = get_string('actioncertifytooltip', 'local_booking', ['studentname'=>$student->get_name(false)]);
+                $name = get_string($actiontype, 'local_booking');
+                $tooltip = get_string('action' . $actiontype . 'tooltip', 'local_booking', ['studentname'=>$student->get_name(false)]);
 
                 // check if the certifer is the examiner
                 if ($student->has_completed_coursework() || $student->get_current_exercise() == $course->get_graduation_exercise()) {

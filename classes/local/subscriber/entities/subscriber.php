@@ -403,6 +403,8 @@ class subscriber implements subscriber_interface {
      */
     public function get_feedback_file(int $studentid) {
 
+        $file = null;
+
         // get course and associate module to find the practical exam skill test assignment
         list ($course, $cm) = get_course_and_cm_from_cmid($this->get_graduation_exercise(), 'assign');
 
@@ -416,7 +418,8 @@ class subscriber implements subscriber_interface {
         $grade = $assign->get_user_grade($studentid, false, 0);
 
         // get the file name
-        $file = subscriber_vault::get_file_info($context->id, $grade->id);
+        if (!empty($grade))
+            $file = subscriber_vault::get_file_info($context->id, $grade->id);
 
         return $file;
     }

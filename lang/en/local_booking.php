@@ -569,9 +569,10 @@ $string['emailgraduationnotifyymsg'] = 'Congratulations {$a->firstname} !!!
     Below are some of {$a->firstname}\'s accomplishments:
 
     Lessons: {$a->totalsessions} modules
-    Total flight hours: {$a->totalflighthrs} hrs
-    Total Dual hours: {$a->totaldualhrs} hrs
-    Total solo flight hours: {$a->totalsolohrs} hrs
+    Total flight time: {$a->totalflighthrs} hrs
+    Total Dual time: {$a->totaldualhrs} hrs
+    Total solo flight time: {$a->totalsolohrs} hrs
+    Total PICUS flight time: {$a->totalpicustime} hrs
     VATSIM rating: {$a->rating}
 
     Congratulations!
@@ -588,9 +589,10 @@ $string['emailgraduationnotifyhtml'] = '<font face="sans-serif"><table style="bo
     coursework and achieved the VATSIM P1 rating on {$a->completiondate}.&nbsp;</p><p>{$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate}
     on the {$a->simulator} simulator and was able to finish all practical and navigation exercises to standard. Below are some of {$a->firstname}\'s accomplishments:</p><p>
     <p><img src="{$a->calendarpic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Lessons: <strong>{$a->totalsessions} modules</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total flight hours: <strong>{$a->totalflighthrs} hrs</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Dual hours: <strong>{$a->totaldualhrs} hrs</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total solo flight hours: <strong>{$a->totalsolohrs} hrs</strong></p>
+    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total flight time: <strong>{$a->totalflighthrs} hrs</strong></p>
+    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Dual time: <strong>{$a->totaldualhrs} hrs</strong></p>
+    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total solo flight time: <strong>{$a->totalsolohrs} hrs</strong></p>
+    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total PICUS flight time: <strong>{$a->totalpicustime} hrs</strong></p>
     <p><img src="{$a->cappic}" width="20" style="padding-left: 40px"/><span style="padding-left: 40px;">VATSIM rating:&nbsp; <strong>{$a->rating}</strong></p>
     <p>&nbsp;</p><strong>Congratulations!</strong><p>&nbsp;</p><p>Best regards,</p><p><br /><strong>{$a->atoname} Training staff<br /></strong><br />E-mail:&nbsp;<a href="mailto:{$a->trainingemail}">{$a->trainingemail}</a>
     <br />Web:&nbsp;<a href="{$a->atourl}">{$a->atourl}</a>&nbsp;</p><p><a href="{$a->atourl}"><img src="{$a->traininglogourl}" alt="{$a->atoname} Flight Training" width="230px" border="0" /></a></p>';

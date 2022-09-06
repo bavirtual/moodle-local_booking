@@ -1,5 +1,12 @@
 # Change log
 
+## [2022090601] - RELEASED 2022-09-06
+
+### Added
+
+- PICUS time
+- Handling of profile evaluation form generation without showing intructional message
+
 ## [2022090600] - RELEASED 2022-09-06
 
 ### Changed

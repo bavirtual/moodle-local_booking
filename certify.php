@@ -124,6 +124,7 @@ if ($evaluationrequired && !$student->evaluated()) {
             'totalsessions'   => count($student->get_grades()),
             'totalflighthrs'  => $summary->totaltime,
             'totaldualhrs'    => $summary->totaldualtime,
+            'totalpicustime'  => $summary->totalpicustime,
             'totalsolohrs'    => $summary->totalpictime,
             'rating'          => $COURSE->subscriber->vatsimrating,
             'trainingemail'   => $COURSE->subscriber->ato->email,

@@ -1,5 +1,11 @@
 # Change log
 
+## [2022090602] - RELEASED 2022-09-06
+
+### Added
+
+- Reference to the BAV New Pilots Forum in the messaging
+
 ## [2022090601] - RELEASED 2022-09-06
 
 ### Added

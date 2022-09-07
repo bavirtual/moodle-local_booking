@@ -562,7 +562,7 @@ $string['emailgraduationnotify'] = '{$a->fullname} newly graduated';
 $string['emailgraduationnotifyymsg'] = 'Congratulations {$a->firstname} !!!
 
     Join me in congratulating {$a->fullname} for passing the {$a->exercisename} examination. {$a->firstname} completed the {$a->atoname}
-    {$a->coursename} coursework and achieved the VATSIM P1 rating on {$a->completiondate}.
+    {$a->coursename} coursework and achieved the VATSIM P1 rating on {$a->completiondate}. Please make sure to post a message on the New Pilots Forum (https://forum.bavirtual.co.uk/forum/29-new-pilots/) to {$a->firstname} for this achievement.
 
     {$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate} on the {$a->simulator} simulator and was able to finish all practical and navigation exercises to standard.
 
@@ -586,8 +586,9 @@ $string['emailgraduationnotifyhtml'] = '<font face="sans-serif"><table style="bo
     <td style="width: 65%"><h1 style="color: #5e9ca0;"><span style="color: #000000;">Congratulations {$a->firstname} !!!</span></h1></td>
     <td style="width: 15%; align: left"><img src="{$a->congrats2pic}" alt="Congratulations" width="70" /></td></tr></tbody>
     </table><p>Join me in congratulating <strong>{$a->fullname}</strong> for passing the {$a->exercisename} examination.&nbsp; {$a->firstname} completed the {$a->atoname} {$a->coursename}
-    coursework and achieved the VATSIM P1 rating on {$a->completiondate}.&nbsp;</p><p>{$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate}
-    on the {$a->simulator} simulator and was able to finish all practical and navigation exercises to standard. Below are some of {$a->firstname}\'s accomplishments:</p><p>
+    coursework and achieved the VATSIM P1 rating on {$a->completiondate}. Please make sure to post a message on the <a href="https://forum.bavirtual.co.uk/forum/29-new-pilots/">New Pilots Forum</a>
+    to {$a->firstname} for this achievement.</p><p>{$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate} on the {$a->simulator} simulator and
+    was able to finish all practical and navigation exercises to standard. Below are some of {$a->firstname}\'s accomplishments:</p><p>
     <p><img src="{$a->calendarpic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Lessons: <strong>{$a->totalsessions} modules</strong></p>
     <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total flight time: <strong>{$a->totalflighthrs} hrs</strong></p>
     <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Dual time: <strong>{$a->totaldualhrs} hrs</strong></p>

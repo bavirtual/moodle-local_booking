@@ -32,7 +32,7 @@ use local_booking\local\session\entities\booking;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
 
-// require_once($CFG->dirroot . "/lib/completionlib.php");
+require_once($CFG->dirroot . '/user/profile/lib.php');
 require_once($CFG->dirroot . "/lib/enrollib.php");
 
 class participant implements participant_interface {
@@ -173,7 +173,6 @@ class participant implements participant_interface {
         // get profile user name information
         if (empty($this->name)) {
             $u = \core_user::get_user($this->userid);
-            // profile_load_data($u);
             $this->name = $u->firstname . ' ' . $u->lastname;
             $this->fullname = $this->name . ' ' . $u->alternatename;
         }

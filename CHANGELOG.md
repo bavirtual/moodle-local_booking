@@ -1,5 +1,11 @@
 # Change log
 
+## [2022090900] - RELEASED 2022-09-09 hotfix
+
+### Fixed
+
+- cron task failing in participant get_profile_field for custom fields, added necessary require
+
 ## [2022090602] - RELEASED 2022-09-06
 
 ### Added

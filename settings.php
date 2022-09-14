@@ -33,7 +33,30 @@ if ($hassiteconfig) {
 
     if ($ADMIN->fulltree) {
         // add general settings section
-        $settingspage->add(new admin_setting_heading('local_booking_addheading_general', new lang_string('generalsection', 'local_booking'),''));
+        $settingspage->add(new admin_setting_heading('local_booking_addheading_ato', new lang_string('atosection', 'local_booking'),''));
+
+        // ATO name
+        $setting = new admin_setting_configtext('local_booking/atoname', new lang_string('atoname', 'local_booking'), null, null, PARAM_RAW, 50);
+        $setting->set_updatedcallback('update_ato_config');
+        $settingspage->add($setting);
+
+        // ATO website
+        $setting = new admin_setting_configtext('local_booking/atourl', new lang_string('atourl', 'local_booking'), null, null, PARAM_RAW, 50);
+        $setting->set_updatedcallback('update_ato_config');
+        $settingspage->add($setting);
+
+        // ATO email
+        $setting = new admin_setting_configtext('local_booking/atoemail', new lang_string('atoemail', 'local_booking'), null, null, PARAM_RAW, 50);
+        $setting->set_updatedcallback('update_ato_config');
+        $settingspage->add($setting);
+
+        // ATO logo url
+        $setting = new admin_setting_configtext('local_booking/atologourl', new lang_string('atologourl', 'local_booking'), null, null, PARAM_RAW, 80);
+        $setting->set_updatedcallback('update_ato_config');
+        $settingspage->add($setting);
+
+        // add general settings section
+        $settingspage->add(new admin_setting_heading('local_booking_addheading_posting', new lang_string('postingsection', 'local_booking'),''));
 
         // hours in the day 24-hour format
         $options = array();
@@ -56,6 +79,9 @@ if ($hassiteconfig) {
             new lang_string('weeksahead', 'local_booking'), new lang_string('weeksaheaddesc', 'local_booking'),
             5, PARAM_INT)
         );
+
+        // add prioritization settings section
+        $settingspage->add(new admin_setting_heading('local_booking_addheading_priority', new lang_string('prioritizationsection', 'local_booking'),''));
 
         // last session recency days weight multiplier
         $settingspage->add(new admin_setting_configtext('local_booking/recencydaysweight',
@@ -80,6 +106,7 @@ if ($hassiteconfig) {
             new lang_string('completionweight', 'local_booking'), new lang_string('completionweightdesc', 'local_booking'),
             10, PARAM_INT)
         );
+
     }
 
     $ADMIN->add('localplugins', $settingspage);

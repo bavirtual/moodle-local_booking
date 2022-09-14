@@ -26,6 +26,7 @@
 use core_badges\badge;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\message\notification;
+use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 
@@ -70,105 +71,108 @@ if ($evaluationrequired && !$student->evaluated()) {
     redirect(new moodle_url('/local/booking/report.php', $params));
 
 } else if (!$student->graduated()) {
+    global $USER;
+    $examiner = new instructor($COURSE->subscriber, $USER->id);
 
-        // send badges
-        $badges = badges_get_badges(BADGE_TYPE_COURSE, $courseid, '', '' , 0, 0);
+    // send badges
+    $badges = badges_get_badges(BADGE_TYPE_COURSE, $courseid, '', '' , 0, 0);
 
-        foreach ($badges as $coursebadge) {
+    foreach ($badges as $coursebadge) {
 
-            $badgeid = $coursebadge->id;
-            $badge = new badge($badgeid);
+        $badgeid = $coursebadge->id;
+        $badge = new badge($badgeid);
 
-            // check for manual criteria badges (awarded manually by the exmainer here)
-            if (array_search(BADGE_CRITERIA_TYPE_MANUAL, array_column($badge->get_criteria(), 'criteriatype'))) {
+        // check for manual criteria badges (awarded manually by the exmainer here)
+        if (array_search(BADGE_CRITERIA_TYPE_MANUAL, array_column($badge->get_criteria(), 'criteriatype'))) {
 
-                // get badge roles
-                $acceptedroles = array_keys($badge->criteria[BADGE_CRITERIA_TYPE_MANUAL]->params);
+            // get badge roles
+            $acceptedroles = array_keys($badge->criteria[BADGE_CRITERIA_TYPE_MANUAL]->params);
 
-                // check if the badge is awardable by the examiner
-                if (!empty($acceptedroles)) {
+            // check if the badge is awardable by the examiner
+            if (!empty($acceptedroles)) {
 
-                    // verify the badge is active
-                    if (!$badge->is_active()) {
-                        throw new Error(get_string('donotaward', 'badges'));
-                    }
+                // verify the badge is active
+                if (!$badge->is_active()) {
+                    throw new Error(get_string('donotaward', 'badges'));
+                }
 
-                    // process manual award of the badge
-                    if (process_manual_award($studentid, $USER->id, $acceptedroles[0], $badgeid)) {
-                        // If badge was successfully awarded, review manual badge criteria.
-                        $data = new stdClass();
-                        $data->crit = $badge->criteria[BADGE_CRITERIA_TYPE_MANUAL];
-                        $data->userid = $studentid;
-                        badges_award_handle_manual_criteria_review($data);
-                    }
+                // process manual award of the badge
+                if (process_manual_award($studentid, $USER->id, $acceptedroles[0], $badgeid)) {
+                    // If badge was successfully awarded, review manual badge criteria.
+                    $data = new stdClass();
+                    $data->crit = $badge->criteria[BADGE_CRITERIA_TYPE_MANUAL];
+                    $data->userid = $studentid;
+                    badges_award_handle_manual_criteria_review($data);
                 }
             }
-
         }
 
-        // send message to course students and instructors
-        $coursemembers = array_merge($COURSE->subscriber->get_students('active', true), $COURSE->subscriber->get_instructors());
-        $logbook = new logbook($courseid, $studentid);
-        $logbook->load();
-        $summary = $logbook->get_summary(true);
-        $data = [
-            'graduateid'      => $student->get_id(),
-            'firstname'       => $student->get_profile_field('firstname', true),
-            'fullname'        => $student->get_name(),
-            'courseshortname' => $COURSE->subscriber->get_shortname(),
-            'coursename'      => $COURSE->subscriber->get_fullname(),
-            'exercisename'    => $COURSE->subscriber->get_exercise_name($COURSE->subscriber->get_graduation_exercise()),
-            'completiondate'  => date_format($student->get_last_graded_date(), 'F j, Y'),
-            'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
-            'simulator'       => $student->get_profile_field('simulator'),
-            'totalsessions'   => count($student->get_grades()),
-            'totalflighthrs'  => $summary->totaltime,
-            'totaldualhrs'    => $summary->totaldualtime,
-            'totalpicustime'  => $summary->totalpicustime,
-            'totalsolohrs'    => $summary->totalpictime,
-            'rating'          => $COURSE->subscriber->vatsimrating,
-            'trainingemail'   => $COURSE->subscriber->ato->email,
-            'traininglogourl' => $COURSE->subscriber->ato->logo,
-            'atoname'         => $COURSE->subscriber->ato->name,
-            'atourl'          => $COURSE->subscriber->ato->url,
-            'congrats1pic'    => $CFG->wwwroot . '/local/booking/pix/congrats1.png',
-            'congrats2pic'    => $CFG->wwwroot . '/local/booking/pix/congrats2.png',
-            'calendarpic'     => $CFG->wwwroot . '/local/booking/pix/calendar.svg',
-            'planepic'        => $CFG->wwwroot . '/local/booking/pix/book.svg',
-            'cappic'          => $CFG->wwwroot . '/local/booking/pix/graduate.svg'
-        ];
-        $message = new notification();
-        $message->send_graduation_notification($coursemembers, $data);
+    }
 
-        // add student to graduates group
-        $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_GRADUATESGROUP);
-        groups_add_member($groupid, $studentid);
+    // send message to course students and instructors
+    $coursemembers = array_merge($COURSE->subscriber->get_students('active', true), $COURSE->subscriber->get_instructors());
+    $logbook = new logbook($courseid, $studentid);
+    $logbook->load();
+    $summary = $logbook->get_summary(true);
+    $data = [
+        'graduateid'      => $student->get_id(),
+        'firstname'       => $student->get_profile_field('firstname', true),
+        'fullname'        => $student->get_name(),
+        'courseshortname' => $COURSE->subscriber->get_shortname(),
+        'coursename'      => $COURSE->subscriber->get_fullname(),
+        'exercisename'    => $COURSE->subscriber->get_exercise_name($COURSE->subscriber->get_graduation_exercise()),
+        'completiondate'  => date_format($student->get_last_graded_date(), 'F j, Y'),
+        'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
+        'simulator'       => $student->get_profile_field('simulator'),
+        'totalsessions'   => count($student->get_grades()),
+        'totalflighthrs'  => $summary->totaltime,
+        'totaldualhrs'    => $summary->totaldualtime,
+        'totalpicustime'  => $summary->totalpicustime,
+        'totalsolohrs'    => $summary->totalpictime,
+        'rating'          => $COURSE->subscriber->vatsimrating,
+        'trainingemail'   => $COURSE->subscriber->ato->email,
+        'traininglogourl' => $COURSE->subscriber->ato->logo,
+        'examinername'    => $examiner->get_name(false),
+        'atoname'         => $COURSE->subscriber->ato->name,
+        'atourl'          => $COURSE->subscriber->ato->url,
+        'congrats1pic'    => $CFG->wwwroot . '/local/booking/pix/congrats1.png',
+        'congrats2pic'    => $CFG->wwwroot . '/local/booking/pix/congrats2.png',
+        'calendarpic'     => $CFG->wwwroot . '/local/booking/pix/calendar.svg',
+        'planepic'        => $CFG->wwwroot . '/local/booking/pix/book.svg',
+        'cappic'          => $CFG->wwwroot . '/local/booking/pix/graduate.svg'
+    ];
+    $message = new notification();
+    $message->send_graduation_notification($coursemembers, $data);
 
-        // output congratulatory message
-        $navbartext = $student->get_fullname($studentid);
-        $PAGE->navbar->add($navbartext);
-        $PAGE->set_pagelayout('standard');
-        $PAGE->set_context($context);
-        $PAGE->set_title($title, 'local_booking');
-        $PAGE->set_heading($title, 'local_booking');
-        $PAGE->add_body_class('path-local-booking');
+    // add student to graduates group
+    $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_GRADUATESGROUP);
+    groups_add_member($groupid, $studentid);
 
-        $renderer = $PAGE->get_renderer('local_booking');
+    // output congratulatory message
+    $navbartext = $student->get_fullname($studentid);
+    $PAGE->navbar->add($navbartext);
+    $PAGE->set_pagelayout('standard');
+    $PAGE->set_context($context);
+    $PAGE->set_title($title, 'local_booking');
+    $PAGE->set_heading($title, 'local_booking');
+    $PAGE->add_body_class('path-local-booking');
 
-        echo $OUTPUT->header();
-        echo $renderer->start_layout();
+    $renderer = $PAGE->get_renderer('local_booking');
 
-        // add next action button
-        echo html_writer::start_tag('div', array('class'=>'container d-flex align-items-center justify-content-center mb-2'));
-        echo $OUTPUT->render(new single_button(new moodle_url('/local/booking/view.php', ['courseid'=>$courseid]), get_string('back'), 'get', true));
-        echo html_writer::end_tag('div');
+    echo $OUTPUT->header();
+    echo $renderer->start_layout();
 
-        // message section
-        echo get_string('graduationconfirmation', 'local_booking', $data);
+    // add next action button
+    echo html_writer::start_tag('div', array('class'=>'container d-flex align-items-center justify-content-center mb-2'));
+    echo $OUTPUT->render(new single_button(new moodle_url('/local/booking/view.php', ['courseid'=>$courseid]), get_string('back'), 'get', true));
+    echo html_writer::end_tag('div');
 
-        echo html_writer::end_tag('div');
-        echo $renderer->complete_layout();
-        echo $OUTPUT->footer();
+    // message section
+    echo get_string('graduationconfirmation', 'local_booking', $data);
+
+    echo html_writer::end_tag('div');
+    echo $renderer->complete_layout();
+    echo $OUTPUT->footer();
 
 } else {
 

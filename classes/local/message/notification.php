@@ -121,7 +121,7 @@ class notification extends \core\message\message {
         $this->fullmessage       = get_string('emailconfirmmsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailconfirmhtml', 'local_booking', $data) . get_string('emailconfirmcalendarshtml', 'local_booking', $data) ;
         $this->contexturl        = $data->bookingurl;
-        $this->contexturlname    = get_booking_config('ATO')->name . ' ' . get_string('pluginname', 'local_booking');
+        $this->contexturlname    = get_booking_config('ato')->name . ' ' . get_string('pluginname', 'local_booking');
         $this->set_additional_content('email', array('*' => array(
             'footer' => get_string('bookingfooter', 'local_booking', $data))));
 

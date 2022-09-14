@@ -111,11 +111,7 @@ $string['defaultmake'] = 'Make default';
 $string['defaultload'] = 'Load default';
 $string['checkpassed'] = 'Passed';
 $string['checkfailed'] = 'Failed';
-$string['firstsession'] = 'First session time';
-$string['firstsessiondesc'] = 'first allowable session time';
 $string['flightsim'] = 'Flight Simulation';
-$string['lastsession'] = 'Last session time';
-$string['lastsessiondesc'] = 'last allowable session time';
 $string['lessonsincomplete'] = 'Incomplete lessons(s): Please complete pending lessons, otherwise instructors will not see your availability.';
 $string['nextsessionwaitdays'] = 'Wait period:';
 $string['nextsessionwaitdaysdesc'] = 'waiting period used to restrict availability posting before x days had passed since student\'s last session';
@@ -134,8 +130,6 @@ $string['studentonhold'] = 'You are currently on-hold and instructors will NOT s
 $string['wait'] = 'Wait Days';
 $string['week'] = 'Week';
 $string['weeklytitle'] = 'Weekly Availability';
-$string['weeksahead'] = 'Availability posting weeks lookahead';
-$string['weeksaheaddesc'] = 'allowable weeks lookahead of availability posting. 0=Unlimited';
 $string['weekprev'] = 'Previous week';
 $string['weeknext'] = 'Next week';
 
@@ -226,7 +220,7 @@ $string['logbookse'] = 'SE';
 $string['logbooksedesc'] = 'Single engine';
 $string['logbooksinglepilot'] = 'Single-Pilot';
 $string['logbooksolopirep'] = 'Solo PIREP';
-$string['logbookstudent'] = 'Student logbook';
+$string['logbookstudent'] = 'Logbook';
 $string['logbooksummary'] = 'LOGBOOK SUMMARY';
 $string['logbooktime'] = 'Time';
 $string['logbooktotaltime'] = 'Total Time';
@@ -374,7 +368,7 @@ $string['theoryexamreportsubject'] = 'This is {$a->ato} ATO Theory Examination r
 $string['tobecompletedbyexaminer'] = 'to be completed by the examiner';
 $string['trainingaudit'] = 'Flight Training Audit';
 $string['trainingcontent'] = 'Training Content';
-$string['uploadreport'] = 'Submit Feedback File';
+$string['uploadreport'] = 'Submit evaluation form';
 $string['uploadreportmsg1'] = '<span class"mt-4" style="color: darkred;">Upon completion of the form below, please save it to your local drive using the download button from the PDF menu.';
 $string['uploadreportmsg2'] = '<br />Afterwards submit the saved file to the <strong>Feedback files</strong> section of the Skill Test exercise accessible from the button above.</span>';
 $string['vatsimid'] = 'VATSIM PID';
@@ -434,6 +428,7 @@ $string['messageprovider:onhold_warning'] = 'Student on-hold warning notificatio
 $string['messageprovider:onhold_notification'] = 'Student placed on-hold notification';
 $string['messageprovider:suspension_notification'] = 'Student suspended notification';
 $string['messageprovider:sessionoverdue_notification'] = 'Instructor session overdue notification';
+$string['messageprovider:graduation_notification'] = 'Graduating students notification';
 
 // email to student: session tentative
 $string['emailnotify'] = '{$a->coursename} session booking notification: \'{$a->exercise}\'';
@@ -578,6 +573,7 @@ $string['emailgraduationnotifyymsg'] = 'Congratulations {$a->firstname} !!!
     Congratulations!
 
     Best regards,
+    {$a->examinername}
     {$a->atoname} Training staff
     E-mail: {$a->trainingemail}
     Web: {$a->atourl}';
@@ -595,19 +591,31 @@ $string['emailgraduationnotifyhtml'] = '<font face="sans-serif"><table style="bo
     <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total solo flight time: <strong>{$a->totalsolohrs} hrs</strong></p>
     <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total PICUS flight time: <strong>{$a->totalpicustime} hrs</strong></p>
     <p><img src="{$a->cappic}" width="20" style="padding-left: 40px"/><span style="padding-left: 40px;">VATSIM rating:&nbsp; <strong>{$a->rating}</strong></p>
-    <p>&nbsp;</p><strong>Congratulations!</strong><p>&nbsp;</p><p>Best regards,</p><p><br /><strong>{$a->atoname} Training staff<br /></strong><br />E-mail:&nbsp;<a href="mailto:{$a->trainingemail}">{$a->trainingemail}</a>
+    <p>&nbsp;</p><strong>Congratulations!</strong><p>&nbsp;</p><p>Best regards,</p><p>{$a->examinername}</p><p><br /><strong>{$a->atoname} Training staff<br /></strong><br />E-mail:&nbsp;<a href="mailto:{$a->trainingemail}">{$a->trainingemail}</a>
     <br />Web:&nbsp;<a href="{$a->atourl}">{$a->atourl}</a>&nbsp;</p><p><a href="{$a->atourl}"><img src="{$a->traininglogourl}" alt="{$a->atoname} Flight Training" width="230px" border="0" /></a></p>';
 
 // settings
 $string['activitycountweight'] = 'Course activity prioritization';
 $string['activitycountweightdesc'] = 'weight multiplier to calculate prioritization for course activity';
+$string['atoemail'] = 'Email';
+$string['atologourl'] = 'Logo URL';
+$string['atoname'] = 'Name';
+$string['atosection'] = 'Authorized Training Organization (ATO) settings';
+$string['atourl'] = 'Website';
 $string['completionweight'] = 'Lesson completion prioritization';
 $string['completionweightdesc'] = 'weight multiplier to calculate prioritization of lesson completion';
-$string['generalsection'] = 'General settings';
+$string['firstsession'] = 'First session time';
+$string['firstsessiondesc'] = 'first allowable session time';
+$string['lastsession'] = 'Last session time';
+$string['lastsessiondesc'] = 'last allowable session time';
+$string['postingsection'] = 'Availability posting settings';
+$string['prioritizationsection'] = 'Booking prioritization settings';
 $string['recencydaysweight'] = 'Recency prioritization';
 $string['recencydaysweightdesc'] = 'weight multiplier to calculate prioritization for session recency';
 $string['slotcountweight'] = 'Slot count prioritization';
 $string['slotcountweightdesc'] = 'weight multiplier to calculate prioritization for availability slots';
+$string['weeksahead'] = 'Availability posting weeks lookahead';
+$string['weeksaheaddesc'] = 'allowable weeks lookahead of availability posting. 0=Unlimited';
 
 // install
 $string['useplugin'] = 'Use Session Booking';

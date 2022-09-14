@@ -1,103 +1,104 @@
 {
-    "ATO" : {
-        "name"        : "BA Virtual",
-        "url"         : "http://www.bavirtual.co.uk",
-        "email"       : "training@bavirtual.co.uk",
-        "logo"        : "https://bavms.bavirtual.co.uk/assets/img/logo.png"
+    "ato": {
+        "name": "BA Virtual",
+        "url": "http://www.bavirtual.co.uk",
+        "email": "training@bavirtual.co.uk",
+        "logo": "https://bavms.bavirtual.co.uk/assets/img/logo.png"
     },
-    "colors" : {
-        "red"         : "#d50000",
-        "green"       : "#689f38",
-        "yellow"      : "#ffeb3b",
-        "deep orange" : "#ff3d00",
-        "lime"        : "#aeea00",
-        "dark green"  : "#1b5e20",
-        "blue"        : "#2962ff",
-        "light blue"  : "#0091ea",
-        "orange"      : "#ff6d00",
-        "deep purple" : "#9fa8da",
-        "pink"        : "#fce4ec",
-        "light green" : "#00e676",
-        "dark blue"   : "#0d47a1",
-        "teal"        : "#00897b",
+    "colors": {
+        "red": "#d50000",
+        "green": "#689f38",
+        "yellow": "#ffeb3b",
+        "deep orange": "#ff3d00",
+        "lime": "#aeea00",
+        "dark green": "#1b5e20",
+        "blue": "#2962ff",
+        "light blue": "#0091ea",
+        "orange": "#ff6d00",
+        "deep purple": "#9fa8da",
+        "pink": "#fce4ec",
+        "light green": "#00e676",
+        "dark blue": "#0d47a1",
+        "teal": "#00897b",
         "light purple": "#c5cae9",
-        "brown"       : "#5d4037",
+        "brown": "#5d4037",
         "light indigo": "#dcedc8",
-        "light cyan"  : "#b2ebf2",
-        "dark purple" : "#4a148c",
+        "light cyan": "#b2ebf2",
+        "dark purple": "#4a148c",
         "light yellow": "#ffff00"
     },
     "integrations": {
-        "pireps"     : {
-            "enabled"   : 1,
-            "host"      : "127.0.0.1:3306",
-            "db"        : "bav_management",
-            "data"      : {
-                "pirep" : {
-                    "table" : "pireps",
+        "pireps": {
+            "enabled": 1,
+            "host": "127.0.0.1:3306",
+            "db": "bav_management",
+            "data": {
+                "pirep": {
+                    "table": "pireps",
                     "fields": {
-                        "pilot_id"   : "pilot_id",
-                        "flightdate" : "start_date",
-                        "pictime"    : "flight_time",
-                        "depicao"    : "dep_icao",
-                        "arricao"    : "arr_icao",
-                        "deptime"    : "start_time",
-                        "arrtime"    : "end_time",
-                        "callsign"   : "callsign",
-                        "aircraft"   : "aircraft",
-                        "route"      : "planned_route",
+                        "pilot_id": "pilot_id",
+                        "flightdate": "start_date",
+                        "pictime": "flight_time",
+                        "depicao": "dep_icao",
+                        "arricao": "arr_icao",
+                        "deptime": "start_time",
+                        "arrtime": "end_time",
+                        "callsign": "callsign",
+                        "aircraft": "aircraft",
+                        "route": "planned_route",
                         "aircraftreg": "registration",
-                        "fstd"       : "sim",
+                        "fstd": "sim",
                         "linkedpirep": "linked_pirep_id"
                     },
-                    "key"   : "id"
+                    "key": "id"
                 },
-                "linkedpirep" : {
-                    "table" : "pireps",
+                "linkedpirep": {
+                    "table": "pireps",
                     "fields": {
                         "linked_pirep_id": "linked_pirep_id"
                     },
-                    "key"   : "id"
+                    "key": "id"
                 }
             }
         },
-        "aircraft"  : {
-            "enabled"   : 1,
-            "host"      : "localhost",
-            "db"        : "bav_management",
-            "data"      : {
+        "aircraft": {
+            "enabled": 1,
+            "host": "localhost",
+            "db": "bav_management",
+            "data": {
                 "aircraftinfo": {
-                    "table"     : "fleet",
-                    "fields"    : {
+                    "table": "fleet",
+                    "fields": {
                         "engine_type": "engine_type",
                         "description": "description"
                     },
-                    "key"       : "icao"
+                    "key": "icao"
                 },
                 "aircraftreg": {
-                    "table"     : "fleet_registrations",
-                    "fields"    : {
+                    "table": "fleet_registrations",
+                    "fields": {
                         "reg": "reg"
                     },
-                    "key"       : "icao"
+                    "key": "icao"
                 }
             }
         },
-        "pilot"  : {
-            "enabled"   : 1,
-            "host"      : "localhost",
-            "db"        : "bav_management",
-            "data"      : {
+        "pilot": {
+            "enabled": 1,
+            "host": "localhost",
+            "db": "bav_management",
+            "data": {
                 "pilot": {
-                    "table"     : "pilots",
-                    "fields"    : {
+                    "table": "pilots",
+                    "fields": {
                         "alternatename": "baw_id"
                     },
-                    "key"       : "id"
+                    "key": "id"
                 }
             }
         }
     },
+    "pdftkpath": "/usr/local/bin/pdftk",
     "google_client_id": "665457883640-3t61p4f3vp5sg5bnh5kgqcnm3332c145.apps.googleusercontent.com",
     "google_client_secret": "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",
     "google_auth_url": "https://accounts.google.com/o/oauth2/auth",

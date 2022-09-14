@@ -52,7 +52,7 @@ class calendar_event{
     public static function download_ics(object $eventdata) {
         calendar_event::set_event_content($eventdata, false);
         // get event details
-        $ato = get_booking_config('ATO')->name;
+        $ato = get_booking_config('ato')->name;
         $location = $eventdata->venue;
         $start = date('Ymd', $eventdata->sessionstart) . 'T' . date('His', $eventdata->sessionstart) . 'Z';
         $end = date('Ymd', $eventdata->sessionend) . 'T' . date('His', $eventdata->sessionend) . 'Z';

@@ -27,12 +27,8 @@ namespace local_booking\local\report;
 
 require_once($CFG->dirroot.'/local/booking/fpdm/fpdm.php');
 
-use DateTime;
-use local_booking\local\logbook\entities\logbook;
-use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
-use assignfeedback_editpdf\pdf;
 use FPDM;
 
 defined('MOODLE_INTERNAL') || die();
@@ -62,7 +58,30 @@ class pdf_report_skilltest extends pdf_report {
      */
     public function Generate(bool $coverpage = false) {
 
-        $pdf = new FPDM($this->get_feedback_filepath());
+        $pdffilename = $this->get_feedback_filepath();
+        $patharr = explode('/' , $pdffilename);
+        $filename = array_pop($patharr);
+        $path = implode('/', $patharr);
+
+        try {
+
+            $pdf = new FPDM($pdffilename);
+
+        } catch (\Exception $e) {
+
+            // attempt to fix the none standard FPDM file
+            $pdftk = get_booking_config('pdftkpath');
+            exec("$pdftk $pdffilename output $path/fixed.pdf");
+            exec("mv $path/fixed.pdf $pdffilename");
+
+            // try again and fail if still not fixed
+            try {
+                $pdf = new FPDM($pdffilename);
+            } catch (\Exception $e) {
+                die('<b>FPDF-Merge Error:</b> '.$e->getMessage());
+            }
+
+        }
         $pdf->Output();
     }
 }

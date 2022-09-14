@@ -103,7 +103,7 @@ class subscriber implements subscriber_interface {
         $this->courseid = $courseid;
         $this->fullname = $COURSE->fullname;
         $this->shortname = $COURSE->shortname;
-        $this->ato = get_booking_config('ATO');
+        $this->ato = get_booking_config('ato');
 
         // define course custom fields globally
         $handler = \core_customfield\handler::get_handler('core_course', 'course');

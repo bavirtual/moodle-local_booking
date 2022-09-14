@@ -41,6 +41,7 @@ use local_booking\local\logbook\entities\logbook;
 use local_booking\local\logbook\entities\logentry;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
+use \core_customfield\api;
 
 /**
  * LOCAL_BOOKING_RECENCYWEIGHT - constant value for session recency weight multipler
@@ -810,18 +811,109 @@ function random_color() {
 /**
  * Returns the settings from config.xml
  *
- * @return mixed  The requested setting value.
+ * @param  string $key      The key to look up the value for
+ * @param  bool   $toarray  Whether to converted json file to class or an array
+ * @return mixed  $config   The requested setting value.
  */
-function get_booking_config(string $key, $associative = null) {
+function get_booking_config(string $key, bool $toarray = false) {
     global $CFG;
+
     $configfile = $CFG->dirroot . '/local/booking/config.json';
     $config = null;
+
     if (file_exists($configfile)) {
+
         $jsoncontent = file_get_contents($configfile);
-        $configdata = json_decode($jsoncontent, $associative);
-        $config = $associative ? $configdata[$key] : $configdata->{$key};
+        $configdata = json_decode($jsoncontent, $toarray);
+        $config = $toarray ? $configdata[$key] : $configdata->{$key};
+
     } else {
+
         var_dump(get_string('configmissing', 'local_booking', $configfile));
+
     }
+
     return $config;
+}
+
+/**
+ * Updates a setting in the json config.xml
+ *
+ * @param  string $key      The key to look up the value for
+ * @param  string $value    The value to set
+ */
+function set_booking_config(string $key, string $value) {
+    global $CFG;
+
+    $configfile = $CFG->dirroot . '/local/booking/config.json';
+
+    if (file_exists($configfile)) {
+
+        // read config content
+        $jsoncontent = file_get_contents($configfile);
+        $configdata = json_decode($jsoncontent, true);
+
+        // recursively go through the config data for nested content
+        $params = array($key, $value);
+        array_walk_recursive($configdata, function(&$recursivevalue, $recursivekey, $params) {
+            if ($recursivekey == $params[0])
+                $recursivevalue = $params[1];
+        }, $params);
+
+        // write back config content to json file
+        $jsoncontent = json_encode($configdata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        file_put_contents($CFG->dirroot . '/local/booking/config.json', $jsoncontent);
+
+    } else {
+
+        var_dump(get_string('configmissing', 'local_booking', $configfile));
+
+    }
+}
+
+/**
+ * Callback function to updates ATO config information and course setting
+ * category label
+ *
+ */
+function update_ato_config() {
+
+    // check if the ATO name changed
+    if (get_booking_config('ato')->name != get_config('local_booking', 'atoname')) {
+
+        // update subscribing course custom field category label w/ saved ATO name
+        $categories = api::get_categories_with_fields('core_course', 'course', 0);
+
+        foreach ($categories as $coursecategory) {
+
+            $categoryname = $coursecategory->get('name');
+
+            if ($categoryname == get_booking_config('ato')->name && $categoryname != get_config('local_booking', 'atoname')) {
+                $coursecategory->set('name', get_config('local_booking', 'atoname'));
+                api::save_category($coursecategory);
+            }
+        }
+
+        // update config file with ATO saved data in Admin settings
+        set_booking_config('name', get_config('local_booking', 'atoname'));
+    }
+
+    // check if the ATO website URL changed
+    if (get_booking_config('ato')->url != get_config('local_booking', 'atourl'))
+        set_booking_config('url', get_config('local_booking', 'atourl'));
+
+    // check if the ATO email changed
+    if (get_booking_config('ato')->email != get_config('local_booking', 'atoemail'))
+        set_booking_config('email', get_config('local_booking', 'atoemail'));
+
+    // check if the ATO logo changed
+    if (get_booking_config('ato')->logo != get_config('local_booking', 'atologourl'))
+        set_booking_config('logo', get_config('local_booking', 'atologourl'));
+
+    // ensure the pdftk path is set
+    if (empty(get_booking_config('pdftkpath'))) {
+        $pdftk = exec('find /usr -name pdftk');
+        set_booking_config('pdftkpath', $pdftk);
+    }
+
 }

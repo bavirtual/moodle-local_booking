@@ -1,5 +1,22 @@
 # Change log
 
+## [2022091400] - UNRELEASED 2022-09-14
+
+### Fixed
+
+- ”FPDF-Merge Error: Object streams are not supported” error in reading PDF skill reports
+
+### Added
+
+- update ATO info after Administrator Settings save through set_updatedcallback()
+- install of PDF Toolkit package to fixe FPDF-Merge error of non FPDM standard PDFs
+- set_booking_config to recursively update plugin config.json file
+
+### Changed
+
+- congratulatory message signing by the examiner
+- moved ATO configurations to Administration Settings
+
 ## [2022090900] - RELEASED 2022-09-09 hotfix
 
 ### Fixed

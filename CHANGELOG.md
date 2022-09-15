@@ -1,5 +1,11 @@
 # Change log
 
+## [2022091500] - RELEASED 2022-09-15
+
+### Changed
+
+- verification of pdftk executable location
+
 ## [2022091400] - UNRELEASED 2022-09-14
 
 ### Fixed

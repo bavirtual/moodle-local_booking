@@ -910,10 +910,4 @@ function update_ato_config() {
     if (get_booking_config('ato')->logo != get_config('local_booking', 'atologourl'))
         set_booking_config('logo', get_config('local_booking', 'atologourl'));
 
-    // ensure the pdftk path is set
-    if (empty(get_booking_config('pdftkpath'))) {
-        $pdftk = exec('find /usr -name pdftk');
-        set_booking_config('pdftkpath', $pdftk);
-    }
-
 }

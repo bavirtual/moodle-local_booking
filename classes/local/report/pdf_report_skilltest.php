@@ -71,6 +71,17 @@ class pdf_report_skilltest extends pdf_report {
 
             // attempt to fix the none standard FPDM file
             $pdftk = get_booking_config('pdftkpath');
+
+            // get the location of pdftk install
+            if (!file_exists($pdftk)) {
+
+                // lookup the pdftk path is set
+                $pdftk = exec('find /usr -name pdftk');
+                set_booking_config('pdftkpath', $pdftk);
+
+            }
+
+            // attempt to fix the none standard FPDM file and rename fixed
             exec("$pdftk $pdffilename output $path/fixed.pdf");
             exec("mv $path/fixed.pdf $pdffilename");
 

@@ -193,7 +193,7 @@ function create_course_customfields() {
             get_string('customfielddual', 'local_booking') . '\r\n' . get_string('customfieldmulticrew', 'local_booking') . '","defaultvalue":"' .
             get_string('customfielddual', 'local_booking') . '"');
     save_course_customfield($category, 'text', 'vatsimrating',  get_string('vatsimrating', 'local_booking'),
-        ',"visibility":"1","defaultvalue":"","displaysize":10,"maxlength":10,"ispassword":"0","link":""', get_string('vatsimratingdesc', 'local_booking'));
+        ',"visibility":"1","defaultvalue":"","displaysize":15,"maxlength":50,"ispassword":"0","link":""', get_string('vatsimratingdesc', 'local_booking'));
     save_course_customfield($category, 'text', 'postingwait',  get_string('postingwait', 'local_booking'),
         ',"visibility":"0","defaultvalue":"","displaysize":5,"maxlength":2,"ispassword":"0","link":""', get_string('postingwaitdesc', 'local_booking'));
     save_course_customfield($category, 'text', 'onholdperiod',  get_string('onholdperiod', 'local_booking'),

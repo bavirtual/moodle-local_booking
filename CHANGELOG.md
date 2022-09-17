@@ -1,5 +1,12 @@
 # Change log
 
+## [2022091700] - RELEASED 2022-09-17 - hotfix
+
+### Fixed
+
+- VATSIM rating course setting to 50 chars
+- Congratulatory message text
+
 ## [2022091500] - RELEASED 2022-09-15
 
 ### Changed

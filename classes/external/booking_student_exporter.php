@@ -189,9 +189,9 @@ class booking_student_exporter extends exporter {
         // awaiting certification, or graduated already; otherwise it is a booking action
         if (!empty($this->student->get_active_booking()))
             $actiontype = 'grade';
-        else if ($this->student->has_completed_coursework() && !$this->student->evaluated())
+        else if ($this->student->has_completed_coursework() && ($this->course->has_skills_evaluation() && !$this->student->evaluated()))
             $actiontype = 'evaluate';
-        else if ($this->student->evaluated() && !$this->student->graduated())
+        else if ($this->student->has_completed_coursework() && !$this->student->graduated())
             $actiontype = 'graduate';
         else
             $actiontype = 'book';

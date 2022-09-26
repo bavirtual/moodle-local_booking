@@ -79,13 +79,4 @@ interface subscriber_vault_interface {
      * @return int
      */
     public static function get_subscriber_modules_count(int $courseid);
-
-    /**
-     * Returns the first file stored for the context id and grade id (itemid)
-     *
-     * @param int $contextid The context id for the exercise (assignment)
-     * @param int $itemid    The context id for the exercise (assignment)
-     * @return object  The file record
-     */
-    public static function get_file_info(int $contextid, int $itemid);
 }

@@ -183,11 +183,12 @@ class logbook implements logbook_interface {
     /**
      * Get the logbook entries time totals
      *
-     * @param  bool $tostring The totals in string time format
-     * @return object         The logbook time table totals
+     * @param  bool $tostring   The totals in string time format
+     * @param  bool $allcourses The totals of all courses
+     * @return object           The logbook time table totals
      */
-    public function get_summary(bool $tostring = false) {
-        $totals = logbook_vault::get_logbook_summary($this->courseid, $this->userid);
+    public function get_summary(bool $tostring = false, bool $allcourses = false) {
+        $totals = logbook_vault::get_logbook_summary($this->courseid, $this->userid, $allcourses);
         if ($tostring) {
             foreach ($totals as $key => $total) {
                 if ($key != 'totallandingsday' && $key != 'totallandingsnight')
@@ -204,7 +205,7 @@ class logbook implements logbook_interface {
      * @param  bool $tostring  The totals in string time format
      * @return array           The logbook time table totals
      */
-    public function get_summary_to_exercise(int $exerciseid, bool $tostring = false) {
+    public function get_summary_upto_exercise(int $exerciseid, bool $tostring = false) {
         $totals = logbook_vault::get_logbook_summary_to_exercise($this->courseid, $this->userid, $exerciseid);
         if ($tostring) {
             foreach ($totals as $key => $total) {

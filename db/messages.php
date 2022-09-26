@@ -95,6 +95,22 @@ $messageproviders = array(
         ),
     ),
 
+    // Notify instructor of availability posting
+    'availabilityposting_notification' => array(
+        'capability' => 'local/booking:instructornotification',
+        'defaults' => array(
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+        ),
+    ),
+
+    // Notify instructor of availability posting
+    'recommendation_notification' => array(
+        'capability' => 'local/booking:instructornotification',
+        'defaults' => array(
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+        ),
+    ),
+
     // Notify students and instructors of a student's graduation
     'graduation_notification' => array(
         'capability' => 'local/booking:studentnotification',

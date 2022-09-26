@@ -38,7 +38,7 @@ use local_booking\local\message\notification;
 use local_booking\local\subscriber\entities\subscriber;
 
 /**
- * A schedule task for student and instructor status cron.
+ * A schedule task for student and instructor status cron job.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -53,7 +53,7 @@ class cron_task extends \core\task\scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('crontask', 'local_booking');
+        return get_string('taskcron', 'local_booking');
     }
 
     /**
@@ -68,8 +68,9 @@ class cron_task extends \core\task\scheduled_task {
             if ($sitecourse->id != SITEID) {
                 // check if the course is using Session Booking
                 $course = new subscriber($sitecourse->id);
-                $course->set_shortname($sitecourse->shortname);
+
                 if (!empty($course->subscribed) && $course->subscribed) {
+
                     mtrace('');
                     mtrace('    Course: ' . $sitecourse->shortname . ' (id: ' . $sitecourse->id . ')');
 

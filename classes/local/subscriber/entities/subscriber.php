@@ -29,7 +29,6 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once($CFG->dirroot . '/group/lib.php');
 
-use assign;
 use local_booking\local\subscriber\data_access\subscriber_vault;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\participant\entities\instructor;
@@ -97,12 +96,11 @@ class subscriber implements subscriber_interface {
      * @param string $courseid  The description's value.
      */
     public function __construct($courseid) {
-        global $COURSE;
+        $this->course = get_course($courseid);
         $this->context = \context_course::instance($courseid);
-        $this->course = $COURSE;
         $this->courseid = $courseid;
-        $this->fullname = $COURSE->fullname;
-        $this->shortname = $COURSE->shortname;
+        $this->fullname = $this->course->fullname;
+        $this->shortname = $this->course->shortname;
         $this->ato = get_booking_config('ato');
 
         // define course custom fields globally
@@ -396,35 +394,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Retrieves the path for the graduation exercise's evaluation form file submission.
-     *
-     * @param  int      The student id with the file submission
-     * @return object
-     */
-    public function get_feedback_file(int $studentid) {
-
-        $file = null;
-
-        // get course and associate module to find the practical exam skill test assignment
-        list ($course, $cm) = get_course_and_cm_from_cmid($this->get_graduation_exercise(), 'assign');
-
-        // set context for the module and other requirements by the assignment
-        $context = \context_module::instance($cm->id);
-
-        // get the practical exam assignment to get the associated feedback file
-        $assign = new assign($context, $cm, $course);
-
-        // get the grade associated with the assignment
-        $grade = $assign->get_user_grade($studentid, false, 0);
-
-        // get the file name
-        if (!empty($grade))
-            $file = subscriber_vault::get_file_info($context->id, $grade->id);
-
-        return $file;
-    }
-
-    /**
      * Returns an array of records from integrated database
      * that matches the passed criteria.
      *
@@ -476,6 +445,16 @@ class subscriber implements subscriber_interface {
     public static function has_integration($key) {
         $integrations = get_booking_config('integrations');
         return !empty($integrations->$key->enabled);
+    }
+
+    /**
+     * Checks if the subscribing course require
+     * skills evaluation.
+     *
+     * @return bool
+     */
+    public function has_skills_evaluation() {
+        return !empty($this->examinerformurl);
     }
 
     /**

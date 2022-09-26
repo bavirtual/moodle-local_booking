@@ -88,6 +88,8 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailnotifyhtml', 'local_booking', $data) . get_string('emailnotifycalendarshtml', 'local_booking', $data);
         $this->contexturl        = $data->confirmurl;
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
+        $this->set_additional_content('email', array('*' => array(
+            'footer' => get_string('bookingfooter', 'local_booking', $data))));
 
         return message_send($this) != 0;
     }
@@ -393,6 +395,72 @@ class notification extends \core\message\message {
     }
 
     /**
+     * Sends an email notifying the instructor
+     * of availability being posted by students.
+     *
+     * @param array     $instructors the list of instructor ids to receive the notification.
+     * @param array     $data data tags.
+     * @return bool     The notification message id.
+     */
+    public function send_availability_posting_notification(array $instructors, array $data) {
+
+        $result = true;
+
+        // loop through the list of instructors to notify
+        foreach ($instructors as $instructor) {
+
+            $msg = new notification();
+            $msg->name              = 'availabilityposting_notification';
+            $msg->userto            = $instructor->get_id();
+            $msg->subject           = get_string('emailavailpostingnotify', 'local_booking', $data);
+            $msg->fullmessage       = get_string('emailavailpostingnotifymsg', 'local_booking', $data);
+            $msg->fullmessagehtml   = get_string('emailavailpostingnotifyhtml', 'local_booking', $data);
+            $msg->contexturl        = $data['bookingurl'];
+            $msg->contexturlname    = get_booking_config('ato')->name . ' ' . get_string('pluginname', 'local_booking');
+            $msg->set_additional_content('email', array('*' => array(
+                'footer' => get_string('bookingfooter', 'local_booking', $data))));
+
+            // send notification then copy senior instructors
+            $result = $result && message_send($msg) != 0;
+
+        }
+
+        return $result;
+    }
+
+    /**
+     * Sends an email notifying the instructors with
+     * a new student recommendation.
+     *
+     * @param array     $instructors  A list of all instructors.
+     * @param array     $data data tags.
+     * @return bool     The notification message id.
+     */
+    public function send_recommendation_notification($instructors, array $data) {
+
+        $result = true;
+
+        // sent to all except the graduating student
+        foreach ($instructors as $instructor) {
+
+            $msg = new notification();
+            $msg->name              = 'recommendation_notification';
+            $msg->userto            = $instructor->get_id();
+            $msg->subject           = get_string('emailrecommendationnotify', 'local_booking', $data);
+            $msg->fullmessage       = get_string('emailrecommendationnotifymsg', 'local_booking', $data);
+            $msg->fullmessagehtml   = get_string('emailrecommendationnotifyhtml', 'local_booking', $data);
+            $msg->contexturl        = $data['bookingurl'];
+            $msg->contexturlname    = get_booking_config('ato')->name . ' ' . get_string('pluginname', 'local_booking');
+            $msg->set_additional_content('email', array('*' => array(
+                'footer' => get_string('bookingfooter', 'local_booking', $data))));
+
+            $result = $result && (message_send($msg) != 0);
+        }
+
+        return $result;
+    }
+
+    /**
      * Sends an email notifying the students and instructors
      * of a newly graduating student.
      *
@@ -412,7 +480,7 @@ class notification extends \core\message\message {
                 $msg->name              = 'graduation_notification';
                 $msg->userto            = $coursemember->get_id();
                 $msg->subject           = get_string('emailgraduationnotify', 'local_booking', $data);
-                $msg->fullmessage       = get_string('emailgraduationnotifyymsg', 'local_booking', $data);
+                $msg->fullmessage       = get_string('emailgraduationnotifymsg', 'local_booking', $data);
                 $msg->fullmessagehtml   = get_string('emailgraduationnotifyhtml', 'local_booking', $data);
 
                 $result = $result && (message_send($msg) != 0);

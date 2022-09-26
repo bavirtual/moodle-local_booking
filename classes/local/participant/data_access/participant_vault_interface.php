@@ -95,15 +95,6 @@ interface participant_vault_interface {
     public function get_student_quizes_grades(int $courseid, int $studentid);
 
     /**
-     * Get quize records for a student.
-     *
-     * @param int $courseid The course in context.
-     * @param int $userid   The student user id.
-     * @return {object}[]   The exam objects.
-     */
-    public function get_quizes(int $courseid, int $userid);
-
-    /**
      * Get student's enrolment date.
      *
      * @param int $studentid        The student id in reference
@@ -164,32 +155,13 @@ interface participant_vault_interface {
     public function get_student_exercise($courseid, $studentid, $next = true);
 
     /**
-     * Returns the number of attempts for a specific exercise.
+     * Returns the first file stored for the context id and grade id (itemid)
      *
-     * @param   int     The course id
-     * @param   int     The student user id
-     * @param   int     The exercise id to get the number of attempts for
-     * @return  int     The number of attempts for an exercise
+     * @param int    $contextid The context id for the exercise (assignment)
+     * @param int    $itemid    The context id for the exercise (assignment)
+     * @param string $component The assignment component
+     * @param string $filearea  The assignment file area
+     * @return object  The file record
      */
-    public function get_student_exercise_attempts(int $courseid, int $studentid, int $exerciseid);
-
-    /**
-     * Returns the the skill test assessment, which includes all
-     * skill test sections and thier exercises.
-     *
-     * @param   int     The course id
-     * @param   int     The student user id
-     * @param   string  The skill test main section name for looking up exercises
-     * @return  array   The skill test sections
-     */
-    public function get_student_skilltest_assessment(int $courseid, int $studentid, string $skilltestsecname);
-
-    /**
-     * Returns the the skill test assessment subsections (rubrics).
-     *
-     * @param   int     The student user id
-     * @param   int     The skill test section exercise id (assignment)
-     * @return  array   The skill test subsections
-     */
-    public function get_student_skilltest_subsections(int $studentid, int $assignid);
+    public static function get_student_feedback_file_info(int $contextid, int $itemid, string $component, string $filearea);
 }

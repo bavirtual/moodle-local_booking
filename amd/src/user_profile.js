@@ -75,6 +75,7 @@ function(
         processUserPreference('endorse', endorse, courseId, userId, 'endorse');
         processUserPreference('endorser', endorse ? endorser : '', courseId, userId, 'endorse');
         processUserPreference('endorsedate', endorse ? endorsedatets : '', courseId, userId, 'endorse');
+        processUserPreference('endorsenotify', endorse, courseId, userId, 'endorse');
     };
 
     /**

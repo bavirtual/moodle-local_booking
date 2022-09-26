@@ -452,7 +452,7 @@ function get_logbook_view(int $courseid, int $userid, string $templateformat) {
     // get summary information (not requested by the webservice)
     $pilot = $COURSE->subscriber->get_participant($userid);
     $logbook = $pilot->get_logbook(true, $templateformat == 'easa');
-    $totals = (array) $logbook->get_summary(true);
+    $totals = (array) $logbook->get_summary(true, $templateformat == 'easa');
     $data = [
         'courseid'      => $courseid,
         'userid'        => $userid,

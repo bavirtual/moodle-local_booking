@@ -55,11 +55,6 @@ class subscriber_vault implements subscriber_vault_interface {
     const DB_COURSE_SECTIONS = 'course_sections';
 
     /**
-     * Process course sections table name.
-     */
-    const DB_FILES = 'files';
-
-    /**
      * Returns the course section name containing the exercise
      *
      * @param int $courseid The course id of the section
@@ -214,7 +209,7 @@ class subscriber_vault implements subscriber_vault_interface {
     }
 
     /**
-     * Retrieves the number of modules for a specific exercise course.
+     * Retrieves the number of modules for a course.
      *
      * @param int $courseid The course id
      * @return int
@@ -233,35 +228,5 @@ class subscriber_vault implements subscriber_vault_interface {
 
 
         return $DB->get_record_sql($sql, ['courseid' => $courseid, 'lesson' => 'lesson', ])->modules;
-    }
-
-    /**
-     * Returns the first file stored for the context id and grade id (itemid)
-     *
-     * @param int $contextid The context id for the exercise (assignment)
-     * @param int $itemid    The context id for the exercise (assignment)
-     * @return object  The file record
-     */
-    public static function get_file_info(int $contextid, int $itemid) {
-        global $DB;
-
-        // Get the full user name
-        $sql = 'SELECT * FROM {' . self::DB_FILES . '}
-                WHERE
-                    contextid = :contextid AND
-                    itemid = :itemid AND
-                    component = :component AND
-                    filearea = :filearea AND
-                    filesize > 0
-                LIMIT 1';
-
-        $params = [
-            'contextid' => $contextid,
-            'itemid'    => $itemid,
-            'component' => 'assignfeedback_file',
-            'filearea'  => 'feedback_files'
-        ];
-
-        return $DB->get_record_sql($sql, $params);
     }
 }

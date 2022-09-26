@@ -103,9 +103,10 @@ interface logbook_interface {
      * Get the logbook entries time totals
      *
      * @param  bool $tostring The totals in string time format
-     * @return object         The logbook time table totals
+     * @param  bool $allcourses The totals of all courses
+     * @return object           The logbook time table totals
      */
-    public function get_summary(bool $tostring = false);
+    public function get_summary(bool $tostring = false, bool $allcourses = false);
 
     /**
      * Get the logbook entries time totals until a specific exercise
@@ -114,7 +115,7 @@ interface logbook_interface {
      * @param  bool $tostring The totals in string time format
      * @return array          The logbook time table totals
      */
-    public function get_summary_to_exercise(int $section, bool $tostring = false);
+    public function get_summary_upto_exercise(int $section, bool $tostring = false);
 
     /**
      * Get the course id for the log entry.

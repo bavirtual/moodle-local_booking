@@ -78,6 +78,7 @@
                             {{graduationstatus}}
                         </dd>
                     </dl>
+                    {{#hasevaluation}}
                     <dl>
                         <dt>{{#str}} endorsement , local_booking {{/str}}</dt>
                         <dd>
@@ -98,8 +99,9 @@
                             {{^tested}}
                             <dd><span>{{#str}} examinerreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>
                             {{/tested}}
-                            </dd>
+                        </dd>
                     </dl>
+                    {{/hasevaluation}}
                 </div>
             </section>
             <section class="node_category card d-inline-block w-100 mb-3">

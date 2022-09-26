@@ -61,7 +61,6 @@ $string['cancellationcomment'] = 'Please provide the student with a short commen
 $string['evaluate'] = 'Eval.';
 $string['graduate'] = 'Grad.';
 $string['configmissing'] = 'Failed to open {$a}';
-$string['crontask'] = 'Background processing for session booking';
 $string['customfielddual'] = 'Dual';
 $string['customfieldmulticrew'] = 'Multicrew';
 $string['elapseddays'] = 'Elapsed Days';
@@ -96,6 +95,8 @@ $string['statusbooked'] = 'confirmed';
 $string['statustentative'] = 'tentative';
 $string['students'] = 'Students';
 $string['studentavialability'] = 'Student availability';
+$string['taskcron'] = 'Background processing for session booking activity';
+$string['tasknotifications'] = 'Background processing of session booking notifications';
 $string['unknown'] = 'No grading record!';
 $string['zulutime'] = 'Zulu';
 
@@ -334,6 +335,7 @@ $string['datecompleted'] = 'Date training completed';
 $string['declarationtlabel'] = 'Declaration';
 $string['declarationtext'] = 'I certify that the candidate has successfully completed all the required exercises to a satisfactory standard, meets the pre-requisite
     requirements in accordance with {$a->ato} Flight Crew Standards and VATSIM PTD requirements, and I consider the candidate fully ready to undertake the Skill Test.';
+$string['deparr'] = 'Dep/Arr';
 $string['dualflight'] = 'Dual flight instruction';
 $string['duration'] = 'Duration';
 $string['examiner'] = 'Examiner';
@@ -342,10 +344,12 @@ $string['examinerreport'] = 'Examiner\'s Evaluation Form';
 $string['examinerreportfor'] = 'Examiner Form for';
 $string['examinerreportsubject'] = 'This is {$a->ato} ATO Examiner form for the skills test of the {$a->coursename} course.';
 $string['examreportcopies'] = 'Copies of the report shall be submitted to (1) The candidate (2) BAVirtual Flight Training (3) The Examiner.';
+$string['examdate'] = 'Exam date';
+$string['examend'] = 'Exam end time';
+$string['examstart'] = 'Exam start time';
+$string['gradescore'] = 'Grade';
 $string['recommendationreport'] = 'Recommendation For Skill Test';
 $string['recommendationreportsubject'] = 'This is {$a->ato} ATO Recommendation for Skill Test letter compiled by the instructor recommending a student for a Skill Test.';
-$string['examend'] = 'Exam end';
-$string['examstart'] = 'Exam start';
 $string['flighttraining'] = 'Flight Training';
 $string['flightttest'] = 'Flight Test';
 $string['footnote'] = '*These items may be combined at the discretion of the Examiner.';
@@ -361,6 +365,7 @@ $string['ratinglabel'] = 'Rating applied for';
 $string['recommendationletterver'] = 'Rev 2 09 Jun 22';
 $string['recommendedby'] = 'Recommended for skill test by';
 $string['results'] = 'Results';
+$string['skill'] = 'Skill';
 $string['skilltestformver'] = 'Rev 3 09 Jun 22';
 $string['testdate'] = 'Date of test';
 $string['theoryexamreport'] = 'Theory Examination Report';
@@ -428,6 +433,8 @@ $string['messageprovider:onhold_warning'] = 'Student on-hold warning notificatio
 $string['messageprovider:onhold_notification'] = 'Student placed on-hold notification';
 $string['messageprovider:suspension_notification'] = 'Student suspended notification';
 $string['messageprovider:sessionoverdue_notification'] = 'Instructor session overdue notification';
+$string['messageprovider:availabilityposting_notification'] = 'Student availability posting notification';
+$string['messageprovider:recommendation_notification'] = 'Student recommendation notification';
 $string['messageprovider:graduation_notification'] = 'Graduating students notification';
 
 // email to student: session tentative
@@ -537,7 +544,6 @@ $string['emailsuspendinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$
     <p>Please note {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.</p><hr />';
 
 // email to instructor: session overdue notification
-$string['emailoverduenobooking'] = 'no booking on record';
 $string['emailoverduenotify'] = '{$a->coursename}: Session overdue notification';
 $string['emailoverduenotifymsg'] = 'Please note that you have {$a->status}.  Please book a session with your assigned student or any student from the booking view. Otherwise, please ask the course administrator to remove you from the list of active instructors.
 You can book a session from the following view link: {$a->bookingurl}';
@@ -551,10 +557,34 @@ $string['emailoverduenotifyinsthtml'] = '<font face="sans-serif"><p><a href=\'{$
     otherwise to request removal from the list of active instructors.</p><hr />';
 $string['emailoverduestatus'] = 'not booked a session since \'{$a}\'';
 
+// email to instructors: student availability posting notification
+$string['emailavailpostingnotify'] = '{$a->coursename}: {$a->studentname} posted availability';
+$string['emailavailpostingnotifymsg'] = '{$a->studentname} had posted availability for the following days:
+
+        {$a->postingstext}
+
+        You can book a session with {$a->firstname} from the following view link: {$a->bookingurl}';
+$string['emailavailpostingnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr />
+    <p>{$a->studentname} had posted availability for the following days:</p><p>&nbsp;</p><p><div style="padding-left: 50px;">{$a->postingshtml}</div></p><p>&nbsp;</p>
+    <div style="padding-left: 0px;"><p>Click <a href="{$a->bookingurl}">here</a> to book a session with {$a->firstname}.</p><hr /></div>';
+
+// email to instructors: student recommendation notification
+$string['emailrecommendationnotify'] = '{$a->coursename}: {$a->studentname} QXC recommendation';
+$string['emailrecommendationnotifymsg'] = '{$a->coursename} student {$a->studentname} has completed the qualifying cross-country session to standard.
+    {$a->firstname} has been recommended for the {$a->skilltest} examination by {$a->instructorname}.
+
+    Note to examiners: please coordinate with the {$a->coursename} training manager to arrange for {$a->firstname}\'s {$a->skilltest} examination.
+    {$a->bookingurl}';
+$string['emailrecommendationnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->coursename} student <strong>{$a->studentname}</strong> has completed the qualifying cross-country assignment to standard.
+    <p>{$a->firstname} has been recommended for the {$a->skilltest} examination by {$a->instructorname}.</p>
+    <p>&nbsp;</p><p><i>Note to examiners: please coordinate with the {$a->coursename} training manager to arrange for {$a->firstname}\'s {$a->skilltest} examination.</i></p><hr />';
+
 // email to all: congratulations to new graduate
 $string['emailgraduation'] = 'Graduation congratulatory notification';
 $string['emailgraduationnotify'] = '{$a->fullname} newly graduated';
-$string['emailgraduationnotifyymsg'] = 'Congratulations {$a->firstname} !!!
+$string['emailgraduationnotifymsg'] = 'Congratulations {$a->firstname} !!!
 
     Join me in congratulating {$a->fullname} for passing the {$a->exercisename} examination. {$a->firstname} completed the {$a->atoname}
     {$a->coursename} coursework and achieved the {$a->rating} on {$a->completiondate}. Please make sure to post a message on the New Pilots Forum (https://forum.bavirtual.co.uk/forum/29-new-pilots/) to {$a->firstname} for this achievement.

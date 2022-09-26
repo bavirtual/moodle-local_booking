@@ -92,11 +92,41 @@ interface grade_interface {
     public function get_finalgrade();
 
     /**
+     * Get the final grade mark.
+     *
+     * @return string
+     */
+    public function get_grademark();
+
+    /**
      * Get the total grade or passing grade of the assignment.
      *
      * @return int
      */
     public function get_totalgrade();
+
+    /**
+     * Get the student's grade feedback comments.
+     *
+     * @return string
+     */
+    public function get_feedback_comments();
+
+    /**
+     * Get the grade feedback file.
+     *
+     * @param string $component The assignment component
+     * @param string $filearea  The assignment file area
+     * @return string
+     */
+    public function get_feedback_file(string $component, string $filearea);
+
+    /**
+     * Get the student's rubric grade info.
+     *
+     * @return string[]
+     */
+    public function get_graderubric();
 
     /**
      * Is a passing grade.
@@ -106,58 +136,9 @@ interface grade_interface {
     public function is_passinggrade();
 
     /**
-     * Set the exercise id of the grade.
+     * Wether the grade has rubric grading.
      *
-     * @param int
+     * @return bool
      */
-    public function set_exerciseid(int $exerciseid);
-
-    /**
-     * Set the exercise type of the grade.
-     *
-     * @param string
-     */
-    public function set_exercisetype(string $exercisetype);
-
-    /**
-     * Set the grader user id for the grade.
-     *
-     * @param int
-     */
-    public function set_graderid(int $graderid);
-
-    /**
-     * Set the grader name for the grade.
-     *
-     * @param string
-     */
-    public function set_gradername(string $gradername);
-
-    /**
-     * Set the studnet user id of the grade.
-     *
-     * @param int
-     */
-    public function set_studentid(int $studentid);
-
-    /**
-     * Set the studnet name of the grade.
-     *
-     * @param string
-     */
-    public function set_studentname(string $studentname);
-
-    /**
-     * Set the date timestamp of the grade.
-     *
-     * @param int
-     */
-    public function set_gradedate(int $gradedate);
-
-    /**
-     * Set the final grade.
-     *
-     * @param int
-     */
-    public function set_finalgrade(int $finalgrade);
+    public function has_rubric();
 }

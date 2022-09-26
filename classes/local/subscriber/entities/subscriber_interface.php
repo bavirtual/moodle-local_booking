@@ -163,14 +163,6 @@ interface subscriber_interface {
     public function get_modules_count();
 
     /**
-     * Retrieves the path for the graduation exercise's evaluation form file submission.
-     *
-     * @param  int      The student id with the file submission
-     * @return object
-     */
-    public function get_feedback_file(int $studentid);
-
-    /**
      * Returns an array of records from integrated database
      * that matches the passed criteria.
      *
@@ -189,4 +181,12 @@ interface subscriber_interface {
      * @return bool
      */
     public static function has_integration($key);
+
+    /**
+     * Checks if the subscribing course require
+     * skills evaluation.
+     *
+     * @return bool
+     */
+    public function has_skills_evaluation();
 }

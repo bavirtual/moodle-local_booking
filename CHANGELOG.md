@@ -1,5 +1,26 @@
 # Change log
 
+## [2022092600] - RELEASED 2022-09-26
+
+### Fixed
+
+- incorrect totals in EASA logbook. The total is course specific where it should be a grand total
+- exception handling when grading past session 'Objective Not Met' rubric exercises
+- evaluation button [Eval.] showing in courses with no skill evaluation
+- tcpdf exception handling for embedded images and media content
+
+### Added
+
+- instructor notifications when a student posts availability
+- instructor notifications when a student is recommended for the skills test
+- rubric and scale grades in mentor report
+
+### Changed
+
+- mentor report logbook format depending on course (dual vs multi-crew)
+- handling of images in pdf reports
+- grade retrieval from standard Moodle grading manager/controller
+
 ## [2022091700] - RELEASED 2022-09-17 - hotfix
 
 ### Fixed

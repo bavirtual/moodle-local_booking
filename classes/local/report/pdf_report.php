@@ -26,13 +26,12 @@
 namespace local_booking\local\report;
 
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
+require_once($CFG->dirroot . '/mod/assign/lib.php');
 
-use pdf;
-use assign;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
-use moodle_url;
-use stored_file;
+use local_booking\local\logbook\entities\logbook;
+use local_booking\local\session\entities\grade;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -42,7 +41,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  BAVirtual.co.uk © 2021
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class pdf_report extends pdf {
+class pdf_report extends \pdf {
 
     /**
      * @var subscriber $course The subscribed course.
@@ -53,6 +52,11 @@ class pdf_report extends pdf {
      * @var student $student The student for the report.
      */
     protected $student;
+
+    /**
+     * @var logbook $logbook The student's logbook for the report.
+     */
+    protected $logbook;
 
     /**
      * @var string $reporttype The report type.
@@ -130,7 +134,7 @@ class pdf_report extends pdf {
 
         // add VATSIM logo
         if ($this->includevatsimlogo) {
-            $vatsimlogo = new moodle_url($CFG->httpswwwroot .  '/local/booking/pix/vatsim_logo.png');
+            $vatsimlogo = new \moodle_url($CFG->httpswwwroot .  '/local/booking/pix/vatsim_logo.png');
             $this->Image($vatsimlogo->out(false), 408, 25, 148, 40);
         }
     }
@@ -182,63 +186,153 @@ class pdf_report extends pdf {
     }
 
     /**
-     * Get the practical examination assignment feedback comment text.
+     * Write the logbook entry html.
      *
      * @param  int $exerciseid  The assignment id.
      * @return string
      */
-    protected function get_feedback_text(int $exerciseid) {
+    protected function write_entry_info(int $exerciseid) {
 
-        // get course and associate module to find the practical exam skill test assignment
-        list ($course, $cm) = get_course_and_cm_from_cmid($exerciseid, 'assign');
+        // load the logbook if needed
+        if (!isset($this->logbook)) {
+            $this->logbook = new logbook($this->course->get_id(), $this->student->get_id());
+            $this->logbook->load();
+        }
 
-        // set context for the module and other requirements by the assignment
-        $context = \context_module::instance($cm->id);
+        // get the the logentry for the practical exam
+        $logbooksummary = (object) $this->logbook->get_summary_upto_exercise($exerciseid, true);
+        $logentry = $this->logbook->get_logentry_by_exericseid($exerciseid);
 
-        // get the practical exam assignment to get the associated feedback comments
-        $assign = new assign($context, $cm, $course);
+        // add entries to flight time array
+        $flighttimes = array();
+        if ($this->course->trainingtype == 'Dual') {
+            $flighttimes['dualtime'][0]      = !empty($logentry) ? $logentry->get_dualtime(false) : 0;
+            $flighttimes['dualtime'][1]      = !empty($logbooksummary->totaldualtime) ? $logbooksummary->totaldualtime : 0;
+        } else if ($this->course->trainingtype == 'Multicrew') {
+            $flighttimes['multipilottime'][0]= !empty($logentry) ? $logentry->get_multipilottime(false) : 0;
+            $flighttimes['multipilottime'][1]= !empty($logbooksummary->totalmultipilottime) ? $logbooksummary->totalmultipilottime : 0;
+        }
+        $flighttimes['pictime'][0]       = !empty($logentry) ? $logentry->get_pictime(false) : 0;
+        $flighttimes['pictime'][1]       = !empty($logbooksummary->totalpictime) ? $logbooksummary->totalpictime : 0;
+        $flighttimes['ifrtime'][0]       = !empty($logentry) ? $logentry->get_ifrtime() : 0;
+        $flighttimes['ifrtime'][1]       = !empty($logbooksummary->totalifrtime) ? $logbooksummary->totalifrtime : 0;
+        $flighttimes['picustime'][0]     = !empty($logentry) ? $logentry->get_picustime() : 0;
+        $flighttimes['picustime'][1]     = !empty($logbooksummary->totalpicustime) ? $logbooksummary->totalpicustime : 0;
+        $flighttimes['groundtime'][0]    = !empty($logentry) ? $logentry->get_groundtime(false) : 0;
+        $flighttimes['groundtime'][1]    = !empty($logbooksummary->totalgroundtime) ? $logbooksummary->totalgroundtime : 0;
+        $flighttimes['sessionlength'][0] = !empty($logentry) ? $logentry->get_totaltime(false) : 0;
+        $flighttimes['sessionlength'][1] = '';
+        $flighttimes['deparr'][0]        = !empty($logentry) ? $logentry->get_depicao() . '/' . $logentry->get_arricao() : '';
+        $flighttimes['deparr'][1]        = '';
 
-        // instantiate the feedback plugin
-        $feedback = new \assign_feedback_comments($assign,'comments');
+        // logbook information
+        $html = '<table width="400px" cellspacing="2" cellpadding="2">';
+        $html .= '<tr style="border: 1px solid black; border-style: dotted;">';
+        $html .= '<td></td><td style="font-weight: bold; width: 100px">' . ucfirst(get_string('flighttime', 'local_booking'));
+        $html .= '</td><td style="font-weight: bold; width: 100px">' . get_string('cumulative', 'local_booking') . '</td></tr>';
+        foreach ($flighttimes as $key => $flightdata) {
+            $html .= '<tr style="border: 1px solid black; border-style: dotted;">';
+            $html .= '<td><strong>' . get_string($key, 'local_booking') . '</strong></td><td>' . $flightdata[0] . '</td><td>' . $flightdata[1] . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</table><br />';
 
-        // get the grade associated with the assignment
-        $grade = $assign->get_user_grade($this->student->get_id(), false, 0);
-
-        // get the feedback plugin for the assignment
-        $feedbackplugins = $assign->get_feedback_plugins();
-
-        // find the assignment feedback comments plugin
-        array_walk($feedbackplugins, function($item) use (&$feedback) {
-            if (get_class($item) == 'assign_feedback_comments')
-                return $feedback = $item;
-        });
-
-        // get the feedback comment object
-        $feedbackcomment = $feedback->get_feedback_comments($grade->id);
-
-        // return the feedback comment text
-        return $feedbackcomment->commenttext;
+        // write the flight logbook entries table
+        $this->SetFont($this->fontfamily, '', 12);
+        $this->SetTextColor(72, 79, 87);
+        // place the logbook entry table differently from 1st page
+        $this->writeHTMLCell(0, 0, 50, ($this->PageNo() == 1 ? 310 : 210), $html, array('LRTB' => array(
+            'width' => 1,
+            'dash'  => 1,
+            'color' => array(144, 145, 145)
+        )));
     }
 
     /**
-     * Get the feedback file location.
+     * Get the grade information.
      *
-     * @return string $filepath
+     * @param  grade $grade  The assignment grade.
+     * @return string
      */
-    protected function get_feedback_filepath() {
+    protected function get_grade_info(grade $grade) {
 
-        // get the submitted evaluation file info from feedback file submission
-        $filerec = $this->course->get_feedback_file($this->student->get_id());
-        $file = new stored_file(get_file_storage(), (object) [
-            'contenthash' => $filerec->contenthash,
-            'filesize' => $filerec->filesize,
-        ]);
+        $html = '<strong>' . get_string('gradescore', 'local_booking') . ':</strong>&nbsp;&nbsp;';
+        $html .= $grade->get_grademark() . '<br />';
 
-        $fs = get_file_storage();
-        // $path = $fs->get_file_system()->filedir . '/' . substr($filehash, 0, 2) . '/' . substr($filehash, 2, 2) . '/' . $filehash;
-        $path = $fs->get_file_system()->get_local_path_from_storedfile($file);
+        // get rubric grading if available
+        if ($grade->has_rubric()) {
+            $rubricinfo = $grade->get_graderubric();
+            $html .= '<table width="500px" cellspacing="2" cellpadding="2">';
+            $html .= '<tr style="border: 1px solid black; border-style: solid;">';
+            $html .= '<td style="font-weight: bold; text-decoration: underline; font-size: 10px; width: 225px">' . get_string('skill', 'local_booking') . '</td>';
+            $html .= '<td style="font-weight: bold; text-decoration: underline; font-size: 10px; width: 50px">' . get_string('grade', 'local_booking') . '</td>';
+            $html .= '<td style="font-weight: bold; text-decoration: underline; font-size: 10px; width: 225px">' . get_string('feedback', 'local_booking') . '</td></tr>';
 
-        return $path;
+            foreach ($rubricinfo as $rubric) {
+                $html .= '<tr style="border: 1px solid black; border-style: dotted; font-size: 10px;">';
+                $html .= '<td>' . $rubric['name'] . '</td><td>' . $rubric['grade'] . '</td><td>' . $rubric['feedback'] . '</td>';
+                $html .= '</tr>';
+            }
+            $html .= '</table><br />';
+        }
+
+        return $html;
     }
 
+    /**
+     * Clean feedback text
+     *
+     * @param  grade $grade  The grade containing the feedback text comment
+     * @return string
+     */
+    protected function get_feedback_text(grade $grade) {
+
+        $html = '<br /><strong>' . get_string('feedback', 'local_booking') . ':</strong>';
+        $feedbackcomments = $grade->get_feedback_comments();
+
+        // process inline attachements or image tags, if exist
+        if (strpos($feedbackcomments, '@@PLUGINFILE@@')) {
+
+            // iterate through image tags
+            $tags = explode('<img ', $feedbackcomments);
+            foreach ($tags as $key => $tag) {
+
+                // skip first part that excludes an img tag
+                if ($key==0)
+                    continue;
+
+                // breakdown the pluginfile.php img tag, get the link and clean it
+                $imgtagend = strpos($tag, '>') + 1;
+                $imgurlstart = strpos($tag, '"', strpos($tag, 'src=')) + 1;
+                $imgurlend = strpos($tag, '"', $imgurlstart);
+                $imgurl = substr($tag, $imgurlstart, $imgurlend - $imgurlstart);
+
+                // get file path and check if the file exists for attached images
+                if (strpos($tag, '@@PLUGINFILE@@')) {
+                    $imgurlnew = $grade->get_feedback_file('assignfeedback_file', 'feedback_files');
+                    if (file_exists($imgurlnew))
+                        $tags[$key] = str_replace($imgurl, $imgurlnew, $tag);
+                    else
+                        $tags[$key] = 'img_not_found>' . substr($tag, $imgtagend);
+                }
+
+            }
+
+            // put the comment string back together
+            $feedbackcomments = implode('<img ', $tags);
+            $feedbackcomments = str_replace('<img img_not_found>', '[Image not found]', $feedbackcomments);
+        }
+
+        // clean the feedback text from any characters violating global encoding which will break tcpdf
+        $feedbackcommentarr = str_split($feedbackcomments);
+        array_walk($feedbackcommentarr, function(&$value, $key) use (&$feedbackcommentarr){
+            if (!mb_ord($value))
+                $feedbackcommentarr[$key] = '';
+        });
+
+        $html .= implode($feedbackcommentarr);
+
+        // return the feedback comment text
+        return $html;
+    }
 }

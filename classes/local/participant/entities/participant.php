@@ -25,7 +25,6 @@
 
 namespace local_booking\local\participant\entities;
 
-use DateTime;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\booking;
@@ -164,6 +163,17 @@ class participant implements participant_interface {
     }
 
     /**
+     * Returns full username
+     *
+     * @param int       $participantid The user id.
+     * @param bool      $includealternate Whether to include the user's alternate name.
+     * @return string   $fullusername The full participant username
+     */
+    public static function get_fullname(int $participantid, bool $alternate = true) {
+        return participant_vault::get_participant_name($participantid, $alternate);
+    }
+
+    /**
      * Get fullname.
      *
      * @param bool $alternate returns either the fullname w/ alternate or just first/last name
@@ -227,7 +237,7 @@ class participant implements participant_interface {
      */
     public function get_enrol_date() {
         $enrol = $this->enroldate ?: ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->timecreated;
-        $enrolmentdate = new DateTime('@' . $enrol);
+        $enrolmentdate = new \DateTime('@' . $enrol);
         return $enrolmentdate;
     }
 
@@ -237,7 +247,7 @@ class participant implements participant_interface {
      * @return DateTime $lastlogindate  The participant's last login date.
      */
     public function get_last_login_date() {
-        $lastlogindate = !empty($this->lastlogin) ? new DateTime('@' . $this->lastlogin) : null;
+        $lastlogindate = !empty($this->lastlogin) ? new \DateTime('@' . $this->lastlogin) : null;
         return $lastlogindate;
     }
 
@@ -250,20 +260,9 @@ class participant implements participant_interface {
     public function get_last_graded_date() {
         $lastgraded = $this->vault->get_last_graded_date($this->userid, $this->course->get_id(), $this->is_student);
 
-        $lastgradeddate = !empty($lastgraded) ? new DateTime('@' . $lastgraded->timemodified) : null;
+        $lastgradeddate = !empty($lastgraded) ? new \DateTime('@' . $lastgraded->timemodified) : null;
 
         return $lastgradeddate;
-    }
-
-    /**
-     * Returns full username
-     *
-     * @param int       $participantid The user id.
-     * @param bool      $includealternate Whether to include the user's alternate name.
-     * @return string   $fullusername The full participant username
-     */
-    public static function get_fullname(int $participantid, bool $alternate = true) {
-        return participant_vault::get_participant_name($participantid, $alternate);
     }
 
     /**
@@ -299,15 +298,6 @@ class participant implements participant_interface {
             $fld = 'profile_field_' . $field;
         }
         return $corefield ? $u->$field : $u->$fld;
-    }
-
-    /**
-     * Set user name.
-     *
-     * @param string $fullname;
-     */
-    public function set_name(string $fullname) {
-        $this->fullname = $fullname;
     }
 
     /**

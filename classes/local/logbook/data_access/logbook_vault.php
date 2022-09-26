@@ -216,9 +216,10 @@ class logbook_vault implements logbook_vault_interface {
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
+     * @param  bool $allcourses The totals of all courses
      * @return object    $totaldualtime, $totalgroundtime, $totalpictime
      */
-    public static function get_logbook_summary(int $courseid, int $userid) {
+    public static function get_logbook_summary(int $courseid, int $userid, bool $allcourses = false) {
         global $DB;
 
         $sql = 'SELECT SUM(groundtime) as totalgroundtime,
@@ -238,8 +239,8 @@ class logbook_vault implements logbook_vault_interface {
                     SUM(landingsday) as totallandingsday,
                     SUM(landingsnight) as totallandingsnight
                 FROM {' . self::DB_LOGBOOKS .'}
-                WHERE courseid = :courseid
-                AND userid = :userid';
+                WHERE ' . ($allcourses ? '' : 'courseid = :courseid AND ') .
+                    'userid = :userid';
 
         $params = [
             'courseid' => $courseid,

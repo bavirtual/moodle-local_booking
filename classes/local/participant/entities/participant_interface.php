@@ -51,6 +51,15 @@ interface participant_interface {
     public function get_name();
 
     /**
+     * Returns full username
+     *
+     * @param int       $participantid The user id.
+     * @param bool      $includealternate Whether to include the user's alternate name.
+     * @return string   $fullusername The full participant username
+     */
+    public static function get_fullname(int $participantid, bool $alternate = true);
+
+    /**
      * Returns a participant's user profile field
      *
      * @param string $field     The name of the field
@@ -58,13 +67,6 @@ interface participant_interface {
      * @return string           The participant custom field
      */
     public function get_profile_field(string $field, bool $corefield = false);
-
-    /**
-     * Set user name.
-     *
-     * @param string $fullname;
-     */
-    public function set_name(string $fullname);
 
     /**
      * Get an participant's bookings
@@ -106,15 +108,6 @@ interface participant_interface {
      * @return  DateTime    The timestamp of the last grading
      */
     public function get_last_graded_date();
-
-    /**
-     * Returns full username
-     *
-     * @param int       $participantid The user id.
-     * @param bool      $includealternate Whether to include the user's alternate name.
-     * @return string   $fullusername The full participant username
-     */
-    public static function get_fullname(int $participantid, bool $alternate = true);
 
     /**
      * Returns participant's simulator user field

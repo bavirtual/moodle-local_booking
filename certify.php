@@ -54,7 +54,6 @@ require_capability('local/booking:view', $context);
 // get the graduating student
 $COURSE->subscriber = new subscriber($courseid);
 $student = new student($COURSE->subscriber, $studentid);
-$evaluationrequired = !empty($COURSE->subscriber->examinerformurl);
 $title = $COURSE->subscriber->get_shortname() . ' ' . get_string('pluginname', 'local_booking');
 $title = get_string('pluginname', 'local_booking');
 
@@ -64,7 +63,7 @@ if ($examinerid != $USER->id)
     throw new Error(get_string('errorcertifiernotexaminer', 'local_booking'));
 
 // check if student evaluation is required and if so whether the student has been evaluated
-if ($evaluationrequired && !$student->evaluated()) {
+if ($COURSE->subscriber->has_skills_evaluation() && !$student->evaluated()) {
 
     // redirect to the evaluation form
     $params = ['courseid' => $courseid,'userid' => $studentid, 'report' => 'examiner'];

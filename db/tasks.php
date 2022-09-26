@@ -25,13 +25,23 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// run everyday at 2:00 am
+// run everyday at 2:00 am for activity management, and
+// every 10 mins for sending notifications.
 $tasks = array(
     array(
         'classname' => '\local_booking\task\cron_task',
         'blocking' => 0,
         'minute' => '0',  // 0
         'hour' => '2',  // 2
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+    ),
+    array(
+        'classname' => '\local_booking\task\notifications_task',
+        'blocking' => 0,
+        'minute' => '*/10',  // */10
+        'hour' => '*',
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'

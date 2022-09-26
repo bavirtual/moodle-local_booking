@@ -69,9 +69,9 @@ class pdf_report_theoryexam extends pdf_report {
                 'studentname' => $this->student->get_name(false),
                 'vatsimid' => $this->student->get_profile_field('VATSIMID'),
                 'attempts' => $exam->attempts,
-                'score' => intval($exam->score),
+                'score' => intval($exam->grade),
                 'total' => intval($exam->totalgrade),
-                'percent' => intval(($exam->score / $exam->totalgrade) * 100),
+                'percent' => intval(($exam->grade / $exam->totalgrade) * 100),
             ];
             $scorenote = get_string('mentorreportdesc', 'local_booking', $scoredata);
 
@@ -99,10 +99,12 @@ class pdf_report_theoryexam extends pdf_report {
             // write exam information
             $html = '<br /><p>';
             $html = '<table width="300px" cellspacing="2" cellpadding="2">';
+            $html .= '<tr><td style="font-weight: bold; width: 100">' . get_string('examdate', 'local_booking') . ':</td>';
+            $html .= '<td style="width: 200">' . $starttime->format('F m\, Y') . '</td></tr>';
             $html .= '<tr><td style="font-weight: bold; width: 100">' . get_string('examstart', 'local_booking') . ':</td>';
-            $html .= '<td style="width: 200">' . $starttime->format('M j \a\t H:i \z') . '</td></tr>';
+            $html .= '<td style="width: 200">' . $starttime->format('H:i \z') . '</td></tr>';
             $html .= '<tr><td style="font-weight: bold; width: 100">' . get_string('examend', 'local_booking') . ':</td>';
-            $html .= '<td style="width: 200">' . $endtime->format('M j \a\t H:i \z') . '</td></tr>';
+            $html .= '<td style="width: 200">' . $endtime->format('H:i \z') . '</td></tr>';
             $html .= '<tr><td style="font-weight: bold; width: 100">' . get_string('duration', 'local_booking') . ':</td>';
             $html .= '<td style="width: 200">' . $duration . '</td></tr></table></p>';
             $html .= '<p>' . $scorenote . '</p>';

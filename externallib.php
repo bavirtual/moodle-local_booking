@@ -146,7 +146,8 @@ class local_booking_external extends external_api {
             $COURSE->subscriber = new subscriber($courseid);
 
         $logbook = new logbook($courseid, $userid);
-        $logbook->load();
+        $viewformat = get_user_preferences('local_booking_logbookformat', 'std');
+        $logbook->load($viewformat == 'easa');
         $logbookentries = $logbook->get_logentries();
         $entries = [];
         foreach ($logbookentries as $entry) {
@@ -868,16 +869,21 @@ class local_booking_external extends external_api {
         $warnings = array();
 
         // add new slots after removing previous ones for the week
-        $result = $student->save_slots($params);
+        $slots = $student->save_slots($params);
 
-        if ($result) {
+        // activate posting notification
+        $existingslots = get_user_preferences('local_booking_' . $courseid . '_postingnotify', '', $student->get_id());
+        $slotstonotify = $existingslots . (empty($existingslots) ? '' : ',') . $slots;
+        set_user_preference('local_booking_' . $courseid . '_postingnotify', $slotstonotify, $student->get_id());
+
+        if (!empty($slots)) {
             \core\notification::success(get_string('slotssavesuccess', 'local_booking'));
         } else {
             \core\notification::error(get_string('slotssaveunable', 'local_booking'));
         }
 
         return array(
-            'result' => $result,
+            'result' => !empty($slots),
             'warnings' => $warnings
         );
     }

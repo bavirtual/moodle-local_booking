@@ -59,32 +59,14 @@ class pdf_report_practicalexam extends pdf_report {
         // write the parent intro
         parent::WriteContent();
 
-        // get the exercise id (assignment id) for the practical exam assignment
+        // get the exercise id (assignment id) for the practical exam assignment and its grade
         $exerciseid = $this->course->get_graduation_exercise();
+        $grade = $this->student->get_grade($exerciseid);
 
         // write course name
         $this->SetFont($this->fontfamily, 'B', 18);
         $this->SetTextColor(255, 255, 255);
         $this->Cell(0, 0, $this->course->get_exercise_name($exerciseid), 0, 1, 'C', 1);
-
-        // get the the logentry for the practical exam
-        $logbook = new logbook($this->course->get_id(), $this->student->get_id());
-        $logbook->load();
-        $logbooksummary = (object) $logbook->get_summary(true);
-        $logentry = $logbook->get_logentry_by_exericseid($exerciseid);
-
-        // add entries to flight time array
-        $flighttimes = array();
-        $flighttimes['dualtime'][0] = !empty($logentry) ? $logentry->get_dualtime(false) : 0;
-        $flighttimes['dualtime'][1] = $logbooksummary->totaldualtime;
-        $flighttimes['solotime'][0] = !empty($logentry) ? $logentry->get_pictime(false) : 0;
-        $flighttimes['solotime'][1] = $logbooksummary->totalpictime;
-        $flighttimes['groundtime'][0] = !empty($logentry) ? $logentry->get_groundtime(false) : 0;
-        $flighttimes['groundtime'][1] = $logbooksummary->totalgroundtime;
-        $flighttimes['landingsday'][0] = !empty($logentry) ? $logentry->get_landingsday() : 0;
-        $flighttimes['landingsday'][1] = $logbooksummary->totallandingsday;
-        $flighttimes['sessionlength'][0] = !empty($logentry) ? $logentry->get_totaltime(false) : 0;
-        $flighttimes['sessionlength'][1] = '';
 
         // write student name and VATSIM ID
         $this->SetTextColor(0,0,0);
@@ -97,40 +79,22 @@ class pdf_report_practicalexam extends pdf_report {
         $this->writeHTML($html, true, false, true);
 
         // examiner information
-        $examiner = '';
-        if (!empty($logentry))
-            $examiner = participant::get_fullname($logentry->get_p1id());
-        $html = '<p><h4>' . get_string('examiner', 'local_booking') . ': ' . $examiner . '</h4></p>';
+        $examiner = participant::get_fullname($grade->get_graderid());
+        $html = '<p><br /><span style="font-weight: bold;">' . get_string('instructor', 'local_booking') . ': ' . $examiner . '</span><br />';
+        $html .= '<span style="font-weight: bold;">' . get_string('logbookdate', 'local_booking') . ':</span>&nbsp;';
+        $html .= '<span style="font-weight: normal;">' . (new \DateTime('@'.$grade->get_gradedate()))->format('M d\, Y') . '</span></p>';
         $this->SetFont($this->fontfamily, 'B', 12);
         $this->SetTextColor(0, 0, 0);
         $this->writeHTML($html, true, false, true);
 
-        // logbook information
-        $html = '<table width="400px" cellspacing="2" cellpadding="2">';
-        $html .= '<tr style="border: 1px solid black; border-style: dotted;">';
-        $html .= '<td></td><td style="font-weight: bold; width: 100px">' . ucfirst(get_string('flighttime', 'local_booking'));
-        $html .= '</td><td style="font-weight: bold; width: 100px">' . get_string('cumulative', 'local_booking') . '</td></tr>';
-        foreach ($flighttimes as $key => $flightdata) {
-            $html .= '<tr style="border: 1px solid black; border-style: dotted;">';
-            $html .= '<td><strong>' . get_string($key, 'local_booking') . '</strong></td><td>' . $flightdata[0] . '</td><td>' . $flightdata[1] . '</td>';
-            $html .= '</tr>';
-        }
-        $html .= '</table><br />';
+        // write logbook entry header for the exercise
+        $this->write_entry_info($exerciseid);
 
-        // write the flight logbook entries table
-        $this->SetFont($this->fontfamily, '', 12);
-        $this->SetTextColor(72, 79, 87);
-        $this->writeHTMLCell(0, 0, 50, 300, $html, array('LRTB' => array(
-            'width' => 1,
-            'dash'  => 1,
-            'color' => array(144, 145, 145)
-        )));
-
-        // feedback comments
-        $html = '<strong>' . get_string('feedback', 'local_booking') . ':</strong>';
-        $html .= $this->get_feedback_text($exerciseid);
+        // write grade and feedback information
+        $html = $this->get_grade_info($grade);
+        $html .= $this->get_feedback_text($grade);
         $this->SetTextColor(0, 0, 0);
-        $this->Ln(160);
+        $this->Ln(200);
         $this->writeHTML($html, true, false, true);
     }
 }

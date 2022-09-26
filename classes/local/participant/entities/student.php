@@ -25,18 +25,12 @@
 
 namespace local_booking\local\participant\entities;
 
-require_once($CFG->libdir . '/grade/grade_scale.php');
-
-use assign;
-use DateTime;
-use moodle_exception;
 use local_booking\local\session\entities\priority;
 use local_booking\local\session\entities\booking;
 use local_booking\local\session\entities\grade;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\slot\entities\slot;
 use local_booking\local\subscriber\entities\subscriber;
-use mod_assign_external;
 
 class student extends participant {
 
@@ -116,9 +110,9 @@ class student extends participant {
     protected $courseworkcomplete;
 
     /**
-     * @var boolean $evaluated Whether the student was evaluated for the skill test after completion.
+     * @var string $evaluationfile the student's skill test evaluation file.
      */
-    protected $evaluated;
+    protected $evaluationfile;
 
     /**
      * Constructor.
@@ -143,6 +137,8 @@ class student extends participant {
     public function save_slots(array $params) {
         global $DB;
 
+        $slotid = 0;
+        $slotids = '';
         $slots = $params['slots'];
         $year = $params['year'];
         $week = $params['week'];
@@ -164,18 +160,20 @@ class student extends participant {
                     $week,
                 );
 
-                // add each slot.
-                $result = $result && slot_vault::save_slot($newslot);
+                // add each slot and record the slot id
+                $slotid = slot_vault::save_slot($newslot);
+                $slotids .= (!empty($slotids) ? ',' : '') . $slotid;
+                $result = $result && $slotid != 0;
             }
         }
 
         if ($result) {
             $transaction->allow_commit();
         } else {
-            $transaction->rollback(new moodle_exception(get_string('slotssaveunable', 'local_booking')));
+            $transaction->rollback(new \moodle_exception(get_string('slotssaveunable', 'local_booking')));
         }
 
-        return $result;
+        return $slotids;
     }
 
     /**
@@ -198,19 +196,40 @@ class student extends participant {
         if ($result) {
             $transaction->allow_commit();
         } else {
-            $transaction->rollback(new moodle_exception(get_string('slotsdeleteunable', 'local_booking')));
+            $transaction->rollback(new \moodle_exception(get_string('slotsdeleteunable', 'local_booking')));
         }
 
         return $result;
     }
 
     /**
-     * Get records of a specific quiz for a student.
+     * Get a list of the student assignment objects.
      *
-     * @return {object}[]   The exam objects.
+     * @return {object}[]   An array of the student exercise objects.
+     */
+    public function get_assignments() {
+        $assigns = [];
+        $exercises = $this->get_exercises();
+        foreach ($exercises as $exerciseid => $exercise) {
+            list ($course, $cm) = get_course_and_cm_from_cmid($exerciseid, 'assign');
+            $context = \context_module::instance($cm->id);
+            $assigns[] = new \assign($context, $cm, $course);
+        }
+
+        return $assigns;
+    }
+
+    /**
+     * Get a list of the student exercise grades objects.
+     *
+     * @return {object}[]   An array of the student exercise objects.
      */
     public function get_exercises() {
-        return $this->vault->get_student_exercises_grades($this->course->get_id(), $this->userid);
+        if (!isset($this->exercises)) {
+            $this->exercises = $this->vault->get_student_exercises_grades($this->course->get_id(), $this->userid);
+        }
+
+        return $this->exercises;
     }
 
     /**
@@ -219,7 +238,10 @@ class student extends participant {
      * @return {object}[]   The exam objects.
      */
     public function get_quizes() {
-        return $this->vault->get_quizes($this->course->get_id(), $this->userid);
+        if (!isset($this->quizes)) {
+            $this->quizes = $this->vault->get_student_quizes_grades($this->course->get_id(), $this->userid);
+        }
+        return $this->quizes;
     }
 
     /**
@@ -232,9 +254,7 @@ class student extends participant {
 
         if (empty($this->grades)) {
             // join both graded assignments and attempted quizes into one grades array
-            $this->exercises = $this->vault->get_student_exercises_grades($this->course->get_id(), $this->userid);
-            $this->quizes = $this->vault->get_student_quizes_grades($this->course->get_id(), $this->userid);
-            $this->grades = $this->exercises + $this->quizes;
+            $this->grades = $this->get_exercises() + $this->get_quizes();
         }
 
         return $this->grades;
@@ -243,6 +263,7 @@ class student extends participant {
     /**
      * Get student grade for a specific exercise.
      *
+     * @param int  $exerciseid  The exercise id associated with the grade
      * @return grade The student exercise grade.
      */
     public function get_grade(int $exerciseid) {
@@ -251,10 +272,43 @@ class student extends participant {
         if (!empty($this->grades) && array_search($exerciseid, array_column($this->grades, 'exerciseid'))) {
             $grade = new grade($this->grades[$exerciseid], $this->userid);
         } else {
+            $graderec = $this->vault->get_student_exercises_grade($this->course->get_id(), $this->userid, $exerciseid);
+            if (!empty($graderec))
+                $grade = new grade($graderec, $this->userid);
+        }
+
+        return $grade;
+    }
+
+    /**
+     * Get student grade for the current exercise.
+     *
+     * @return grade The student exercise grade.
+     */
+    public function get_current_grade() {
+
+        $grade = null;
+        $exerciseid = $this->get_current_exercise();
+        if (!empty($this->grades) && array_search($exerciseid, array_column($this->grades, 'exerciseid'))) {
+            $grade = new grade($this->grades[$exerciseid], $this->userid);
+        } else {
             $grade = new grade($this->vault->get_student_exercises_grade($this->course->get_id(), $this->userid, $exerciseid), $this->userid);
         }
 
         return $grade;
+    }
+
+    /**
+     * Return student slots for a particular week/year.
+     *
+     * @return array array of days
+     */
+    public function get_slot(int $slotid) {
+
+        if (empty($this->slots[$slotid]))
+            $this->slots[$slotid] = slot_vault::get_slot($slotid);
+
+        return $this->slots[$slotid];
     }
 
     /**
@@ -304,7 +358,7 @@ class student extends participant {
     public function get_first_slot_date() {
         $firstsession = slot_vault::get_first_posted_slot($this->userid);
         $sessiondatets = !empty($firstsession) ? $firstsession->starttime : time();
-        $sessiondate = new DateTime('@' . $sessiondatets);
+        $sessiondate = new \DateTime('@' . $sessiondatets);
 
         return $sessiondate;
     }
@@ -320,7 +374,7 @@ class student extends participant {
         if (empty($this->restrictiondate)) {
             // get wait time restriction waiver if exists
             $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->course->get_id() . '_availabilityoverride', false, $this->userid);
-            $nextsessiondate = new DateTime('@' . time());
+            $nextsessiondate = new \DateTime('@' . time());
 
             // process restriction if posting wait restriction is enabled or if the student doesn't have a waiver
             if ($this->course->postingwait > 0 && !$hasrestrictionwaiver) {
@@ -329,7 +383,7 @@ class student extends participant {
 
                 // fallback to last graded then enrollment date
                 if (!empty($lastsession)) {
-                    $nextsessiondate = new DateTime('@' . $lastsession);
+                    $nextsessiondate = new \DateTime('@' . $lastsession);
                 } else {
                     $lastgraded = $this->get_last_graded_date();
                     if (!empty($lastgraded))
@@ -343,7 +397,7 @@ class student extends participant {
 
                 // return today's date if the posting wait restriction date had passed
                 if ($nextsessiondate->getTimestamp() < time())
-                    $nextsessiondate = new DateTime('@' . time());
+                    $nextsessiondate = new \DateTime('@' . time());
             }
 
             // rest the hours to start of the day
@@ -399,16 +453,6 @@ class student extends participant {
             $this->nextexercise = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, true);
 
         return $this->nextexercise;
-    }
-
-    /**
-     * Returns the number of attempts for a specific exercise.
-     *
-     * @param int $exerciseid   The exercise id of the attempts
-     * @return int The current or next exercise id and associated course section
-     */
-    public function get_exercise_attempts(int $exerciseid) {
-        return $this->vault->get_student_exercise_attempts($this->course->get_id(), $this->userid, $exerciseid);
     }
 
     /**
@@ -495,11 +539,17 @@ class student extends participant {
             // check if the student is not graduating
             if (!$this->has_completed_coursework()) {
 
-                // exercise associated withe completed lessons depends on whether the student passed the current exercise
-                $exerciseid = ($this->get_grade($this->get_current_exercise())->is_passinggrade()) ? $this->get_next_exercise() : $this->get_current_exercise();
+                // exercise associated with completed lessons depends on whether the student passed the current exercise
+                $grade = $this->get_grade($this->get_current_exercise());
+                if (!empty($grade))
+                    // check if passed exercise or received a progressing or objective not met grade
+                    $exerciseid = $grade->is_passinggrade() ? $this->get_next_exercise() : $this->get_current_exercise();
+                else
+                    $exerciseid = $this->get_current_exercise();
 
                 // get lessons complete
                 $this->lessonsecomplete = $this->vault->is_student_lessons_complete($this->userid, $this->course->get_id(), $exerciseid);
+
             } else {
                 $this->lessonsecomplete = true;
             }
@@ -514,10 +564,14 @@ class student extends participant {
      *
      * @return  bool    Whether the course work has been completed.
      */
-    public function has_completed_coursework(grade $grade = null) {
+    public function has_completed_coursework() {
 
         if (!isset($this->courseworkcomplete)) {
-            $this->courseworkcomplete = !empty($this->get_grade($this->course->get_graduation_exercise())->get_finalgrade());
+            $grade = $this->get_grade($this->course->get_graduation_exercise());
+            if (!empty($grade))
+                $this->courseworkcomplete = !empty($grade->get_finalgrade());
+            else
+                $this->courseworkcomplete = false;
         }
 
         return $this->courseworkcomplete;
@@ -531,13 +585,8 @@ class student extends participant {
      * @return  bool    Whether the student has been evaluated.
      */
     public function evaluated() {
-
-        if (!isset($this->evaluated)) {
-            $this->evaluated = !empty($this->course->get_feedback_file($this->userid));
-        }
-
-        // return whethere there are feedback files
-        return $this->evaluated;
+        $finalgrade = $this->get_grade($this->course->get_graduation_exercise());
+        return !empty($finalgrade->get_feedback_file('assignfeedback_file', 'feedback_files'));
     }
 
     /**

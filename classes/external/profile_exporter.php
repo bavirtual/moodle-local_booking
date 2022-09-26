@@ -212,6 +212,9 @@ class profile_exporter extends exporter {
             'hasexams' => [
                 'type'  => PARAM_BOOL,
             ],
+            'hasevaluation' => [
+                'type'  => PARAM_BOOL,
+            ],
             'loginasurl' => [
                 'type' => PARAM_URL,
             ],
@@ -275,19 +278,26 @@ class profile_exporter extends exporter {
         $testexerciseid = $COURSE->subscriber->get_graduation_exercise();
         $tested = !empty($grades[$testexerciseid]);
         $qualified = $nextexerciseid == $testexerciseid || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP) || $tested;
-        $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $this->user->get_id());
+        $hasevaluation = $COURSE->subscriber->has_skills_evaluation();
+        $endorsed = false;
+        $endorsementmsg = '';
         $hasexams = count($this->user->get_quizes()) > 0;
 
-        // endorsement information
-        $endorsementmgs = array();
-        if ($endorsed) {
-            $endorserid = get_user_preferences('local_booking_' . $this->courseid . '_endorser', '', $this->user->get_id());
-            $endorser = !empty($endorserid) ? participant::get_fullname($endorserid) : get_string('notfound', 'local_booking');
-            $endorseronts = !empty($endorserid) ? get_user_preferences('local_booking_' . $this->courseid . '_endorsedate', '', $this->user->get_id()) : time();
-            $endorsementmgs = [
-                'endorser' => $endorser,
-                'endorsedate' =>  (new \Datetime('@'.$endorseronts))->format('M j\, Y')
-            ];
+        if ($hasevaluation) {
+
+            // endorsement information
+            $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $this->user->get_id());
+            $endorsementmgs = array();
+            if ($endorsed) {
+                $endorserid = get_user_preferences('local_booking_' . $this->courseid . '_endorser', '', $this->user->get_id());
+                $endorser = !empty($endorserid) ? participant::get_fullname($endorserid) : get_string('notfound', 'local_booking');
+                $endorseronts = !empty($endorserid) ? get_user_preferences('local_booking_' . $this->courseid . '_endorsedate', '', $this->user->get_id()) : time();
+                $endorsementmgs = [
+                    'endorser' => $endorser,
+                    'endorsedate' =>  (new \Datetime('@'.$endorseronts))->format('M j\, Y')
+                ];
+                $endorsementmsg = get_string($endorsed ? 'endorsementmgs' : 'skilltestendorse', 'local_booking', $endorsementmgs);
+            }
         }
 
         // moodle profile url
@@ -385,11 +395,12 @@ class profile_exporter extends exporter {
             'lastlessoncompleted'      => $this->user->has_completed_lessons() ? get_string('yes') : get_string('no'),
             'graduationstatus'         => $graduationstatus,
             'qualified'                => $qualified,
+            'hasevaluation'            => $hasevaluation,
             'endorsed'                 => $endorsed,
             'endorser'                 => $USER->id,
             'endorsername'             => \local_booking\local\participant\entities\participant::get_fullname($USER->id),
             'endorsementlocked'        => !empty($endorsed) && $endorsed && $endorserid != $USER->id,
-            'endorsementmgs'           => get_string($endorsed ? 'endorsementmgs' : 'skilltestendorse', 'local_booking', $endorsementmgs),
+            'endorsementmgs'           => $endorsementmsg,
             'recommendationletterlink' => $recommendationletterlink->out(false),
             'suspended'                => !$this->user->is_active(),
             'onholdrestrictionenabled' => $COURSE->subscriber->onholdperiod != 0,

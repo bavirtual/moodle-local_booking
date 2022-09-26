@@ -58,7 +58,8 @@ class pdf_report_skilltest extends pdf_report {
      */
     public function Generate(bool $coverpage = false) {
 
-        $pdffilename = $this->get_feedback_filepath();
+        $grade = $this->student->get_grade($this->course->get_graduation_exercise());
+        $pdffilename = $grade->get_feedback_file('assignfeedback_file', 'feedback_files');
         $patharr = explode('/' , $pdffilename);
         $filename = array_pop($patharr);
         $path = implode('/', $patharr);

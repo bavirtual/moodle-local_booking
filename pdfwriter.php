@@ -27,7 +27,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_booking\local\participant\entities\student;
 use local_booking\local\report\pdf_report_mentor;
 use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\report\pdf_report_theoryexam;
@@ -45,6 +44,13 @@ $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $userid = optional_param('userid', 0, PARAM_INT);
 $reporttype = optional_param('report', 'mentor', PARAM_RAW);
+
+$url = new moodle_url('/local/booking/view.php');
+$url->param('courseid', $courseid);
+$url->param('userid', $userid);
+$url->param('report', $reporttype);
+
+$PAGE->set_url($url);
 
 $context = context_course::instance($courseid);
 
@@ -64,20 +70,20 @@ switch ($reporttype) {
         $theoryexamreport->Generate();
         break;
     case 'mentor':
-        $theoryexamreport = new pdf_report_mentor($COURSE->subscriber, $student);
-        $theoryexamreport->Generate();
+        $mentorreport = new pdf_report_mentor($COURSE->subscriber, $student);
+        $mentorreport->Generate();
         break;
     case 'practicalexam':
-        $theoryexamreport = new pdf_report_practicalexam($COURSE->subscriber, $student);
-        $theoryexamreport->Generate();
+        $practicalreport = new pdf_report_practicalexam($COURSE->subscriber, $student);
+        $practicalreport->Generate();
         break;
     case 'examiner':
-        $theoryexamreport = new pdf_report_skilltest($COURSE->subscriber, $student);
-        $theoryexamreport->Generate();
+        $examinerreport = new pdf_report_skilltest($COURSE->subscriber, $student);
+        $examinerreport->Generate();
         break;
     case 'recommendation':
-        $theoryexamreport = new pdf_report_recommendletter($COURSE->subscriber, $student);
-        $theoryexamreport->Generate();
+        $recommendationreport = new pdf_report_recommendletter($COURSE->subscriber, $student);
+        $recommendationreport->Generate();
         break;
 }
 

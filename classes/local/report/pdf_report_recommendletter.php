@@ -25,7 +25,6 @@
 
 namespace local_booking\local\report;
 
-use DateTime;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
@@ -86,7 +85,7 @@ class pdf_report_recommendletter extends pdf_report {
         $recomendedby = !empty($instructor) ? $instructor->get_name() : get_string('notfound', 'local_booking');
         $recomendedbyVATSIM = !empty($instructor) ? $instructor->get_profile_field('VATSIMID') : get_string('notfound', 'local_booking');
         $recomendedonts = !empty($instructor) ? get_user_preferences('local_booking_' . $this->course->get_id() . '_endorsedate', '', $this->student->get_id()) : get_string('notfound', 'local_booking');
-        $recomendedon = !empty($recomendedonts) ? (new DateTime('@'.$recomendedonts))->format('M j\, Y') : get_string('notfound', 'local_booking');
+        $recomendedon = !empty($recomendedonts) ? (new \DateTime('@'.$recomendedonts))->format('M j\, Y') : get_string('notfound', 'local_booking');
 
         // write student name and VATSIM ID
         $this->SetTextColor(0,0,0);

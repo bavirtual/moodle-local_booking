@@ -134,7 +134,7 @@ class action implements action_interface {
             case 'grade':
 
                 // get exercise to be graded
-                $exerciseid = $student->get_next_exercise();
+                $exerciseid = $student->get_current_grade()->get_finalgrade() > 1 ? $student->get_next_exercise() : $student->get_current_exercise();
 
                 // set grading url
                 $actionurl = '/local/booking/assign.php';

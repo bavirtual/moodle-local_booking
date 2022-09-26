@@ -1,6 +1,24 @@
 # Change log
 
-## [2022092600] - RELEASED 2022-09-26
+## [2022092603] - RELEASED 2022-09-26 - hotfix
+
+### Fixed
+
+- PICUS & IFR flight time display formatting
+
+## [2022092602] - RELEASED 2022-09-26 - hotfix
+
+### Fixed
+
+- exception handling of null grades
+
+## [2022092601] - UNRELEASED 2022-09-26 - hotfix
+
+### Fixed
+
+- rendering in PDFs exception handling for images in feedback comment
+
+## [2022092600] - UNRELEASED 2022-09-26
 
 ### Fixed
 

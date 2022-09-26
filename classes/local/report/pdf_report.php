@@ -214,9 +214,9 @@ class pdf_report extends \pdf {
         }
         $flighttimes['pictime'][0]       = !empty($logentry) ? $logentry->get_pictime(false) : 0;
         $flighttimes['pictime'][1]       = !empty($logbooksummary->totalpictime) ? $logbooksummary->totalpictime : 0;
-        $flighttimes['ifrtime'][0]       = !empty($logentry) ? $logentry->get_ifrtime() : 0;
+        $flighttimes['ifrtime'][0]       = !empty($logentry) ? $logentry->get_ifrtime(false) : 0;
         $flighttimes['ifrtime'][1]       = !empty($logbooksummary->totalifrtime) ? $logbooksummary->totalifrtime : 0;
-        $flighttimes['picustime'][0]     = !empty($logentry) ? $logentry->get_picustime() : 0;
+        $flighttimes['picustime'][0]     = !empty($logentry) ? $logentry->get_picustime(false) : 0;
         $flighttimes['picustime'][1]     = !empty($logbooksummary->totalpicustime) ? $logbooksummary->totalpicustime : 0;
         $flighttimes['groundtime'][0]    = !empty($logentry) ? $logentry->get_groundtime(false) : 0;
         $flighttimes['groundtime'][1]    = !empty($logbooksummary->totalgroundtime) ? $logbooksummary->totalgroundtime : 0;
@@ -291,7 +291,7 @@ class pdf_report extends \pdf {
         $feedbackcomments = $grade->get_feedback_comments();
 
         // process inline attachements or image tags, if exist
-        if (strpos($feedbackcomments, '@@PLUGINFILE@@')) {
+        if (strpos($feedbackcomments, 'pluginfile.php')) {
 
             // iterate through image tags
             $tags = explode('<img ', $feedbackcomments);
@@ -308,8 +308,12 @@ class pdf_report extends \pdf {
                 $imgurl = substr($tag, $imgurlstart, $imgurlend - $imgurlstart);
 
                 // get file path and check if the file exists for attached images
-                if (strpos($tag, '@@PLUGINFILE@@')) {
-                    $imgurlnew = $grade->get_feedback_file('assignfeedback_file', 'feedback_files');
+                if (strpos($tag, 'pluginfile.php')) {
+                    $urlparts = explode('/', $tag);
+                    $component = $urlparts[array_search('pluginfile.php', $urlparts) + 2];
+                    $area = $urlparts[array_search('pluginfile.php', $urlparts) + 3];
+                    $itemid = $urlparts[array_search('pluginfile.php', $urlparts) + 4];
+                    $imgurlnew = $grade->get_feedback_file($component, $area, $itemid);
                     if (file_exists($imgurlnew))
                         $tags[$key] = str_replace($imgurl, $imgurlnew, $tag);
                     else

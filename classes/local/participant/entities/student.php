@@ -292,7 +292,9 @@ class student extends participant {
         if (!empty($this->grades) && array_search($exerciseid, array_column($this->grades, 'exerciseid'))) {
             $grade = new grade($this->grades[$exerciseid], $this->userid);
         } else {
-            $grade = new grade($this->vault->get_student_exercises_grade($this->course->get_id(), $this->userid, $exerciseid), $this->userid);
+            if ($graderec = $this->vault->get_student_exercises_grade($this->course->get_id(), $this->userid, $exerciseid)) {
+                $grade = new grade($graderec, $this->userid);
+            }
         }
 
         return $grade;

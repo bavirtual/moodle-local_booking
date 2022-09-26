@@ -293,14 +293,16 @@ class grade implements grade_interface {
      *
      * @param string $component The assignment component
      * @param string $filearea  The assignment file area
+     * @param string $itemid    The assignment grade item
      * @return string
      */
-    public function get_feedback_file(string $component, string $filearea) {
+    public function get_feedback_file(string $component, string $filearea, string $itemid = '') {
 
          $path = '';
+         $itemid = $itemid ?: $this->get_grade()->id;
 
          // get the file record
-         $filerec = participant_vault::get_student_feedback_file_info($this->get_context()->id, $this->get_grade()->id, $component, $filearea);
+         $filerec = participant_vault::get_student_feedback_file_info($this->get_context()->id, $itemid, $component, $filearea);
          if (!empty($filerec)) {
              $file = new \stored_file(get_file_storage(), (object) [
                  'contenthash' => $filerec->contenthash,

@@ -1,5 +1,11 @@
 # Change log
 
+## [2022093000] - RELEASED 2022-09-30
+
+### Added
+
+- Message noting student already booked for an exercise by another instructor
+
 ## [2022092603] - RELEASED 2022-09-26 - hotfix
 
 ### Fixed

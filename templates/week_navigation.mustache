@@ -49,6 +49,9 @@
         <h2 class="current">{{periodname}}
         {{^editing}}
         <br/><span class="availability-student">{{username}}</span>
+        {{#alreadybooked}}
+        <br/><span style="color: darkred;" class="availability-student">{{alreadybookedmsg}}</span>
+        {{/alreadybooked}}
         {{/editing}}
         </h2>
     <span class="hide"> | </span>

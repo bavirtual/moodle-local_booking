@@ -96,11 +96,12 @@ $string['statustentative'] = 'tentative';
 $string['students'] = 'Students';
 $string['studentavialability'] = 'Student availability';
 $string['taskcron'] = 'Background processing for session booking activity';
-$string['tasknotifications'] = 'Background processing of session booking notifications';
+$string['tasknotifications'] = 'Background processing of session booking scheduled notifications';
 $string['unknown'] = 'No grading record!';
 $string['zulutime'] = 'Zulu';
 
 // Availability posting
+$string['activebookingmsg'] = 'This session has already been booked by instructor {$a}';
 $string['availability'] = 'My availability';
 $string['availabilityinst'] = 'Student availability';
 $string['availabilityallview'] = 'View everyone\'s availability';

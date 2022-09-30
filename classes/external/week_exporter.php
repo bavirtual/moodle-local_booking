@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 use core_calendar\external\date_exporter;
+use local_booking\local\participant\entities\participant;
 use local_booking\local\subscriber\entities\subscriber;
 use renderer_base;
 use moodle_url;
@@ -79,14 +80,19 @@ class week_exporter extends exporter {
     protected $firstdayofweek;
 
     /**
-     * @var int $courseid The course id of the week slots being viewed.
+     * @var subscriber $course The course being viewed.
      */
-    protected $courseid;
+    protected $course;
 
     /**
-     * @var int $studentid The student id of the week slots being viewed.
+     * @var student $student The student where the week slots being viewed.
      */
-    protected $studentid;
+    protected $student;
+
+    /**
+     * @var booking $activebooking The student's active booking if available.
+     */
+    protected $activebooking;
 
     /**
      * @var array $action The action data being peformed.
@@ -111,7 +117,7 @@ class week_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($actiondata, $view, $related) {
-        global $CFG, $USER;
+        global $CFG, $COURSE, $USER;
 
         // Use core calendar and action
         $calendar = $related['calendar'];
@@ -134,23 +140,25 @@ class week_exporter extends exporter {
         $this->url = new moodle_url('/local/booking/availability.php', [
             'time' => $calendar->time,
         ]);
+
         if ($this->calendar->course && SITEID !== $this->calendar->course->id) {
             $this->url->param('courseid', $this->calendar->course->id);
-            $this->courseid = $this->calendar->course->id;
-        } else if ($this->calendar->categoryid) {
-            $this->url->param('categoryid', $this->calendar->categoryid);
+            $this->course = $COURSE->subscriber;
         }
 
         // identify the student to view the slots (single student view 'user' or 'all' students)
+        $activebookinginstrname = '';
         if ($view == 'user') {
             if ($actiondata['action'] == 'book') {
                 // view the slot for the student id passed in action data
-                $this->studentid = $actiondata['student']->get_id();
+                $this->student = $this->course->get_student($actiondata['student']->get_id());
             } else {
-                $this->studentid = $USER->id;
+                $this->student = $this->course->get_student($USER->id);
             }
-        } elseif ($view == 'all') {
-            $this->studentid = 0;
+
+            // get student active booking and instructor id if exists
+            if ($this->activebooking = $this->student->get_active_booking())
+                $activebookinginstrname = participant::get_fullname($this->activebooking->get_instructorid());
         }
 
         $data = [
@@ -160,6 +168,8 @@ class week_exporter extends exporter {
             'studentid'   => $this->actiondata['student']->get_id(),
             'exerciseid'  => $this->actiondata['exerciseid'],
             'editing'     => $this->view == 'user' && $this->actiondata['action'] != 'book',    // Editing is not allowed if user id is passed for booking
+            'alreadybooked' => !empty($this->activebooking),
+            'alreadybookedmsg' => !empty($activebookinginstrname) ? get_string('activebookingmsg', 'local_booking', $activebookinginstrname) : '',
             'groupview'   => $this->view == 'all',                                              // Group view no editing or booking buttons
             'viewalllink' => $CFG->httpswwwroot . '/local/booking/availability.php?courseid=' . $this->calendar->courseid . '&view=all',
             'hiddenclass' => $this->actiondata['action'] != 'book' && $this->view == 'user',
@@ -189,6 +199,13 @@ class week_exporter extends exporter {
             ],
             'editing' => [
                 'type' => PARAM_BOOL,
+            ],
+            'alreadybooked' => [
+                'type' => PARAM_BOOL,
+            ],
+            'alreadybookedmsg' => [
+                'type' => PARAM_RAW,
+                'default' => null,
             ],
             'groupview' => [
                 'type' => PARAM_BOOL,
@@ -295,16 +312,15 @@ class week_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
-        global $COURSE;
 
         // notify student if wait period restriction since last session is not up yet
         if ($this->actiondata['action'] != 'book' && $this->view == 'user') {
-            $student = $COURSE->subscriber->get_student($this->studentid);
+
             // show a notification if the user is on-hold
-            if ($student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP)) {
+            if ($this->student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP)) {
                 \core\notification::ERROR(get_string('studentonhold', 'local_booking'));
             }
-            if (!$student->has_completed_lessons()) {
+            if (!$this->student->has_completed_lessons()) {
                 \core\notification::WARNING(get_string('lessonsincomplete', 'local_booking'));
             }
         }
@@ -316,8 +332,8 @@ class week_exporter extends exporter {
         list($nextperiod, $nextperiodlink) = $this->get_period($date, '+');
 
         $return = [
-            'contextid' => \context_course::instance($this->courseid)->id,
-            'courseid' => $this->courseid,
+            'contextid' => \context_course::instance($this->course->get_id())->id,
+            'courseid' => $this->course->get_id(),
             // week data
             'daynames' => $this->get_day_names($output),
             'weekofyear' => intval($this->weekofyear),
@@ -393,13 +409,14 @@ class week_exporter extends exporter {
 
         // get the lanes containing student(s) slots
         $weeklanes = $this->get_week_slot_lanes($COURSE->subscriber);
-        $student = $this->studentid != 0 ? $COURSE->subscriber->get_student($this->studentid) : null;
+
         $data = [
-            'student'   => $student,
+            'student'   => $this->student,
             'days'      => $this->days,
             'maxlanes'  => $this->maxlanes,
             'groupview' => $this->view == 'all',
-            'bookview'  => $this->actiondata['action'] == 'book'
+            'bookview'  => $this->actiondata['action'] == 'book',
+            'alreadybooked'  => !empty($this->activebooking)
         ];
 
         $slots = [];
@@ -429,9 +446,8 @@ class week_exporter extends exporter {
         $studentsslots = [];
 
         // check students that have slot(s) on each day
-        if ($this->studentid != 0) {
-            $student = $course->get_student($this->studentid);
-            $studentsslots[$this->studentid] = $student->get_slots($this->weekofyear, $this->GMTdate['year']);
+        if (!empty($this->student)) {
+            $studentsslots[$this->student->get_id()] = $this->student->get_slots($this->weekofyear, $this->GMTdate['year']);
         } else {
             // check students that have slot(s) on this day
             $students = $course->get_students();

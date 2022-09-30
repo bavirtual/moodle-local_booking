@@ -416,11 +416,13 @@ class student extends participant {
      * @return booking
      */
     public function get_active_booking() {
+
         if (empty($this->activebooking)) {
             $booking = new booking(0, $this->course->get_id(), $this->userid);
             if ($booking->load())
                 $this->activebooking = $booking;
         }
+
         return $this->activebooking;
     }
 

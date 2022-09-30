@@ -100,6 +100,7 @@ class week_timeslot_exporter extends exporter {
         $this->groupview     = $data['groupview'];
         $this->bookview      = $data['bookview'];
         $this->maxlanes      = $data['maxlanes'];
+        $this->alreadybooked = $data['alreadybooked'];
         $this->timeslot      = $daydata['timeslot'];
         $this->usertimeslot  = $daydata['usertimeslot'];
         $this->hour          = $daydata['hour'];
@@ -181,7 +182,7 @@ class week_timeslot_exporter extends exporter {
                 $slotdaydata['istoday']     = $this->is_today($daydata);
                 $slotdaydata['isweekend']   = $this->is_weekend($daydata);
                 $slotdaydata['daytitle']    = get_string('dayeventsnone', 'calendar', userdate($daydata[0], get_string('strftimedayshort')));
-                $slotdata['slotavailable']  = !$resticted;
+                $slotdata['slotavailable']  = !$resticted && !$this->alreadybooked;
                 $slotdata['slot']           = $this->get_slot_info($laneslots, $slotdaydata);
 
                 $day = new week_day_exporter($this->calendar, $this->groupview, $slotdaydata, $slotdata, $this->related);

@@ -110,6 +110,13 @@ interface participant_interface {
     public function get_last_graded_date();
 
     /**
+     * Returns the date of the last booked session.
+     *
+     * @return  \DateTime    The timestamp of the last booked session
+     */
+    public function get_last_booked_date();
+
+    /**
      * Returns participant's simulator user field
      *
      * @return string   The participant callsign

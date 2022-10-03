@@ -26,6 +26,7 @@
 namespace local_booking\local\session\entities;
 
 use local_booking\local\participant\entities\instructor;
+use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 use moodle_url;
@@ -92,7 +93,7 @@ class action implements action_interface {
 
                 // check if the session to book is the next exercise after passing the current session or the same
                 $lastgrade = $student->get_last_grade();
-                $getnextexercise = (!empty($lastgrade) ? $lastgrade->is_passinggrade() : true);
+                $getnextexercise = (!empty($lastgrade) ? $lastgrade->is_passed() : true);
                 $exerciseid = $getnextexercise ? $student->get_next_exercise() : $student->get_current_exercise();
                 $tooltip = get_string('actionbooksession', 'local_booking');
 
@@ -134,9 +135,8 @@ class action implements action_interface {
             case 'grade':
 
                 // get exercise to be graded
-                $grade = $student->get_current_grade();
-                if (!empty($grade)) {
-                    $exerciseid = $grade->get_finalgrade() > 1 ? $student->get_next_exercise() : $student->get_current_exercise();
+                if ($grade = $student->get_current_grade()) {
+                    $exerciseid = $grade->finalgrade > 1 ? $student->get_next_exercise() : $student->get_current_exercise();
                 } else {
                     $exerciseid = $student->get_current_exercise();
                 }
@@ -147,8 +147,8 @@ class action implements action_interface {
                 $name = get_string('grade', 'grades');
                 $tooltip = get_string('actiongradesession', 'local_booking');
 
-                // check if the exercise to be graded is the final skill test or assessments
-                if ($student->has_completed_coursework() || $student->get_next_exercise() == $course->get_graduation_exercise()) {
+                // check if the exercise to be graded is the final skill test
+                if ($student->get_next_exercise() == $course->get_graduation_exercise()) {
                     global $USER;
                     $instructor = new instructor($course, $USER->id);
                     $enabled =  $instructor->is_examiner();
@@ -164,14 +164,20 @@ class action implements action_interface {
                 $exerciseid = 0;
                 $actionurl = '/local/booking/certify.php';
                 $name = get_string($actiontype, 'local_booking');
-                $tooltip = get_string('action' . $actiontype . 'tooltip', 'local_booking', ['studentname'=>$student->get_name(false)]);
 
                 // check if the certifer is the examiner
                 if ($student->has_completed_coursework() || $student->get_current_exercise() == $course->get_graduation_exercise()) {
                     global $USER;
-                    $examinerid = $student->get_grade($course->get_graduation_exercise())->get_graderid();
+                    $examinerid = $student->get_grade($course->get_graduation_exercise())->usermodified;
+                    $instructor = new instructor($course, $USER->id);
                     $enabled =  $examinerid == $USER->id;
-                    $tooltip = !$enabled ? get_string('actiondisabledexaminersonlytooltip', 'local_booking') : $tooltip;
+                    if (!$instructor->is_examiner())
+                        $tooltip = get_string('actiondisabledexaminersonlytooltip', 'local_booking');
+                    elseif (!$enabled)
+                        $tooltip = get_string('actiondisabledwrongexaminerstooltip', 'local_booking', participant::get_fullname($examinerid));
+                    else
+                        $tooltip = get_string('action' . $actiontype . 'tooltip', 'local_booking', ['studentname'=>$student->get_name(false), 'examname'=>$course->get_graduation_exercise(true)]);
+
                 }
                 break;
 

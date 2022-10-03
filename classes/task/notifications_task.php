@@ -86,7 +86,7 @@ class notifications_task extends \core\task\scheduled_task {
                                 'coursename'    => $course->get_shortname(),
                                 'studentname'   => $student->get_name(),
                                 'firstname'     => $student->get_profile_field('firstname', true),
-                                'skilltest'     => $course->get_exercise_name($course->get_graduation_exercise()),
+                                'skilltest'     => $course->get_graduation_exercise(true),
                                 'instructorname'=> instructor::get_fullname(get_user_preferences('local_booking_' . $course->get_id() . '_endorser', 0, $student->get_id())),
                                 'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$course->get_id())))->out(false),
                                 'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),

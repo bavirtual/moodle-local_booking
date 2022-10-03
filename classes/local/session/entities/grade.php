@@ -26,10 +26,11 @@
 namespace local_booking\local\session\entities;
 
 require_once($CFG->libdir . '/gradelib.php');
+require_once($CFG->libdir . '/grade/grade_grade.php');
 require_once($CFG->dirroot . '/grade/grading/lib.php');
 
-use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\participant\entities\participant;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,67 +40,32 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class grade implements grade_interface {
+class grade extends \grade_grade {
 
     /**
-     * @var int $exerciseid The course exercise id of this grade.
+     * @var \stdClass $gradeinfo The grade info class.
      */
-    protected $exerciseid;
+    public $gradeinfo;
 
     /**
-     * @var context $context The context associated with this grade.
+     * @var array $attempts The grade attempts.
      */
-    protected $context;
+    public $attempts;
 
     /**
-     * @var assign $assign The assignment associated with this grade.
+     * @var \assign $assign The assignment associated with this grade.
      */
     protected $assign;
 
     /**
-     * @var string $exercisetype The course exercise type of this grade.
+     * @var int $exerciseid The exercise id for the grade.
      */
-    protected $exercisetype;
+    protected $exerciseid;
 
     /**
-     * @var int $graderid The grader user id of this grade.
+     * @var \stored_file $feedbackfile The grade attached feedback file.
      */
-    protected $graderid;
-
-    /**
-     * @var string $gradername The grader name of this grade.
-     */
-    protected $gradername;
-
-    /**
-     * @var int $studentid The user id of the student of this grade.
-     */
-    protected $studentid;
-
-    /**
-     * @var string $studentname The student name of this grade.
-     */
-    protected $studentname;
-
-    /**
-     * @var int $gradedate The date of this grade.
-     */
-    protected $gradedate;
-
-    /**
-     * @var int $finalgrade The final grade.
-     */
-    protected $finalgrade;
-
-    /**
-     * @var string $grademark The final grade mark.
-     */
-    protected $grademark;
-
-    /**
-     * @var string[] $scale The grade scale.
-     */
-    protected $scale;
+    protected $feedbackfile;
 
     /**
      * @var bool $hasrubric Whether the grade has rubric grading.
@@ -107,49 +73,49 @@ class grade implements grade_interface {
     protected $hasrubric;
 
     /**
-     * @var int $totalgrade The final grade.
-     */
-    protected $totalgrade;
-
-    /**
      * Constructor.
      *
-     * @param {object}  $exercisegrade  The grader user id of this grade.
-     * @param int       $studentid      The user id of the student of this grade.
+     * @param {object}  $coursemodgrade The grader user id of the grade.
+     * @param int       $userid         The user id of the student of the grade.
+     * @param int       $exerciseid     The exercise id of the grade.
      */
-    public function __construct(object $exercisegrade, int $studentid) {
-        $this->exerciseid     = $exercisegrade->exerciseid;
-        $this->exercisetype   = $exercisegrade->exercisetype;
-        $this->graderid       = $exercisegrade->instructorid;
-        $this->gradername     = $exercisegrade->instructorname;
-        $this->studentid      = $studentid;
-        $this->studentname    = participant::get_fullname($studentid);
-        $this->gradedate      = $exercisegrade->gradedate;
-        $this->finalgrade     = $exercisegrade->grade;
-        $this->totalgrade     = $exercisegrade->totalgrade;
+    public function __construct(int $gradeitemid, int $userid, int $exerciseid) {
+        parent::__construct(array('userid'=>$userid, 'itemid'=>$gradeitemid));
 
-        // get grade mark from the course's scale
-        if (!empty($exercisegrade->scale)) {
-            $this->scale = explode(',', $exercisegrade->scale);
-            $this->grademark = $this->scale[intval($this->finalgrade)-1];
-        } else {
-            $this->grademark = intval($this->finalgrade) . '/' . intval($this->totalgrade);
+        if (!empty($this->finalgrade)) {
+            $this->exerciseid = $exerciseid;
+            $this->gradername = participant::get_fullname($this->usermodified);
+            $this->load_grade_item();
+            $this->gradeinfo = ((object) grade_get_grades(
+                $this->grade_item->courseid,
+                $this->grade_item->itemtype,
+                $this->grade_item->itemmodule,
+                $this->grade_item->iteminstance,
+                $userid))->items[0];
+
+            if ($this->grade_item->itemmodule == 'quiz') {
+                $this->attempts = quiz_get_user_attempts($this->grade_item->iteminstance, $userid);
+            }
+
+            // get grade mark from the course's scale
+            // $scale = get_scale($coursemodgrade->scaleid);
+            $scale = null;
+
+
+                // $params = array('itemtype' => 'mod',
+                //     'itemmodule' => 'assign',
+                //     'iteminstance' => $this->course->get_modules()[$coursemodid]->instance,
+                //     'courseid' => $this->course->get_id(),
+                //     'itemnumber' => 0);
+                // $gradeitem = \grade_item::fetch($params);
+
+            // if (!empty($scale)) {
+            //     $this->scale = explode(',', $coursemodgrade->scale);
+            //     $this->grademark = $this->scale[intval($this->finalgrade)-1];
+            // } else {
+            //     $this->grademark = intval($this->finalgrade) . '/' . intval($this->totalgrade);
+            // }
         }
-    }
-
-    /**
-     * Get the exercise module context.
-     *
-     * @return \context
-     */
-    public function get_context() {
-
-        if (!isset($this->context)) {
-            // get context associated with the module
-            $this->context = \context_module::instance($this->exerciseid);
-        }
-
-        return $this->context;
     }
 
     /**
@@ -162,60 +128,10 @@ class grade implements grade_interface {
         // get the assignment to get the associated feedback comments
         if (!isset($this->assign)) {
             list ($course, $cm) = get_course_and_cm_from_cmid($this->exerciseid, 'assign');
-            $this->assign = new \assign($this->context, $cm, $course);
+            $this->assign = new \assign($this->get_context(), $cm, $course);
         }
 
         return $this->assign;
-    }
-
-    /**
-     * Get the course exercise id for the grade.
-     *
-     * @return \grade
-     */
-    public function get_grade() {
-
-        if (!isset($this->grade)) {
-            $this->grade = $this->get_assignment()->get_user_grade($this->studentid, false);
-        }
-
-        return $this->grade;
-    }
-
-    /**
-     * Get the course exercise id for the grade.
-     *
-     * @return int
-     */
-    public function get_exerciseid() {
-        return $this->exerciseid;
-    }
-
-    /**
-     * Get the course exercise type for the grade.
-     *
-     * @return string
-     */
-    public function get_exercisetype() {
-        return $this->exercisetype;
-    }
-
-    /**
-     * Get the grader user id of the grade.
-     *
-     * @return int
-     */
-    public function get_graderid() {
-        return $this->graderid;
-    }
-
-    /**
-     * Get the grader name of the grade.
-     *
-     * @return string
-     */
-    public function get_gradername() {
-        return $this->gradername;
     }
 
     /**
@@ -223,53 +139,8 @@ class grade implements grade_interface {
      *
      * @return int
      */
-    public function get_studentid() {
-        return $this->studentid;
-    }
-
-    /**
-     * Get the studnet name of the grade.
-     *
-     * @return string
-     */
-    public function get_studentname() {
-        return $this->studentname;
-    }
-
-    /**
-     * Get the date timestamp of the grade.
-     *
-     * @return int
-     */
-    public function get_gradedate() {
-        return $this->gradedate;
-    }
-
-    /**
-     * Get the student's final grade.
-     *
-     * @return int
-     */
-    public function get_finalgrade() {
-        return $this->finalgrade;
-    }
-
-    /**
-     * Get the student's final grade mark.
-     *
-     * @return string
-     */
-    public function get_grademark() {
-        return $this->grademark;
-    }
-
-    /**
-     * Get the total grade or passing grade of the assignment.
-     *
-     * @return int
-     */
-    public function get_totalgrade() {
-        return $this->totalgrade;
+    public function get_userid() {
+        return $this->userid;
     }
 
     /**
@@ -278,14 +149,7 @@ class grade implements grade_interface {
      * @return string
      */
     public function get_feedback_comments() {
-
-        // call Moodle standard grading to get the feedback comments for this grade
-        $course = $this->get_assignment()->get_course();
-        $instance = $this->get_assignment()->get_instance();
-        $feedback = (object) grade_get_grades($course->id, 'mod', 'assign', $instance->id, $this->studentid);
-        $feedbackcomment = $feedback->items[0]->grades[$this->studentid];
-
-        return $feedbackcomment->str_feedback;
+        return $this->gradeinfo->grades[$this->userid]->str_feedback;
     }
 
     /**
@@ -298,22 +162,32 @@ class grade implements grade_interface {
      */
     public function get_feedback_file(string $component, string $filearea, string $itemid = '') {
 
-         $path = '';
-         $itemid = $itemid ?: $this->get_grade()->id;
+        $path = '';
+        if (!isset($this->feedbackfile)) {
+            // get the grade item id
+            $itemid = $itemid ?: $this->get_assignment()->get_user_grade($this->userid, false, 0)->id;
 
-         // get the file record
-         $filerec = participant_vault::get_student_feedback_file_info($this->get_context()->id, $itemid, $component, $filearea);
-         if (!empty($filerec)) {
-             $file = new \stored_file(get_file_storage(), (object) [
-                 'contenthash' => $filerec->contenthash,
-                 'filesize' => $filerec->filesize,
-             ]);
+            // get the file storage object
+            $fs = get_file_storage();
 
-             $fs = get_file_storage();
-             $path = $fs->get_file_system()->get_local_path_from_storedfile($file);
-         }
+            // get grade feedback files from storage
+            $files = $fs->get_area_files($this->get_context()->id, $component, $filearea, $itemid);
+            $feedbackfile = new \stored_file($fs, new stdClass());
 
-         return $path;
+            // get the right stored file record
+            if (!empty($files)) {
+                array_walk($files, function($item) use (&$feedbackfile) {
+                    if (get_class($item) == 'stored_file' && $item->get_filename() != '.')
+                        return $feedbackfile = $item;
+                });
+
+                // get the path
+                $this->feedbackfile = $feedbackfile;
+                $path = $fs->get_file_system()->get_local_path_from_storedfile($this->feedbackfile);
+            }
+        }
+
+        return $path;
 
     }
 
@@ -326,25 +200,13 @@ class grade implements grade_interface {
 
         $rubric = array();
 
-        // get the grading manager
-        if (!isset($this->context)) {
-            // get course and associate module to find the practical exam skill test assignment
-            list ($course, $cm) = get_course_and_cm_from_cmid($this->exerciseid, 'assign');
-            $this->context = \context_module::instance($cm->id);
-        }
-
-        $gradingmgr = get_grading_manager($this->context, 'mod_' . $this->exercisetype, 'submissions');
+        $gradingmgr = get_grading_manager($this->get_context(), 'mod_' . $this->gradeinfo->itemmodule, 'submissions');
 
         // get the grading instances from the assignment grade
         if ($controller = $gradingmgr->get_active_controller()) {
 
-            // get the practical exam assignment to get the associated feedback comments
-            if (!isset($this->assign)) {
-                $this->assign = new \assign($this->context, $cm, $course);
-            }
-
-            $grade = $this->assign->get_user_grade($this->studentid, false);
-            $instances = $controller->get_active_instances($grade->id);
+            $itemid = $this->get_assignment()->get_user_grade($this->userid, false, 0)->id;
+            $instances = $controller->get_active_instances($itemid);
 
             // for each grading instance get the rubric information in an array
             foreach ($instances as $instance) {
@@ -366,23 +228,10 @@ class grade implements grade_interface {
                         'feedback' => $criteriafeedback
                     );
                 }
-                // // discard the 'Overall Grade' instance criteria
-                // array_pop($rubric);
             }
         }
 
         return $rubric;
-    }
-
-    /**
-     * Is a passing grade.
-     *
-     * @param bool
-     */
-    public function is_passinggrade() {
-        // evaluate for Evaluation scale (totalgrade<0) and student passing with a grade of 3 or greater
-        // or if Point Rubric scale (totalgrade>0) and student passed by achieving total grade.
-        return ($this->totalgrade < 0 && $this->finalgrade >= 3) || ($this->totalgrade > 0 && $this->finalgrade == $this->totalgrade);
     }
 
     /**
@@ -395,9 +244,7 @@ class grade implements grade_interface {
         if (!isset($this->hasrubric)){
 
             // get the context for the grading manager
-            list ($course, $cm) = get_course_and_cm_from_cmid($this->exerciseid, $this->exercisetype);
-            $context = \context_module::instance($cm->id);
-            $gradingmgr = get_grading_manager($context, 'mod_' . $this->exercisetype, 'submissions');
+            $gradingmgr = get_grading_manager($this->get_context(), 'mod_' . $this->gradeinfo->itemmodule, 'submissions');
             $this->hasrubric = $gradingmgr->get_active_method() == 'rubric';
         }
 

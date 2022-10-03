@@ -257,7 +257,7 @@ class pdf_report extends \pdf {
     protected function get_grade_info(grade $grade) {
 
         $html = '<strong>' . get_string('gradescore', 'local_booking') . ':</strong>&nbsp;&nbsp;';
-        $html .= $grade->get_grademark() . '<br />';
+        $html .= $grade->gradeinfo->grades[$this->student->get_id()]->str_long_grade . '<br />';
 
         // get rubric grading if available
         if ($grade->has_rubric()) {

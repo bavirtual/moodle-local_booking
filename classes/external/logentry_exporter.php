@@ -294,7 +294,7 @@ class logentry_exporter extends exporter {
         $flightdate = !empty($this->logentry) ? $this->logentry->get_flightdate($this->data['view'] == 'summary') : $this->data['flightdate'];
         $p1id = !empty($this->logentry) ? $this->logentry->get_p1id() : $this->data['p1id'];
         $p2id = !empty($this->logentry) ? $this->logentry->get_p2id() : $this->data['p2id'];
-        $sectionname = !empty($this->logentry) ? '' : array_values($COURSE->subscriber->get_section($exerciseid))[1];
+        $sectionname = !empty($this->logentry) ? '' : array_values($COURSE->subscriber->get_lesson($exerciseid))[1];
         $dualops = $this->data['trainingtype'] == 'Dual';
         $haspictime = !empty($this->logentry) ? !empty($this->logentry->get_pictime()) : false;
         $flighttype = !empty($this->logentry) ? $this->logentry->get_flighttype() : 'training';
@@ -317,7 +317,7 @@ class logentry_exporter extends exporter {
         }
 
         return [
-            'exercisename' => subscriber::get_exercise_name($exerciseid),
+            'exercisename' => $COURSE->subscriber->get_exercise_name($exerciseid, $this->logentry->get_courseid()),
             'formattedtime' => $flightdate,
             'p1name' => !empty($p1id) ? participant::get_fullname($p1id) : '',
             'p2name' => !empty($p2id) ? participant::get_fullname($p2id) : '',

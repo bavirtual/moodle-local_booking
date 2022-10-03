@@ -1,5 +1,27 @@
 # Change log
 
+## [2022100301] - RELEASED 2022-10-03
+
+### Fixed
+
+- qualified flag for QXC or other final examination qualification
+
+## [2022100300] - UNRELEASED 2022-10-03
+
+### Fixed
+
+- reports flight time totals to factor in exercise sequence in sections containing multiple exercises
+- failed or poor grade on final skill test shows the [Grad.] button instead of [Book]
+
+### Added
+
+- Added 'Last session booked' column to the 'Instructor Progression' section in the 'Instructor dashboard'
+
+### Changed
+
+- course modules retrieval to use Moodle API (get_course_content_items) instead of direct database access
+- grade handling to use Moodle APIs instead of direct database access
+
 ## [2022093000] - RELEASED 2022-09-30
 
 ### Added

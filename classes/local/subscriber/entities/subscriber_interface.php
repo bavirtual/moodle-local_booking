@@ -124,12 +124,12 @@ interface subscriber_interface {
     public function get_senior_instructors();
 
     /**
-     * Returns the subscribed course section id and name that contains the exercise
+     * Returns the subscribed course section id and lesson name that contains the exercise
      *
      * @param int $exerciseid The exercise id in the course inside the section
      * @return array  The section name of a course associated with the exercise
      */
-    public function get_section(int $exerciseid);
+    public function get_lesson(int $exerciseid);
 
     /**
      * Returns the course graduation exercise the last exercise
@@ -140,11 +140,18 @@ interface subscriber_interface {
     public function get_graduation_exercise();
 
     /**
-     * Retrieves exercises for the course
+     * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array
      */
-    public function get_exercises();
+    public function get_modules();
+
+    /**
+     * Retrieves subscribing course grading items for each module
+     *
+     * @return array
+     */
+    public function get_grading_items();
 
     /**
      * Retrieves the exercise name of a specific exercise
@@ -153,14 +160,7 @@ interface subscriber_interface {
      * @param int $exerciseid The exercise id.
      * @return string
      */
-    public static function get_exercise_name(int $exerciseid);
-
-    /**
-     * Retrieves the total number of modules in a course.
-     *
-     * @return int
-     */
-    public function get_modules_count();
+    public function get_exercise_name(int $exerciseid);
 
     /**
      * Returns an array of records from integrated database

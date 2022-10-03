@@ -30,6 +30,7 @@ use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\booking;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\local\slot\entities\slot;
 
 require_once($CFG->dirroot . '/user/profile/lib.php');
 require_once($CFG->dirroot . "/lib/enrollib.php");
@@ -233,7 +234,7 @@ class participant implements participant_interface {
     /**
      * Get participant's enrolment date.
      *
-     * @return DateTime $enroldate  The enrolment date of the participant.
+     * @return \DateTime $enroldate  The enrolment date of the participant.
      */
     public function get_enrol_date() {
         $enrol = $this->enroldate ?: ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->timecreated;
@@ -252,10 +253,9 @@ class participant implements participant_interface {
     }
 
     /**
-     * Returns the date of the last
-     * graded session.
+     * Returns the date of the last graded session.
      *
-     * @return  DateTime    The timestamp of the last grading
+     * @return  \DateTime    The timestamp of the last grading
      */
     public function get_last_graded_date() {
         $lastgraded = $this->vault->get_last_graded_date($this->userid, $this->course->get_id(), $this->is_student);
@@ -263,6 +263,19 @@ class participant implements participant_interface {
         $lastgradeddate = !empty($lastgraded) ? new \DateTime('@' . $lastgraded->timemodified) : null;
 
         return $lastgradeddate;
+    }
+
+    /**
+     * Returns the date of the last booked session.
+     *
+     * @return  \DateTime    The timestamp of the last booked session
+     */
+    public function get_last_booked_date() {
+        $sessiondate = booking::get_last_session($this->course->get_id(), $this->userid, !$this->is_student);
+
+        $lastsessiondate = !empty($sessiondate) ? new \DateTime('@' . $sessiondate->lastbookedsession) : null;
+
+        return $lastsessiondate;
     }
 
     /**

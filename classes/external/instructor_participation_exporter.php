@@ -27,14 +27,7 @@ namespace local_booking\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-use local_booking\local\participant\entities\participant;
 use core\external\exporter;
-use DateTime;
-use enrol_flatfile\task\flatfile_sync_task;
-use local_booking\local\participant\entities\instructor;
-use local_booking\local\subscriber\entities\subscriber;
-use renderer_base;
-use moodle_url;
 
 /**
  * Class for displaying instructor's booked sessions view.
@@ -54,7 +47,7 @@ class instructor_participation_exporter extends exporter {
      */
     public function __construct($data, $related) {
 
-        $url = new moodle_url('/local/booking/view.php', [
+        $url = new \moodle_url('/local/booking/view.php', [
                 'courseid' => $data['courseid'],
             ]);
 
@@ -94,15 +87,16 @@ class instructor_participation_exporter extends exporter {
      * @param renderer_base $output The renderer.
      * @return array Keys are the property names, values are their values.
      */
-    protected function get_other_values(renderer_base $output) {
+    protected function get_other_values(\renderer_base $output) {
         global $COURSE;
         $courseid = $this->data['courseid'];
         $instructors = $COURSE->subscriber->get_instructors();
-        $today = new DateTime('@'.time());
+        $today = new \DateTime('@'.time());
 
         $participation = [];
         foreach ($instructors as $instructor) {
             $lastgradeddate = $instructor->get_last_graded_date();
+            $lastsessiondate = $instructor->get_last_booked_date();
             $interval = !empty($lastgradeddate) ? date_diff($lastgradeddate, $today) : 0;
 
             $courserole = strip_tags(get_user_roles_in_course($instructor->get_id(), $courseid));
@@ -110,7 +104,8 @@ class instructor_participation_exporter extends exporter {
             $participation[] = [
                 'instructorname' => $instructor->get_name(),
                 'lastsessionts' => !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : 0,
-                'lastsessiondate' => !empty($lastgradeddate) ? $lastgradeddate->format('l M d, Y') : get_string('unknown', 'local_booking'),
+                'lastgradeddate' => !empty($lastgradeddate) ? $lastgradeddate->format('l M d, Y') : get_string('unknown', 'local_booking'),
+                'lastsessiondate' => !empty($lastsessiondate) ? $lastsessiondate->format('l M d, Y') : get_string('unknown', 'local_booking'),
                 'elapseddays' => !empty($lastgradeddate) ? $interval->days : '--',
                 'roles' => $courserole,
             ];

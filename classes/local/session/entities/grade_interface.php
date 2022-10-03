@@ -36,76 +36,6 @@ defined('MOODLE_INTERNAL') || die();
 interface grade_interface {
 
     /**
-     * Get the course exercise id for the grade.
-     *
-     * @return int
-     */
-    public function get_exerciseid();
-
-    /**
-     * Get the course exercise type for the grade.
-     *
-     * @return string
-     */
-    public function get_exercisetype();
-
-    /**
-     * Get the grader user id of the grade.
-     *
-     * @return int
-     */
-    public function get_graderid();
-
-    /**
-     * Get the grader name of the grade.
-     *
-     * @return string
-     */
-    public function get_gradername();
-
-    /**
-     * Get the studnet user id of the grade.
-     *
-     * @return int
-     */
-    public function get_studentid();
-
-    /**
-     * Get the studnet name of the grade.
-     *
-     * @return string
-     */
-    public function get_studentname();
-
-    /**
-     * Get the date timestamp of the grade.
-     *
-     * @return int
-     */
-    public function get_gradedate();
-
-    /**
-     * Get the final grade.
-     *
-     * @return int
-     */
-    public function get_finalgrade();
-
-    /**
-     * Get the final grade mark.
-     *
-     * @return string
-     */
-    public function get_grademark();
-
-    /**
-     * Get the total grade or passing grade of the assignment.
-     *
-     * @return int
-     */
-    public function get_totalgrade();
-
-    /**
      * Get the student's grade feedback comments.
      *
      * @return string
@@ -127,13 +57,6 @@ interface grade_interface {
      * @return string[]
      */
     public function get_graderubric();
-
-    /**
-     * Is a passing grade.
-     *
-     * @param bool
-     */
-    public function is_passinggrade();
 
     /**
      * Wether the grade has rubric grading.

@@ -45,9 +45,9 @@ use moodle_url;
 class profile_exporter extends exporter {
 
     /**
-     * @var student $user The user of the profile
+     * @var student $student The user of the profile
      */
-    protected $user;
+    protected $student;
 
     /**
      * @var int $courseid The id of the active course
@@ -69,8 +69,8 @@ class profile_exporter extends exporter {
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
         $this->courseid = $data['courseid'];
-        $this->user = $data['user'];
-        $data['userid'] = $this->user->get_id();
+        $this->student = $data['user'];
+        $data['userid'] = $this->student->get_id();
 
         parent::__construct($data, $related);
     }
@@ -256,16 +256,17 @@ class profile_exporter extends exporter {
         global $COURSE, $USER, $CFG;
 
         // moodle user object
-        $moodleuser = \core_user::get_user($this->user->get_id(), 'timezone');
-        $customfields = profile_user_record($this->user->get_id());
+        $studentid = $this->student->get_id();
+        $moodleuser = \core_user::get_user($studentid, 'timezone');
+        $customfields = profile_user_record($studentid);
 
         // student current lesson
-        $exerciseid = $this->user->get_current_exercise();
-        $currentlesson = array_values($COURSE->subscriber->get_section($exerciseid))[1];
+        $exerciseid = $this->student->get_current_exercise();
+        $currentlesson = array_values($COURSE->subscriber->get_lesson($exerciseid))[1];
 
         // module completion information
-        $usermods = $this->user->get_priority()->get_completions();
-        $coursemods = $COURSE->subscriber->get_modules_count();
+        $usermods = $this->student->get_priority()->get_completions();
+        $coursemods = count($COURSE->subscriber->get_modules());
         $modsinfo = [
             'usermods' => $usermods,
             'coursemods' => $coursemods,
@@ -273,25 +274,21 @@ class profile_exporter extends exporter {
         ];
 
         // qualified (next exercise is the course's last exercise) and tested status
-        $grades = $this->user->get_exercises();
-        $nextexerciseid = $this->user->get_next_exercise();
-        $testexerciseid = $COURSE->subscriber->get_graduation_exercise();
-        $tested = !empty($grades[$testexerciseid]);
-        $qualified = $nextexerciseid == $testexerciseid || $this->user->is_member_of(LOCAL_BOOKING_GRADUATESGROUP) || $tested;
+        $qualified = $this->student->qualified();
         $hasevaluation = $COURSE->subscriber->has_skills_evaluation();
         $endorsed = false;
         $endorsementmsg = '';
-        $hasexams = count($this->user->get_quizes()) > 0;
+        $hasexams = count($this->student->get_quize_grades()) > 0;
 
         if ($hasevaluation) {
 
             // endorsement information
-            $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $this->user->get_id());
+            $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $studentid);
             $endorsementmgs = array();
             if ($endorsed) {
-                $endorserid = get_user_preferences('local_booking_' . $this->courseid . '_endorser', '', $this->user->get_id());
+                $endorserid = get_user_preferences('local_booking_' . $this->courseid . '_endorser', '', $studentid);
                 $endorser = !empty($endorserid) ? participant::get_fullname($endorserid) : get_string('notfound', 'local_booking');
-                $endorseronts = !empty($endorserid) ? get_user_preferences('local_booking_' . $this->courseid . '_endorsedate', '', $this->user->get_id()) : time();
+                $endorseronts = !empty($endorserid) ? get_user_preferences('local_booking_' . $this->courseid . '_endorsedate', '', $studentid) : time();
                 $endorsementmgs = [
                     'endorser' => $endorser,
                     'endorsedate' =>  (new \Datetime('@'.$endorseronts))->format('M j\, Y')
@@ -302,44 +299,54 @@ class profile_exporter extends exporter {
 
         // moodle profile url
         $moodleprofile = new moodle_url('/user/view.php', [
-            'id' => $this->user->get_id(),
+            'id' => $studentid,
             'course' => $this->courseid,
         ]);
 
         // Course activity section
-        $lastlogindate = $this->user->get_last_login_date();
+        $lastlogindate = $this->student->get_last_login_date();
         $lastlogindate = !empty($lastlogindate) ? $lastlogindate->format('M j\, Y') : '';
-        $lastgradeddate = $this->user->get_last_graded_date();
+        $lastgradeddate = $this->student->get_last_graded_date();
         $lastgradeddate = !empty($lastgradeddate) ? $lastgradeddate->format('M j\, Y') : '';
-        if ($this->user->graduated())
+
+        // graduation status
+        if ($this->student->graduated()) {
+
             $graduationstatus = get_string('graduated', 'local_booking') . ' ' .  $lastgradeddate;
-        else
-            $graduationstatus = $qualified ? get_string('qualified', 'local_booking') : get_string('notqualified', 'local_booking');
+
+        } elseif ($this->student->tested()) {
+
+            $graduationstatus = get_string('checkpassed', 'local_booking') . ' ' .  $COURSE->subscriber->get_graduation_exercise(true);
+
+        } else {
+            $graduationstatus = ($qualified ? get_string('qualified', 'local_booking') . ' ' .
+                $COURSE->subscriber->get_graduation_exercise(true) : get_string('notqualified', 'local_booking'));
+        }
 
         // log in as url
         $loginas = new moodle_url('/course/loginas.php', [
             'id' => $this->courseid,
-            'user' => $this->user->get_id(),
+            'user' => $studentid,
             'sesskey' => sesskey(),
         ]);
 
         // student skill test recommendation letter
         $recommendationletterlink = new moodle_url('/local/booking/report.php', [
             'courseid' => $this->courseid,
-            'userid' => $this->user->get_id(),
+            'userid' => $studentid,
             'report' => 'recommendation',
         ]);
 
         // student outline report
         $outlinereporturl = new moodle_url('/report/outline/user.php', [
-            'id' => $this->user->get_id(),
+            'id' => $studentid,
             'course' => $this->courseid,
             'mode' => 'outline',
         ]);
 
         // student complete report
         $completereporturl = new moodle_url('/report/outline/user.php', [
-            'id' => $this->user->get_id(),
+            'id' => $studentid,
             'course' => $this->courseid,
             'mode' => 'complete',
         ]);
@@ -347,52 +354,52 @@ class profile_exporter extends exporter {
         // student logbook
         $logbookurl = new moodle_url('/local/booking/logbook.php', [
             'courseid' => $this->courseid,
-            'userid' => $this->user->get_id()
+            'userid' => $studentid
         ]);
 
         // student mentor report
         $mentorreporturl = new moodle_url('/local/booking/report.php', [
             'courseid' => $this->courseid,
-            'userid' => $this->user->get_id(),
+            'userid' => $studentid,
             'report' => 'mentor',
         ]);
 
         // student theory exam report
         $theoryexamreporturl = new moodle_url('/local/booking/report.php', [
             'courseid' => $this->courseid,
-            'userid' => $this->user->get_id(),
+            'userid' => $studentid,
             'report' => 'theoryexam',
         ]);
 
         // student practical exam report
         $practicalexamreporturl = new moodle_url('/local/booking/report.php', [
             'courseid' => $this->courseid,
-            'userid' => $this->user->get_id(),
+            'userid' => $studentid,
             'report' => 'practicalexam',
         ]);
 
         // student skill test form
         $examinerurl = new moodle_url('/local/booking/report.php', [
             'courseid' => $this->courseid,
-            'userid' => $this->user->get_id(),
+            'userid' => $studentid,
             'report' => 'examiner',
         ]);
 
         $return = [
-            'fullname'                 => $this->user->get_name(),
+            'fullname'                 => $this->student->get_name(),
             'timezone'                 => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone,
             'sim1'                     => $customfields->simulator,
             'sim2'                     => $customfields->simulator2,
             'moodleprofileurl'         => $moodleprofile->out(false),
-            'recency'                  => $this->user->get_priority()->get_recency_days(),
-            'courseactivity'           => $this->user->get_priority()->get_activity_count(false),
-            'slots'                    => $this->user->get_priority()->get_slot_count(),
+            'recency'                  => $this->student->get_priority()->get_recency_days(),
+            'courseactivity'           => $this->student->get_priority()->get_activity_count(false),
+            'slots'                    => $this->student->get_priority()->get_slot_count(),
             'modulescompleted'         => get_string('modscompletemsg', 'local_booking', $modsinfo),
-            'enroldate'                => $this->user->get_enrol_date()->format('M j\, Y'),
+            'enroldate'                => $this->student->get_enrol_date()->format('M j\, Y'),
             'lastlogin'                => $lastlogindate,
             'lastgraded'               => $lastgradeddate,
             'lastlesson'               => $currentlesson,
-            'lastlessoncompleted'      => $this->user->has_completed_lessons() ? get_string('yes') : get_string('no'),
+            'lastlessoncompleted'      => $this->student->has_completed_lessons() ? get_string('yes') : get_string('no'),
             'graduationstatus'         => $graduationstatus,
             'qualified'                => $qualified,
             'hasevaluation'            => $hasevaluation,
@@ -402,14 +409,14 @@ class profile_exporter extends exporter {
             'endorsementlocked'        => !empty($endorsed) && $endorsed && $endorserid != $USER->id,
             'endorsementmgs'           => $endorsementmsg,
             'recommendationletterlink' => $recommendationletterlink->out(false),
-            'suspended'                => !$this->user->is_active(),
+            'suspended'                => !$this->student->is_active(),
             'onholdrestrictionenabled' => $COURSE->subscriber->onholdperiod != 0,
-            'onhold'                   => $this->user->is_member_of(LOCAL_BOOKING_ONHOLDGROUP),
+            'onhold'                   => $this->student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP),
             'onholdgroup'              => LOCAL_BOOKING_ONHOLDGROUP,
-            'keepactive'               => $this->user->is_member_of(LOCAL_BOOKING_KEEPACTIVEGROUP),
+            'keepactive'               => $this->student->is_member_of(LOCAL_BOOKING_KEEPACTIVEGROUP),
             'keepactivegroup'          => LOCAL_BOOKING_KEEPACTIVEGROUP,
             'waitrestrictionenabled'   => $COURSE->subscriber->postingwait != 0,
-            'restrictionoverride'      => get_user_preferences('local_booking_' .$this->courseid . '_availabilityoverride', false, $this->user->get_id()),
+            'restrictionoverride'      => get_user_preferences('local_booking_' .$this->courseid . '_availabilityoverride', false, $studentid),
             'admin'                    => has_capability('moodle/user:loginas', $this->related['context']),
             'hasexams'                 => $hasexams,
             'loginasurl'               => $loginas->out(false),
@@ -420,7 +427,7 @@ class profile_exporter extends exporter {
             'theoryexamreporturl'      => $theoryexamreporturl->out(false),
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
             'examinerreporturl'        => $examinerurl->out(false),
-            'tested'                   => $tested,
+            'tested'                   => $this->student->tested(),
         ];
 
         return $return;

@@ -58,7 +58,7 @@ $title = $COURSE->subscriber->get_shortname() . ' ' . get_string('pluginname', '
 $title = get_string('pluginname', 'local_booking');
 
 // verify credentials, if the certifier is not the same as the examiner throw invalid permissions error
-$examinerid = $student->get_grade($COURSE->subscriber->get_graduation_exercise())->get_graderid();
+$examinerid = $student->get_grade($COURSE->subscriber->get_graduation_exercise())->usermodified;
 if ($examinerid != $USER->id)
     throw new Error(get_string('errorcertifiernotexaminer', 'local_booking'));
 
@@ -119,7 +119,7 @@ if ($COURSE->subscriber->has_skills_evaluation() && !$student->evaluated()) {
         'fullname'        => $student->get_name(),
         'courseshortname' => $COURSE->subscriber->get_shortname(),
         'coursename'      => $COURSE->subscriber->get_fullname(),
-        'exercisename'    => $COURSE->subscriber->get_exercise_name($COURSE->subscriber->get_graduation_exercise()),
+        'exercisename'    => $COURSE->subscriber->get_graduation_exercise(true),
         'completiondate'  => date_format($student->get_last_graded_date(), 'F j, Y'),
         'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
         'simulator'       => $student->get_profile_field('simulator'),

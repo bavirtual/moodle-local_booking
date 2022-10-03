@@ -59,6 +59,13 @@ interface logentry_interface {
     public function get_id();
 
     /**
+     * Get the course id loaded in the logbook entry.
+     *
+     * @param int
+     */
+    public function get_courseid();
+
+    /**
      * Get the user id for the logbook entry (student).
      *
      * @param int
@@ -319,6 +326,13 @@ interface logentry_interface {
      * @param int
      */
     public function set_id(int $id);
+
+    /**
+     * Set the course id for the logbook entry.
+     *
+     * @param int
+     */
+    public function set_courseid(int $courseid);
 
     /**
      * Set the course exercise id for the log entry.

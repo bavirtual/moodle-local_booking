@@ -42,17 +42,17 @@ class student extends participant {
     /**
      * @var array $exercises The student exercise grades.
      */
-    protected $exercises;
+    protected $exercises = [];
 
     /**
      * @var array $quizes The student quize grades.
      */
-    protected $quizes;
+    protected $quizes = [];
 
     /**
      * @var array $grades The student exercise/quize grades.
      */
-    protected $grades;
+    protected $grades = [];
 
     /**
      * @var array $slots The student posted timeslots.
@@ -105,14 +105,19 @@ class student extends participant {
     protected $lessonsecomplete;
 
     /**
-     * @var boolean $courseworkcomplete Whether the student completed all course work including lessons.
+     * @var bool $qualified Whether the student has been passed the Qualifying Cross-country or other qualifying exercise.
      */
-    protected $courseworkcomplete;
+    protected $qualified;
 
     /**
-     * @var string $evaluationfile the student's skill test evaluation file.
+     * @var bool $tested Whether the student passed skills test exam.
      */
-    protected $evaluationfile;
+    protected $tested;
+
+    /**
+     * @var bool $evaluated Whether the student was evaluated for the final skill test examination for the course.
+     */
+    protected $evaluated;
 
     /**
      * Constructor.
@@ -203,30 +208,14 @@ class student extends participant {
     }
 
     /**
-     * Get a list of the student assignment objects.
-     *
-     * @return {object}[]   An array of the student exercise objects.
-     */
-    public function get_assignments() {
-        $assigns = [];
-        $exercises = $this->get_exercises();
-        foreach ($exercises as $exerciseid => $exercise) {
-            list ($course, $cm) = get_course_and_cm_from_cmid($exerciseid, 'assign');
-            $context = \context_module::instance($cm->id);
-            $assigns[] = new \assign($context, $cm, $course);
-        }
-
-        return $assigns;
-    }
-
-    /**
      * Get a list of the student exercise grades objects.
      *
-     * @return {object}[]   An array of the student exercise objects.
+     * @return {object}[]   An array of the student exercise grade objects.
      */
-    public function get_exercises() {
-        if (!isset($this->exercises)) {
-            $this->exercises = $this->vault->get_student_exercises_grades($this->course->get_id(), $this->userid);
+    public function get_exercise_grades() {
+
+        if (empty($this->exercises)) {
+            $this->exercises = $this->get_mod_grades('assign');
         }
 
         return $this->exercises;
@@ -235,12 +224,14 @@ class student extends participant {
     /**
      * Get records of a specific quiz for a student.
      *
-     * @return {object}[]   The exam objects.
+     * @return {object}[]   The exam grade objects.
      */
-    public function get_quizes() {
-        if (!isset($this->quizes)) {
-            $this->quizes = $this->vault->get_student_quizes_grades($this->course->get_id(), $this->userid);
+    public function get_quize_grades() {
+
+        if (empty($this->quizes)) {
+            $this->quizes = $this->get_mod_grades('quiz');
         }
+
         return $this->quizes;
     }
 
@@ -254,7 +245,7 @@ class student extends participant {
 
         if (empty($this->grades)) {
             // join both graded assignments and attempted quizes into one grades array
-            $this->grades = $this->get_exercises() + $this->get_quizes();
+            $this->grades = $this->get_exercise_grades() + $this->get_quize_grades();
         }
 
         return $this->grades;
@@ -263,21 +254,49 @@ class student extends participant {
     /**
      * Get student grade for a specific exercise.
      *
-     * @param int  $exerciseid  The exercise id associated with the grade
+     * @param int  $coursemodid  The exercise id associated with the grade
      * @return grade The student exercise grade.
      */
-    public function get_grade(int $exerciseid) {
+    public function get_grade(int $coursemodid) {
 
-        $grade = null;
-        if (!empty($this->grades) && array_search($exerciseid, array_column($this->grades, 'exerciseid'))) {
-            $grade = new grade($this->grades[$exerciseid], $this->userid);
+        // get the grade if already exists otherwise create a new one making sure it's not empty
+        if (array_key_exists($coursemodid, $this->grades)) {
+
+            $grade = $this->grades[$coursemodid];
+
         } else {
-            $graderec = $this->vault->get_student_exercises_grade($this->course->get_id(), $this->userid, $exerciseid);
-            if (!empty($graderec))
-                $grade = new grade($graderec, $this->userid);
+
+            // fetch grade_grade then ensure it is graded!
+            $grade = new grade($this->course->get_grading_items()[$coursemodid]->id, $this->userid, $coursemodid);
+
+            if (empty($grade->finalgrade)) {
+                $grade = null;
+            }
         }
 
         return $grade;
+    }
+
+    /**
+     * Get a list of the module grades.
+     *
+     * @param string $modetype The module type for the course modules.
+     * @return array           An array of the student exercise grade objects.
+     */
+    protected function get_mod_grades(string $modtype) {
+
+        $grades = [];
+        // get all exercise grades (assignments)
+        $coursemods = $this->course->get_modules();
+        foreach ($coursemods as $coursemod) {
+            if ($coursemod->modname == $modtype) {
+                // add scored grade (has finalgrade)
+                if ($grade = $this->get_grade($coursemod->id))
+                    $grades[$coursemod->id] = $grade;
+            }
+        }
+
+        return $grades;
     }
 
     /**
@@ -286,18 +305,7 @@ class student extends participant {
      * @return grade The student exercise grade.
      */
     public function get_current_grade() {
-
-        $grade = null;
-        $exerciseid = $this->get_current_exercise();
-        if (!empty($this->grades) && array_search($exerciseid, array_column($this->grades, 'exerciseid'))) {
-            $grade = new grade($this->grades[$exerciseid], $this->userid);
-        } else {
-            if ($graderec = $this->vault->get_student_exercises_grade($this->course->get_id(), $this->userid, $exerciseid)) {
-                $grade = new grade($graderec, $this->userid);
-            }
-        }
-
-        return $grade;
+        return $this->get_grade($this->get_current_exercise());;
     }
 
     /**
@@ -436,11 +444,12 @@ class student extends participant {
 
         if (empty($this->currentexercise)) {
 
-            $this->currentexercise = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, false);
+            // get last graded exercise
+            $this->currentexercise = array_key_last($this->get_exercise_grades());
 
-            // check for newly enrolled student
-            if ($this->currentexercise == 0)
-                $this->currentexercise = array_values($this->course->get_exercises())[0]->exerciseid;
+            // check for newly enrolled student (boundry condition)
+            if (empty($this->currentexercise) )
+                $this->currentexercise = array_values($this->course->get_modules())[0]->id;
         }
 
         return $this->currentexercise;
@@ -453,8 +462,37 @@ class student extends participant {
      */
     public function get_next_exercise() {
 
-        if (empty($this->nextexercise))
-            $this->nextexercise = $this->vault->get_student_exercise($this->course->get_id(), $this->userid, true);
+        if (empty($this->nextexercise)) {
+
+            // get booking if exists otherwise pick the next exercise
+            if ($booking = $this->get_active_booking()) {
+
+                $this->nextexercise = $booking->get_exerciseid();
+
+            } else {
+
+                // check for newly enrolled students (boundry condition)
+                if (empty($this->get_exercise_grades())) {
+                    return $this->get_current_exercise();
+                }
+
+                // get the current student's course modules then move to the next exercise
+                // filter out none 'assign' modules
+                $coursemodules = array_filter($this->course->get_modules(), function($mod) {
+                    return $mod->modname == 'assign';
+                });
+
+                $modids = array_keys($coursemodules);
+                $nextid = array_search($this->get_current_exercise(), $modids) + 1;
+
+                // check for graduated student (boundry condition)
+                if (array_key_exists($nextid, $modids)) {
+                    $this->nextexercise = ($nextmod = $coursemodules[$modids[$nextid]]) ? $nextmod->id : 0;
+                } else {
+                    $this->nextexercise = 0;
+                }
+            }
+        }
 
         return $this->nextexercise;
     }
@@ -493,13 +531,7 @@ class student extends participant {
      * @return grade The student last grade.
      */
     public function get_last_grade() {
-        $grade = null;
-
-        if (count($this->exercises) > 0) {
-            $lastgrade = end($this->exercises);
-            $grade = new grade($lastgrade, $this->userid);
-        }
-
+        $grade = end($this->exercises);
         return $grade;
     }
 
@@ -547,7 +579,7 @@ class student extends participant {
                 $grade = $this->get_grade($this->get_current_exercise());
                 if (!empty($grade))
                     // check if passed exercise or received a progressing or objective not met grade
-                    $exerciseid = $grade->is_passinggrade() ? $this->get_next_exercise() : $this->get_current_exercise();
+                    $exerciseid = $grade->is_passed() ? $this->get_next_exercise() : $this->get_current_exercise();
                 else
                     $exerciseid = $this->get_current_exercise();
 
@@ -569,16 +601,60 @@ class student extends participant {
      * @return  bool    Whether the course work has been completed.
      */
     public function has_completed_coursework() {
+        return $this->tested();
+    }
 
-        if (!isset($this->courseworkcomplete)) {
-            $grade = $this->get_grade($this->course->get_graduation_exercise());
-            if (!empty($grade))
-                $this->courseworkcomplete = !empty($grade->get_finalgrade());
-            else
-                $this->courseworkcomplete = false;
+    /**
+     * Returns whether the student has been passed the Qualifying
+     * Cross-country or other qualifying exercise.  Checking assumes
+     * the qualifying exercise is the one prior to the skill test exercise.
+     *
+     * @return  bool    Whether the student is qualified.
+     */
+    public function qualified() {
+
+        if (!isset($this->qualified)) {
+
+            // set qualification negative
+            $this->qualified = false;
+
+            // get qualification exercise id
+            $modkeys = array_keys($this->course->get_modules());
+            $qualifyexerciseidx = array_search($this->course->get_graduation_exercise(), $modkeys);
+            $qualifyexerciseid = $modkeys[$qualifyexerciseidx - 1];
+
+            // check grade for the qualifying exercise
+            $grade = $this->get_grade($qualifyexerciseid);
+            if (!empty($grade)) {
+                $this->qualified = $grade->is_passed();
+            }
         }
 
-        return $this->courseworkcomplete;
+        return $this->qualified;
+
+    }
+
+    /**
+     * Returns whether the student has been passed
+     * skills test or final exam.
+     *
+     * @return  bool    Whether the student has been evaluated.
+     */
+    public function tested() {
+
+        if (!isset($this->tested)) {
+
+            // set tested negative
+            $this->tested = false;
+
+            // check grade for the qualifying exercise
+            $grade = $this->get_grade($this->course->get_graduation_exercise());
+            if (!empty($grade)) {
+                $this->tested = $grade->is_passed();
+            }
+        }
+
+        return $this->tested;
     }
 
     /**
@@ -589,8 +665,24 @@ class student extends participant {
      * @return  bool    Whether the student has been evaluated.
      */
     public function evaluated() {
-        $finalgrade = $this->get_grade($this->course->get_graduation_exercise());
-        return !empty($finalgrade->get_feedback_file('assignfeedback_file', 'feedback_files'));
+
+        // check if the course requires evaluation first
+        if (!$this->course->has_skills_evaluation()) {
+            return false;
+        }
+
+        // the student is considered evaluated if the student has a skill test exam feedback evaluation file
+        if (!isset($this->evaluated)) {
+
+            $finalgrade = $this->get_grade($this->course->get_graduation_exercise());
+            if (!empty($finalgrade)) {
+                $this->evaluated = !empty($finalgrade->get_feedback_file('assignfeedback_file', 'feedback_files'));
+            } else {
+                $this->evaluated = false;
+            }
+        }
+
+        return $this->evaluated;
     }
 
     /**

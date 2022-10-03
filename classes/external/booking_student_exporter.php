@@ -56,11 +56,6 @@ class booking_student_exporter extends exporter {
     protected $student;
 
     /**
-     * @var array $courseexercises An array of the course exercises.
-     */
-    protected $courseexercises;
-
-    /**
      * Constructor.
      *
      * @param mixed $data An array of student data.
@@ -71,7 +66,6 @@ class booking_student_exporter extends exporter {
 
         $this->course = $data['course'];
         $this->student = $data['student'];
-        $this->courseexercises = $related['courseexercises'];
         $data['studentid'] = $this->student->get_id();
         $data['studentname'] = $this->student->get_name();
         $data['dayssincelast'] = $this->student->get_priority()->get_recency_days();
@@ -222,7 +216,7 @@ class booking_student_exporter extends exporter {
     protected static function define_related() {
         return array(
             'context'=>'context',
-            'courseexercises'=>'stdClass[]?',
+            'coursemodules'=>'cm_info[]?',
         );
     }
 
@@ -239,18 +233,19 @@ class booking_student_exporter extends exporter {
         $logbook = $this->student->get_logbook();
 
         // export all exercise sessions, quizes, and exams
-        foreach ($this->courseexercises as $exercise) {
+        $coursemods = $this->related['coursemodules'];
+        foreach ($coursemods as $coursemod) {
             $studentinfo = [];
             $studentinfo = [
                 'student'     => $this->student,
                 'studentname' => $this->data['studentname'],
-                'exerciseid'  => $exercise->exerciseid,
+                'exerciseid'  => $coursemod->id,
                 'grades'      => $grades,
                 'bookings'    => $bookings,
                 'logbook'     => $logbook
             ];
-            $exercisesession = new booking_session_exporter($studentinfo, $this->related);
-            $sessions[] = $exercisesession->export($output);
+            $coursemodsession = new booking_session_exporter($studentinfo, $this->related);
+            $sessions[] = $coursemodsession->export($output);
         }
 
         return $sessions;
@@ -271,20 +266,21 @@ class booking_student_exporter extends exporter {
 
         if ($this->data['view'] == 'confirm') {
 
-            foreach ($this->courseexercises as $exercise) {
+            $coursemods = $this->related['coursemodules'];
+            foreach ($coursemods as $coursemod) {
 
                 // check for assignment exercises
-                if ($exercise->exercisetype == 'assign') {
+                if ($coursemod->modname == 'assign') {
 
                     // show the graduation exercise booking option for examiners only
                     $gradexercise = $COURSE->subscriber->get_graduation_exercise();
-                    if (($exercise->exerciseid ==  $gradexercise && ($this->data['instructor'])->is_examiner()) ||
-                        $exercise->exerciseid != $gradexercise) {
+                    if (($coursemod->id ==  $gradexercise && ($this->data['instructor'])->is_examiner()) ||
+                        $coursemod->id != $gradexercise) {
                         $sessionoptions[] = [
-                            'nextsession' => ($action->get_exerciseid() == $exercise->exerciseid ? "checked" : ""),
-                            'bordered' => $action->get_exerciseid() == $exercise->exerciseid,
-                            'graded'  => array_key_exists($exercise->exerciseid, $grades),
-                            'exerciseid'  => $exercise->exerciseid
+                            'nextsession' => ($action->get_exerciseid() == $coursemod->id ? "checked" : ""),
+                            'bordered' => $action->get_exerciseid() == $coursemod->id,
+                            'graded'  => array_key_exists($coursemod->id, $grades),
+                            'exerciseid'  => $coursemod->id
                         ];
                     }
                 }

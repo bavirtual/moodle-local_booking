@@ -27,10 +27,9 @@ namespace local_booking\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-use renderer_base;
-use DateTime;
 use core\external\exporter;
 use local_booking\local\participant\entities\instructor;
+use local_booking\local\participant\entities\participant;
 use local_booking\local\session\entities\session;
 use local_booking\local\session\entities\grade;
 use local_booking\local\session\entities\booking;
@@ -176,7 +175,7 @@ class booking_session_exporter extends exporter {
      * @param renderer_base $output The renderer.
      * @return array Keys are the property names, values are their values.
      */
-    protected function get_other_values(renderer_base $output) {
+    protected function get_other_values(\renderer_base $output) {
         $return = [];
 
         // get student posts
@@ -185,12 +184,12 @@ class booking_session_exporter extends exporter {
             $this->student->has_completed_lessons() ? get_string('bookingnoposts', 'local_booking') : '';
 
         if (!empty($this->session)) {
-            $isquiz = $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() == 'quiz';
+            $isquiz = $this->session->hasgrade() && $this->session->get_grade()->grade_item->itemmodule == 'quiz';
             $graded = $this->session->hasgrade();
             $passed = $this->session->haspassed() || $isquiz;
             $booked = $this->session->hasbooking() && $this->session->get_booking()->confirmed() && !$this->session->hasgrade();
             $tentative = $this->session->hasbooking() && !$this->session->get_booking()->confirmed() && !$this->session->hasgrade();
-            $logentrymissing = empty($this->data['logentryid']) && $this->session->hasgrade() && $this->session->get_grade()->get_exercisetype() != 'quiz';
+            $logentrymissing = empty($this->data['logentryid']) && $this->session->hasgrade() && $this->session->get_grade()->grade_item->itemmodule != 'quiz';
             $lastbookingdate = $logentrymissing ?
                 slot::get_last_booking($this->data['courseid'], $this->student->get_id()) :
                 $this->session->get_sessiondate()->getTimestamp();
@@ -234,7 +233,7 @@ class booking_session_exporter extends exporter {
      */
     protected function get_session($data) {
 
-        $grade = $this->find_grade($data['grades'], $data['exerciseid']);
+        $grade = array_key_exists($data['exerciseid'], $data['grades']) ? $data['grades'][$data['exerciseid']] : null;
         $booking = $this->find_booking($data['bookings'], $data['exerciseid']);
         $logentry = !empty($grade) ? $data['logbook']->get_logentry(0, $data['exerciseid']) : null;
 
@@ -246,23 +245,23 @@ class booking_session_exporter extends exporter {
 
         // get grade info of this session if available
         if ($grade !== null) {
-            $sessiondate = new DateTime('@' . (!empty($booking) ? $booking->get_slot()->get_starttime() : $grade->get_gradedate()));
+            $sessiondate = new \DateTime('@' . (!empty($booking) ? $booking->get_slot()->get_starttime() : $grade->get_dategraded()));
             $sessionstatus = 'graded';
 
             $gradeinfo = [
-                'instructor'  => $grade->get_gradername(),
-                'gradedate'   => (new \DateTime('@' . $grade->get_gradedate()))->format('j M \'y'),
+                'instructor'  => participant::get_fullname($grade->usermodified),
+                'gradedate'   => (new \DateTime('@' . $grade->get_dategraded()))->format('j M \'y'),
                 'sessiondate' => !empty($sessiondate) ? $sessiondate->format('j M \'y') . '<br/>' : '',
-                'grade'       => intval($grade->get_finalgrade()) . (!empty($grade->get_totalgrade()) ? '/' . intval($grade->get_totalgrade()) : '')
+                'grade'       => intval($grade->finalgrade) . (!empty($grade->get_grade_max()) ? '/' . intval($grade->get_grade_max()) : '')
             ];
 
             // get session tooltip for passing & progressing grades, and exam grades
-            $sessiontooltip = $grade->get_exercisetype() == 'assign' ? ($grade->is_passinggrade() ? get_string('sessiongradedby', 'local_booking', $gradeinfo) :
+            $sessiontooltip = $grade->grade_item->itemmodule == 'assign' ? ($grade->is_passed() ? get_string('sessiongradedby', 'local_booking', $gradeinfo) :
                 get_string('sessionprogressing', 'local_booking', $gradeinfo)) : get_string('sessiongradeexampass', 'local_booking', $gradeinfo);
 
         // get booking info of this session if a booking is available
         } else if (!empty($booking)) {
-            $sessiondate = new DateTime('@' . $booking->get_slot()->get_starttime());
+            $sessiondate = new \DateTime('@' . $booking->get_slot()->get_starttime());
             $sessionstatus = $booking->confirmed() ? 'booked' : 'tentative';
             $infostatus = $booking->confirmed() ? 'statusbooked' : 'statustentative';
             $bookinginfo = [
@@ -278,25 +277,6 @@ class booking_session_exporter extends exporter {
             $session = new session($grade, $booking, $logentry, $sessionstatus, $sessiontooltip, $sessiondate);
 
         return $session;
-    }
-
-    /**
-     * Returns the grade matching the passed data exercise id.
-     *
-     * @param array    $bookings   The array of bookings
-     * @param int      $exerciseid The exercise id matching the session
-     * @return grade $grade The grade object for the session
-     */
-    protected function find_grade($grades, $exerciseid) {
-
-        $grade = null;
-        // Get student's grade for this session if available
-        if (count($grades) > 0) {
-            if (array_search($exerciseid, array_column($grades, 'exerciseid')) !== false) {
-                $grade = new grade($grades[$exerciseid], $this->student->get_id());
-            }
-        }
-        return $grade;
     }
 
     /**

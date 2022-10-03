@@ -75,9 +75,9 @@ class bookings_exporter extends exporter {
     protected $filter;
 
     /**
-     * @var array $exercises An array of excersice ids and names for the course.
+     * @var array $modules An array of excersice and quiz ids and names for the course.
      */
-    protected $exercises = [];
+    protected $modules;
 
     /**
      * @var array $activestudents An array of active student info for the course.
@@ -117,7 +117,7 @@ class bookings_exporter extends exporter {
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
         $this->viewtype = $data['view'];
-        $this->exercises = $COURSE->subscriber->get_exercises();
+        $this->modules = $COURSE->subscriber->get_modules();
         $data['trainingtype'] = $COURSE->subscriber->trainingtype;
         $this->instructor = new instructor($COURSE->subscriber, $USER->id);
         if ($this->viewtype == 'confirm')
@@ -156,7 +156,7 @@ class bookings_exporter extends exporter {
      */
     protected static function define_other_properties() {
         return [
-            'exercises' => [
+            'coursemodules' => [
                 'type' => exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
@@ -199,7 +199,7 @@ class bookings_exporter extends exporter {
     protected function get_other_values(renderer_base $output) {
 
         $return = [
-            'exercises'  => $this->get_exercises($output),
+            'coursemodules'  => $this->get_modules($output),
             'activestudents' => $this->get_students($output),
             'activebookings' => $this->get_bookings($output),
             'avgwait' => $this->averagewait,
@@ -220,47 +220,48 @@ class bookings_exporter extends exporter {
     protected static function define_related() {
         return array(
             'context' => 'context',
-            'exercises' => 'stdClass[]?',
+            'coursemodules' => 'cm_info[]?',
         );
     }
 
     /**
-     * Retrieves exercises for the course
+     * Retrieves modules (exercises & quizes) for the course
      *
      * @return array
      */
-    protected function get_exercises($output) {
+    protected function get_modules($output) {
         global $COURSE;
-        // get titles from the course custom fields exercise titles array
-        $exercisesexports = [];
 
-        $titlevalue = array_values($COURSE->subscriber->exercisetitles);
-        foreach($this->exercises as $exercise) {
+        // get titles from the course custom fields exercise titles array
+        $modsexports = [];
+
+        $titlevalues = array_values($COURSE->subscriber->exercisetitles);
+        foreach($this->modules as $module) {
 
             // exclude quizes from interim booking view
-            if ($this->viewtype == 'confirm' && $exercise->exercisetype == 'quiz') {
-                $customtitle = array_shift($titlevalue);
+            if ($this->viewtype == 'confirm' && $module->modname == 'quiz') {
+                $customtitle = array_shift($titlevalues);
                 continue;
             }
 
             // break down each setting title by <br/> tag, until a better way is identified
-            $customtitle = array_shift($titlevalue);
-            $exercise->title = $customtitle ?: $exercise->exercisename;
+            $customtitle = array_shift($titlevalues);
+            $title = $customtitle ?: $module->name;
             $data = [
-                'exerciseid'    => $exercise->exerciseid,
-                'exercisename'  => $exercise->exercisename,
-                'exercisetitle' => $exercise->title,
+                'exerciseid'    => $module->id,
+                'exercisename'  => $module->name,
+                'exercisetitle' => $title,
             ];
 
             // show the graduation exercise booking option for examiners only
-            if ($this->viewtype == 'confirm' && $exercise->exerciseid == $COURSE->subscriber->get_graduation_exercise() && $this->instructor->is_examiner() ||
-                $this->viewtype != 'confirm' || $exercise->exerciseid != $COURSE->subscriber->get_graduation_exercise()) {
+            if ($this->viewtype == 'confirm' && $module->id == $COURSE->subscriber->get_graduation_exercise() && $this->instructor->is_examiner() ||
+                $this->viewtype != 'confirm' || $module->id != $COURSE->subscriber->get_graduation_exercise()) {
                     $exercisename = new exercise_name_exporter($data);
-                    $exercisesexports[] = $exercisename->export($output);
+                    $modsexports[] = $exercisename->export($output);
             }
         }
 
-        return $exercisesexports;
+        return $modsexports;
     }
 
     /**
@@ -321,7 +322,7 @@ class bookings_exporter extends exporter {
             ];
             $studentexporter = new booking_student_exporter($data, [
                 'context' => \context_system::instance(),
-                'courseexercises' => $this->exercises,
+                'coursemodules' => $this->modules,
             ]);
             $activestudentsexports[] = $studentexporter->export($output);
             $totaldays += $this->filter != 'suspended' ?  $student->get_priority()->get_recency_days() : 0;

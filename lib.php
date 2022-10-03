@@ -560,11 +560,12 @@ function get_participation_view($courseid) {
  * @return  bool
  */
 function save_booking($params) {
-    global $USER;
+    global $USER, $COURSE;
 
     $courseid = $params['courseid'] ?: SITEID;
     require_login($courseid, false);
 
+    $COURSE->subscriber = new subscriber($courseid);
     $result = false;
     $slottobook = $params['bookedslot'];
     $courseid   = $params['courseid'];
@@ -574,7 +575,7 @@ function save_booking($params) {
 
     // add a new tentatively booked slot for the student.
     $sessiondata = [
-        'exercise'  => subscriber::get_exercise_name($exerciseid),
+        'exercise'  => $COURSE->subscriber->get_exercise_name($exerciseid),
         'instructor'=> student::get_fullname($instructorid),
         'status'    => ucwords(get_string('statustentative', 'local_booking')),
     ];
@@ -625,6 +626,9 @@ function save_booking($params) {
  * @return  array An array containing the result and confirmation message string.
  */
 function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
+    global $COURSE;
+
+    $COURSE->subscriber = new subscriber($courseid);
     $result = -1;
     $time = time();
     $week = (int) date('W', time());
@@ -637,7 +641,7 @@ function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
         // update the booking by the instructor.
         $sessiondatetime = (new DateTime('@' . ($booking->get_slot())->get_starttime()))->format('D M j\, H:i');
         $strdata = [
-            'exercise'  => subscriber::get_exercise_name($exerciseid),
+            'exercise'  => $COURSE->subscriber->get_exercise_name($exerciseid),
             'instructor'=> student::get_fullname($instructorid),
             'status'    => ucwords(get_string('statusbooked', 'local_booking')),
             'sessiondate'=> $sessiondatetime

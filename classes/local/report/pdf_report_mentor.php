@@ -27,6 +27,7 @@ namespace local_booking\local\report;
 
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
+use local_booking\local\session\entities\grade;
 use local_booking\local\subscriber\entities\subscriber;
 
 defined('MOODLE_INTERNAL') || die();
@@ -58,20 +59,20 @@ class pdf_report_mentor extends pdf_report {
         // write the parent intro
         parent::WriteContent();
 
-        // get student exercises
-        $exercises = $this->student->get_exercises();
-        $totalexercises = count($exercises);
+        // get student exercise grades
+        $exercisegrades = $this->student->get_exercise_grades();
+        $totalexercisegrades = count($exercisegrades);
         $counter = 0;
 
-        // go through student's exercises
-        foreach ($exercises as $exercise) {
+        // go through student's exercise grades
+        foreach ($exercisegrades as $exerciseid => $grade) {
             // write exercise contents
-            $this->WriteExerciseContent($exercise->exerciseid);
+            $this->WriteExerciseContent($exerciseid, $grade);
 
             // counter to track page counts
             $counter++;
             // break page if not on the last page
-            if ($counter < $totalexercises)
+            if ($counter < $totalexercisegrades)
                 $this->AddPage();
         }
     }
@@ -80,12 +81,10 @@ class pdf_report_mentor extends pdf_report {
     /**
      * Write the practical examination report content.
      *
-     * @param int @exerciseid   The exercise id to be written.
+     * @param int @exerciseid The exercise id for the grade to be written.
+     * @param grade @grade    The exercise grade to be written.
      */
-    protected function WriteExerciseContent(int $exerciseid) {
-
-        // get the grade for the exercise
-        $grade = $this->student->get_grade($exerciseid);
+    protected function WriteExerciseContent(int $exerciseid, grade $grade) {
 
         // write course name
         $this->SetFont($this->fontfamily, 'B', 18);
@@ -103,10 +102,10 @@ class pdf_report_mentor extends pdf_report {
         $this->writeHTML($html, true, false, true);
 
         // examiner information
-        $examiner = participant::get_fullname($grade->get_graderid());
+        $examiner = participant::get_fullname($grade->usermodified);
         $html = '<p><br /><span style="font-weight: bold;">' . get_string('instructor', 'local_booking') . ': ' . $examiner . '</span><br />';
         $html .= '<span style="font-weight: bold;">' . get_string('logbookdate', 'local_booking') . ':</span>&nbsp;';
-        $html .= '<span style="font-weight: normal;">' . (new \DateTime('@'.$grade->get_gradedate()))->format('M d\, Y') . '</span></p>';
+        $html .= '<span style="font-weight: normal;">' . (new \DateTime('@'.$grade->get_dategraded()))->format('M d\, Y') . '</span></p>';
         $this->SetFont($this->fontfamily, 'B', 12);
         $this->SetTextColor(0, 0, 0);
         $this->writeHTML($html, true, false, true);

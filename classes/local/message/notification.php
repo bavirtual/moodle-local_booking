@@ -149,7 +149,7 @@ class notification extends \core\message\message {
             'coursename'    => $COURSE->shortname,
             'student'       => student::get_fullname($studentid),
             'sessiondate'   => $sessiondatetime,
-            'exercise'      => subscriber::get_exercise_name($exerciseid),
+            'exercise'      => $COURSE->subscriber->get_exercise_name($exerciseid),
             'courseurl'     => (new \moodle_url('/course/view.php', array(
                 'id'        => $courseid)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
@@ -190,7 +190,7 @@ class notification extends \core\message\message {
             'coursename'    => $COURSE->shortname,
             'instructor'    => instructor::get_fullname($USER->id),
             'sessiondate'   => $sessiondate->format('l M j \a\t H:i \z\u\l\u'),
-            'exercise'      => subscriber::get_exercise_name($exerciseid),
+            'exercise'      => $COURSE->subscriber->get_exercise_name($exerciseid),
             'comment'       => $comment,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
         );
@@ -540,6 +540,8 @@ class notification extends \core\message\message {
         $sessionend = 0,
         $requester = 'i') {
 
+        global $COURSE;
+
         // parse parameters if exists
         if (!empty($params)) {
             $courseid = $params['id'];
@@ -576,7 +578,7 @@ class notification extends \core\message\message {
             'sessionstart'  => $sessionstart,
             'sessionend'    => $sessionend,
             'exerciseid'    => $exerciseid,
-            'exercise'      => subscriber::get_exercise_name($exerciseid),
+            'exercise'      => $COURSE->subscriber->get_exercise_name($exerciseid),
             'requester'     => $requester,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $courseid)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $courseid)))->out(false),

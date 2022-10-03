@@ -261,13 +261,18 @@ class logbook_vault implements logbook_vault_interface {
     public static function get_logbook_summary_to_exercise(int $courseid, int $userid, int $exerciseid) {
         global $DB;
 
-        // get the section of the exercise for the student logbook times summations
-        $sql = 'SELECT cs.section
+        // get the section and sequence of the exercise to total all prior logentries
+        $sql = 'SELECT cs.section, cs.sequence
                 FROM mdl_course_modules cm
                 INNER JOIN mdl_course_sections cs ON cs.id = cm.section
                 WHERE cs.course = :courseid
                 AND cm.id = :exerciseid';
-        $section = $DB->get_record_sql($sql, array('courseid'=>$courseid, 'exerciseid'=>$exerciseid))->section;
+        $sectionrec = $DB->get_record_sql($sql, array('courseid'=>$courseid, 'exerciseid'=>$exerciseid));
+        $section = $sectionrec->section;
+        $sequence = explode(',', $sectionrec->sequence);
+
+        // slice the sequence until the exercise to exclude exercises after it in the same section
+        $sequencearr = array_slice($sequence, array_search($exerciseid, $sequence)+1);
 
         // get summations up until specified section for the student of a specific course
         $sql = 'SELECT SUM(l.groundtime) as totalgroundtime,
@@ -292,7 +297,7 @@ class logbook_vault implements logbook_vault_interface {
                 WHERE l.courseid = :courseid
                 AND cm.deletioninprogress = 0
                 AND l.userid = :userid
-                AND cs.section <= :section';
+                AND cs.section <= :section' . (!empty($sequencearr) ? ' AND exerciseid NOT IN(' . implode(',', $sequencearr) . ')' : '');
 
         $params = [
             'courseid' => $courseid,
@@ -366,6 +371,7 @@ class logbook_vault implements logbook_vault_interface {
     protected static function get_logentry_instance($dataobj, $logentry) {
         if ($dataobj) {
             $logentry->set_id($dataobj->id);
+            $logentry->set_courseid($dataobj->courseid);
             $logentry->set_exerciseid($dataobj->exerciseid);
             $logentry->set_flightdate($dataobj->flightdate);
             $logentry->set_groundtime($dataobj->groundtime);

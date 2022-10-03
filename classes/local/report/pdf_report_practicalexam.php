@@ -79,10 +79,10 @@ class pdf_report_practicalexam extends pdf_report {
         $this->writeHTML($html, true, false, true);
 
         // examiner information
-        $examiner = participant::get_fullname($grade->get_graderid());
+        $examiner = participant::get_fullname($grade->usermodified);
         $html = '<p><br /><span style="font-weight: bold;">' . get_string('instructor', 'local_booking') . ': ' . $examiner . '</span><br />';
         $html .= '<span style="font-weight: bold;">' . get_string('logbookdate', 'local_booking') . ':</span>&nbsp;';
-        $html .= '<span style="font-weight: normal;">' . (new \DateTime('@'.$grade->get_gradedate()))->format('M d\, Y') . '</span></p>';
+        $html .= '<span style="font-weight: normal;">' . (new \DateTime('@'.$grade->get_dategraded()))->format('M d\, Y') . '</span></p>';
         $this->SetFont($this->fontfamily, 'B', 12);
         $this->SetTextColor(0, 0, 0);
         $this->writeHTML($html, true, false, true);

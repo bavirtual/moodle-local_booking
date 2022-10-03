@@ -77,24 +77,6 @@ interface participant_vault_interface {
     public function get_assigned_students(int $courseid, int $userid);
 
     /**
-     * Get assignment grades for a specific student.
-     *
-     * @param int       $courseid  The course id.
-     * @param int       $studentid The student id.
-     * @return grade[]  A student grades.
-     */
-    public function get_student_exercises_grades(int $courseid, int $studentid);
-
-    /**
-     * Get quiz grades for a specific student.
-     *
-     * @param int       $courseid  The course id.
-     * @param int $studentid  The student id.
-     * @return grade[]        A student quizes.
-     */
-    public function get_student_quizes_grades(int $courseid, int $studentid);
-
-    /**
      * Get student's enrolment date.
      *
      * @param int $studentid        The student id in reference
@@ -143,25 +125,4 @@ interface participant_vault_interface {
      * @return  bool    Whether the lessones were completed or not.
      */
     public function is_student_lessons_complete(int $userid, int $courseid, int $nextexercise);
-
-    /**
-     * Returns current or next upcoming exercise id for the student.
-     *
-     * @param   int     The course id
-     * @param   int     The student id
-     * @param   bool    Next or current exercise
-     * @return  int    The next exercise id
-     */
-    public function get_student_exercise($courseid, $studentid, $next = true);
-
-    /**
-     * Returns the first file stored for the context id and grade id (itemid)
-     *
-     * @param int    $contextid The context id for the exercise (assignment)
-     * @param int    $itemid    The context id for the exercise (assignment)
-     * @param string $component The assignment component
-     * @param string $filearea  The assignment file area
-     * @return object  The file record
-     */
-    public static function get_student_feedback_file_info(int $contextid, int $itemid, string $component, string $filearea);
 }

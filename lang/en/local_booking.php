@@ -13,8 +13,9 @@ $string['actionbooksession'] = 'Book session';
 $string['actioncancelsession'] = 'Cancel session';
 $string['actiondisabledincompletelessonstooltip'] = 'The student has not completed prerequisite lesson module';
 $string['actiondisabledexaminersonlytooltip'] = 'Examiners only';
+$string['actiondisabledwrongexaminerstooltip'] = 'Action reserved for examiner \'{$a}\'';
 $string['actiondisabledexercisescompletedtooltip'] = 'All exercises completed';
-$string['actionevaluatetooltip'] = 'Evaluate \'{$a->studentname}\' Skill Test';
+$string['actionevaluatetooltip'] = 'Evaluate \'{$a->studentname}\' on the {$a->examname}';
 $string['actiongradesession'] = 'Grade session';
 $string['actiongraduatetooltip'] = 'Graduate \'{$a->studentname}\' from the course';
 $string['activestudents'] = 'Active students progression';
@@ -68,7 +69,8 @@ $string['enroldate'] = 'Enrol Date';
 $string['exercise'] = 'Exercise';
 $string['grade'] = 'Grade';
 $string['instructors'] = 'Instructors';
-$string['lastsessiondate'] = 'Last VFC Flight/Lesson';
+$string['lastgradeddate'] = 'Last session graded';
+$string['lastsessiondate'] = 'Last session booked';
 $string['mystudents'] = 'My assigned students';
 $string['nextlesson'] = 'Next Lesson';
 $string['nobookingtoconfirm'] = 'You have no booking to confirm.';
@@ -292,7 +294,6 @@ $string['keepactive'] = 'Keep active';
 $string['lastlesson'] = 'Last lesson completed';
 $string['lastlessoncompleted'] = 'Next lesson modules completed';
 $string['lastgraded'] = 'Last session graded';
-$string['loginas'] = 'Login as';
 $string['mentorreport']='Mentored sessions report';
 $string['modulescompleted'] = 'Modules completed';
 $string['moodleprofile'] = 'Moodle profile';
@@ -303,7 +304,7 @@ $string['onhold'] = 'On-hold';
 $string['outlinereport'] = 'Outline report';
 $string['pageviews'] = 'page views';
 $string['practicalexamreport']='Practical examination report';
-$string['qualified'] = 'Qualified';
+$string['qualified'] = 'Qualified for';
 $string['recency'] = 'Recency';
 $string['recommendationletterlink'] = 'Recommendation letter';
 $string['reportdate'] = 'Report date';
@@ -599,7 +600,7 @@ $string['emailgraduationnotifymsg'] = 'Congratulations {$a->firstname} !!!
     Total Dual time: {$a->totaldualhrs} hrs
     Total solo flight time: {$a->totalsolohrs} hrs
     Total PICUS flight time: {$a->totalpicustime} hrs
-    VATSIM rating: {$a->rating}
+    Course outcome: {$a->rating}
 
     Congratulations!
 
@@ -621,7 +622,7 @@ $string['emailgraduationnotifyhtml'] = '<font face="sans-serif"><table style="bo
     <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Dual time: <strong>{$a->totaldualhrs} hrs</strong></p>
     <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total solo flight time: <strong>{$a->totalsolohrs} hrs</strong></p>
     <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total PICUS flight time: <strong>{$a->totalpicustime} hrs</strong></p>
-    <p><img src="{$a->cappic}" width="20" style="padding-left: 40px"/><span style="padding-left: 40px;">VATSIM rating:&nbsp; <strong>{$a->rating}</strong></p>
+    <p><img src="{$a->cappic}" width="20" style="padding-left: 40px"/><span style="padding-left: 40px;">Course outcome:&nbsp; <strong>{$a->rating}</strong></p>
     <p>&nbsp;</p><strong>Congratulations!</strong><p>&nbsp;</p><p>Best regards,</p><p>{$a->examinername}</p><p><br /><strong>{$a->atoname} Training staff<br /></strong><br />E-mail:&nbsp;<a href="mailto:{$a->trainingemail}">{$a->trainingemail}</a>
     <br />Web:&nbsp;<a href="{$a->atourl}">{$a->atourl}</a>&nbsp;</p><p><a href="{$a->atourl}"><img src="{$a->traininglogourl}" alt="{$a->atoname} Flight Training" width="230px" border="0" /></a></p>';
 

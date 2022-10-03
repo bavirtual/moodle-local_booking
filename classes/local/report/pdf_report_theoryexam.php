@@ -58,7 +58,7 @@ class pdf_report_theoryexam extends pdf_report {
         parent::WriteContent();
 
         // get the the exams for a user
-        $studentexams = $this->student->get_quizes();
+        $studentexams = $this->student->get_quize_grades();
 
         // iterate through all the attempts
         foreach ($studentexams as $exam) {
@@ -68,23 +68,23 @@ class pdf_report_theoryexam extends pdf_report {
                 'coursename' => $this->course->get_shortname(),
                 'studentname' => $this->student->get_name(false),
                 'vatsimid' => $this->student->get_profile_field('VATSIMID'),
-                'attempts' => $exam->attempts,
-                'score' => intval($exam->grade),
-                'total' => intval($exam->totalgrade),
-                'percent' => intval(($exam->grade / $exam->totalgrade) * 100),
+                'attempts' => count($exam->attempts),
+                'score' => intval($exam->finalgrade),
+                'total' => intval($exam->get_grade_max()),
+                'percent' => intval(($exam->finalgrade / $exam->get_grade_max()) * 100),
             ];
             $scorenote = get_string('mentorreportdesc', 'local_booking', $scoredata);
 
             // theory exam report information
-            $starttime = new \Datetime('@' . $exam->starttime);
-            $endtime = new \Datetime('@' . $exam->endtime);
+            $starttime = new \Datetime('@' . end($exam->attempts)->timestart);
+            $endtime = new \Datetime('@' . end($exam->attempts)->timefinish);
             $interval = $starttime->diff($endtime);
             $duration = $interval->format('%H:%I:%S');
 
             $this->SetTextColor(255,255,255);
             $this->SetFillColor(100,149,237);
             $this->SetFont($this->fontfamily, 'B', 18);
-            $this->Cell(0, 0, $exam->name, 0, 1, 'C', 1);
+            $this->Cell(0, 0, $exam->grade_item->itemname, 0, 1, 'C', 1);
 
             // write student name and VATSIM ID
             $this->SetTextColor(0,0,0);
@@ -99,6 +99,8 @@ class pdf_report_theoryexam extends pdf_report {
             // write exam information
             $html = '<br /><p>';
             $html = '<table width="300px" cellspacing="2" cellpadding="2">';
+            $html .= '<tr><td style="font-weight: bold; width: 100">' . get_string('gradescore', 'local_booking') . ':</td>';
+            $html .= '<td style="width: 200">' . intval($exam->finalgrade) . ' / ' . intval($exam->get_grade_max()) . '</td></tr><br />';
             $html .= '<tr><td style="font-weight: bold; width: 100">' . get_string('examdate', 'local_booking') . ':</td>';
             $html .= '<td style="width: 200">' . $starttime->format('F m\, Y') . '</td></tr>';
             $html .= '<tr><td style="font-weight: bold; width: 100">' . get_string('examstart', 'local_booking') . ':</td>';

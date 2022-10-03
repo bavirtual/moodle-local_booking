@@ -62,7 +62,7 @@ class booking_mybookings_exporter extends exporter {
         'studentid'   => $booking->get_studentid(),
         'studentname' => student::get_fullname($booking->get_studentid()),
         'exerciseid'  => $booking->get_exerciseid(),
-        'exercise'    => subscriber::get_exercise_name($booking->get_exerciseid()),
+        'exercise'    => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
         'sessiondate' => $sessiondate->format('D M j'),
         'groundtime' => $sessiondate->format('H:i'),
         'actionname'  => $action->get_name(),

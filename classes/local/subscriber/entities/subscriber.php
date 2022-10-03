@@ -29,7 +29,6 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once($CFG->dirroot . '/group/lib.php');
 
-use local_booking\local\subscriber\data_access\subscriber_vault;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
@@ -38,7 +37,8 @@ use local_booking\local\participant\entities\student;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class representing subscribed courses
+ * Class representing subscribed course to be attached to $COURSE global variable
+ * (no course class in Moodle to extend the subscriber class from)
  *
  * @copyright  BAVirtual.co.uk © 2021
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -86,9 +86,24 @@ class subscriber implements subscriber_interface {
     protected $graduationexercise;
 
     /**
-     * @var array $exercises The subscribing course's exercises.
+     * @var array $lessons The subscribing course's lessons (sections).
      */
-    protected $exercises = [];
+    protected $lessons;
+
+    /**
+     * @var array $modules The subscribing course's modules (exercises & quizes).
+     */
+    protected $modules;
+
+    /**
+     * @var array $lessonmods The subscribing course's lesson modules.
+     */
+    protected $lessonmods;
+
+    /**
+     * @var array $grading_items The subscribing course's modules grading items.
+     */
+    protected $grading_items = [];
 
     /**
      * Constructor.
@@ -96,12 +111,29 @@ class subscriber implements subscriber_interface {
      * @param string $courseid  The description's value.
      */
     public function __construct($courseid) {
-        $this->course = get_course($courseid);
+        $this->coursemodinfo = get_fast_modinfo($courseid);
         $this->context = \context_course::instance($courseid);
+        $this->course = get_course($courseid);
         $this->courseid = $courseid;
         $this->fullname = $this->course->fullname;
         $this->shortname = $this->course->shortname;
         $this->ato = get_booking_config('ato');
+
+        // filter exercise and quiz modules only
+        $cms = $this->coursemodinfo->get_cms();
+        $this->lessons = $this->coursemodinfo->get_section_info_all();
+        $this->modules = array_filter($cms, function($property) { return ($property->modname == 'assign' || $property->modname == 'quiz');});
+        $this->lessonmods = array_filter($cms, function($property) { return ($property->modname == 'lesson');});
+
+        // get grading items for all modules
+        foreach ($this->modules as $mod) {
+            $params = array('itemtype' => 'mod',
+            'itemmodule' => $mod->modname,
+            'iteminstance' => $mod->instance,
+            'courseid' => $this->courseid,
+            'itemnumber' => 0);
+            $this->grading_items[$mod->id] = \grade_item::fetch($params);
+        }
 
         // define course custom fields globally
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
@@ -319,78 +351,66 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Returns the subscribed course section id and name that contains the exercise
+     * Returns the subscribed course section id and lesson name that contains the exercise
      *
      * @param int $exerciseid The exercise id in the course inside the section
      * @return array  The section name of a course associated with the exercise
      */
-    public function get_section(int $exerciseid) {
-        return subscriber_vault::get_subscriber_section($this->courseid, $exerciseid);
+    public function get_lesson(int $exerciseid) {
+        $idx = array_search($this->modules[$exerciseid]->section, array_column($this->lessons, 'id'));
+        return [$this->modules[$exerciseid]->section, $this->lessons[$idx]->name];
     }
 
     /**
      * Returns the course graduation exercise as specified in the settings
      * otherwise retrieves the last exercise.
      *
-     *
+     * @param bool $nameonly Whether to return the name instead of the id
      * @return int The last exericse id
      */
-    public function get_graduation_exercise() {
-
-        // check if there is an exercise specified in the settings otherwise default to last exercise
-        if (!isset($this->graduationexercise))
-            $this->graduationexercise = subscriber_vault::get_subscriber_last_exercise($this->courseid);
-
-        return $this->graduationexercise;
+    public function get_graduation_exercise(bool $nameonly = false) {
+        $gradexerciseid = end($this->modules)->id;
+        return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
     }
 
     /**
-     * Retrieves exercises for the course
+     * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array
      */
-    public function get_exercises() {
+    public function get_modules() {
+        return $this->modules;
+    }
 
-        // check if exercises are already loaded
-        if (count($this->exercises) == 0) {
-
-            $exerciserecs = subscriber_vault::get_subscriber_exercises($this->courseid);
-
-            foreach ($exerciserecs as $exerciserec) {
-                $exerciseitem = $exerciserec->modulename == 'assign' ? (object) [
-                    'exerciseid'    => $exerciserec->exerciseid,
-                    'exercisename'  => $exerciserec->exercisename
-                ] : (object) [
-                    'exerciseid'    => $exerciserec->exerciseid,
-                    'exercisename'  => $exerciserec->exam
-                ];
-                $exerciseitem->exercisetype = $exerciserec->modulename;
-
-                $this->exercises[$exerciserec->exerciseid] = $exerciseitem;
-            }
-        }
-
-        return $this->exercises;
+    /**
+     * Retrieves subscribing course grading items for each module
+     *
+     * @return array
+     */
+    public function get_grading_items() {
+        return $this->grading_items;
     }
 
     /**
      * Retrieves the exercise name of a specific exercise
      * based on its id statically.
      *
-     * @param int $exerciseid The exercise id.
+     * @param int  $exerciseid The exercise id.
+     * @param int  $courseid   The course id the exercise belongs to.
      * @return string
      */
-    public static function get_exercise_name(int $exerciseid) {
-        return subscriber_vault::get_subscriber_exercise_name($exerciseid);
-    }
+    public function get_exercise_name(int $exerciseid, int $courseid = 0) {
 
-    /**
-     * Retrieves the total number of modules in a course.
-     *
-     * @return int
-     */
-    public function get_modules_count() {
-        return subscriber_vault::get_subscriber_modules_count($this->courseid);
+        // look in another course
+        if ($courseid != 0 && $courseid != $this->courseid) {
+            $coursemodinfo = get_fast_modinfo($courseid);
+            $mods = $coursemodinfo->get_cms();
+            $modname = $mods[$exerciseid]->name;
+        } else {
+            $modname = $this->modules[$exerciseid]->name;
+        }
+
+        return $modname;
     }
 
     /**

@@ -48,6 +48,11 @@ class logentry implements logentry_interface {
     protected $id = 0;
 
     /**
+     * @var int $courseid The course id.
+     */
+    protected $courseid = 0;
+
+    /**
      * @var int $exercise The course exercise id.
      */
     protected $exerciseid = 0;
@@ -236,6 +241,15 @@ class logentry implements logentry_interface {
      */
     public function get_id() {
         return $this->id;
+    }
+
+    /**
+     * Get the course id loaded in the logbook entry.
+     *
+     * @param int
+     */
+    public function get_courseid() {
+        return $this->courseid;
     }
 
     /**
@@ -573,6 +587,15 @@ class logentry implements logentry_interface {
      */
     public function set_id(int $id) {
         $this->id = $id;
+    }
+
+    /**
+     * Set the course id for the logbook entry.
+     *
+     * @param int
+     */
+    public function set_courseid(int $courseid) {
+        $this->courseid = $courseid;
     }
 
     /**

@@ -27,7 +27,6 @@ namespace local_booking\local\message;
 
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
-use local_booking\local\subscriber\entities\subscriber;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -402,7 +401,7 @@ class notification extends \core\message\message {
      * @param array     $data data tags.
      * @return bool     The notification message id.
      */
-    public function send_availability_posting_notification(array $instructors, array $data) {
+    public static function send_availability_posting_notification(array $instructors, array $data) {
 
         $result = true;
 
@@ -436,7 +435,7 @@ class notification extends \core\message\message {
      * @param array     $data data tags.
      * @return bool     The notification message id.
      */
-    public function send_recommendation_notification($instructors, array $data) {
+    public static function send_recommendation_notification($instructors, array $data) {
 
         $result = true;
 
@@ -468,9 +467,17 @@ class notification extends \core\message\message {
      * @param array     $data data tags.
      * @return bool     The notification message id.
      */
-    public function send_graduation_notification($coursemembers, array $data) {
+    public static function send_graduation_notification($coursemembers, array $data) {
 
         $result = true;
+
+        // get text and html email message body
+        $msgtext = get_string('emailgraduationnotifymsg1', 'local_booking', $data);
+        $msgtext .= get_string($data['trainingtype'] == 'Dual' ? 'emailgraduationdualnotifymsg' : 'emailgraduationmultinotifymsg', 'local_booking', $data);
+        $msgtext .= get_string('emailgraduationnotifymsg2', 'local_booking', $data);
+        $msghtml = get_string('emailgraduationnotifyhtml1', 'local_booking', $data);
+        $msghtml .= get_string($data['trainingtype'] == 'Dual' ? 'emailgraduationdualnotifyhtml' : 'emailgraduationmultinotifyhtml', 'local_booking', $data);
+        $msghtml .= get_string('emailgraduationnotifyhtml2', 'local_booking', $data);
 
         // sent to all except the graduating student
         foreach ($coursemembers as $coursemember) {
@@ -480,8 +487,8 @@ class notification extends \core\message\message {
                 $msg->name              = 'graduation_notification';
                 $msg->userto            = $coursemember->get_id();
                 $msg->subject           = get_string('emailgraduationnotify', 'local_booking', $data);
-                $msg->fullmessage       = get_string('emailgraduationnotifymsg', 'local_booking', $data);
-                $msg->fullmessagehtml   = get_string('emailgraduationnotifyhtml', 'local_booking', $data);
+                $msg->fullmessage       = $msgtext;
+                $msg->fullmessagehtml   = $msghtml;
 
                 $result = $result && (message_send($msg) != 0);
             }

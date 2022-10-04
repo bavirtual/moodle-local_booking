@@ -525,11 +525,13 @@ define([
                             $('#id_instructortime').val(response.logentry.pictime);
                         }
                     } else {
-                        // Display inline error
+                        // Display inline error for the PIREP then clear it and give it focus
                         $('#id_p1pirep').addClass('is-invalid');
                         if (!$('#id_error2_p1pirep').length) {
                             pirepdiv.append('<div class="form-control-feedback invalid-feedback" id="id_error2_p1pirep" ' +
                                 'tabindex="0" style="">' + response.warnings[0].message + '</div');
+                            $('#id_p1pirep').val('');
+                            $('#id_p1pirep').focus();
                         } else {
                             $('#id_error2_p1pirep').show();
                         }
@@ -582,7 +584,7 @@ define([
             }
         };
 
-        // Set the value of the element depending display
+        // Set the value of the element depending on the display type
         var reset = function(element, show, value) {
             // Set the element value if not manual PIREP entry
             if (show && !nopirep) {

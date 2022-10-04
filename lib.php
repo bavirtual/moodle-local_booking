@@ -265,6 +265,7 @@ function local_booking_output_fragment_logentry_form($args) {
     } else {
         $logentry = $logbook->create_logentry();
         $formoptions['logentry'] = $logentry;
+        $formoptions['exerciseid'] = $exerciseid;
         $mform = new create_logentry_form(null, $formoptions, 'post', '', null, true, $formdata);
         // copy over additional data needed for setting the form
         $data['courseid'] = $courseid;

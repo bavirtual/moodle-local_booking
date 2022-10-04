@@ -108,40 +108,8 @@ if ($COURSE->subscriber->has_skills_evaluation() && !$student->evaluated()) {
 
     }
 
-    // send message to course students and instructors
-    $coursemembers = array_merge($COURSE->subscriber->get_students('active', true), $COURSE->subscriber->get_instructors());
-    $logbook = new logbook($courseid, $studentid);
-    $logbook->load();
-    $summary = $logbook->get_summary(true);
-    $data = [
-        'graduateid'      => $student->get_id(),
-        'firstname'       => $student->get_profile_field('firstname', true),
-        'fullname'        => $student->get_name(),
-        'courseshortname' => $COURSE->subscriber->get_shortname(),
-        'coursename'      => $COURSE->subscriber->get_fullname(),
-        'exercisename'    => $COURSE->subscriber->get_graduation_exercise(true),
-        'completiondate'  => date_format($student->get_last_graded_date(), 'F j, Y'),
-        'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
-        'simulator'       => $student->get_profile_field('simulator'),
-        'totalsessions'   => count($student->get_grades()),
-        'totalflighthrs'  => $summary->totaltime,
-        'totaldualhrs'    => $summary->totaldualtime,
-        'totalpicustime'  => $summary->totalpicustime,
-        'totalsolohrs'    => $summary->totalpictime,
-        'rating'          => $COURSE->subscriber->vatsimrating,
-        'trainingemail'   => $COURSE->subscriber->ato->email,
-        'traininglogourl' => $COURSE->subscriber->ato->logo,
-        'examinername'    => $examiner->get_name(false),
-        'atoname'         => $COURSE->subscriber->ato->name,
-        'atourl'          => $COURSE->subscriber->ato->url,
-        'congrats1pic'    => $CFG->wwwroot . '/local/booking/pix/congrats1.png',
-        'congrats2pic'    => $CFG->wwwroot . '/local/booking/pix/congrats2.png',
-        'calendarpic'     => $CFG->wwwroot . '/local/booking/pix/calendar.svg',
-        'planepic'        => $CFG->wwwroot . '/local/booking/pix/book.svg',
-        'cappic'          => $CFG->wwwroot . '/local/booking/pix/graduate.svg'
-    ];
-    $message = new notification();
-    $message->send_graduation_notification($coursemembers, $data);
+    // flag the student activating graduation notifications
+    set_user_preference('local_booking_' . $courseid . '_graduationnotify', true, $studentid);
 
     // add student to graduates group
     $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_GRADUATESGROUP);
@@ -167,6 +135,11 @@ if ($COURSE->subscriber->has_skills_evaluation() && !$student->evaluated()) {
     echo html_writer::end_tag('div');
 
     // message section
+    $data = [
+        'firstname'       => $student->get_profile_field('firstname', true),
+        'fullname'        => $student->get_name(),
+        'courseshortname' => $COURSE->subscriber->get_shortname(),
+    ];
     echo get_string('graduationconfirmation', 'local_booking', $data);
 
     echo html_writer::end_tag('div');

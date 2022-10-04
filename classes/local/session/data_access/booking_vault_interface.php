@@ -98,6 +98,14 @@ interface booking_vault_interface {
     public static function get_last_booked_session(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
+     * Get the date of the last booked session
+     *
+     * @param int $isinstructor
+     * @param int $userid
+     */
+    public static function get_user_total_sessions(int $courseid, int $userid, bool $isinstructor = false);
+
+    /**
      * set active flag to false to deactive the booking.
      *
      * @param booking $booking The booking in reference.

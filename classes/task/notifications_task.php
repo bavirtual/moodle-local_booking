@@ -29,8 +29,11 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
 
+use local_booking\local\logbook\entities\logbook;
 use local_booking\local\message\notification;
 use local_booking\local\participant\entities\instructor;
+use local_booking\local\participant\entities\student;
+use local_booking\local\session\entities\booking;
 use local_booking\local\subscriber\entities\subscriber;
 
 /**
@@ -73,108 +76,193 @@ class notifications_task extends \core\task\scheduled_task {
                     mtrace('    Notifications for course: ' . $sitecourse->shortname . ' (id: ' . $sitecourse->id . ')');
 
                     // get active students
-                    $students = $course->get_students('active', true);
+                    $students = array_merge($course->get_students('active', true), $course->get_students('graduates'));
 
-                    // find students that have an availability posting not emailed
+                    // process notifications for students
                     foreach ($students as $student) {
 
                         // notify instructors of student recommendation
-                        if (get_user_preferences('local_booking_' . $course->get_id() . '_endorsenotify', false, $student->get_id())) {
-
-                            // get message data
-                            $data = array(
-                                'coursename'    => $course->get_shortname(),
-                                'studentname'   => $student->get_name(),
-                                'firstname'     => $student->get_profile_field('firstname', true),
-                                'skilltest'     => $course->get_graduation_exercise(true),
-                                'instructorname'=> instructor::get_fullname(get_user_preferences('local_booking_' . $course->get_id() . '_endorser', 0, $student->get_id())),
-                                'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$course->get_id())))->out(false),
-                                'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
-                                'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
-                                'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_current_exercise())))->out(false),
-                                'exercise'      => $course->get_exercise_name($student->get_current_exercise()),
-                            );
-
-                            // send recommendation message
-                            $message = new notification();
-                            $message->send_recommendation_notification($course->get_instructors(), $data);
-
-                            mtrace('                recommendation notifications sent...');
-
-                            // reset notification setting
-                            set_user_preference('local_booking_' . $course->get_id() . '_endorsenotify', false, $student->get_id());
-                        }
+                        $this->process_recommendations($student, $course);
 
                         // notify instructors of student availability posting
-                        $slotstonotify = get_user_preferences('local_booking_' . $course->get_id() . '_postingnotify', false, $student->get_id());
-                        if (!empty($slotstonotify)) {
+                        $this->process_availability_postings($student, $course);
 
-                            // get student availability slots new postings
-                            $slotids = explode(',', $slotstonotify);
-                            $postingstext = '';
-                            $postingshtml = '<table style="border-collapse: collapse; width: 400px"><tbody>';
-                            $previousday = '';
+                        // notify students and instructors of student graduating
+                        $this->process_graduations($student, $course);
 
-                            foreach ($slotids as $slotid) {
-
-                                if (!empty($slotid)) {
-
-                                    // get each slot posted
-                                    $slot = $student->get_slot($slotid);
-
-                                    // format the availability slots postings
-                                    if (!empty($slot)) {
-
-                                        $startdate = new \DateTime('@'.$slot->starttime);
-                                        $sameday = $startdate->format('l') == $previousday;
-                                        $postingstext .= !$sameday ? PHP_EOL . $startdate->format('l M d\: ') : ', ';
-                                        $postingstext .= $startdate->format(' H:i\z') . ' - ' . (new \DateTime('@'.$slot->endtime))->format('H:i\z');
-                                        $postingshtml .= '<tr' . (!$sameday ? ' style="border-top: 1pt solid black"' : '') . '><td style="width: 100px">';
-                                        $postingshtml .= (!$sameday ? $startdate->format('l ') . '</td><td style="width: 100px;">' . $startdate->format('M d') : '&nbsp;</td><td>&nbsp;') . '</td>';
-                                        $postingshtml .= '<td style="width: 100px">' . $startdate->format('H:i\z') . '</td><td style="width: 100px">';
-                                        $postingshtml .= (new \DateTime('@'.$slot->endtime))->format('H:i\z') . '</td></tr>';
-                                        $previousday = $startdate->format('l');
-
-                                    }
-
-                                }
-                            }
-                            $postingshtml .= '<tr style="border-top: 1pt solid black"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table>';
-
-                            // get message data
-                            $data = array(
-                                'courseurl'     => (new \moodle_url('/course/view.php', array('id'=>$course->get_id())))->out(false),
-                                'coursename'    => $course->get_shortname(),
-                                'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=>$course->get_id())))->out(false),
-                                'studentname'   => $student->get_name(),
-                                'firstname'     => $student->get_profile_field('firstname', true),
-                                'postingstext'  => $postingstext,
-                                'postingshtml'  => $postingshtml,
-                                'bookingurl'    => (new \moodle_url('/local/booking/availability.php', array(
-                                    'courseid'      => $course->get_id(),
-                                    'userid'        => $student->get_id(),
-                                    'exid'          => $student->get_next_exercise(),
-                                    'action'        => 'book'
-                                    )))->out(false),
-                                'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
-                                'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
-                                'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise())))->out(false),
-                                'exercise'      => $course->get_exercise_name($student->get_next_exercise()),
-                            );
-
-                            $message = new notification();
-                            $message->send_availability_posting_notification($course->get_instructors(), $data);
-
-                            mtrace('                availability posting notifications sent...');
-
-                            // reset notification setting
-                            set_user_preference('local_booking_' . $course->get_id() . '_postingnotify', '', $student->get_id());
-                        }
                     }
                 }
             }
         }
 
         return true;
+    }
+
+    /**
+     * Process recommendation notifications.
+     *
+     * @param student    $student   The student being checked
+     * @param subscriber $course    The subscribing course.
+     */
+    protected function process_recommendations(student $student, subscriber $course) {
+
+        // check if the student has recommendation notification pending in their preferences settings
+        if (get_user_preferences('local_booking_' . $course->get_id() . '_endorsenotify', false, $student->get_id())) {
+
+            // get message data
+            $data = array(
+                'coursename'    => $course->get_shortname(),
+                'studentname'   => $student->get_name(),
+                'firstname'     => $student->get_profile_field('firstname', true),
+                'skilltest'     => $course->get_graduation_exercise(true),
+                'instructorname'=> instructor::get_fullname(get_user_preferences('local_booking_' . $course->get_id() . '_endorser', 0, $student->get_id())),
+                'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$course->get_id())))->out(false),
+                'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
+                'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
+                'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_current_exercise())))->out(false),
+                'exercise'      => $course->get_exercise_name($student->get_current_exercise()),
+            );
+
+            // send recommendation message
+            notification::send_recommendation_notification($course->get_instructors(), $data);
+
+            mtrace('                recommendation notifications sent...');
+
+            // reset notification setting
+            set_user_preference('local_booking_' . $course->get_id() . '_endorsenotify', false, $student->get_id());
+        }
+    }
+
+    /**
+     * Process availability posting notifications.
+     *
+     * @param student    $student   The student being checked
+     * @param subscriber $course    The subscribing course.
+     */
+    protected function process_availability_postings(student $student, subscriber $course) {
+
+        $slotstonotify = get_user_preferences('local_booking_' . $course->get_id() . '_postingnotify', false, $student->get_id());
+        if (!empty($slotstonotify)) {
+
+            // get student availability slots new postings
+            $slotids = explode(',', $slotstonotify);
+            $postingstext = '';
+            $postingshtml = '<table style="border-collapse: collapse; width: 400px"><tbody>';
+            $previousday = '';
+
+            foreach ($slotids as $slotid) {
+
+                if (!empty($slotid)) {
+
+                    // get each slot posted
+                    $slot = (object) $student->get_slot($slotid);
+
+                    // format the availability slots postings
+                    if (!empty($slot)) {
+
+                        $startdate = new \DateTime('@'.$slot->starttime);
+                        $sameday = $startdate->format('l') == $previousday;
+                        $postingstext .= !$sameday ? PHP_EOL . $startdate->format('l M d\: ') : ', ';
+                        $postingstext .= $startdate->format(' H:i\z') . ' - ' . (new \DateTime('@'.$slot->endtime))->format('H:i\z');
+                        $postingshtml .= '<tr' . (!$sameday ? ' style="border-top: 1pt solid black"' : '') . '><td style="width: 100px">';
+                        $postingshtml .= (!$sameday ? $startdate->format('l ') . '</td><td style="width: 100px;">' . $startdate->format('M d') : '&nbsp;</td><td>&nbsp;') . '</td>';
+                        $postingshtml .= '<td style="width: 100px">' . $startdate->format('H:i\z') . '</td><td style="width: 100px">';
+                        $postingshtml .= (new \DateTime('@'.$slot->endtime))->format('H:i\z') . '</td></tr>';
+                        $previousday = $startdate->format('l');
+
+                    }
+
+                }
+            }
+            $postingshtml .= '<tr style="border-top: 1pt solid black"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table>';
+
+            // get message data
+            $data = array(
+                'courseurl'     => (new \moodle_url('/course/view.php', array('id'=>$course->get_id())))->out(false),
+                'coursename'    => $course->get_shortname(),
+                'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=>$course->get_id())))->out(false),
+                'studentname'   => $student->get_name(),
+                'firstname'     => $student->get_profile_field('firstname', true),
+                'postingstext'  => $postingstext,
+                'postingshtml'  => $postingshtml,
+                'bookingurl'    => (new \moodle_url('/local/booking/availability.php', array(
+                    'courseid'      => $course->get_id(),
+                    'userid'        => $student->get_id(),
+                    'exid'          => $student->get_next_exercise(),
+                    'action'        => 'book'
+                    )))->out(false),
+                'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
+                'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
+                'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise())))->out(false),
+                'exercise'      => $course->get_exercise_name($student->get_next_exercise()),
+            );
+
+            notification::send_availability_posting_notification($course->get_instructors(), $data);
+
+            mtrace('                availability posting notifications sent...');
+
+            // reset notification setting
+            set_user_preference('local_booking_' . $course->get_id() . '_postingnotify', '', $student->get_id());
+        }
+    }
+
+    /**
+     * Process student graduating notifications.
+     *
+     * @param student    $student   The student being checked
+     * @param subscriber $course    The subscribing course.
+     */
+    protected function process_graduations(student $student, subscriber $course) {
+        global $CFG;
+
+        $graduationnotify = get_user_preferences('local_booking_' . $course->get_id() . '_graduationnotify', false, $student->get_id());
+
+        if (!empty($graduationnotify)) {
+
+            $coursemembers = array_merge($course->get_students('active', true), $course->get_instructors());
+            $grade = $student->get_grade($course->get_graduation_exercise());
+            $examiner = new instructor($course, $grade->usermodified);
+            $logbook = new logbook($course->get_id(), $student->get_id());
+            $logbook->load();
+            $summary = $logbook->get_summary(true);
+            $data = [
+                'trainingtype'    => $course->trainingtype,
+                'graduateid'      => $student->get_id(),
+                'firstname'       => $student->get_profile_field('firstname', true),
+                'fullname'        => $student->get_name(),
+                'courseshortname' => $course->get_shortname(),
+                'coursename'      => $course->get_fullname(),
+                'exercisename'    => $course->get_graduation_exercise(true),
+                'completiondate'  => date_format($student->get_last_graded_date(), 'F j, Y'),
+                'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
+                'simulator'       => $student->get_profile_field('simulator'),
+                'totallessons'    => count($course->get_lessons()),
+                'totalsessions'   => booking::get_total_sessions($course->get_id(), $student->get_id()),
+                'totalflighthrs'  => $summary->totaltime,
+                'totaldualhrs'    => $summary->totaldualtime,
+                'totalmultihrs'   => $summary->totalmultipilottime,
+                'totalcopilothrs' => $summary->totalcopilottime ?: '00:00',
+                'totalpicustime'  => $summary->totalpicustime ?: '00:00',
+                'totalsolohrs'    => $summary->totalpictime ?: '00:00',
+                'rating'          => $course->vatsimrating,
+                'trainingemail'   => $course->ato->email,
+                'traininglogourl' => $course->ato->logo,
+                'examinername'    => $examiner->get_name(false),
+                'atoname'         => $course->ato->name,
+                'atourl'          => $course->ato->url,
+                'congrats1pic'    => $CFG->wwwroot . '/local/booking/pix/congrats1.png',
+                'congrats2pic'    => $CFG->wwwroot . '/local/booking/pix/congrats2.png',
+                'calendarpic'     => $CFG->wwwroot . '/local/booking/pix/calendar.svg',
+                'planepic'        => $CFG->wwwroot . '/local/booking/pix/book.svg',
+                'cappic'          => $CFG->wwwroot . '/local/booking/pix/graduate.svg'
+            ];
+
+            notification::send_graduation_notification($coursemembers, $data);
+
+            mtrace('                graduation notifications sent...');
+
+            // reset notification setting
+            set_user_preference('local_booking_' . $course->get_id() . '_graduationnotify', false, $student->get_id());
+        }
     }
 }

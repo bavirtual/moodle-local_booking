@@ -30,7 +30,6 @@ use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\booking;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\local\slot\entities\slot;
 
 require_once($CFG->dirroot . '/user/profile/lib.php');
 require_once($CFG->dirroot . "/lib/enrollib.php");

@@ -351,17 +351,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Returns the subscribed course section id and lesson name that contains the exercise
-     *
-     * @param int $exerciseid The exercise id in the course inside the section
-     * @return array  The section name of a course associated with the exercise
-     */
-    public function get_lesson(int $exerciseid) {
-        $idx = array_search($this->modules[$exerciseid]->section, array_column($this->lessons, 'id'));
-        return [$this->modules[$exerciseid]->section, $this->lessons[$idx]->name];
-    }
-
-    /**
      * Returns the course graduation exercise as specified in the settings
      * otherwise retrieves the last exercise.
      *
@@ -380,6 +369,26 @@ class subscriber implements subscriber_interface {
      */
     public function get_modules() {
         return $this->modules;
+    }
+
+    /**
+     * Retrieves subscribing course lessons
+     *
+     * @return array
+     */
+    public function get_lessons() {
+        return $this->lessons;
+    }
+
+    /**
+     * Returns the subscribed course section id and lesson name that contains the exercise
+     *
+     * @param int $exerciseid The exercise id in the course inside the section
+     * @return array  The section name of a course associated with the exercise
+     */
+    public function get_lesson(int $exerciseid) {
+        $idx = array_search($this->modules[$exerciseid]->section, array_column($this->lessons, 'id'));
+        return [$this->modules[$exerciseid]->section, $this->lessons[$idx]->name];
     }
 
     /**

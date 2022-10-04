@@ -144,23 +144,35 @@ interface booking_interface {
     public function get_bookingdate();
 
     /**
-     * Get the date of the last booked session
+     * Get the last booking date associated
+     * with the course and exercise id for the student.
      *
-     * @param int $courseid
-     * @param int $userid
-     * @param int $isinstructor
+     * @param int $courseid      The associated course id
+     * @param int $studentid     The student id conducted the session
+     * @param int $exerciseid    The exercise id for the session
+     * @return DateTime          The date of last session for that exercise
+     */
+    public static function get_exercise_date(int $courseid, int $studentid, int $exerciseid);
+
+    /**
+     * Get the date of the last booked session.
+     *
+     * @param int $courseid     The associated course id
+     * @param int $userid       The user id for the booked session
+     * @param int $isinstructor Whether the user is an instructor
+     * @return DateTime         The date of last session for that exercise
      */
     public static function get_last_session(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
-     * Get the last booking date associated
-     * with the course and exercise id for the student.
+     * Get the total sessions for a user.
      *
-     * @param int $courseid      The associated course
-     * @param int $studentid     The student id conducted the session
-     * @param int $exerciseid    The exercise id for the session
-     * @return DateTime $exercisedate The date of last session for that exercise     */
-    public static function get_exercise_date(int $courseid, int $studentid, int $exerciseid);
+     * @param int $courseid     The associated course id
+     * @param int $userid       The user id
+     * @param int $isinstructor Whether the user is an instructor
+     * @return int              The total amount of sessions conducted for the student
+     */
+    public static function get_total_sessions(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
      * Set the course  id for the booking.

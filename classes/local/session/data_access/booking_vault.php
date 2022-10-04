@@ -232,6 +232,23 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
+     * Get the date of the last booked session
+     *
+     * @param int $isinstructor
+     * @param int $userid
+     * @return int totalsessions
+     */
+    public static function get_user_total_sessions(int $courseid, int $userid, bool $isinstructor = false) {
+        global $DB;
+
+        $sql = 'SELECT COUNT(id) as totalsessions
+                FROM {' . static::DB_BOOKINGS. '}
+                WHERE courseid = :courseid AND ' . ($isinstructor ? 'userid = :userid' : 'studentid = :userid');
+
+        return $DB->get_record_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid])->totalsessions;
+    }
+
+    /**
      * set active flag to false to deactive the booking.
      *
      * @param booking $booking The booking in reference.

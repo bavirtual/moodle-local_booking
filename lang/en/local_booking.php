@@ -586,7 +586,7 @@ $string['emailrecommendationnotifyhtml'] = '<font face="sans-serif"><p><a href=\
 // email to all: congratulations to new graduate
 $string['emailgraduation'] = 'Graduation congratulatory notification';
 $string['emailgraduationnotify'] = '{$a->fullname} newly graduated';
-$string['emailgraduationnotifymsg'] = 'Congratulations {$a->firstname} !!!
+$string['emailgraduationnotifymsg1'] = 'Congratulations {$a->firstname} !!!
 
     Join me in congratulating {$a->fullname} for passing the {$a->exercisename} examination. {$a->firstname} completed the {$a->atoname}
     {$a->coursename} coursework and achieved the {$a->rating} on {$a->completiondate}. Please make sure to post a message on the New Pilots Forum (https://forum.bavirtual.co.uk/forum/29-new-pilots/) to {$a->firstname} for this achievement.
@@ -595,10 +595,16 @@ $string['emailgraduationnotifymsg'] = 'Congratulations {$a->firstname} !!!
 
     Below are some of {$a->firstname}\'s accomplishments:
 
-    Lessons: {$a->totalsessions} modules
-    Total flight time: {$a->totalflighthrs} hrs
+    Lessons: {$a->totallessons} modules
+    Mentoring: {$a->totalsessions} sessions
+    Total flight time: {$a->totalflighthrs} hrs';
+$string['emailgraduationdualnotifymsg'] = '
     Total Dual time: {$a->totaldualhrs} hrs
-    Total solo flight time: {$a->totalsolohrs} hrs
+    Total solo flight time: {$a->totalsolohrs} hrs';
+$string['emailgraduationmultinotifymsg'] = '
+    Total Multi-pilot time: {$a->totalmultihrs} hrs
+    Total Copilot time: {$a->totalcopilothrs} hrs';
+$string['emailgraduationnotifymsg2'] = '
     Total PICUS flight time: {$a->totalpicustime} hrs
     Course outcome: {$a->rating}
 
@@ -609,7 +615,7 @@ $string['emailgraduationnotifymsg'] = 'Congratulations {$a->firstname} !!!
     {$a->atoname} Training staff
     E-mail: {$a->trainingemail}
     Web: {$a->atourl}';
-$string['emailgraduationnotifyhtml'] = '<font face="sans-serif"><table style="border-collapse: collapse; width: 700px;" border="0"><tbody><tr><td style="width: 20%;"><h1 style="color: #5e9ca0;">
+$string['emailgraduationnotifyhtml1'] = '<font face="sans-serif"><table style="border-collapse: collapse; width: 700px;" border="0"><tbody><tr><td style="width: 20%;"><h1 style="color: #5e9ca0;">
     <span style="color: #000000;"><img style="display: block; margin-left: auto; margin-right: auto;" src="{$a->congrats1pic}" alt="Congratulations" width="70" /></span></h1></td>
     <td style="width: 65%"><h1 style="color: #5e9ca0;"><span style="color: #000000;">Congratulations {$a->firstname} !!!</span></h1></td>
     <td style="width: 15%; align: left"><img src="{$a->congrats2pic}" alt="Congratulations" width="70" /></td></tr></tbody>
@@ -617,11 +623,14 @@ $string['emailgraduationnotifyhtml'] = '<font face="sans-serif"><table style="bo
     coursework and achieved the {$a->rating}  on {$a->completiondate}. Please make sure to post a message on the <a href="https://forum.bavirtual.co.uk/forum/29-new-pilots/">New Pilots Forum</a>
     to {$a->firstname} for this achievement.</p><p>{$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate} on the {$a->simulator} simulator and
     was able to finish all practical and navigation exercises to standard. Below are some of {$a->firstname}\'s accomplishments:</p><p>
-    <p><img src="{$a->calendarpic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Lessons: <strong>{$a->totalsessions} modules</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total flight time: <strong>{$a->totalflighthrs} hrs</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Dual time: <strong>{$a->totaldualhrs} hrs</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total solo flight time: <strong>{$a->totalsolohrs} hrs</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total PICUS flight time: <strong>{$a->totalpicustime} hrs</strong></p>
+    <p><img src="{$a->calendarpic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Lessons: <strong>{$a->totallessons} modules</strong></p>
+    <p><img src="{$a->calendarpic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Mentoring: <strong>{$a->totalsessions} sessions</strong></p>
+    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total flight time: <strong>{$a->totalflighthrs} hrs</strong></p>';
+$string['emailgraduationdualnotifyhtml'] = '<p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Dual time: <strong>{$a->totaldualhrs} hrs</strong></p>
+    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total solo flight time: <strong>{$a->totalsolohrs} hrs</strong></p>';
+$string['emailgraduationmultinotifyhtml'] = '<p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Multi-pilot time: <strong>{$a->totalmultihrs} hrs</strong></p>
+    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Copilot time: <strong>{$a->totalcopilothrs} hrs</strong></p>';
+$string['emailgraduationnotifyhtml2'] = '<p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total PICUS flight time: <strong>{$a->totalpicustime} hrs</strong></p>
     <p><img src="{$a->cappic}" width="20" style="padding-left: 40px"/><span style="padding-left: 40px;">Course outcome:&nbsp; <strong>{$a->rating}</strong></p>
     <p>&nbsp;</p><strong>Congratulations!</strong><p>&nbsp;</p><p>Best regards,</p><p>{$a->examinername}</p><p><br /><strong>{$a->atoname} Training staff<br /></strong><br />E-mail:&nbsp;<a href="mailto:{$a->trainingemail}">{$a->trainingemail}</a>
     <br />Web:&nbsp;<a href="{$a->atourl}">{$a->atourl}</a>&nbsp;</p><p><a href="{$a->atourl}"><img src="{$a->traininglogourl}" alt="{$a->atoname} Flight Training" width="230px" border="0" /></a></p>';

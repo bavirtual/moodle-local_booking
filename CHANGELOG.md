@@ -1,5 +1,17 @@
 # Change log
 
+## [2022100400] - RELEASED 2022-10-04 - hotfix
+
+### Fixed
+
+- get_exercise_name() exception handling
+
+### Changed
+
+- moved graduation email notifications to schedulde cron job [notifications_task]
+- logentry flight type to default to [Check] for graduation exercise
+- congratulatory message changes for Multicrew type courses
+
 ## [2022100301] - RELEASED 2022-10-03
 
 ### Fixed

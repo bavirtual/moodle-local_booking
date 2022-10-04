@@ -206,21 +206,21 @@ class pdf_report extends \pdf {
         // add entries to flight time array
         $flighttimes = array();
         if ($this->course->trainingtype == 'Dual') {
-            $flighttimes['dualtime'][0]      = !empty($logentry) ? $logentry->get_dualtime(false) : 0;
-            $flighttimes['dualtime'][1]      = !empty($logbooksummary->totaldualtime) ? $logbooksummary->totaldualtime : 0;
+            $flighttimes['dualtime'][0]      = !empty($logentry) ? $logentry->get_dualtime(false) : '00:00';
+            $flighttimes['dualtime'][1]      = !empty($logbooksummary->totaldualtime) ? $logbooksummary->totaldualtime : '00:00';
         } else if ($this->course->trainingtype == 'Multicrew') {
             $flighttimes['multipilottime'][0]= !empty($logentry) ? $logentry->get_multipilottime(false) : 0;
-            $flighttimes['multipilottime'][1]= !empty($logbooksummary->totalmultipilottime) ? $logbooksummary->totalmultipilottime : 0;
+            $flighttimes['multipilottime'][1]= !empty($logbooksummary->totalmultipilottime) ? $logbooksummary->totalmultipilottime : '00:00';
         }
-        $flighttimes['pictime'][0]       = !empty($logentry) ? $logentry->get_pictime(false) : 0;
-        $flighttimes['pictime'][1]       = !empty($logbooksummary->totalpictime) ? $logbooksummary->totalpictime : 0;
-        $flighttimes['ifrtime'][0]       = !empty($logentry) ? $logentry->get_ifrtime(false) : 0;
-        $flighttimes['ifrtime'][1]       = !empty($logbooksummary->totalifrtime) ? $logbooksummary->totalifrtime : 0;
-        $flighttimes['picustime'][0]     = !empty($logentry) ? $logentry->get_picustime(false) : 0;
-        $flighttimes['picustime'][1]     = !empty($logbooksummary->totalpicustime) ? $logbooksummary->totalpicustime : 0;
-        $flighttimes['groundtime'][0]    = !empty($logentry) ? $logentry->get_groundtime(false) : 0;
-        $flighttimes['groundtime'][1]    = !empty($logbooksummary->totalgroundtime) ? $logbooksummary->totalgroundtime : 0;
-        $flighttimes['sessionlength'][0] = !empty($logentry) ? $logentry->get_totaltime(false) : 0;
+        $flighttimes['pictime'][0]       = !empty($logentry) ? $logentry->get_pictime(false) : '00:00';
+        $flighttimes['pictime'][1]       = !empty($logbooksummary->totalpictime) ? $logbooksummary->totalpictime : '00:00';
+        $flighttimes['ifrtime'][0]       = !empty($logentry) ? $logentry->get_ifrtime(false) : '00:00';
+        $flighttimes['ifrtime'][1]       = !empty($logbooksummary->totalifrtime) ? $logbooksummary->totalifrtime : '00:00';
+        $flighttimes['picustime'][0]     = !empty($logentry) ? $logentry->get_picustime(false) : '00:00';
+        $flighttimes['picustime'][1]     = !empty($logbooksummary->totalpicustime) ? $logbooksummary->totalpicustime : '00:00';
+        $flighttimes['groundtime'][0]    = !empty($logentry) ? $logentry->get_groundtime(false) : '00:00';
+        $flighttimes['groundtime'][1]    = !empty($logbooksummary->totalgroundtime) ? $logbooksummary->totalgroundtime : '00:00';
+        $flighttimes['sessionlength'][0] = !empty($logentry) ? $logentry->get_totaltime(false) : '00:00';
         $flighttimes['sessionlength'][1] = '';
         $flighttimes['deparr'][0]        = !empty($logentry) ? $logentry->get_depicao() . '/' . $logentry->get_arricao() : '';
         $flighttimes['deparr'][1]        = '';

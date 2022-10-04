@@ -122,7 +122,8 @@ class create extends \moodleform {
         $pilots = $this->get_pilot_ids($subscriber);
 
         // show flight type first
-        $this->add_element($mform, 'flighttype', array($subscriber->trainingtype == 'Dual'));
+        $default = $this->_customdata['exerciseid'] != $subscriber->get_graduation_exercise() ? 'training' : 'check';
+        $this->add_element($mform, 'flighttype', array($subscriber->trainingtype == 'Dual'), true, true, null, $default);
         $this->add_element($mform, 'passfail');
 
         // show pireps only if they there is lookup integration or a PIREP for editing
@@ -184,8 +185,9 @@ class create extends \moodleform {
      * @param bool   $maindisplay Whether to display the element in the main form
      * @param bool   $input       Whether the element is an input or static (label) element
      * @param mixed  $value       The value of a static element
+     * @param mixed  $default     The default value
      */
-    protected function add_element($mform, $element, $options = null, $maindisplay = true, $input = true, $value = null) {
+    protected function add_element($mform, $element, $options = null, $maindisplay = true, $input = true, $value = null, $default = '') {
 
         switch ($element) {
             case 'flightdate':
@@ -224,7 +226,7 @@ class create extends \moodleform {
                 $radioarray[] = $mform->createElement('radio', 'flighttype', '', get_string('flighttypecheck', 'local_booking'), 'check');
                 $mform->addGroup($radioarray, 'flighttype', get_string('flighttype', 'local_booking'), array(' '), false);
                 $mform->setType('flighttype', PARAM_TEXT);
-                $mform->setDefault('flighttype', 'training');
+                $mform->setDefault('flighttype', $default);
                 break;
 
             case 'passfail':

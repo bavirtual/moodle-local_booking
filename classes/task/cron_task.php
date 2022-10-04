@@ -104,7 +104,7 @@ class cron_task extends \core\task\scheduled_task {
                         mtrace('    Instructors to evaluate: ' . count($instructors));
 
                         // PROCESS SUSPENSION RESTRICTION
-                        $this->processon_instructor_notifications($course, $instructors, $seniorinstructors);
+                        $this->process_instructor_notifications($course, $instructors, $seniorinstructors);
 
                     } else {
                         mtrace('        Restrictions disabled.');
@@ -306,7 +306,7 @@ class cron_task extends \core\task\scheduled_task {
      * @param instructor $instructor  The instructor to be evaluated
      * @param array      $seniorinstructors An array of senior instructors to notify
      */
-    private function processon_instructor_notifications($course, $instructors, $seniorinstructors) {
+    private function process_instructor_notifications($course, $instructors, $seniorinstructors) {
 
         // check for suspension restriction is enabled
         $overdueperiod = intval($course->overdueperiod);
@@ -317,7 +317,7 @@ class cron_task extends \core\task\scheduled_task {
                 mtrace('        ' . $instructorname);
 
                 // get instructor last booked session, otherwise use the last login for date compare
-                $lastsessiondate = $instructor->get_last_graded_date();
+                $lastsessiondate = $instructor->get_last_booked_date();
                 if (!empty($lastsessiondate)) {
                     // get days since last session
                     $interval = $lastsessiondate->diff(new DateTime('@' . time()));

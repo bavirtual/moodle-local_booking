@@ -341,22 +341,37 @@ class booking implements booking_interface {
      * Get the last booking date associated
      * with the course and exercise id for the student.
      *
-     * @param int $courseid      The associated course
+     * @param int $courseid      The associated course id
      * @param int $studentid     The student id conducted the session
      * @param int $exerciseid    The exercise id for the session
-     * @return DateTime $exercisedate The date of last session for that exercise     */
+     * @return DateTime          The date of last session for that exercise
+     */
     public static function get_exercise_date(int $courseid, int $studentid, int $exerciseid) {
         return booking_vault::get_booked_exercise_date($courseid, $studentid, $exerciseid);
     }
 
     /**
-     * Get the date of the last booked session
+     * Get the date of the last booked session.
      *
-     * @param int $isinstructor
-     * @param int $userid
-     */
+     * @param int $courseid     The associated course id
+     * @param int $userid       The user id for the booked session
+     * @param int $isinstructor Whether the user is an instructor
+     * @return DateTime         The date of last session for that exercise
+    */
     public static function get_last_session(int $courseid, int $userid, bool $isinstructor = false) {
         return booking_vault::get_last_booked_session($courseid, $userid, $isinstructor);
+    }
+
+    /**
+     * Get the total sessions for a user.
+     *
+     * @param int $courseid     The associated course id
+     * @param int $userid       The user id
+     * @param int $isinstructor Whether the user is an instructor
+     * @return int              The total amount of sessions conducted for the student
+     */
+    public static function get_total_sessions(int $courseid, int $userid, bool $isinstructor = false) {
+        return booking_vault::get_user_total_sessions($courseid, $userid, $isinstructor);
     }
 
     // Setter functions

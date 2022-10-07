@@ -120,7 +120,7 @@
                 </td>
                 {{#sessions}}
                 <td class="text-sm-center" style="max-width: 20px;"
-                    {{#graded}}data-action={{#passed}}"view-logentry"{{/passed}}{{^passed}}"feedback"{{/passed}}{{/graded}}
+                    {{#graded}}data-action="view-logentry"{{/graded}}
                     data-exercise-status="{{sessionstatus}}"
                     {{#graded}}{{^isquiz}}
                     data-region="session-entry"
@@ -129,6 +129,7 @@
                     data-exercise-id="{{exerciseid}}"
                     data-session-date="{{sessiondatets}}"
                     data-flight-date="{{lastbookingts}}"
+                    data-flight-type="{{flighttype}}"
                     data-logentry-id="{{logentryid}}"
                     {{/isquiz}}{{/graded}}
                     {{^sessionempty}}

@@ -78,6 +78,11 @@ class logentry implements logentry_interface {
     protected $groundtime = 0;
 
     /**
+     * @var int $flighttime The flight duration in minutes.
+     */
+    protected $flighttime = 0;
+
+    /**
      * @var int $pictime The flying as PIC time in minutes.
      */
     protected $pictime = 0;
@@ -435,7 +440,17 @@ class logentry implements logentry_interface {
     }
 
     /**
-     * Get the multipilot time time in minutes.
+     * Get the flight time/duration in minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_flighttime(bool $numeric = true) {
+        return $numeric ? $this->flighttime : logbook::convert_time($this->flighttime, 'MINS_TO_TEXT');
+    }
+
+    /**
+     * Get the multipilot time/duration in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
@@ -520,10 +535,10 @@ class logentry implements logentry_interface {
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
      */
-    public function get_totaltime(bool $numeric = true) {
+    public function get_totalsessiontime(bool $numeric = true) {
         // get the log entry total time depending on the pilot's function
-        $totaltime = $this->pictime ?: $this->copilottime ?: $this->dualtime ?: $this->picustime;
-        return $numeric ? $totaltime : logbook::convert_time($totaltime, 'MINS_TO_TEXT');
+        $totalsessiontime = $this->flighttime + $this->groundtime;
+        return $numeric ? $totalsessiontime : logbook::convert_time($totalsessiontime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -655,7 +670,7 @@ class logentry implements logentry_interface {
     /**
      * Set the flight departure time.
      *
-     * @param int $deptime departure time timestamp
+     * @param int $deptime departure timestamp
      */
     public function set_deptime($deptime) {
         $this->deptime = $deptime;
@@ -673,7 +688,7 @@ class logentry implements logentry_interface {
     /**
      * Set the flight arrival time.
      *
-     * @param int $arrtime arrival time timestamp
+     * @param int $arrtime arrival timestamp
      */
     public function set_arrtime($arrtime) {
         $this->arrtime = $arrtime;
@@ -759,6 +774,16 @@ class logentry implements logentry_interface {
      */
     public function set_groundtime($groundtime, bool $isnumeric = true) {
         $this->groundtime = $isnumeric ? $groundtime : logbook::convert_time($groundtime, 'MINS_TO_NUM');
+    }
+
+    /**
+     * Set the flight time/duration in minutes.
+     *
+     * @param mixed $flighttime The flight time total minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_flighttime($flighttime, bool $isnumeric = true) {
+        $this->flighttime = $isnumeric ? $flighttime : logbook::convert_time($flighttime, 'MINS_TO_NUM');
     }
 
     /**
@@ -890,6 +915,34 @@ class logentry implements logentry_interface {
     /**
      * Populates a log book entry with a modal form data.
      *
+     * ***************************************************   FLIGHT RULES   ****************************************************
+     *
+     *  P1 (Left-hand seat  LHS) : Instructor or student in Multicrew ops and always the instructor in Dual ops.
+     *  P2 (Right-hand seat RHS) : Instructor or student in Multicrew ops. Not applicable in Dual ops.
+     *
+     *  ------------------------------------------------------------------------------------------------------------------------
+     *   Dual operations
+     *  ------------------------------------------------------------------------------------------------------------------------
+     *     Dual time      : booked for the student only.
+     *     PIC time       : booked for the instructor, examiner, and the student in solo flights.
+     *     PICUS time     : booked for the student in skill tests only, given the student passes, otherwise Dual time.
+     *     Instructor time: booked for the instructor in training flights.
+     *     Examiner time  : booked for the examiner in skill test flights regardless pass/fail.
+     *     Ground time    : booked for the student and instructor.
+     *
+     *  ------------------------------------------------------------------------------------------------------------------------
+     *   Multicrew operations
+     *  ------------------------------------------------------------------------------------------------------------------------
+     *     Multipilot time: booked for the student and instructor.
+     *     PIC time       : booked for the instructor only.
+     *     PICUS time     : booked for the student in a command check only, given the student passes, otherwise Multipilot time.
+     *     Copilot time   : booked for the student as P2.
+     *     Instructor time: booked for the instructor in training flights.
+     *     Examiner time  : booked the examiner in skill test flights regardless pass/fail.
+     *     Ground time    : booked for the student and instructor.
+     *
+     * *************************************************************************************************************************
+     *
      * @param object $formdata
      * @param bool $isinstructor
      * @param bool $edit
@@ -898,41 +951,57 @@ class logentry implements logentry_interface {
         $this->id = $formdata->id ?: null;
         $this->exerciseid = $formdata->exerciseid;
         $this->flightdate = $formdata->flightdate;
-        $this->p1id = $formdata->flighttype == 'solo' ? $this->parent->get_userid() : $formdata->p1id;
-        $this->p2id = $formdata->flighttype == 'solo' ? 0 : $formdata->p2id;
-        $this->groundtime = logbook::convert_time($formdata->groundtime, 'MINS_TO_NUM');
-        $this->pictime = $isinstructor || $formdata->flighttype == 'solo' ? logbook::convert_time($formdata->pictime, 'MINS_TO_NUM') : 0;
-        $this->dualtime = !$isinstructor && ($formdata->flighttype == 'training' || $formdata->passfail == 'fail') ? logbook::convert_time($formdata->dualtime, 'MINS_TO_NUM') : 0;
-        $this->instructortime = $isinstructor ? logbook::convert_time($formdata->instructortime, 'MINS_TO_NUM') : 0;
-        $this->picustime = !$isinstructor && $formdata->passfail != 'fail' ? logbook::convert_time($formdata->picustime, 'MINS_TO_NUM') : 0;
-        $this->multipilottime = logbook::convert_time($formdata->multipilottime, 'MINS_TO_NUM');
-        $this->copilottime = !$isinstructor && ($formdata->flighttype == 'training' || $formdata->passfail == 'fail') ? logbook::convert_time($formdata->copilottime, 'MINS_TO_NUM') : 0;
-        $this->checkpilottime = $isinstructor && $formdata->passfail != 'fail' ? logbook::convert_time($formdata->checkpilottime, 'MINS_TO_NUM') : 0;
-        $this->pirep = $isinstructor || $edit || $formdata->flighttype == 'solo' ? $formdata->p1pirep : ($formdata->p2pirep ?: $formdata->linkedpirep);
-        $this->callsign = strtoupper($formdata->callsign);
-        $this->depicao = strtoupper($formdata->depicao);
-        $this->arricao = strtoupper($formdata->arricao);
+        $this->pirep = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? $formdata->p1pirep : ($formdata->p2pirep ?: $formdata->linkedpirep);
+        $this->p1id = $formdata->flighttypehidden == 'solo' ? $this->parent->get_userid() : $formdata->p1id;
+        $this->p2id = $formdata->flighttypehidden == 'solo' ? 0 : $formdata->p2id;
 
+        // flight rules
+        $pictimerule        = $isinstructor || $formdata->flighttypehidden == 'solo';
+        $dualtimerule       = !$isinstructor && $formdata->trainingtype == 'Dual' && $formdata->flighttypehidden == 'training';
+        $multipilottimerule = $formdata->trainingtype == 'Multicrew';
+        $copilottimerule    = !$isinstructor && $formdata->trainingtype == 'Multicrew' &&
+                                ($formdata->flighttypehidden == 'training' || $formdata->flighttypehidden == 'check' && $formdata->passfail == 'fail');
+        $ifrtimerule        = $formdata->flightrule == 'ifr';
+        $instructortimerule = $isinstructor && $formdata->flighttypehidden == 'training';
+        $picustimerule      = !$isinstructor && $formdata->flighttypehidden == 'check' && $formdata->passfail == 'pass';
+        $checkpilottimerule = $isinstructor && $formdata->flighttypehidden == 'check';
+        $landingsdayrule    = $isinstructor || $formdata->flighttypehidden == 'solo' || $edit;
+        $landingsnightrule  = $isinstructor || $formdata->flighttypehidden == 'solo' || $edit;
+
+        // process flight times first for the different flight types (Training, Solo, and Check flights pass/fail)
+        $this->groundtime   = logbook::convert_time($formdata->groundtime, 'MINS_TO_NUM');
+        $this->flighttime   = logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM');
+        $this->pictime      = $pictimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->dualtime     = $dualtimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->multipilottime = $multipilottimerule  ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->copilottime  = $copilottimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->ifrtime      = $ifrtimerule ? logbook::convert_time($formdata->ifrtime, 'MINS_TO_NUM') : 0;
+        $this->instructortime = $instructortimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->picustime    = $picustimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->checkpilottime = $checkpilottimerule ? logbook::convert_time($formdata->checkpilottime, 'MINS_TO_NUM') : 0;
+
+        // additional logentry data
+        $this->callsign     = strtoupper($formdata->callsign);
+        $this->depicao      = strtoupper($formdata->depicao);
+        $this->arricao      = strtoupper($formdata->arricao);
         // convert from 24hr time format to a timestamp given the flightdate date start
-        $this->deptime = logbook::convert_time($formdata->deptime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
-        $this->arrtime = logbook::convert_time($formdata->arrtime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
-
-        $this->aircraft = $formdata->aircraft;
-        $this->aircraftreg = $formdata->aircraftreg;
-        $this->enginetype = $formdata->enginetype;
-        $this->route = $formdata->route;
+        $this->deptime      = logbook::convert_time($formdata->deptime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
+        $this->arrtime      = logbook::convert_time($formdata->arrtime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
+        $this->aircraft     = $formdata->aircraft;
+        $this->aircraftreg  = $formdata->aircraftreg;
+        $this->enginetype   = $formdata->enginetype;
+        $this->route        = $formdata->route;
 
         // assign landings day/night of p1 to instructor, solo, or editing mode case otherwise use p2 for the student
-        $this->landingsday = $isinstructor || $formdata->flighttype == 'solo' || $edit ? $formdata->landingsp1day : $formdata->landingsp2day;
-        $this->landingsnight = $isinstructor || $formdata->flighttype == 'solo' || $edit ? $formdata->landingsp1night : $formdata->landingsp2night;
+        $this->landingsday  = $landingsdayrule ? $formdata->landingsp1day : $formdata->landingsp2day;
+        $this->landingsnight = $landingsnightrule ? $formdata->landingsp1night : $formdata->landingsp2night;
 
-        $this->nighttime = logbook::convert_time($formdata->nighttime, 'MINS_TO_NUM');
-        $this->ifrtime = logbook::convert_time($formdata->ifrtime, 'MINS_TO_NUM');
-        $this->remarks = $formdata->remarks;
-        $this->fstd = $formdata->fstd;
-        $this->flighttype = $formdata->flighttype;
+        $this->nighttime    = logbook::convert_time($formdata->nighttime, 'MINS_TO_NUM');
+        $this->remarks      = $formdata->remarks;
+        $this->fstd         = $formdata->fstd;
+        $this->flighttype   = $formdata->flighttypehidden;
         $this->linkedlogentryid = $formdata->linkedlogentryid ?: 0;
-        $this->linkedpirep = $isinstructor || $edit || $formdata->flighttype == 'solo' ? ($formdata->p2pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;
+        $this->linkedpirep  = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($formdata->p2pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;
     }
 
     /**
@@ -951,6 +1020,7 @@ class logentry implements logentry_interface {
         $logentryarray['p1id'] = $this->p1id;
         $logentryarray['p2id'] = $this->p2id;
         $logentryarray['groundtime'] = $this->get_groundtime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['flighttime'] = $this->get_flighttime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['pictime'] = $this->get_pictime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['dualtime'] = $this->get_dualtime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['instructortime'] = $this->get_instructortime(!$formattostring) ?: ($nullable ? null : 0);
@@ -958,7 +1028,7 @@ class logentry implements logentry_interface {
         $logentryarray['multipilottime'] = $this->get_multipilottime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['copilottime'] = $this->get_copilottime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['checkpilottime'] = $this->get_checkpilottime(!$formattostring) ?: ($nullable ? null : 0);
-        $logentryarray['totaltime'] = $this->get_totaltime(!$formattostring) ?: ($nullable ? null : 0);
+        $logentryarray['totalsessiontime'] = $this->get_totalsessiontime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['pirep'] = $this->pirep;
         $logentryarray['linkedpirep'] = $this->linkedpirep;
         $logentryarray['callsign'] = $this->callsign;

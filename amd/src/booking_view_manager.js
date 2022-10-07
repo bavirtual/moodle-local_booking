@@ -99,17 +99,21 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
         // Show the logentry form modal form when the user clicks on a session
         // in the 'Instructor dashboard' page to add or edit a logentry
         LogentryFormPromise.then(function(modal) {
-            var logegntrySession, flightDate, exerciseId;
+            var logegntrySession, flightDate, exerciseId, flightType;
 
             // Sel elements not meant for new or additional logentries
             if (isNew) {
+                // From booking_session_exporter
                 logegntrySession = target.closest(Selectors.actions.viewLogEntry);
                 flightDate = logegntrySession.dataset.flightDate;
                 exerciseId = logegntrySession.dataset.exerciseId;
+                flightType = logegntrySession.dataset.flightType;
             } else {
+                // From get_logentry_by_id
                 logegntrySession = root.find(Selectors.containers.summaryForm);
                 flightDate = logegntrySession.data('flight-date');
                 exerciseId = logegntrySession.data('exercise-id');
+                flightType = logegntrySession.data('flight-type');
             }
 
             // Set form properties
@@ -119,6 +123,7 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
             modal.setLogentryId(logentryId);
             modal.setExerciseId(exerciseId);
             modal.setFlightDate(flightDate);
+            modal.setFlightType(flightType);
 
             // Handle hidden event.
             modal.getRoot().on(ModalEvents.hidden, function() {

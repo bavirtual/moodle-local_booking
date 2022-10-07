@@ -205,34 +205,34 @@ class pdf_report extends \pdf {
 
         // add entries to flight time array
         $flighttimes = array();
+        $flighttimes['flighttime'][0]       = !empty($logentry) ? $logentry->get_flighttime(false) : '';
+        $flighttimes['flighttime'][1]       = !empty($logbooksummary->totalflighttime) ? $logbooksummary->totalflighttime : '';
         if ($this->course->trainingtype == 'Dual') {
-            $flighttimes['dualtime'][0]      = !empty($logentry) ? $logentry->get_dualtime(false) : '00:00';
-            $flighttimes['dualtime'][1]      = !empty($logbooksummary->totaldualtime) ? $logbooksummary->totaldualtime : '00:00';
+            $flighttimes['dualtime'][0]      = !empty($logentry) ? ($logentry->get_dualtime(false) ?: '') : '';
+            $flighttimes['dualtime'][1]      = !empty($logbooksummary->totaldualtime) ? $logbooksummary->totaldualtime : '';
         } else if ($this->course->trainingtype == 'Multicrew') {
-            $flighttimes['multipilottime'][0]= !empty($logentry) ? $logentry->get_multipilottime(false) : 0;
-            $flighttimes['multipilottime'][1]= !empty($logbooksummary->totalmultipilottime) ? $logbooksummary->totalmultipilottime : '00:00';
+            $flighttimes['multipilottime'][0]= !empty($logentry) ? ($logentry->get_multipilottime(false) ?: '') : 0;
+            $flighttimes['multipilottime'][1]= !empty($logbooksummary->totalmultipilottime) ? $logbooksummary->totalmultipilottime : '';
         }
-        $flighttimes['pictime'][0]       = !empty($logentry) ? $logentry->get_pictime(false) : '00:00';
-        $flighttimes['pictime'][1]       = !empty($logbooksummary->totalpictime) ? $logbooksummary->totalpictime : '00:00';
-        $flighttimes['ifrtime'][0]       = !empty($logentry) ? $logentry->get_ifrtime(false) : '00:00';
-        $flighttimes['ifrtime'][1]       = !empty($logbooksummary->totalifrtime) ? $logbooksummary->totalifrtime : '00:00';
-        $flighttimes['picustime'][0]     = !empty($logentry) ? $logentry->get_picustime(false) : '00:00';
-        $flighttimes['picustime'][1]     = !empty($logbooksummary->totalpicustime) ? $logbooksummary->totalpicustime : '00:00';
-        $flighttimes['groundtime'][0]    = !empty($logentry) ? $logentry->get_groundtime(false) : '00:00';
-        $flighttimes['groundtime'][1]    = !empty($logbooksummary->totalgroundtime) ? $logbooksummary->totalgroundtime : '00:00';
-        $flighttimes['sessionlength'][0] = !empty($logentry) ? $logentry->get_totaltime(false) : '00:00';
-        $flighttimes['sessionlength'][1] = '';
+        $flighttimes['ifrtime'][0]       = !empty($logentry) ? ($logentry->get_ifrtime(false) ?: '') : '';
+        $flighttimes['ifrtime'][1]       = !empty($logbooksummary->totalifrtime) ? $logbooksummary->totalifrtime : '';
+        $flighttimes['picustime'][0]     = !empty($logentry) ? ($logentry->get_picustime(false) ?: '') : '';
+        $flighttimes['picustime'][1]     = !empty($logbooksummary->totalpicustime) ? $logbooksummary->totalpicustime : '';
+        $flighttimes['groundtime'][0]    = !empty($logentry) ? ($logentry->get_groundtime(false) ?: '') : '';
+        $flighttimes['groundtime'][1]    = !empty($logbooksummary->totalgroundtime) ? $logbooksummary->totalgroundtime : '';
+        $flighttimes['sessionlength'][0] = !empty($logentry) ? $logentry->get_totalsessiontime(false) : '';
+        $flighttimes['sessionlength'][1] = !empty($logbooksummary->totalsessiontime) ? $logbooksummary->totalsessiontime : '';
         $flighttimes['deparr'][0]        = !empty($logentry) ? $logentry->get_depicao() . '/' . $logentry->get_arricao() : '';
         $flighttimes['deparr'][1]        = '';
 
         // logbook information
         $html = '<table width="400px" cellspacing="2" cellpadding="2">';
         $html .= '<tr style="border: 1px solid black; border-style: dotted;">';
-        $html .= '<td></td><td style="font-weight: bold; width: 100px">' . ucfirst(get_string('flighttime', 'local_booking'));
+        $html .= '<td></td><td style="font-weight: bold; width: 100px">' . get_string('time');
         $html .= '</td><td style="font-weight: bold; width: 100px">' . get_string('cumulative', 'local_booking') . '</td></tr>';
         foreach ($flighttimes as $key => $flightdata) {
             $html .= '<tr style="border: 1px solid black; border-style: dotted;">';
-            $html .= '<td><strong>' . get_string($key, 'local_booking') . '</strong></td><td>' . $flightdata[0] . '</td><td>' . $flightdata[1] . '</td>';
+            $html .= '<td><strong>' . ucfirst(get_string($key, 'local_booking')) . '</strong></td><td>' . $flightdata[0] . '</td><td>' . $flightdata[1] . '</td>';
             $html .= '</tr>';
         }
         $html .= '</table><br />';

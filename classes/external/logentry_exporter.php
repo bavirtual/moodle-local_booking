@@ -94,6 +94,10 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true,
             ],
+            'flighttime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
             'pictime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true,
@@ -118,7 +122,7 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true,
             ],
-            'totaltime' => [
+            'totalsessiontime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true,
             ],

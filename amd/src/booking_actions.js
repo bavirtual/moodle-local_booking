@@ -96,27 +96,16 @@ function(
      *
      * @method  gotoFeedback
      * @param   {jQuery} root
-     * @param   {object} e
      */
-     var gotoFeedback = (root, e) => {
+     var gotoFeedback = (root) => {
         // Fetch the exercise and user id and redirect to assignment submission & grading
-        let target = e.target;
-        let SessionSource = target.closest(BookingSelectors.session),
-            LogentrySource = root.find(BookingSelectors.logentryitem),
+        let LogentrySource = root.find(BookingSelectors.logentryitem),
             courseId, exerciseId, sessionPassed, userId;
 
-        // Evaluate feedback request source: the session (progressing/objective not met) or the logentry
-        if (SessionSource != undefined) {
-            courseId = root.find(BookingSelectors.bookingwrapper).data('courseid');
-            exerciseId = SessionSource.dataset.exerciseId;
-            sessionPassed = SessionSource.dataset.sessionPassed;
-            userId = SessionSource.dataset.studentId;
-        } else if (LogentrySource != undefined) {
-            courseId = LogentrySource.data('courseId');
-            exerciseId = LogentrySource.data('exerciseId');
-            sessionPassed = 1;
-            userId = LogentrySource.data('userId');
-        }
+        courseId = LogentrySource.data('courseId');
+        exerciseId = LogentrySource.data('exerciseId');
+        sessionPassed = 1;
+        userId = LogentrySource.data('userId');
 
         // Trigger redirect to feedback
         $('body').trigger(BookingSessions.gotoFeedback, [exerciseId]);

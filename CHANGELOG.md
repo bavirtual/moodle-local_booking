@@ -1,5 +1,24 @@
 # Change log
 
+## [2022100702] - RELEASED 2022-10-07
+
+### Fixed
+
+- get_exercise_name() exception handling in calendar integration
+
+### Added
+
+- ability to add a logbook entry for progressing sessions
+- flighttime column instead of using PIC time
+- flighttime setter & getter methods
+- flighttime reflected in reports, logbook, and notifications message instead of pictime
+
+### Changed
+
+- autofill behavior for all flight types and PIREP lookups in new log entry form
+- cosmetic changes to the new logbook entry form
+- revised flight time calculation rules
+
 ## [2022100400] - RELEASED 2022-10-04 - hotfix
 
 ### Fixed

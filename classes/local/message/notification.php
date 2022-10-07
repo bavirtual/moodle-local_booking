@@ -27,6 +27,7 @@ namespace local_booking\local\message;
 
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
+use local_booking\local\subscriber\entities\subscriber;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -573,6 +574,14 @@ class notification extends \core\message\message {
             'tend'  => $sessionend);
         }
 
+        // get the course object
+        if (!empty($COURSE->subscriber)) {
+            $exercisename = $COURSE->subscriber->get_exercise_name($exerciseid);
+        } else {
+            $coursemodinfo = get_fast_modinfo($courseid);
+            $exercisename = $coursemodinfo->get_cm($exerciseid)->name;
+        }
+
         // notification message data
         $data = (object) array(
             'courseid'      => $courseid,
@@ -585,7 +594,7 @@ class notification extends \core\message\message {
             'sessionstart'  => $sessionstart,
             'sessionend'    => $sessionend,
             'exerciseid'    => $exerciseid,
-            'exercise'      => $COURSE->subscriber->get_exercise_name($exerciseid),
+            'exercise'      => $exercisename,
             'requester'     => $requester,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $courseid)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $courseid)))->out(false),

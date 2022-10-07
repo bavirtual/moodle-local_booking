@@ -42,6 +42,7 @@ define([], function() {
         calendarwrapper: '.calendarwrapper',
         bookingwrapper: '.bookingwrapper',
         logbookwrapper: '.logbookwrapper',
+        logentrymodal: '.modal-body',
         mybookingswrapper: '.mybookingswrapper',
         userprofilewrapper: '.userprofilewrapper',
         table: '.calendartable',
@@ -56,5 +57,6 @@ define([], function() {
         onhold: '[onhold-toggle]',
         cancelbutton: '[data-region="cancel-button"]',
         studentsfilter: '[data-region="students-filter"]',
+        expandsection: 'a[aria-expanded]',
     };
 });

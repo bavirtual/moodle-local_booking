@@ -38,7 +38,7 @@
                     "fields": {
                         "pilot_id": "pilot_id",
                         "flightdate": "start_date",
-                        "pictime": "flight_time",
+                        "flighttime": "flight_time",
                         "depicao": "dep_icao",
                         "arricao": "arr_icao",
                         "deptime": "start_time",

@@ -81,6 +81,7 @@ class action implements action_interface {
      */
     public function __construct(subscriber $course, student $student, string $actiontype, int $refid = 0) {
 
+        $gradexercise = $course->get_graduation_exercise();
         $enabled =  $student->is_active();
         $tooltip = '';
         $params = [];
@@ -113,7 +114,7 @@ class action implements action_interface {
                     $tooltip = get_string('actiondisabledexercisescompletedtooltip', 'local_booking');
 
                 // check if the user is an examiner when the student's next exercise is a final exam
-                } else if ($student->get_next_exercise() == $course->get_graduation_exercise()) {
+                } else if ($student->get_next_exercise() == $gradexercise) {
                     global $USER;
 
                     $instructor = new instructor($course, $USER->id);
@@ -148,7 +149,7 @@ class action implements action_interface {
                 $tooltip = get_string('actiongradesession', 'local_booking');
 
                 // check if the exercise to be graded is the final skill test
-                if ($student->get_next_exercise() == $course->get_graduation_exercise()) {
+                if ($student->get_next_exercise() == $gradexercise) {
                     global $USER;
                     $instructor = new instructor($course, $USER->id);
                     $enabled =  $instructor->is_examiner();
@@ -166,9 +167,9 @@ class action implements action_interface {
                 $name = get_string($actiontype, 'local_booking');
 
                 // check if the certifer is the examiner
-                if ($student->has_completed_coursework() || $student->get_current_exercise() == $course->get_graduation_exercise()) {
+                if ($student->has_completed_coursework() || $student->get_current_exercise() == $gradexercise) {
                     global $USER;
-                    $examinerid = $student->get_grade($course->get_graduation_exercise())->usermodified;
+                    $examinerid = $student->get_grade($gradexercise)->usermodified;
                     $instructor = new instructor($course, $USER->id);
                     $enabled =  $examinerid == $USER->id;
                     if (!$instructor->is_examiner())

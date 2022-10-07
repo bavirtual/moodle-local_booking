@@ -51,7 +51,7 @@ export const init = (root) => {
                 (logentry.enginetype == 'SE') ? 'X' : '',
                 (logentry.enginetype == 'ME') ? 'X' : '',
                 (logentry.multipilot !== undefined ? logentry.multipilot : ''),
-                logentry.pictime,
+                logentry.flighttime,
                 logentry.route,
                 logentry.p1name,
                 logentry.landingsday,
@@ -90,7 +90,7 @@ export const init = (root) => {
                 {"width": "25px", "className": "dt-center", "targets": ENGINETYPE_SE}, // Column: enginetype 'SE'
                 {"width": "25px", "className": "dt-center", "targets": ENGINETYPE_ME}, // Column: enginetype 'ME'
                 {"width": "45px", "targets": MULTIPILOT}, // Column: multipilot
-                {"width": "45px", "targets": TOTALTIME}, // Column: totaltime
+                {"width": "45px", "targets": TOTALTIME}, // Column: total flight time
                 {"width": "160px", "targets": P1NAME}, // Column: p1name
                 {"width": "200px", "targets": ROUTE}, // Column: route
                 {"width": "35px", "className": "dt-center", "targets": LANDINGSDAY}, // Column: landingsday

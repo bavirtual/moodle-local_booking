@@ -78,6 +78,26 @@ import Ajax from 'core/ajax';
 };
 
 /**
+ * Get sesison booking, my bookings, and my students data to view.
+ *
+ * @method getExerciseName
+ * @param {number} courseId   The course id.
+ * @param {number} exerciseId The exercise id.
+ * @return {promise} Resolved with the month view data.
+ */
+ export const getExerciseName = (courseId, exerciseId) => {
+    const request = {
+        methodname: 'local_booking_get_exercise_name',
+        args: {
+            courseid: courseId,
+            exerciseid: exerciseId,
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
  * Send booked slots to the server for persistence
  *
  * @param {array} bookedslot    The array of booked slots

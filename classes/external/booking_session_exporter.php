@@ -69,6 +69,7 @@ class booking_session_exporter extends exporter {
                 'courseid'      => $this->student->get_courseid(),
                 'studentid'     => $this->student->get_id(),
                 'exerciseid'    => $data['exerciseid'],
+                'flighttype'    => $data['flighttype'],
                 'sessionstatus' => $this->session->get_status(),
                 'sessiondatets' => !empty($this->session->get_sessiondate()) ? ($this->session->get_sessiondate())->getTimestamp() : '',
                 'sessionempty'  => empty($this->session),
@@ -92,6 +93,10 @@ class booking_session_exporter extends exporter {
             'exerciseid' => [
                 'type' => PARAM_INT,
                 'default' => 0,
+            ],
+            'flighttype' => [
+                'type' => PARAM_RAW,
+                'default' => '',
             ],
             'sessionstatus' => [
                 'type' => PARAM_RAW,
@@ -200,7 +205,7 @@ class booking_session_exporter extends exporter {
                 'booked'        => $booked,
                 'tentative'     => $tentative,
                 'canlogentry'   => $graded && !$isquiz,
-                'logentrymissing' => $this->session->haspassed() && $logentrymissing,
+                'logentrymissing' => $logentrymissing,
                 'isquiz'        => $isquiz,
                 'lastbookingts' => $lastbookingdate
             ];

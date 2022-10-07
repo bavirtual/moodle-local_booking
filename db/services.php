@@ -202,6 +202,18 @@ $functions = array(
         'loginrequired' => true,
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
+
+    'local_booking_get_exercise_name' => array(
+        'classname' => 'local_booking_external',
+        'classpath' => '/local/booking/externallib.php',
+        'methodname' => 'get_exercise_name',
+        'description' => 'Retrieves a course exercise name',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
 );
 
 $services = array(
@@ -318,6 +330,15 @@ $services = array(
         'enabled' => 1,         // if 0, then token linked to this service won't work
         'restrictedusers' => 0,
         'shortname' => 'update_user_group',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
+    'Session Booking get exercise name for the course'  => array(
+        'functions' => array('local_booking_get_exercise_name'), // Unused as we add the service in each function definition, third party services would use this.
+        'enabled' => 1,         // if 0, then token linked to this service won't work
+        'restrictedusers' => 0,
+        'shortname' => 'get_exercise_name',
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),

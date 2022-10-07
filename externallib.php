@@ -983,6 +983,65 @@ class local_booking_external extends external_api {
      * Returns description of method parameters.
      *
      * @return external_function_parameters
+     * @since Moodle 2.5
+     */
+    public static function get_exercise_name_parameters() {
+        return new external_function_parameters(
+            array(
+                'courseid'  => new external_value(PARAM_INT, 'The course id in context', VALUE_DEFAULT),
+                'exerciseid'  => new external_value(PARAM_INT, 'The exercise id', VALUE_DEFAULT),
+            )
+        );
+    }
+
+    /**
+     * Retrieve the name of a course exercise.
+     *
+     * @param int $courseid   The course id.
+     * @param int $exerciseid The exerciser id.
+     * @return array array of slots created.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function get_exercise_name($courseid, $exerciseid) {
+        global $COURSE;
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::get_exercise_name_parameters(), array(
+                'courseid' => $courseid,
+                'exerciseid' => $exerciseid,
+                )
+            );
+
+        $context = context_course::instance($courseid);
+        self::validate_context($context);
+
+        // define subscriber globally
+        if (empty($COURSE->subscriber))
+            $COURSE->subscriber = new subscriber($courseid);
+
+        $warnings = array();
+
+        return array('exercisename' => $COURSE->subscriber->get_exercise_name($exerciseid), 'warnings' => $warnings);
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function get_exercise_name_returns() {
+        return new external_single_structure(array(
+            'exercisename' => new external_value(PARAM_RAW, 'The exercise name', VALUE_DEFAULT),
+            'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters
      */
     public static function submit_create_update_form_parameters() {
         return new external_function_parameters(
@@ -1056,7 +1115,7 @@ class local_booking_external extends external_api {
                 $studentlogentry = $studentlogbook->create_logentry();
                 $studentlogentry->populate($validateddata);
 
-                if ($validateddata->flighttype!='solo') {
+                if ($validateddata->flighttype != 'solo') {
                     // add instructor logentry, the user creating the entry is always the instructor
                     $instructorlogbook = new logbook($courseid, $USER->id);
                     $instructorlogentry = $instructorlogbook->create_logentry();

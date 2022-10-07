@@ -214,7 +214,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
 }
 
 /**
- * Fragment to add a new category.
+ * Fragment to add a new logentry.
  *
  * @param array $args The fragment arguments.
  * @return string The rendered mform fragment.

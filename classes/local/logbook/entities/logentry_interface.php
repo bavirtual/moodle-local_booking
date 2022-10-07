@@ -215,6 +215,14 @@ interface logentry_interface {
     public function get_groundtime(bool $numeric = true);
 
     /**
+     * Get the flight time/duration in minutes.
+     *
+     * @param bool $numeric whether the request value in number or text format
+     * @return mixed
+     */
+    public function get_flighttime(bool $numeric = true);
+
+    /**
      * Get the flying at night time in minutes.
      *
      * @param bool $numeric whether the request value in number or text format
@@ -279,12 +287,12 @@ interface logentry_interface {
     public function get_checkpilottime(bool $numeric = true);
 
     /**
-     * Get the total time for the log entry.
+     * Get the total session time for the log entry (flight & ground).
      *
      * @param bool $numeric whether the request value in number or text format
      * @return mixed
      */
-    public function get_totaltime(bool $numeric = true);
+    public function get_totalsessiontime(bool $numeric = true);
 
     /**
      * Get the Flight Simulation Training Device qualification.
@@ -474,6 +482,14 @@ interface logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_groundtime($groundtime, bool $isnumeric = true);
+
+    /**
+     * Set the flight time/duration in minutes.
+     *
+     * @param mixed $flighttime The flight time total minutes duration
+     * @param bool $isnumeric whether the passed duration is numberic or string format
+     */
+    public function set_flighttime($flighttime, bool $isnumeric = true);
 
     /**
      * Set the flying at night duration in minutes.

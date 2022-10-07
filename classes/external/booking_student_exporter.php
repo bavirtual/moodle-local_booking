@@ -231,6 +231,7 @@ class booking_student_exporter extends exporter {
         $grades = $this->student->get_grades();
         $bookings = $this->student->get_bookings();
         $logbook = $this->student->get_logbook();
+        $gradexercise = $this->course->get_graduation_exercise();
 
         // export all exercise sessions, quizes, and exams
         $coursemods = $this->related['coursemodules'];
@@ -240,6 +241,7 @@ class booking_student_exporter extends exporter {
                 'student'     => $this->student,
                 'studentname' => $this->data['studentname'],
                 'exerciseid'  => $coursemod->id,
+                'flighttype'  => $gradexercise != $coursemod->id ? 'training' : 'check',
                 'grades'      => $grades,
                 'bookings'    => $bookings,
                 'logbook'     => $logbook

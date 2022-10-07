@@ -64,7 +64,10 @@
         <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} pic, local_booking {{/str}} {{/pix}}
         </i>
     </div>
-    {{^soloflight}}<div class="col-5">{{#str}} p1, local_booking {{/str}}</div>{{/soloflight}}
+    {{^soloflight}}
+        {{#dualops}}<div class="col-5">{{#str}} p1dual, local_booking {{/str}}</div>{{/dualops}}
+        {{^dualops}}<div class="col-5">{{#str}} p1multicrew, local_booking {{/str}}</div>{{/dualops}}
+    {{/soloflight}}
     {{#soloflight}}<div class="col-5">{{#str}} p1solo, local_booking {{/str}}</div>{{/soloflight}}
     <div class="col-6">{{p1name}}</div>
 </div>
@@ -74,7 +77,8 @@
         <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} sic, local_booking {{/str}} {{/pix}}
         </i>
     </div>
-    <div class="col-5">{{#str}} p2, local_booking {{/str}}</div>
+    {{#dualops}}<div class="col-5">{{#str}} p2dual, local_booking {{/str}}</div>{{/dualops}}
+    {{^dualops}}<div class="col-5">{{#str}} p2multicrew, local_booking {{/str}}</div>{{/dualops}}
     <div class="col-6">{{p2name}}</div>
 </div>
 {{/soloflight}}

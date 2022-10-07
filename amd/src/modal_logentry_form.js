@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable complexity */
 /* eslint-disable babel/new-cap */
 /* eslint-disable no-undef */
@@ -49,7 +50,7 @@ define([
         Fragment,
         LogbookEvents,
         Repository,
-        BookingSelectors,
+        Selectors,
     ) {
 
     var registered = false;
@@ -66,13 +67,12 @@ define([
      */
     var ModalLogEntryForm = function(root) {
         Modal.call(this, root);
+        this.contextId = null;
+        this.courseId = null;
+        this.userId = null;
         this.logentryId = null;
         this.flightDate = null;
         this.exerciseId = null;
-        this.courseId = null;
-        this.contextId = null;
-        this.userId = null;
-        this.p1Id = null;
         this.pirepLookupId = null;
         this.reloadingBody = false;
         this.reloadingTitle = false;
@@ -254,6 +254,26 @@ define([
     };
 
     /**
+     * Set the flight type of the logentry to the given value.
+     *
+     * @method setFlightType
+     * @param {string} flighttype The flight type (training/solo/check)
+     */
+     ModalLogEntryForm.prototype.setFlightType = function(flighttype) {
+        this.flightType = flighttype;
+    };
+
+    /**
+     * Retrieve flight type of the logentry.
+     *
+     * @method getFlightType
+     * @return {string} The flight type (training/solo/check)
+     */
+    ModalLogEntryForm.prototype.getFlightType = function() {
+        return this.flightType;
+    };
+
+    /**
      * Get the form element from the modal.
      *
      * @method getForm
@@ -296,11 +316,13 @@ define([
 
         this.reloadingTitle = true;
 
-        if (this.hasLogentryId()) {
-            this.titlePromise = Str.get_string('editlogentry', 'local_booking');
-        } else {
-            this.titlePromise = Str.get_string('newlogentry', 'local_booking');
-        }
+        // Get exercise name
+        this.titlePromise = Repository.getExerciseName(this.courseId, this.exerciseId)
+            .then(function(response) {
+                // Handle the response
+                return response.exercisename;
+            })
+        .fail(Notification.exception);
 
         this.titlePromise.then(function(string) {
             this.setTitle(string);
@@ -365,12 +387,20 @@ define([
         // Get the content of the modal
         this.bodyPromise = Fragment.loadFragment('local_booking', 'logentry_form', this.getContextId(), args);
 
+        // Set the body data using the promise
         this.setBody(this.bodyPromise);
 
         this.bodyPromise.then(function() {
+            // Add Find PIREP button
+            let pirepdiv = $('#id_p1pirep').parent();
+            if (!$('#id_error2_p1pirep').length) {
+                pirepdiv.append('<div id="id_find_pirep" ' +
+                    'tabindex="0" style=""><button type="button" class="btn btn-primary" ' +
+                    'data-form-type="action"><i class="icon fa fa-search fa-fw"></i></button></div>');
+            }
+
             // Hide/show elements set training type
-            this.p1Id = $('#id_p1id').val();
-            this.applyFlightOpsDefaults();
+            this.doDynamicDisplay();
             this.enableButtons();
             this.setInputMask();
             this.registerChangeListeners();
@@ -394,24 +424,39 @@ define([
      */
     ModalLogEntryForm.prototype.setInputMask = function() {
         // Mask flight times < 5hrs and departure/arrival times to 24hr format
-        if ($(BookingSelectors.bookingwrapper).data('trainingtype') == "Dual") {
+        // Mask flight time elements based on training type
+        if ($(Selectors.bookingwrapper).data('trainingtype') == "Dual") {
             Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_dualtime"));
-        } else {
+        } else if ($(Selectors.bookingwrapper).data('trainingtype') == "Multicrew") {
             Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_multipilottime"));
-            Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_copilottime"));
+
+            // TODO: Instructor logentry edit:
+            // Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_copilottime"));
         }
-        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_groundtime"));
-        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_pictime"));
-        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_instructortime"));
-        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_picustime"));
-        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_checkpilottime"));
+        // Check for the flight type before masking related elements
+        if ($("input[name='flighttypehidden']").val() == 'check') {
+            Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_picustime"));
+
+            // TODO: Instructor logentry edit:
+            // Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_checkpilottime"));
+        } else {
+            Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_groundtime"));
+        }
+
+        // TODO: Instructor logentry edit:
+        // Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_pictime"));
+        // Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_instructortime"));
+
+        // Mask remaining elements
+        Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_flighttime"));
         Inputmask({"regex": "^([01]?[0-9]|2[0-3]):[0-5][0-9]"}).mask(document.getElementById("id_deptime"));
         Inputmask({"regex": "^([01]?[0-9]|2[0-3]):[0-5][0-9]"}).mask(document.getElementById("id_arrtime"));
         Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_nighttime"));
         Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_ifrtime"));
         Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsp1day"));
         Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsp1night"));
-    // Check for new logentries noting landings of both instructor and student
+
+        // Check for new logentries noting landings of both instructor and student
         if (this.getLogentryId() == 0) {
             Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsp2day"));
             Inputmask({"regex": "[0-9]"}).mask(document.getElementById("id_landingsp2night"));
@@ -426,29 +471,40 @@ define([
     ModalLogEntryForm.prototype.registerChangeListeners = function() {
 
         // PIREP search trigger
-        var pirep = $('#id_p1pirep');
-        pirep.on('change', function(e) {
-            if (!isNaN(pirep.val())) {
+        var pirepbutton = $('#id_find_pirep');
+        pirepbutton.on('click', function(e) {
+            if (!isNaN($('#id_p1pirep').val())) {
                 return this.getPIREPData(e);
             }
         }.bind(this));
 
-        // Hide unnecessary elements for Solo flights when checkbox is clicked
+        // Update elements based on selected flighttype (Training/Solo)
         var flighttype = $('input[name="flighttype"]');
         flighttype.on('change', function() {
-            return this.applyFlightOpsDefaults();
+            // Assign the value selected in the radio buttons to the hidden flight type element
+            $("input[name='flighttypehidden']").val($("input[name='flighttype']:checked").val());
+            this.doDynamicDisplay();
+            this.applyFlightTimes();
         }.bind(this));
 
-        // Hide unnecessary elements for Solo flights when checkbox is clicked
+        // Update flight times when the test result status is changed
         var passfail = $('input[name="passfail"]');
         passfail.on('change', function() {
-            return this.applyFlightOpsDefaults();
+            this.doDynamicDisplay();
+            this.applyFlightTimes();
         }.bind(this));
 
-        // The onchange property has to be set due to the pictime element being masked
-        pictime = document.getElementById("id_pictime");
-        pictime.onchange = function() {
-            return this.applyFlightOpsDefaults();
+        // Update flight times when the test result status is changed
+        var flightrule = $('input[name="flightrule"]');
+        flightrule.on('change', function() {
+            this.doDynamicDisplay();
+            this.applyFlightTimes();
+        }.bind(this));
+
+        // The onchange property has to be set due to the flighttime element being masked
+        flighttime = document.getElementById("id_flighttime");
+        flighttime.onchange = function() {
+            return this.applyFlightTimes(true);
         }.bind(this);
     };
 
@@ -462,7 +518,7 @@ define([
      */
      ModalLogEntryForm.prototype.getPIREPData = function(e) {
         var loadingContainer = this.getFooter().find(SELECTORS.LOADING_ICON_CONTAINER);
-        rule = $(BookingSelectors.bookingwrapper).data('trainingtype');
+        rule = $(Selectors.bookingwrapper).data('trainingtype');
         pirepdiv = $('#id_p1pirep').parent();
         pirep = $('#id_p1pirep').val();
         courseid = this.getCourseId();
@@ -471,10 +527,12 @@ define([
             loadingContainer.removeClass('hidden');
             return Repository.findPirep(pirep, courseid, $('#id_p1id').val())
                 .then(function(response) {
+                    // Clean up any past client side errors
+                    $('#id_p1pirep').removeClass('is-invalid');
+
                     // Handle the response
                     if (response.result) {
-                        // Clean up any past client side errors
-                        $('#id_p1pirep').removeClass('is-invalid');
+                        // Get found message
                         if (!$('#id_valid_p1pirep').length) {
                             Str.get_string('pirepfound', 'local_booking').then(function(string) {
                                 pirepdiv.append('<div class="form-control-feedback valid-feedback" id="id_valid_p1pirep" ' +
@@ -494,20 +552,14 @@ define([
                             time = response.logentry.deptime,
                             hour = time.substring(0, 2),
                             minute = time.substring(time.indexOf(':') + 1, time.length);
+                        // Fill remaining data
                         $('#id_flightdate_day').val(day);
                         $('#id_flightdate_month').val(month);
                         $('#id_flightdate_year').val(year);
                         $('#id_flightdate_hour').val(hour);
                         $('#id_flightdate_minute').val(minute);
-                        if (rule == 'Dual') {
-                            $('#id_dualtime').val(response.logentry.pictime);
-                        } else if (rule == 'Multicrew') {
-                            $('#id_multipilottime').val(response.logentry.pictime);
-                            $('#id_copilottime').val(response.logentry.pictime);
-                            $('#id_ifrtime').val(response.logentry.pictime);
-                        }
                         $('input[name="linkedpirep"]').val(response.logentry.linkedpirep);
-                        $('#id_pictime').val(response.logentry.pictime);
+                        $('#id_flighttime').val(response.logentry.flighttime);
                         $('#id_depicao').val(response.logentry.depicao);
                         $('#id_arricao').val(response.logentry.arricao);
                         $('#id_deptime').val(response.logentry.deptime);
@@ -518,27 +570,27 @@ define([
                         $('#id_enginetype').val(response.logentry.enginetype);
                         $('#id_route').val(response.logentry.route);
                         $('#id_fstd').val(response.logentry.fstd);
-                        if ($("input[name='flighttype']:checked").val() == 'check') {
-                            $('#id_picustime').val(response.logentry.pictime);
-                            $('#id_checkpilottime').val(response.logentry.pictime);
-                        } else {
-                            $('#id_instructortime').val(response.logentry.pictime);
-                        }
+                        this.doDynamicDisplay();
+                        this.applyFlightTimes();
                     } else {
                         // Display inline error for the PIREP then clear it and give it focus
                         $('#id_p1pirep').addClass('is-invalid');
                         if (!$('#id_error2_p1pirep').length) {
                             pirepdiv.append('<div class="form-control-feedback invalid-feedback" id="id_error2_p1pirep" ' +
-                                'tabindex="0" style="">' + response.warnings[0].message + '</div');
+                                'tabindex="0" style="">' + response.warnings[0].message + '</div>');
                             $('#id_p1pirep').val('');
                             $('#id_p1pirep').focus();
                         } else {
                             $('#id_error2_p1pirep').show();
                         }
+                        // Make sure the find button is always after the P1 PIREP element
+                        $('#id_p1pirep').parent().each(function() {
+                            $('#id_find_pirep').insertAfter($('#id_p1pirep'), this);
+                        });
                     }
 
                     return;
-                })
+                }.bind(this))
                 .always(function() {
                     // Regardless of success or error we should always stop
                     // the loading icon and re-enable the buttons.
@@ -558,125 +610,180 @@ define([
      * Apply default values set flight operation
      * Dual vs Multicrew taking solo flights in conisderation
      *
-     * @method applyFlightOpsDefaults
-     * @param  {object} e The triggered event
-     * @param  {string} rule The rule to be applied
+     * Populates a log book entry with a modal form data.
+     *
+     * @param {bool} force Force applying flight times
+     * @method applyFlightTimes
      */
-     ModalLogEntryForm.prototype.applyFlightOpsDefaults = function() {
+     ModalLogEntryForm.prototype.applyFlightTimes = function(force) {
 
-        rule = $(BookingSelectors.bookingwrapper).data('trainingtype');
-        var flighttime = $('#id_pictime').val();
-        var flighttype = $("input[name='flighttype']:checked").val(),
+        const rule = $(Selectors.bookingwrapper).data('trainingtype');
+        var flighttype = $("input[name='flighttypehidden']").val(),
+            flighttime = $('#id_flighttime').val(),
             passfail = $("input[name='passfail']:checked").val(),
+            ifr = $("input[name='flightrule']:checked").val() == 'ifr',
             editmode = this.getLogentryId() != 0,
-            nopirep = $('#id_p1pirep').val() == '';
+            newentry = !editmode;
+
+        // Check the training rule type
+        if (newentry || force) {
+            if (flighttype == 'training' || (flighttype == 'check' && passfail == 'fail')) {
+                $('#id_dualtime').val(rule == 'Dual' ? flighttime : '');
+                $('#id_ifrtime').val(ifr ? flighttime : '');
+                $('#id_multipilottime').val(rule == 'Multicrew' ? flighttime : '');
+                $('#id_copilottime').val(rule == 'Multicrew' ? flighttime : '');
+                $('#id_checkpilottime').val(flighttype == 'check' ? flighttime : '');
+                $('#id_picustime').val('');
+            } else if (flighttype == 'solo') {
+                $('#id_ifrtime').val(ifr ? flighttime : '');
+                $('#id_dualtime').val('');
+                $('#id_multipilottime').val('');
+                $('#id_copilottime').val('');
+                $('#id_picustime').val('');
+            } else if (flighttype == 'check' || passfail == 'pass') {
+                $('#id_ifrtime').val(ifr ? flighttime : '');
+                $('#id_picustime').val(flighttime);
+                $('#id_checkpilottime').val(flighttime);
+                $('#id_multipilottime').val(rule == 'Multicrew' ? flighttime : '');
+                $('#id_dualtime').val('');
+                $('#id_copilottime').val('');
+            }
+        }
+     };
+
+    /**
+     * Apply default values set flight operation
+     * Dual vs Multicrew taking solo flights in conisderation
+     *
+     * Populates a log book entry with a modal form data.
+     *
+     * @method doDynamicDisplay
+     */
+     ModalLogEntryForm.prototype.doDynamicDisplay = function() {
+
+        const rule = $(Selectors.bookingwrapper).data('trainingtype');
+        var flighttype = $("input[name='flighttypehidden']").val(),
+            passfail = $("input[name='passfail']:checked").val(),
+            ifr = $("input[name='flightrule']:checked").val() == 'ifr',
+            editmode = this.getLogentryId() != 0;
 
         // Toggle the display of elements depending on flight type
-        var toggle = function(div, element, show, value) {
-            if (show) {
-                $(div).slideDown('fast');
-            } else {
-                $(div).slideUp('fast');
+        var toggle = function(div, element, show, value, force = false) {
+            if (typeof div !== 'undefined' && typeof element !== 'undefined') {
+                // Check expanded status of Advanced elements
+                var ariaexpanded = this.getForm().find('[aria-expanded="true"]').attr('aria-expanded');
+                if (ariaexpanded || force) {
+                    if (show) {
+                        $(div).slideDown('fast');
+                    } else {
+                        $(div).slideUp('fast');
+                    }
+                }
+
+                // Process the passed value
+                if (typeof value !== 'undefined') {
+                    $(element).val(value);
+                }
             }
-            // Process the passed value
-            if (typeof value !== 'undefined') {
-                reset(element, show, value);
+        }.bind(this);
+
+        // Set dynamic element labels
+        var setLabel = function(element, editlabelkey, labelkey) {
+            if (editmode) {
+                Str.get_string(editlabelkey, 'local_booking').then(function(label) {
+                    $(element).text(label);
+                    return label;
+                }).fail(Notification.exception);
+            } else {
+                Str.get_string(labelkey, 'local_booking').then(function(label) {
+                    $(element).text(label);
+                    return label;
+                }).fail(Notification.exception);
             }
         };
 
-        // Set the value of the element depending on the display type
-        var reset = function(element, show, value) {
-            // Set the element value if not manual PIREP entry
-            if (show && !nopirep) {
-                if ((!$(element).val() || !$(element).val() == 0) && !editmode) {
-                    $(element).val('');
-                }
-            } else {
-                $(element).val(value);
-            }
-        };
+        // TODO: Instructor logentry edit:
+        // // Toggle PIC time in new and edit
+        // toggle('#fitem_id_pictime', '#id_pictime', $('#id_pictime').val());
 
         // Check the training rule type
         if (flighttype == 'training' || (flighttype == 'check' && passfail == 'fail')) {
-            // Set P1 id and label for instructor, and handle edit mode
-            $("label[for='id_p1pirep']").text(editmode ? 'PIREP' : 'Instructor PIREP');
-            $('#id_p1id').val(this.p1Id);
 
-            // Toggle P2 dropdown if the flight is not a solo flight
-            toggle('#fitem_id_p2id', '#id_p2id', flighttype != 'solo');
-
-            // Toggle pass/fail options if the flight is a check flight
-            toggle('#fgroup_id_passfail', '#id_passfail', flighttype == 'check');
-
-            // Toggle dual time for Dual training and not an instructor edit mode set saved value
-            toggle('#fitem_id_dualtime', '#id_dualtime', rule == 'Dual' && (!editmode ||
-                (editmode && $('#id_dualtime').val() != '')), rule == 'Dual' ? flighttime : 0);
-
-            // Toggle PIC time in new and edit instructor unless if it's manual entry (no PIREP)
-            if (nopirep) {
-                toggle('#fitem_id_pictime', '#id_pictime', (!editmode || (editmode &&
-                    $('#id_pictime').val() != '')), editmode || flighttype == 'check' ? 0 : flighttime);
+            // Set P1 id and label, and handle edit mode
+            if (flighttype == 'training' || editmode) {
+                p1label = rule == 'Dual' ? 'p1dual' : 'p1multicrew';
+            } else {
+                p1label = 'examiner';
             }
 
-            // Toggle instructor time in new and edit instructor
-            toggle('#fitem_id_instructortime', '#id_instructortime', ((!editmode && flighttype != 'check') || (editmode &&
-                $('#id_instructortime').val() != '')), editmode || flighttype == 'check' ? 0 : flighttime);
+            setLabel("label[for='id_p1pirep']", 'pirep', flighttype == 'training' ? 'instpirep' : 'examinerpirep');
+            setLabel("label[for='id_p1id']", p1label, p1label);
 
-            // Toggle ground time for training flight types only
-            toggle('#fitem_id_groundtime', '#id_groundtime', flighttype == 'training', (nopirep ? $('#id_groundtime').val() : 0));
+            // Toggle showing elements conditionally for training flight and failed check flights
+            toggle('#fitem_id_p2id', '#id_p2id', true);
+            toggle('#fitem_id_dualtime', '#id_dualtime', rule == 'Dual');
+            toggle('#fitem_id_groundtime', '#id_groundtime', true, $('#id_groundtime').val(), true);
+            toggle('#fitem_id_ifrtime', '#id_ifrtime', ifr);
+            toggle('#fitem_id_multipilottime', '#id_multipilottime', rule == 'Multicrew');
+            toggle('#fitem_id_copilottime', '#id_copilottime', rule == 'Multicrew');
 
-            // Toggle for multicrew flights and default the value for multicrew flights
-            toggle('#fitem_id_multipilottime', '#id_multipilottime', rule == 'Multicrew', rule == 'Multicrew' ? flighttime : 0);
+            // Toggle hiding elements
+            toggle('#fitem_id_checkpilottime', '#id_checkpilottime', false);
+            toggle('#fitem_id_picustime', '#id_picustime', false);
 
-            // Toggle copilot time for multicrew flights, and set default in multicrew
-            toggle('#fitem_id_copilottime', '#id_copilottime', rule == 'Multicrew' && (!editmode ||
-                (editmode && $('#id_copilottime').val() != '')), rule == 'Multicrew' ? flighttime : 0);
-
-            // Toggle off PICUS time for non passed check flights, and set default in multicrew
-            toggle('#fitem_id_picustime', '#id_picustime', false, 0);
-            toggle('#fitem_id_checkpilottime', '#id_checkpilottime', false, 0);
+            // TODO: Instructor logentry edit:
+            // // Toggle instructor time in new and edit
+            // toggle('#fitem_id_instructortime', '#id_instructortime', ((newentry && flighttype != 'check') || (editmode &&
+            //     $('#id_instructortime').val() != '')), editmode || flighttype == 'check' ?
+            //     $('#id_instructortime').val() ? $('#id_instructortime').val() : '' : flighttime);
+            // TODO: Instructor logentry edit:
+            // toggle('#fitem_id_checkpilottime', '#id_checkpilottime', false, '');
 
         } else if (flighttype == 'solo') {
-            // Set P1 id and label for student solo flight, and handle edit mode
-            $("label[for='id_p1pirep']").text(editmode ? 'PIREP' : 'Solo PIREP');
-            $('#id_p1id').val($('#id_p2id').val());
+            // Set P1 PIREP label for student solo flights, and handle edit mode
+            setLabel("label[for='id_p1pirep']", 'logbooksolopirep', 'logbooksolopirep');
+            setLabel("label[for='id_p1id']", 'p2dual', 'p2dual');
+            if (!editmode) {
+                $('#id_p1id').val($('#id_p2id').val());
+            }
 
-            // Toggle display of solo flight
-            toggle('#fitem_id_p2id', '#id_p2id', false);
-            toggle('#fgroup_id_passfail', '#id_passfail', false);
-            toggle('#fitem_id_dualtime', '#id_dualtime', false, 0);
-            toggle('#fitem_id_instructortime', '#id_instructortime', false, 0);
-            toggle('#fitem_id_groundtime', '#id_groundtime', false, 0);
-            toggle('#fitem_id_multipilottime', '#id_multipilottime', false, 0);
-            toggle('#fitem_id_copilottime', '#id_copilottime', false, 0);
-            toggle('#fitem_id_picustime', '#id_picustime', false, 0);
-            toggle('#fitem_id_checkpilottime', '#id_checkpilottime', false, 0);
-
-            // Toggle landings and set to default to 1 for P1
-            toggle('#fgroup_id_landingsp2', '#id_landingsp2', false);
+            // Toggle showing elements for solo flight
+            toggle('#fitem_id_ifrtime', '#id_ifrtime', ifr);
             $('#id_landingsp1day').val('1');
             $('#id_landingsp2day').val('0');
 
-        } else if (flighttype == 'check' || passfail == 'pass') {
-            // Set P1 id and label for instructor, and handle edit mode
-            $("label[for='id_p1pirep']").text(editmode ? 'PIREP' : 'Instructor PIREP');
-            $('#id_p1id').val(this.p1Id);
+            // Toggle hiding elements for solo flights
+            toggle('#fitem_id_p2id', '#id_p2id', false, $('#id_p2id').val(), true);
+            toggle('#fitem_id_groundtime', '#id_groundtime', false, '', true);
+            toggle('#fitem_id_dualtime', '#id_dualtime', false);
+            toggle('#fitem_id_multipilottime', '#id_multipilottime', false);
+            toggle('#fitem_id_copilottime', '#id_copilottime', false);
+            toggle('#fitem_id_picustime', '#id_picustime', false);
+            toggle('#fgroup_id_landingsp2', '#id_landingsp2', false);
 
-            // Toggle display of check flight
+            // TODO: Instructor logentry edit:
+            // toggle('#fitem_id_instructortime', '#id_instructortime', false);
+            // TODO: Instructor logentry edit:
+            // toggle('#fitem_id_checkpilottime', '#id_checkpilottime', false);
+
+        } else if (flighttype == 'check' || passfail == 'pass') {
+            // Get id and label for P1 and PIREP
+            setLabel("label[for='id_p1pirep']", 'pirep', 'examinerpirep');
+            setLabel("label[for='id_p1id']", 'examiner', 'examiner');
+
+            // Toggle showing elements for passsed check flight
             toggle('#fitem_id_p2id', '#id_p2id', true);
-            toggle('#fgroup_id_passfail', '#id_passfail', true);
-            toggle('#fitem_id_dualtime', '#id_dualtime', false, 0);
-            // Toggle PIC time in new and edit instructor
-            toggle('#fitem_id_pictime', '#id_pictime', (!editmode || (editmode &&
-                $('#id_pictime').val() != '')), 0);
-            toggle('#fitem_id_instructortime', '#id_instructortime', false, 0);
-            toggle('#fitem_id_groundtime', '#id_groundtime', false, 0);
-            toggle('#fitem_id_multipilottime', '#id_multipilottime', rule == 'Multicrew', 0);
-            toggle('#fitem_id_copilottime', '#id_copilottime', false, 0);
-            toggle('#fitem_id_picustime', '#id_picustime', (!editmode || (editmode &&
-                $('#id_picustime').val() != '')), flighttime);
-            toggle('#fitem_id_checkpilottime', '#id_checkpilottime', (!editmode || (editmode &&
-                $('#id_checkpilottime').val() != '')), flighttime);
+            toggle('#fitem_id_ifrtime', '#id_ifrtime', ifr);
+            toggle('#fitem_id_multipilottime', '#id_multipilottime', rule == 'Multicrew');
+            toggle('#fitem_id_picustime', '#id_picustime', true);
+
+            // Toggle hiding elements for passed check flight
+            toggle('#fitem_id_dualtime', '#id_dualtime', false);
+            toggle('#fitem_id_copilottime', '#id_copilottime', false);
+
+            // TODO: Instructor logentry edit:
+            // toggle('#fitem_id_instructortime', '#id_instructortime', false);
+            toggle('#fitem_id_checkpilottime', '#id_checkpilottime', false);
         }
     };
 
@@ -751,6 +858,10 @@ define([
     ModalLogEntryForm.prototype.save = function() {
         var invalid,
             loadingContainer = this.saveButton.find(SELECTORS.LOADING_ICON_CONTAINER);
+
+        if (!($("input[name='flighttypehidden']").val() == 'training')) {
+            $('#id_groundtime').val(0);
+        }
 
         // Now the change events have run, see if there are any "invalid" form fields.
         invalid = this.getForm().find('[aria-invalid="true"]');
@@ -839,6 +950,13 @@ define([
             // propagation because we have already handled the event.
             e.preventDefault();
             e.stopPropagation();
+        }.bind(this));
+
+        // Register a lister to Update elements for Advanced section when expanded, after its loaded
+        this.getModal().on('click', 'a[aria-expanded]', function() {
+            setTimeout(function() {
+                this.doDynamicDisplay();
+             }.bind(this), 100);
         }.bind(this));
     };
 

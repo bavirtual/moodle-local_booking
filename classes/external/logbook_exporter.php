@@ -96,6 +96,10 @@ class logbook_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],
+            'totalflighttime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
             'totalpictime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true
@@ -120,7 +124,7 @@ class logbook_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],
-            'totaltime' => [
+            'totalflighttime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],

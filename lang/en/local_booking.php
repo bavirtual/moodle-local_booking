@@ -114,7 +114,7 @@ $string['buttonclear'] = 'Clear';
 $string['defaultmake'] = 'Make default';
 $string['defaultload'] = 'Load default';
 $string['checkpassed'] = 'Passed';
-$string['checkfailed'] = 'Failed';
+$string['checkfailed'] = 'Failed / Progressing';
 $string['flightsim'] = 'Flight Simulation';
 $string['lessonsincomplete'] = 'Incomplete lessons(s): Please complete pending lessons, otherwise instructors will not see your availability.';
 $string['nextsessionwaitdays'] = 'Wait period:';
@@ -159,17 +159,19 @@ $string['deptime'] = 'Departure time (zulu)';
 $string['dualtime'] = 'Dual time';
 $string['dualtime_help'] = 'Flight time logged for the student in training flights';
 $string['depicao'] = 'Departure ICAO';
-$string['editlogentry'] = 'Editing Logbook entry';
 $string['enginetype'] = 'Engine type';
+$string['examinerpirep'] = 'Examiner PIREP';
 $string['feedback'] = 'Feedback';
-$string['flightcheckride'] = 'Checkride flight';
 $string['flightcopilottimetooltip'] = 'Flight time logged for the co-pilot in a multi-crewed flights';
 $string['flightdate'] = 'Flight date';
 $string['flightdate2'] = 'flight date';
-$string['flightlinecheck'] = 'Line check flight';
+$string['flightrule'] = 'Flight rule';
+$string['flightrule_help'] = 'flight operation in visual meteorological conditions (VMC) or operate in instrument meteorological conditions (IMC)';
+$string['flightrulevfr'] = 'VFR';
+$string['flightruleifr'] = 'IFR';
 $string['flightsolo'] = 'Solo flight';
 $string['flighttime'] = 'flight time';
-$string['flighttraining'] = 'Training flight';
+$string['flighttime_help'] = 'Duration of the flight';
 $string['flighttype'] = 'Flight type';
 $string['flighttype_help'] = 'A regular training flight, a solo flight, or a check flight (line check / check ride)';
 $string['flighttypetraining'] = 'Training';
@@ -179,7 +181,7 @@ $string['fstd'] = 'FSTD';
 $string['fstd_help'] = 'Flight Simulation Training Device qualification';
 $string['groundtime'] = 'Ground time';
 $string['groundtime_help'] = 'The ground training (brief & debrief) overall time';
-$string['ifrtime'] = 'IFR flight time';
+$string['ifrtime'] = 'IFR time';
 $string['ifrtime_help'] = 'Operational IFR time is the portion of the flight flown under Instrument Flight Rules, logged for all pilots flying the aircraft';
 $string['instpirep'] = 'Instructor PIREP';
 $string['instpirep_help'] = 'PIREP to be searched';
@@ -227,7 +229,7 @@ $string['logbooksolopirep'] = 'Solo PIREP';
 $string['logbookstudent'] = 'Logbook';
 $string['logbooksummary'] = 'LOGBOOK SUMMARY';
 $string['logbooktime'] = 'Time';
-$string['logbooktotaltime'] = 'Total Time';
+$string['logbooktotaltime'] = 'Total Flight Time';
 $string['logentry'] = 'Logbook Entry';
 $string['logentrymissing'] = 'No logbook entry!';
 $string['logentrydeletesuccess'] = 'Logbook entry deleted';
@@ -238,13 +240,16 @@ $string['multipilottime'] = 'Multi-pilot time';
 $string['multipilottime_help'] = 'Flight time logged for each pilot in multi-crew flights';
 $string['nighttime'] = 'Night flight time';
 $string['nighttime_help'] = 'Operational night time is the portion of the flight flown in night time. Logged for the PIC and copilots';
-$string['newlogentry'] = 'New Logbook entry';
-$string['p1'] = 'P1';
-$string['p1_help'] = 'P1 commonly the instructor';
-$string['p1solo'] = 'P1 (solo)';
-$string['p2'] = 'P2';
-$string['p2_help'] = 'P1 commonly the student';
+$string['p1dual'] = 'Instructor';
+$string['p1dual_help'] = 'The instructor (P1)';
+$string['p1multicrew'] = 'P1';
+$string['p1multicrew_help'] = 'P1 commonly the trainer';
 $string['p1pirep'] = 'P1 PIREP';
+$string['p1solo'] = 'P1 (solo)';
+$string['p2dual'] = 'Student';
+$string['p2dual_help'] = 'Student';
+$string['p2multicrew'] = 'P2';
+$string['p2multicrew_help'] = 'P2 commonly the trainee';
 $string['p2pirep'] = 'P2 PIREP';
 $string['pictime'] = 'PIC time';
 $string['pictime_help'] = 'Flight time logged for the pilot in command (PIC). As per the EASA <a href="https://www.easa.europa.eu/sites/default/files/dfu/Part-FCL.pdf">Part-FLC</a>
@@ -259,6 +264,8 @@ $string['pirepsgroup'] = 'PIREPs (P1/P2)';
 $string['remarks'] = 'Remarks';
 $string['sessionlength'] = 'Session length';
 $string['solotime'] = 'Solo time';
+$string['titleeditlogentry'] = 'Editing logbook entry';
+$string['titlenewlogentry'] = 'New logbook entry';
 $string['totalcheckpilottime'] = 'Total examiner flight time';
 $string['totalcopilottime'] = 'Total Co-pilot flight time';
 $string['totaldualtime'] = 'Total dual flight time';
@@ -597,6 +604,7 @@ $string['emailgraduationnotifymsg1'] = 'Congratulations {$a->firstname} !!!
 
     Lessons: {$a->totallessons} modules
     Mentoring: {$a->totalsessions} sessions
+    Total session time: {$a->totalsessionhrs} hrs
     Total flight time: {$a->totalflighthrs} hrs';
 $string['emailgraduationdualnotifymsg'] = '
     Total Dual time: {$a->totaldualhrs} hrs
@@ -625,6 +633,7 @@ $string['emailgraduationnotifyhtml1'] = '<font face="sans-serif"><table style="b
     was able to finish all practical and navigation exercises to standard. Below are some of {$a->firstname}\'s accomplishments:</p><p>
     <p><img src="{$a->calendarpic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Lessons: <strong>{$a->totallessons} modules</strong></p>
     <p><img src="{$a->calendarpic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Mentoring: <strong>{$a->totalsessions} sessions</strong></p>
+    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total session time: <strong>{$a->totalsessionhrs} hrs</strong></p>
     <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total flight time: <strong>{$a->totalflighthrs} hrs</strong></p>';
 $string['emailgraduationdualnotifyhtml'] = '<p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Dual time: <strong>{$a->totaldualhrs} hrs</strong></p>
     <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total solo flight time: <strong>{$a->totalsolohrs} hrs</strong></p>';
@@ -707,7 +716,7 @@ $string['errorlogentrycancel'] = 'Errors encountered: Unable to cancel booking!'
 $string['errorlogentryfetch'] = 'Error encountered while trying to fetch logbook entry with ID: ';
 $string['errorp1pirepnotfound'] = ' - PIREP not found.';
 $string['errorp1pirepnopilotintegration'] = ' - No pilot lookup integration.';
-$string['errorp1pirepwrongpilot'] = ' - PIREP does not belong to P1.';
+$string['errorp1pirepwrongpilot'] = ' - PIREP belongs to a different user.';
 $string['errorsuspend'] = 'Unable to suspend user.';
 $string['errorupdategroup'] = 'Unable to update user group.';
 $string['errorupdatepreference'] = 'Unable to update user preference.';

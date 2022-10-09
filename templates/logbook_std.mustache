@@ -42,7 +42,7 @@
         <pre>{{#str}} pilot, local_booking {{/str}}: <span class="logbook-highlight">{{username}}</span>
 
         {{#str}} totalgroundtime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalgroundtime}}</span>
-        {{#str}} logbooktotaltime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;&#09;{{totalflighttime}}</span>
+        {{#str}} logbooktotaltimestd, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalflighttime}}</span>
 
         {{#str}} totalpictime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpictime}}</span>
         {{#dualops}}
@@ -79,8 +79,8 @@
         <pre><strong>{{#str}} logentry, local_booking {{/str}}:</strong>
         {{#str}} flightdate, local_booking {{/str}}&#09;&#09;&#09;&#09;{{flightdate}}
         {{#str}} flighttype, local_booking {{/str}}&#09;&#09;&#09;&#09;{{trainingflight}} {{#checkflight}}{{#passedcheck}}<span class="logbook-check-pass">[{{#str}} checkpassed , local_booking{{/str}}]</span>{{/passedcheck}}{{^passedcheck}}<span class="logbook-check-fail">[{{#str}} checkfailed , local_booking{{/str}}]</span>{{/passedcheck}}{{/checkflight}}
-        {{#str}} p1, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{p1name}}
-        {{#str}} p2, local_booking {{/str}}&#09;&#09;&#09;&#09;&#09;{{p2name}}
+        {{p1label}}&#09;&#09;&#09;&#09;{{p1name}}
+        {{p2label}}&#09;&#09;&#09;&#09;&#09;{{p2name}}
 
         {{^soloflight}}
         {{#str}} groundtime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{groundtime}}

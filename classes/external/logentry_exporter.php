@@ -241,6 +241,14 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true,
             ],
+            'p1label' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
+            'p2label' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
+            ],
             'p1name' => [
                 'type' => PARAM_TEXT,
                 'optional' => true,
@@ -302,20 +310,27 @@ class logentry_exporter extends exporter {
         $dualops = $this->data['trainingtype'] == 'Dual';
         $haspictime = !empty($this->logentry) ? !empty($this->logentry->get_pictime()) : false;
         $flighttype = !empty($this->logentry) ? $this->logentry->get_flighttype() : 'training';
+        $p2label = $dualops ? get_string('p2dual', 'local_booking') : get_string('p2multicrew', 'local_booking');
+
         // get training flight text
         $passed = false;
         $trainingflight = '';
+
         if (!empty($this->logentry)) {
             switch ($this->logentry->get_flighttype()) {
                 case 'training':
                     $trainingflight = $this->data['courseshortname'] . ' ' . get_string('flighttraining', 'local_booking');
+                    $p1label = $dualops ? get_string('p1dual', 'local_booking') : get_string('p1multicrew', 'local_booking') . '&#09;';
                     break;
                 case 'solo':
                     $trainingflight = $this->data['courseshortname'] . ' ' . get_string('flightsolo', 'local_booking');
+                    $p1label = get_string('p1solo', 'local_booking');
                     break;
                 case 'check':
-                    $trainingflight = $this->data['courseshortname'] . ' ' . ($dualops ? get_string('flightcheckride', 'local_booking') : get_string('flightlinecheck', 'local_booking'));
+                    $trainingflight = $this->data['courseshortname'] . ' ' . ($dualops ? get_string('flightttestdual', 'local_booking') : get_string('flightttestmc', 'local_booking'));
                     $passed = !empty($this->logentry) ? !empty($this->logentry->get_picustime()) || !empty($this->logentry->get_checkpilottime()) : false;
+                    $p1label = $dualops ? get_string('examiner', 'local_booking') : get_string('p1multicrew', 'local_booking') . '&#09;';
+
                     break;
             }
         }
@@ -323,6 +338,8 @@ class logentry_exporter extends exporter {
         return [
             'exercisename' => $COURSE->subscriber->get_exercise_name($exerciseid, $this->logentry->get_courseid()),
             'formattedtime' => $flightdate,
+            'p1label' => $p1label,
+            'p2label' => $p2label,
             'p1name' => !empty($p1id) ? participant::get_fullname($p1id) : '',
             'p2name' => !empty($p2id) ? participant::get_fullname($p2id) : '',
             'sectionname' => $sectionname,

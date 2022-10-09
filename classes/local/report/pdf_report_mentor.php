@@ -111,13 +111,14 @@ class pdf_report_mentor extends pdf_report {
         $this->writeHTML($html, true, false, true);
 
         // write logbook entry header for the exercise
-        $this->write_entry_info($exerciseid);
+        $examexercise = $exerciseid == $this->course->get_graduation_exercise();
+        $this->write_entry_info($exerciseid, $examexercise);
 
         // get grade and feedback information
         $html = $this->get_grade_info($grade);
         $html .= $this->get_feedback_text($grade);
         $this->SetTextColor(0, 0, 0);
-        $this->Ln(200);
+        $this->Ln($examexercise ? 140 : 200);
         $this->writeHTML($html, true, false, true);
     }
 }

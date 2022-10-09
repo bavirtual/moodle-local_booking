@@ -1,5 +1,12 @@
 # Change log
 
+## [2022100900] - RELEASED 2022-10-09
+
+### Changed
+
+- took out dual time, ground time, and session time from practical exam and mentor reports
+- change pirep column to int(10) - upgrade.php
+
 ## [2022100702] - RELEASED 2022-10-07
 
 ### Fixed

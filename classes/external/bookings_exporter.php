@@ -275,7 +275,7 @@ class bookings_exporter extends exporter {
         global $COURSE;
         $activestudentsexports = [];
 
-        // get all active students or student to be confirmed (session booking or booking confirmation)
+        // get all active students for the instructor dashboard view (sessions) or a single student of the interim step (confirm)
         if ($this->viewtype == 'sessions') {
             // get the user preference for the student progression sort type by s = score or a = availability
             $sorttype = $this->data['sorttype'];
@@ -290,7 +290,7 @@ class bookings_exporter extends exporter {
 
             // get the students list based on the requested filter
             $studentslist = $COURSE->subscriber->get_students($filter);
-            $this->activestudents = $this->filter != 'suspended' ?  $this->prioritize($studentslist, $sorttype) : $studentslist;
+            $this->activestudents = $this->filter != 'suspended' ?  $this->sort_students($studentslist, $sorttype) : $studentslist;
 
         } elseif ($this->viewtype == 'confirm') {
             $this->activestudents[] = $COURSE->subscriber->get_student($this->bookingstudentid);
@@ -333,32 +333,31 @@ class bookings_exporter extends exporter {
     }
 
     /**
-     * Prioritize the list of active students depending on
-     * sortying type requested, either by ordered segments or
-     * student priority score.  The scored type sorts the list
-     * by highest to loest priority score, where by availability
-     * type orderes the list by recency days then number of posts
-     * into three sequential segments:
-     *  1. students that have posted slots and completed lessons
-     *  2. students that have no posted slots but completed lessons
+     * Sort the list of active students depending on the sort type
+     * (student score or availability).  The student score type orders
+     * the list by highest priority score to lowest, where Availability
+     * sort type orders the list by recency days then number of posts
+     * into three sequential segments, with each sorted by session recency:
+     *  1. students that posted slots and completed lessons
+     *  2. students that completed lessons but have no posted slots
      *  3. students that have not completed lessons
      *
      * @param   string  $sorttype       The sort type 'score' vs 'availability'
      * @param   array   $activestudents The ordered list of active students
      */
-    protected function prioritize($activestudents, $sorttype) {
-        $postedcompleted = [];
-        $nopostcompleted = [];
-        $notcompleted = [];
+    protected function sort_students($activestudents, $sorttype) {
+        $posts_completed = [];
+        $noposts_completed = [];
+        $not_completed = [];
         $finallist = [];
 
         if ($sorttype == 'a') {
             // filtering students that have posted slots and completed lessons
-            $postedcompleted = array_filter($activestudents, function($std) {
+            $posts_completed = array_filter($activestudents, function($std) {
                 return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0;
             });
             // order active students by: price ASC the inStock DESC s
-            usort($postedcompleted, function($st1, $st2) {
+            usort($posts_completed, function($st1, $st2) {
                 if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
                     return $st2->get_priority()->get_slot_count() <=> $st1->get_priority()->get_slot_count();
                 }
@@ -366,24 +365,24 @@ class bookings_exporter extends exporter {
             });
 
             // filtering students that have no posted slots but completed lessons
-            $nopostcompleted = array_filter($activestudents, function($std) {
+            $noposts_completed = array_filter($activestudents, function($std) {
                 return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0;
             });
-            // order active students by: price ASC the inStock DESC s
-            usort($nopostcompleted, function($st1, $st2) {
+            // order active students by session recency
+            usort($noposts_completed, function($st1, $st2) {
                 return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
             });
 
             // filtering students that have not completed lessons
-            $notcompleted = array_filter($activestudents, function($std) {
+            $not_completed = array_filter($activestudents, function($std) {
                 return !$std->has_completed_lessons();
             });
             // order active students by: price ASC the inStock DESC s
-            usort($notcompleted, function($st1, $st2) {
+            usort($not_completed, function($st1, $st2) {
                 return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
             });
 
-            $finallist = array_merge($postedcompleted, $nopostcompleted, $notcompleted);
+            $finallist = array_merge($posts_completed, $noposts_completed, $not_completed);
 
         } elseif ($sorttype == 's') {
             // Get student booking priority

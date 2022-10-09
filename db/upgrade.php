@@ -32,20 +32,31 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool
  */
 function xmldb_local_booking_upgrade($oldversion) {
-    global $CFG, $DB;
+    global $DB;
 
-    $dbman = $DB->get_manager();
+    $dbmanager = $DB->get_manager();
 
     // Automatically generated Moodle v3.11.0 release upgrade line.
     // Put any upgrade step following this.
 
+    // change the PIREP field from the old char(50) to int(10)
+    if ($oldversion < 2022100900) {
+        // Changing type of field attachment on table block_quickmail_log to text.
+        $table = new xmldb_table('local_booking_logbooks');
+        $field = new xmldb_field('pirep', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'p2id');
+
+        // Launch change of type for field attachment.
+        $dbmanager->change_field_type($table, $field);
+    }
+
+    // add the flight time field
     if ($oldversion < 2022100700) {
         // Define field hidegrader to be added to logbooks.
         $table = new xmldb_table('local_booking_logbooks');
         $field = new xmldb_field('flighttime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'groundtime');
 
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+        if (!$dbmanager->field_exists($table, $field)) {
+            $dbmanager->add_field($table, $field);
         }
 
         // Assignment savepoint reached.

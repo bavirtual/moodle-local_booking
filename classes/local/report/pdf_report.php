@@ -188,10 +188,11 @@ class pdf_report extends \pdf {
     /**
      * Write the logbook entry html.
      *
-     * @param  int $exerciseid  The assignment id.
+     * @param  int  $exerciseid  The assignment id.
+     * @param  bool $examentry   Whether the entry is associated with an exam.
      * @return string
      */
-    protected function write_entry_info(int $exerciseid) {
+    protected function write_entry_info(int $exerciseid, bool $examentry = false) {
 
         // load the logbook if needed
         if (!isset($this->logbook)) {
@@ -207,10 +208,10 @@ class pdf_report extends \pdf {
         $flighttimes = array();
         $flighttimes['flighttime'][0]       = !empty($logentry) ? $logentry->get_flighttime(false) : '';
         $flighttimes['flighttime'][1]       = !empty($logbooksummary->totalflighttime) ? $logbooksummary->totalflighttime : '';
-        if ($this->course->trainingtype == 'Dual') {
+        if ($this->course->trainingtype == 'Dual' && !$examentry) {
             $flighttimes['dualtime'][0]      = !empty($logentry) ? ($logentry->get_dualtime(false) ?: '') : '';
             $flighttimes['dualtime'][1]      = !empty($logbooksummary->totaldualtime) ? $logbooksummary->totaldualtime : '';
-        } else if ($this->course->trainingtype == 'Multicrew') {
+        } else if ($this->course->trainingtype == 'Multicrew' && !$examentry) {
             $flighttimes['multipilottime'][0]= !empty($logentry) ? ($logentry->get_multipilottime(false) ?: '') : 0;
             $flighttimes['multipilottime'][1]= !empty($logbooksummary->totalmultipilottime) ? $logbooksummary->totalmultipilottime : '';
         }
@@ -218,10 +219,15 @@ class pdf_report extends \pdf {
         $flighttimes['ifrtime'][1]       = !empty($logbooksummary->totalifrtime) ? $logbooksummary->totalifrtime : '';
         $flighttimes['picustime'][0]     = !empty($logentry) ? ($logentry->get_picustime(false) ?: '') : '';
         $flighttimes['picustime'][1]     = !empty($logbooksummary->totalpicustime) ? $logbooksummary->totalpicustime : '';
-        $flighttimes['groundtime'][0]    = !empty($logentry) ? ($logentry->get_groundtime(false) ?: '') : '';
-        $flighttimes['groundtime'][1]    = !empty($logbooksummary->totalgroundtime) ? $logbooksummary->totalgroundtime : '';
-        $flighttimes['sessionlength'][0] = !empty($logentry) ? $logentry->get_totalsessiontime(false) : '';
-        $flighttimes['sessionlength'][1] = !empty($logbooksummary->totalsessiontime) ? $logbooksummary->totalsessiontime : '';
+
+        // skip for exams
+        if (!$examentry) {
+            $flighttimes['groundtime'][0]    = !empty($logentry) ? ($logentry->get_groundtime(false) ?: '') : '';
+            $flighttimes['groundtime'][1]    = !empty($logbooksummary->totalgroundtime) ? $logbooksummary->totalgroundtime : '';
+            $flighttimes['sessionlength'][0] = !empty($logentry) ? $logentry->get_totalsessiontime(false) : '';
+            $flighttimes['sessionlength'][1] = !empty($logbooksummary->totalsessiontime) ? $logbooksummary->totalsessiontime : '';
+        }
+
         $flighttimes['deparr'][0]        = !empty($logentry) ? $logentry->get_depicao() . '/' . $logentry->get_arricao() : '';
         $flighttimes['deparr'][1]        = '';
 

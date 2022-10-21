@@ -1078,6 +1078,7 @@ class local_booking_external extends external_api {
         $courseid = $args['courseid'];
         $exerciseid = $args['exerciseid'];
         $userid = $args['userid'];
+        $editing = !empty($data['id']);
 
         $context = \context_course::instance($courseid);
         self::validate_context($context);
@@ -1094,10 +1095,10 @@ class local_booking_external extends external_api {
         ];
 
         // if the operation is an update, get the logentry
-        if (!empty($data['id'])) {
+        if ($editing) {
             $logentryuser = $COURSE->subscriber->get_participant($userid);
             $logbook = new logbook($courseid, $userid);
-            $logentry = $logbook->get_logentry(clean_param($data['id'], PARAM_INT));
+            $logentry = $logbook->get_logentry($data['id']);
             $formoptions['logentry'] = $logentry;
         }
 
@@ -1105,7 +1106,7 @@ class local_booking_external extends external_api {
         $mform = new update_logentry_form(null, $formoptions, 'post', '', null, true, $data);
         if ($validateddata = $mform->get_data()) {
             // for entry update, populate logentry then save
-            if (!empty($data['id'])) {
+            if ($editing) {
                 $logentry->populate($validateddata, !$logentryuser->is_student(), true);
                 $logentry->save();
             // for new entries, populate instructor and student logentries then save

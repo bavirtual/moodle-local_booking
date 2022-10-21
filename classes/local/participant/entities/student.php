@@ -605,6 +605,24 @@ class student extends participant {
     }
 
     /**
+     * Returns whether the student is on hold or not.
+     *
+     * @return  bool    Whether the student is on hold.
+     */
+    public function is_onhold() {
+        return self::is_member_of($this->course->get_id(), $this->userid, LOCAL_BOOKING_ONHOLDGROUP);
+    }
+
+    /**
+     * Returns whether the student is in 'Keep Active' status.
+     *
+     * @return  bool    Whether the student is in 'Keep Active' status.
+     */
+    public function is_kept_active() {
+        return self::is_member_of($this->course->get_id(), $this->userid, LOCAL_BOOKING_KEEPACTIVEGROUP);
+    }
+
+    /**
      * Returns whether the student has been passed the Qualifying
      * Cross-country or other qualifying exercise.  Checking assumes
      * the qualifying exercise is the one prior to the skill test exercise.
@@ -692,6 +710,6 @@ class student extends participant {
      * @return  bool    Whether the student had graduated.
      */
     public function graduated() {
-        return $this->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
+        return self::is_member_of($this->course->get_id(), $this->userid, LOCAL_BOOKING_GRADUATESGROUP);
     }
 }

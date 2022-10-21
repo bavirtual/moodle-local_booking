@@ -26,41 +26,30 @@
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 
-use local_booking\local\message\calendar_event;
-use local_booking\local\message\notification;
+use local_booking\local\calendar\event;
+use local_booking\local\calendar\calendar_helper;
+use local_booking\local\subscriber\entities\subscriber;
 
-// get URL parameters.
-$code = optional_param('code', '', PARAM_RAW);
-$state = optional_param('state', '', PARAM_RAW);
 
-// evaluate if the state has json query parameters
-if (empty($state)) {
-    // get event related URL parameters.
-    $eventdata = notification::get_notification_data($_GET);
-    $action = optional_param('action', 'i', PARAM_TEXT);
+$courseid = optional_param('id', 0, PARAM_INT);
+// TODO: end time should include the last hour
+$extendendtime = empty(optional_param('oauth2code', null, PARAM_RAW));
+
+$coursecontext = context_course::instance($courseid);
+$PAGE->set_context($coursecontext);
+
+// define subscriber globally
+if (empty($COURSE->subscriber)) {
+    $COURSE->subscriber = new subscriber($courseid);
 }
-else {
-    $decodedstate = json_decode(calendar_event::base64_url_decode($state), true);
-    // get event related URL parameters.
-    $eventdata = notification::get_notification_data($decodedstate);
-    $action = $decodedstate['action'];
-}
-// additional required event data properties
-$eventdata->venue       = get_string('sessionvenue', 'local_booking');
-$eventdata->redirecturi = $CFG->httpswwwroot . '/local/booking/calendar.php';
-$eventdata->sessionend  = $eventdata->sessionend + (60*30);  // add an hour to the event end time
-$eventdata->statestring = calendar_event::get_state_string($eventdata, $action);
 
-// Process the action (i = download ics file, g = add to Google calendar, l = add to Windows Live calendar)
-switch ($action) {
-    case 'i':
-        calendar_event::download_ics($eventdata);
-        break;
-    case 'g':
-        calendar_event::add_to_google_calendar($eventdata, $code);
-        redirect($CFG->httpswwwroot);
-        break;
-    case 'l':
-        calendar_event::add_to_live_calendar($eventdata, $code, $state);
-        break;
+// get the event from the URL parameters.
+$event = new event((object) $_GET, $extendendtime);
+
+// add an event to the target provider denoted in type paramenter
+if ($event->type == 'ics') {
+    $event->download();
+} else {
+    $calendar = calendar_helper::get_calendar($event->type);
+    $calendar->add($event);
 }

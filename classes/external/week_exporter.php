@@ -317,7 +317,7 @@ class week_exporter extends exporter {
         if ($this->actiondata['action'] != 'book' && $this->view == 'user') {
 
             // show a notification if the user is on-hold
-            if ($this->student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP)) {
+            if ($this->student->is_onhold()) {
                 \core\notification::ERROR(get_string('studentonhold', 'local_booking'));
             }
             if (!$this->student->has_completed_lessons()) {

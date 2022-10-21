@@ -25,7 +25,7 @@
 
 namespace local_booking\local\report;
 
-require_once($CFG->dirroot.'/local/booking/fpdm/fpdm.php');
+require_once($CFG->dirroot.'/local/booking/lib/fpdm/fpdm.php');
 
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;

@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_booking/student_progression
+    @template local_booking/bookings
 
     Student progression view for instructor booking.
 
@@ -36,6 +36,7 @@
     }}{{#courseid}} data-courseid="{{courseid}}"{{/courseid}}{{!
     }} data-contextid="{{contextid}}"{{!
     }} data-trainingtype="{{trainingtype}}"{{!
+    }} data-findpirep="{{findpirepenabled}}"{{!
     }}>
     {{> core/overlay_loading}}
     <table class="booking-title">

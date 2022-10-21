@@ -19,17 +19,11 @@ $string['actionevaluatetooltip'] = 'Evaluate \'{$a->studentname}\' on the {$a->e
 $string['actiongradesession'] = 'Grade session';
 $string['actiongraduatetooltip'] = 'Graduate \'{$a->studentname}\' from the course';
 $string['activestudents'] = 'Active students progression';
-$string['assess'] = 'Assess';
 $string['averagewaittime'] = 'Avg wait days';
 $string['book'] = 'Book';
 $string['bookingactive'] = 'My active bookings';
 $string['bookingavailabilityposts'] = 'Availability posted';
-$string['bookingsetpreferencesesuccess'] = 'User preference setting {$a->preference} set to {$a->value}.';
 $string['bookingsetpreferencesunable'] = 'Unable to save user preference setting {$a->preference} set to {$a->value}.';
-$string['bookingcalics'] = 'Download .ics file';
-$string['bookingcalgoogle'] = 'Add to Google calendar';
-$string['bookingcalyahoo'] = 'Add to Yahoo calendar';
-$string['bookingcalwinlive'] = 'Add to Windows Live calendar';
 $string['bookingcancel'] = 'Cancel';
 $string['bookingcanceledsuccess'] = 'Booking with \'{$a->studentname}\' cancelled!';
 $string['bookingcanceledunable'] = 'Unable to cancel booking!';
@@ -41,10 +35,6 @@ $string['bookingdashboard'] = 'Instructor dashboard';
 $string['bookingfooter'] = '<p style="font-family:sans-serif"><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href="{$a->bookingurl}">Session Booking</a></p>';
 $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
 $string['bookingnoposts'] = 'No posts';
-$string['bookingkeepactivetrue'] = 'Keep active ON';
-$string['bookingkeepactivefalse'] = 'Keep active OFF';
-$string['bookingkeepactivelabel'] = 'On-hold list';
-$string['bookingkeepactivetooltip'] = 'Forces the student to stay on the active students list';
 $string['bookingrecencyfrombooktooltip'] = 'Last booking<br/>{$a}';
 $string['bookingrecencyfromenroltooltip'] = 'No booking<br/>days since enrollment<br/>{$a}';
 $string['bookingrecencyfromgradetooltip'] = 'No booking<br/>days since last graded<br/>{$a}';
@@ -111,8 +101,6 @@ $string['buttonsave'] = 'Save';
 $string['buttoncopy'] = 'Copy';
 $string['buttonpaste'] = 'Paste';
 $string['buttonclear'] = 'Clear';
-$string['defaultmake'] = 'Make default';
-$string['defaultload'] = 'Load default';
 $string['checkpassed'] = 'Passed';
 $string['checkfailed'] = 'Failed / Progressing';
 $string['flightsim'] = 'Flight Simulation';
@@ -164,7 +152,6 @@ $string['examinerpirep'] = 'Examiner PIREP';
 $string['feedback'] = 'Feedback';
 $string['flightcopilottimetooltip'] = 'Flight time logged for the co-pilot in a multi-crewed flights';
 $string['flightdate'] = 'Flight date';
-$string['flightdate2'] = 'flight date';
 $string['flightrule'] = 'Flight rule';
 $string['flightrule_help'] = 'flight operation in visual meteorological conditions (VMC) or operate in instrument meteorological conditions (IMC)';
 $string['flightrulevfr'] = 'VFR';
@@ -195,9 +182,8 @@ $string['landingsp1_help'] = 'The number day and night landings for P1 for each 
 $string['landingsp2'] = 'Landings P2 (day/night)';
 $string['landingsp2_help'] = 'The number day and night landings for P2 for each flight';
 $string['logbook'] = 'logbook';
-$string['logbookaircraft'] = 'Aircraft';
 $string['logbookarr'] = 'Arrival';
-$string['logbookcopilot'] = 'Co-Pilot';
+$string['logbookcopilot'] = 'Copilot';
 $string['logbookdate'] = 'Date';
 $string['logbookday'] = 'Day';
 $string['logbookdep'] = 'Departure';
@@ -331,11 +317,6 @@ $string['theoryexamreport']='Theory examination report';
 
 // reports
 $string['aircrafttypelabel'] = 'Aircraft type/class course conducted in';
-$string['appeals'] = 'Appeals';
-$string['appealstext'] = 'Any candidate who has failed a test or examination may within 14 days of being notified of his or her failure request that the
-    Training Department determine whether the test or examination was properly conducted. In order to succeed you will have to satisfy the Training Department
-    that the examination or test was not properly conducted. Mere dissatisfaction with the result is not sufficient reason for appeal.';
-$string['blocktimes'] = 'Block times';
 $string['candidatedetails'] = 'Candidate Details';
 $string['candidateflyinghours'] = 'Candidate\'s flying hours';
 $string['candidatename'] = 'Candidate name';
@@ -377,8 +358,6 @@ $string['recommendationletterver'] = 'Rev 2 09 Jun 22';
 $string['recommendedby'] = 'Recommended for skill test by';
 $string['results'] = 'Results';
 $string['skill'] = 'Skill';
-$string['skilltestformver'] = 'Rev 3 09 Jun 22';
-$string['testdate'] = 'Date of test';
 $string['theoryexamreport'] = 'Theory Examination Report';
 $string['theoryexamreportsubject'] = 'This is {$a->ato} ATO Theory Examination report summarizing the student\'s score in the {$a->coursename} course.';
 $string['tobecompletedbyexaminer'] = 'to be completed by the examiner';
@@ -389,42 +368,12 @@ $string['uploadreportmsg1'] = '<span class"mt-4" style="color: darkred;">Upon co
 $string['uploadreportmsg2'] = '<br />Afterwards submit the saved file to the <strong>Feedback files</strong> section of the Skill Test exercise accessible from the button above.</span>';
 $string['vatsimid'] = 'VATSIM PID';
 $string['vatsimidmissing'] = 'VATSIM PID missing!';
-
-// Skill test form
 $string['aircrafttype'] = "Aircraft Type";
-$string['approvedato'] = "Approved Training Organisation";
-$string['arrivez'] = "Arrive (Z)";
 $string['ato'] = "ATO";
 $string['attempt'] = "Attempt";
-$string['blocktimes'] = "Block times";
-$string['completionconfirmation'] = "I confirm that all required manoeuvres and exercises have been completed";
-$string['departz'] = "Depart (Z)";
-$string['examinerfailsection'] = "Examiner Report: Failure of ";
 $string['fail'] = "Fail";
-$string['failurereasons'] = "Reasons for Failure";
-$string['furthertraining'] = "Further training";
-$string['itemsnotcompleted'] = "Items not completed";
-$string['mandatory'] = "Mandatory";
-$string['notcompleted'] = "Not Completed";
-$string['notrequired'] = "Not required";
-$string['overallresult'] = "Overall Result";
 $string['pass'] = "Pass";
-$string['recommended'] = "Recommended";
-$string['registration'] = "Registration";
-$string['retestsections'] = "Re-test Sections";
-$string['retestsections'] = "Re-test Sections";
 $string['route'] = "Route";
-$string['section'] = "Section";
-$string['sectionstotake'] = "Sections To Be Taken";
-$string['specifictraining'] = "Specific Training Required";
-$string['subsection'] = "Sub Section";
-$string['testdate'] = "Date of Test";
-$string['testsections'] = "Test Sections";
-$string['testsectionsincomplete'] = "Test sections incomplete due";
-$string['trainingcompelete'] = "Date Training Completed";
-
-// integrations
-$string['errordbconnection'] = "Failed to connect to the database: ";
 
 // capabilities
 $string['booking:availabilityview'] = 'View availability posting';
@@ -448,53 +397,34 @@ $string['messageprovider:availabilityposting_notification'] = 'Student availabil
 $string['messageprovider:recommendation_notification'] = 'Student recommendation notification';
 $string['messageprovider:graduation_notification'] = 'Graduating students notification';
 
-// email to student: session tentative
-$string['emailnotify'] = '{$a->coursename} session booking notification: \'{$a->exercise}\'';
+// email to student: notifying of booked session
+$string['emailnotifysubject'] = '{$a->coursename} session booking notification: \'{$a->exercise}\'';
 $string['emailnotifymsg'] = '{$a->instructor} has booked a session for your availability on {$a->sessiondate} for \'{$a->exercise}\'.
 Please confirm this booking by clicking on this link: {$a->confirmurl}';
 $string['emailnotifyhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has booked a session for your availability on <strong>{$a->sessiondate}
-    </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p>';
-$string['emailnotifycalendarshtml'] = '<p style="font-size: .9em;">Add a reminder to your calendar:<br />
-    <table style="border-collapse: collapse; width: 100%;">
-    <tbody><tr>
-        <td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.png" alt="Add to Google calendar"/></td>
-        <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
-        </tr><tr>
-        <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 0 6 0 6px">
-            <img src="{$a->pixrooturl}/btn_outlook.png" alt="Add to Outlook Live calendar" width="25" height="25" /></div></td>
-        <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td>
-        </tr><tr>
-        <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 3 6 0 6px">
-            <img src="{$a->pixrooturl}/btn_ical.png" alt="Add to Outlook Live calendar" width="28" height="28" /></div></td>
-        <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td></tr>
-    </tbody>
-    </table>
-    <hr /></div>';
+    </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p></div>';
 
-// email to instructor: confirming session tentative by him/her
+// email to instructor: confirming booked session
 $string['emailconfirm'] = 'Session booked';
 $string['emailconfirmsubject'] = '{$a->coursename} session booked: \'{$a->exercise}\'';
 $string['emailconfirmmsg'] = '\'{$a->exercise}\' session booked with {$a->student} for \'{$a->exercise}\' on {$a->sessiondate}.';
 $string['emailconfirmhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>Session booked with <strong>{$a->student}</strong> for \'<i>{$a->exercise}</i>\' on
-    <strong>{$a->sessiondate}</strong>.</p>';
-$string['emailconfirmcalendarshtml'] = '<p style="font-size: .9em;">Add a reminder to your calendar:<br />
-    <table style="border-collapse: collapse; width: 100%;">
-    <tbody><tr>
-        <td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.png" alt="Add to Google calendar"/></td>
-        <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td>
-        </tr><tr>
-        <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 0 6 0 6px">
-            <img src="{$a->pixrooturl}/btn_outlook.png" alt="Add to Outlook Live calendar" width="25" height="25" /></div></td>
-        <td><a style="text-decoration: none;" href="{$a->liveurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td>
-        </tr><tr>
-        <td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 3 6 0 6px">
-            <img src="{$a->pixrooturl}/btn_ical.png" alt="Add to Outlook Live calendar" width="28" height="28" /></div></td>
-        <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td></tr>
-    </tbody>
-    </table>
-    <hr /></div>';
+    <strong>{$a->sessiondate}</strong>.</p></div>';
+
+// calendar links
+$string['calendarshtmlstart'] = '<div style="font-family:sans-serif"><p style="font-size: .9em;">Add a reminder to your calendar:<br />
+    <table style="border-collapse: collapse; width: 100%;"><tbody>';
+$string['calendarshtmlgoogle'] = '<tr><td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.png" alt="Add to Google calendar"/></td>
+        <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td></tr>';
+$string['calendarshtmlmicrosoft'] = '<tr><td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 0 6 0 6px">
+        <img src="{$a->pixrooturl}/btn_outlook.png" alt="Add to Outlook Live calendar" width="25" height="25" /></div></td>
+        <td><a style="text-decoration: none;" href="{$a->outlookurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td></tr><tr>';
+$string['calendarshtmlics'] = '<td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 3 6 0 6px">
+            <img src="{$a->pixrooturl}/btn_ical.png" alt="Add to desktop calendar" width="28" height="28" /></div></td>
+        <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td></tr>';
+$string['calendarshtmlend'] = '</tbody></table><hr /></div>';
 
 // email to instructor: session confirmed by student
 $string['emailinstconfirm'] = 'Booked session confirmed by Student';
@@ -697,16 +627,6 @@ $string['groupgraduatesdesc'] = 'Group to track graduated students.';
 $string['groupkeepactivedesc'] = 'Group to track students from being placed on hold.';
 $string['groupexaminersdesc'] = 'Group to identify examiner instructors.';
 
-// APIs
-$string['googleaccesstokenerror'] = 'Error: Failed to receieve Google access token';
-$string['googletimezoneerror'] = 'Error: Failed to get Google user timezone';
-$string['googlecalendarlisterror'] = 'Error: Failed to get Google calendars list';
-$string['googlecreateeventerror'] = 'Error: Failed to create Google calendar event';
-$string['liveaccesstokenerror'] = 'Error: Failed to receieve Outlook Live access token';
-$string['livetimezoneerror'] = 'Error: Failed to get Outlook Live user timezone';
-$string['livecalendarlisterror'] = 'Error: Failed to get Outlook Live calendars list';
-$string['livecreateeventerror'] = 'Error: Failed to create Outlook Live calendar event';
-
 // Plugin errors
 $string['errorcertifiernotexaminer'] = 'Permission denied. Only the examiner can certify a graduating student.';
 $string['errordelete'] = 'Failed to delete logentry';
@@ -719,6 +639,6 @@ $string['errorlogentryfetch'] = 'Error encountered while trying to fetch logbook
 $string['errorp1pirepnotfound'] = ' - PIREP not found.';
 $string['errorp1pirepnopilotintegration'] = ' - No pilot lookup integration.';
 $string['errorp1pirepwrongpilot'] = ' - PIREP belongs to a different user.';
-$string['errorsuspend'] = 'Unable to suspend user.';
-$string['errorupdategroup'] = 'Unable to update user group.';
-$string['errorupdatepreference'] = 'Unable to update user preference.';
+$string['errordbconnection'] = "Failed to connect to the database: ";
+$string['errorgooglecreateevent'] = 'Error: Failed to authenticate client when adding a Google calendar event';
+$string['erroroutlookcreateevent'] = 'Error: Failed to authenticate client when adding an Outlook Live calendar event';

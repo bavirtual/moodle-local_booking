@@ -592,6 +592,8 @@ class logentry implements logentry_interface {
      * @param logbook
      */
     public function set_parent(logbook $logbook) {
+        $this->courseid = $logbook->get_courseid();
+        $this->userid = $logbook->get_userid();
         $this->parent = $logbook;
     }
 
@@ -951,7 +953,8 @@ class logentry implements logentry_interface {
         $this->id = $formdata->id ?: null;
         $this->exerciseid = $formdata->exerciseid;
         $this->flightdate = $formdata->flightdate;
-        $this->pirep = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? $formdata->p1pirep : ($formdata->p2pirep ?: $formdata->linkedpirep);
+        $this->pirep = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($formdata->p1pirep ?: 0) :
+            (property_exists( $formdata, 'p2pirep') ? ($formdata->p2pirep ?: $formdata->linkedpirep) : '');
         $this->p1id = $formdata->flighttypehidden == 'solo' ? $this->parent->get_userid() : $formdata->p1id;
         $this->p2id = $formdata->flighttypehidden == 'solo' ? 0 : $formdata->p2id;
 
@@ -1001,7 +1004,8 @@ class logentry implements logentry_interface {
         $this->fstd         = $formdata->fstd;
         $this->flighttype   = $formdata->flighttypehidden;
         $this->linkedlogentryid = $formdata->linkedlogentryid ?: 0;
-        $this->linkedpirep  = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($formdata->p2pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;
+        $this->linkedpirep  = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ?
+                                (property_exists( $formdata, 'p2pirep') ? ($formdata->p2pirep ?: $formdata->linkedpirep) : '') : $formdata->p1pirep;
     }
 
     /**
@@ -1029,8 +1033,8 @@ class logentry implements logentry_interface {
         $logentryarray['copilottime'] = $this->get_copilottime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['checkpilottime'] = $this->get_checkpilottime(!$formattostring) ?: ($nullable ? null : 0);
         $logentryarray['totalsessiontime'] = $this->get_totalsessiontime(!$formattostring) ?: ($nullable ? null : 0);
-        $logentryarray['pirep'] = $this->pirep;
-        $logentryarray['linkedpirep'] = $this->linkedpirep;
+        $logentryarray['pirep'] = $this->pirep ?: '';
+        $logentryarray['linkedpirep'] = $this->linkedpirep ?: '';
         $logentryarray['callsign'] = $this->callsign;
         $logentryarray['depicao'] = $this->depicao;
         $logentryarray['deptime'] = $formattostring ? logbook::convert_time($this->deptime, 'TS_TO_TIME') : $this->deptime;

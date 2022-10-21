@@ -1,5 +1,23 @@
 # Change log
 
+## [2022102100] - RELEASED 2022-10-21
+
+### Fixed
+
+- night time field showing for VFR flights in the logbook entry form
+
+### Changed
+
+- Moodle OAuth2 API instead of custom API to get Google & Microsoft tokens for calendar integration
+- took out dual time, ground time, and session time from practical exam and mentor reports
+- only show Google and or Microsoft calendar links if the integration services are implemented in notifications
+- find pirep button to show only when pirep integration is configure
+- PICUS Time to be written out in pdf of mentor reports only for check flights
+- inactive instructors activated when he/she books a session
+- ‘Keep active’ status revoked after a session is graded
+
+# Change log
+
 ## [2022100900] - RELEASED 2022-10-09
 
 ### Changed

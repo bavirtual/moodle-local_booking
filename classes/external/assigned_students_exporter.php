@@ -28,7 +28,6 @@ namespace local_booking\external;
 defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
-use local_booking\local\subscriber\entities\subscriber;
 use renderer_base;
 use moodle_url;
 

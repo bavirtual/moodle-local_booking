@@ -208,17 +208,21 @@ class pdf_report extends \pdf {
         $flighttimes = array();
         $flighttimes['flighttime'][0]       = !empty($logentry) ? $logentry->get_flighttime(false) : '';
         $flighttimes['flighttime'][1]       = !empty($logbooksummary->totalflighttime) ? $logbooksummary->totalflighttime : '';
+
+        // times to be displayed depending on the training type and whether the log entry is an skill/command flight
         if ($this->course->trainingtype == 'Dual' && !$examentry) {
             $flighttimes['dualtime'][0]      = !empty($logentry) ? ($logentry->get_dualtime(false) ?: '') : '';
             $flighttimes['dualtime'][1]      = !empty($logbooksummary->totaldualtime) ? $logbooksummary->totaldualtime : '';
         } else if ($this->course->trainingtype == 'Multicrew' && !$examentry) {
             $flighttimes['multipilottime'][0]= !empty($logentry) ? ($logentry->get_multipilottime(false) ?: '') : 0;
             $flighttimes['multipilottime'][1]= !empty($logbooksummary->totalmultipilottime) ? $logbooksummary->totalmultipilottime : '';
+        } else if ($examentry) {
+            $flighttimes['picustime'][0]     = !empty($logentry) ? ($logentry->get_picustime(false) ?: '') : '';
+            $flighttimes['picustime'][1]     = !empty($logbooksummary->totalpicustime) ? $logbooksummary->totalpicustime : '';
         }
+
         $flighttimes['ifrtime'][0]       = !empty($logentry) ? ($logentry->get_ifrtime(false) ?: '') : '';
         $flighttimes['ifrtime'][1]       = !empty($logbooksummary->totalifrtime) ? $logbooksummary->totalifrtime : '';
-        $flighttimes['picustime'][0]     = !empty($logentry) ? ($logentry->get_picustime(false) ?: '') : '';
-        $flighttimes['picustime'][1]     = !empty($logbooksummary->totalpicustime) ? $logbooksummary->totalpicustime : '';
 
         // skip for exams
         if (!$examentry) {

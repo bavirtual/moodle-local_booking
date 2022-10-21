@@ -74,6 +74,7 @@ define([
         this.flightDate = null;
         this.exerciseId = null;
         this.pirepLookupId = null;
+        this.hasfindpirep = false;
         this.reloadingBody = false;
         this.reloadingTitle = false;
         this.saveButton = this.getFooter().find(SELECTORS.SAVE_BUTTON);
@@ -274,6 +275,20 @@ define([
     };
 
     /**
+     * Check if the modal has an logentry id.
+     *
+     * @param  {bool} hasfindpirep  Whether find PIREP is enabled
+     * @method hasFindPIREP
+     * @return {bool}
+     */
+     ModalLogEntryForm.prototype.hasFindPIREP = function(hasfindpirep) {
+        if (typeof hasfindpirep !== 'undefined') {
+            this.hasfindpirep = hasfindpirep;
+        }
+        return this.hasfindpirep;
+    };
+
+    /**
      * Get the form element from the modal.
      *
      * @method getForm
@@ -392,11 +407,13 @@ define([
 
         this.bodyPromise.then(function() {
             // Add Find PIREP button
-            let pirepdiv = $('#id_p1pirep').parent();
-            if (!$('#id_error2_p1pirep').length) {
-                pirepdiv.append('<div id="id_find_pirep" ' +
-                    'tabindex="0" style=""><button type="button" class="btn btn-primary" ' +
-                    'data-form-type="action"><i class="icon fa fa-search fa-fw"></i></button></div>');
+            if (this.hasFindPIREP()) {
+                let pirepdiv = $('#id_p1pirep').parent();
+                if (!$('#id_error2_p1pirep').length) {
+                    pirepdiv.append('<div id="id_find_pirep" ' +
+                        'tabindex="0" style=""><button type="button" class="btn btn-primary" ' +
+                        'data-form-type="action"><i class="icon fa fa-search fa-fw"></i></button></div>');
+                }
             }
 
             // Hide/show elements set training type
@@ -471,12 +488,14 @@ define([
     ModalLogEntryForm.prototype.registerChangeListeners = function() {
 
         // PIREP search trigger
-        var pirepbutton = $('#id_find_pirep');
-        pirepbutton.on('click', function(e) {
-            if (!isNaN($('#id_p1pirep').val())) {
-                return this.getPIREPData(e);
-            }
-        }.bind(this));
+        if (this.hasFindPIREP()) {
+            var pirepbutton = $('#id_find_pirep');
+            pirepbutton.on('click', function(e) {
+                if (!isNaN($('#id_p1pirep').val())) {
+                    return this.getPIREPData(e);
+                }
+            }.bind(this));
+        }
 
         // Update elements based on selected flighttype (Training/Solo)
         var flighttype = $('input[name="flighttype"]');
@@ -584,9 +603,11 @@ define([
                             $('#id_error2_p1pirep').show();
                         }
                         // Make sure the find button is always after the P1 PIREP element
-                        $('#id_p1pirep').parent().each(function() {
-                            $('#id_find_pirep').insertAfter($('#id_p1pirep'), this);
-                        });
+                        if (this.hasFindPIREP()) {
+                            $('#id_p1pirep').parent().each(function() {
+                                $('#id_find_pirep').insertAfter($('#id_p1pirep'), this);
+                            });
+                        }
                     }
 
                     return;
@@ -724,6 +745,7 @@ define([
             toggle('#fitem_id_dualtime', '#id_dualtime', rule == 'Dual');
             toggle('#fitem_id_groundtime', '#id_groundtime', true, $('#id_groundtime').val(), true);
             toggle('#fitem_id_ifrtime', '#id_ifrtime', ifr);
+            toggle('#fitem_id_nighttime', '#id_nighttime', ifr);
             toggle('#fitem_id_multipilottime', '#id_multipilottime', rule == 'Multicrew');
             toggle('#fitem_id_copilottime', '#id_copilottime', rule == 'Multicrew');
 
@@ -859,6 +881,7 @@ define([
         var invalid,
             loadingContainer = this.saveButton.find(SELECTORS.LOADING_ICON_CONTAINER);
 
+        // Set ground time to 0 for none training flights as it is a required a value
         if (!($("input[name='flighttypehidden']").val() == 'training')) {
             $('#id_groundtime').val(0);
         }
@@ -919,7 +942,7 @@ define([
                 return;
             }.bind(this))
             .fail(Notification.exception);
-        };
+    };
 
     /**
      * Set up all of the event handling for the modal.

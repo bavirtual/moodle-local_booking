@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/group/lib.php');
+
 use local_booking\external\bookings_exporter;
 use local_booking\external\profile_exporter;
 use local_booking\external\assigned_students_exporter;
@@ -42,6 +44,7 @@ use local_booking\local\logbook\entities\logentry;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 use \core_customfield\api;
+use local_booking\local\participant\entities\instructor;
 
 /**
  * LOCAL_BOOKING_RECENCYWEIGHT - constant value for session recency weight multipler
@@ -196,18 +199,16 @@ function local_booking_extend_navigation(global_navigation $navigation) {
         }
 
         // Add instructor booking navigation node
-        if ($participant->is_active()) {
-            if (has_capability('local/booking:view', $context)) {
-                $node = $navigation->find('bookings', navigation_node::NODETYPE_LEAF);
-                if (!$node && $courseid!==SITEID) {
-                    $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
-                    $node = navigation_node::create(get_string('bookings', 'local_booking'), new moodle_url('/local/booking/view.php', array('courseid'=>$courseid)));
-                    $node->key = 'bookings';
-                    $node->type = navigation_node::NODETYPE_LEAF;
-                    $node->forceopen = true;
-                    $node->icon = new  pix_icon('booking', '', 'local_booking');
-                    $parent->add_node($node);
-                }
+        if (has_capability('local/booking:view', $context)) {
+            $node = $navigation->find('bookings', navigation_node::NODETYPE_LEAF);
+            if (!$node && $courseid!==SITEID) {
+                $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);
+                $node = navigation_node::create(get_string('bookings', 'local_booking'), new moodle_url('/local/booking/view.php', array('courseid'=>$courseid)));
+                $node->key = 'bookings';
+                $node->type = navigation_node::NODETYPE_LEAF;
+                $node->forceopen = true;
+                $node->icon = new  pix_icon('booking', '', 'local_booking');
+                $parent->add_node($node);
             }
         }
     }
@@ -256,7 +257,7 @@ function local_booking_output_fragment_logentry_form($args) {
         $formdata = $logentry->__toArray(true);
         $data = $formdata;
         $data['flightdate'] = $logentry->get_flightdate();
-        $data['p1pirep'] = $logentry->get_pirep();
+        $data['p1pirep'] = $logentry->get_pirep() ?: '';
         $data['landingsp1day'] = $logentry->get_landingsday();
         $data['landingsp1night'] = $logentry->get_landingsnight();
         if ($logentry->get_flighttype() == 'check')
@@ -406,7 +407,7 @@ function get_bookings_view(int $courseid, string $sorttype = '', string $filter 
  * @param   int     $studentid the student user id being confirmed.
  * @return  array[array, string]
  */
-function get_booking_confirm_view(int $courseid, int $studentid) {
+function get_session_selection_view(int $courseid, int $studentid) {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
@@ -500,6 +501,7 @@ function get_logentry_view(int $courseid, int $userid, array $formdata = null) {
 
     // add training type to the data sent to the exporter
     $data['trainingtype'] = $COURSE->subscriber->trainingtype;
+    $data['hasfindpirep'] = $COURSE->subscriber->has_integration('pireps');
     $data['isstudent'] = $COURSE->subscriber->get_participant($userid)->is_student();
     $data['courseshortname'] = $PAGE->course->shortname;
 
@@ -599,6 +601,12 @@ function save_booking($params) {
     if ($result) {
         // remove restriciton override for the user
         set_user_preference('local_booking_' .$courseid . '_availabilityoverride', false, $studentid);
+
+        // remove instructor from inactive group where applicable
+        $instructor = new instructor($COURSE->subscriber, $instructorid);
+        if (!$instructor->is_active()) {
+            $instructor->activate();
+        }
 
         // send emails to both student and instructor
         $sessionstart = new DateTime('@' . $slottobook['starttime']);
@@ -756,9 +764,16 @@ function set_user_prefs($preference, $value, $courseid, $studentid) {
 function process_submission_graded_event($courseid, $studentid, $exerciseid) {
     $booking = new booking(0, $courseid, $studentid, $exerciseid);
     $booking->load();
+
     // update the booking status from active to inactive
     if ($booking->active())
         $booking->deactivate();
+
+    // revoke 'Keep Active' status
+    if (student::is_member_of($courseid, $studentid, LOCAL_BOOKING_KEEPACTIVEGROUP)) {
+        $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_KEEPACTIVEGROUP);
+        groups_remove_member($groupid, $studentid);
+    }
 }
 
 /**

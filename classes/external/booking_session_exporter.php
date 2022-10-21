@@ -31,7 +31,6 @@ use core\external\exporter;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\session\entities\session;
-use local_booking\local\session\entities\grade;
 use local_booking\local\session\entities\booking;
 use local_booking\local\slot\entities\slot;
 

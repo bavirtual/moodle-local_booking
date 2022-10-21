@@ -31,7 +31,6 @@ use renderer_base;
 use moodle_url;
 use core\external\exporter;
 use local_booking\local\participant\entities\participant;
-use local_booking\local\subscriber\entities\subscriber;
 
 /**
  * Class for displaying a logbook entry.
@@ -58,8 +57,8 @@ class logentry_exporter extends exporter {
         $this->logentry = $data['logentry'];
         $nullable = !isset($data['nullable']) || $data['nullable'];
 
-        // add logentry properties to the exporter's data and remove the logentry object
-        $data = $this->logentry->__toArray($data['view'] == 'summary', $nullable, (!empty($data['shortdate'])?:false)) + $data;
+        // add logentry properties to the exporter's data and remove the exiting logentry object
+        $data = $this->logentry->__toArray(isset($data['view']) && $data['view'] == 'summary', $nullable, (!empty($data['shortdate'])?:false)) + $data;
         unset($data['logentry']);
 
         $data['url'] = new moodle_url('/booking/view', ['courseid'=>$data['courseid']]);
@@ -207,6 +206,11 @@ class logentry_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true,
             ],
+            'hasfindpirep' => [
+                'type' => PARAM_BOOL,
+                'optional' => true,
+                'default' => false,
+            ],
             'se' => [
                 'type' => PARAM_TEXT,
                 'optional' => true,
@@ -303,7 +307,7 @@ class logentry_exporter extends exporter {
         global $COURSE;
 
         $exerciseid = !empty($this->logentry) ? $this->logentry->get_exerciseid() : $this->data['exerciseid'];
-        $flightdate = !empty($this->logentry) ? $this->logentry->get_flightdate($this->data['view'] == 'summary') : $this->data['flightdate'];
+        $flightdate = !empty($this->logentry) ? $this->logentry->get_flightdate(isset($this->data['view']) && $this->data['view'] == 'summary') : $this->data['flightdate'];
         $p1id = !empty($this->logentry) ? $this->logentry->get_p1id() : $this->data['p1id'];
         $p2id = !empty($this->logentry) ? $this->logentry->get_p2id() : $this->data['p2id'];
         $sectionname = !empty($this->logentry) ? '' : array_values($COURSE->subscriber->get_lesson($exerciseid))[1];

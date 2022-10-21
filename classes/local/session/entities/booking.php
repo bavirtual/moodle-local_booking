@@ -30,8 +30,9 @@ use local_booking\local\participant\entities\student;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
 use \local_booking\local\slot\entities\slot;
-use \local_booking\local\message\calendar_event;
 use \local_booking\local\message\notification;
+use \local_booking\local\calendar\event;
+use \local_booking\local\calendar\moodle_calendar;
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
@@ -165,26 +166,36 @@ class booking implements booking_interface {
         if ($this->slot->save()) {
             if ($this->id = booking_vault::save_booking($this)) {
                 $result = slot_vault::delete_slots($this->courseid, $this->studentid, 0, 0, false);
-                $eventdata = notification::get_notification_data(null,
-                    $this->courseid,
-                    $COURSE->shortname,
-                    $this->instructorid,
-                    $this->studentid,
-                    $this->exerciseid,
-                    $this->slot->get_starttime(),
-                    $this->slot->get_endtime()
-                );
-                // create instructor and student calendar events
-                calendar_event::add_to_moodle_calendar($eventdata, 'i');
-                calendar_event::add_to_moodle_calendar($eventdata, 's');
+
+                // add a moodle event for this booking for both instructor and student
+                // get the event information object
+                $eventdata = (object) [
+                    'type'  => 'moodle',
+                    'userid'=> $this->instructorid,
+                    'id'    => $this->courseid,
+                    'name'  => $COURSE->shortname,
+                    'cmid'  => $this->exerciseid,
+                    'instid'=> $this->instructorid,
+                    'stdid' => $this->studentid,
+                    'start' => $this->slot->get_starttime(),
+                    'end'   => $this->slot->get_endtime()
+                ];
+
+                // add instructor then student events to Moodle calendar
+                $moodlecalendar =  new moodle_calendar();
+
+                // create instructor calendar event
+                $instructorevent = new event($eventdata);
+                $result = $result && $moodlecalendar->add($instructorevent);
+
+                // create student calendar event
+                $eventdata->userid = $this->studentid;
+                $studentevent = new event($eventdata);
+                $result = $result && $moodlecalendar->add($studentevent);
             }
         }
 
         // purge all slots not associated with bookings once the booking is saved
-        if ($result) {
-
-        }
-
         if ($result) {
             $transaction->allow_commit();
         } else {

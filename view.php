@@ -80,7 +80,7 @@ if ($action=='book') {
         echo $renderer->render_from_template($template, $data);
     }
 } elseif ($action=='confirm') {
-    list($data, $template) = get_booking_confirm_view($courseid, $studentid);
+    list($data, $template) = get_session_selection_view($courseid, $studentid);
     echo $renderer->render_from_template($template, $data);
 }
 

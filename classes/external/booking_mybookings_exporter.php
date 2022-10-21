@@ -31,7 +31,6 @@ use DateTime;
 use core\external\exporter;
 use local_booking\local\participant\entities\student;
 use local_booking\local\session\entities\action;
-use local_booking\local\subscriber\entities\subscriber;
 
 /**
  * Class for displaying instructor's booked sessions view.

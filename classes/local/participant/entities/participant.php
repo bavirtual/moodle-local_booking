@@ -128,7 +128,7 @@ class participant implements participant_interface {
             foreach ($enroledcourses as $ue) {
                 // Default status field label and value.
                 if ($ue->id == $course->get_id()) {
-                    $this->is_active = true;
+                    $this->is_active = !$this->is_student ? !self::is_member_of($course->get_id(), $userid, LOCAL_BOOKING_INACTIVEGROUP) : true;
                     break;
                 }
             }
@@ -337,12 +337,14 @@ class participant implements participant_interface {
     /**
      * verifies whether the participant is part of a course group
      *
+     * @param int    $courseid  The associated course id.
+     * @param int    $studentid The associated user id.
      * @param string $groupname The group name to verify membership.
      * @return bool             The result of the being a member of the passed group.
      */
-    public function is_member_of(string $groupname) {
-        $groupid = groups_get_group_by_name($this->course->get_id(), $groupname);
-        return groups_is_member($groupid, $this->userid);
+    public static function is_member_of(int $courseid, int $userid, string $groupname) {
+        $groupid = groups_get_group_by_name($courseid, $groupname);
+        return groups_is_member($groupid, $userid);
     }
 
     /**

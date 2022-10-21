@@ -25,9 +25,9 @@
 
 namespace local_booking\local\message;
 
+use local_booking\local\calendar\calendar_helper;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
-use local_booking\local\subscriber\entities\subscriber;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -71,21 +71,21 @@ class notification extends \core\message\message {
         global $USER, $COURSE;
 
         // notification message data
-        $data = self::get_notification_data(null,
+        $data = self::get_notification_data(
+            $studentid,
             $COURSE->id,
             $COURSE->shortname,
             $USER->id,
             $studentid,
             $exerciseid,
             $sessionstart->getTimestamp(),
-            $sessionend->getTimestamp(),
-            's');
+            $sessionend->getTimestamp());
 
         $this->name              = 'booking_notification';
         $this->userto            = $studentid;
-        $this->subject           = get_string('emailnotify', 'local_booking', $data);
-        $this->fullmessage       = get_string('emailnotifymsg', 'local_booking', $data);
-        $this->fullmessagehtml   = get_string('emailnotifyhtml', 'local_booking', $data) . get_string('emailnotifycalendarshtml', 'local_booking', $data);
+        $this->subject           = calendar_helper::get_msg_content('subject', $data);
+        $this->fullmessage       = calendar_helper::get_msg_content('body', $data, 'text');
+        $this->fullmessagehtml   = calendar_helper::get_msg_content('body', $data, 'html');
         $this->contexturl        = $data->confirmurl;
         $this->contexturlname    = get_string('studentavialability', 'local_booking');
         $this->set_additional_content('email', array('*' => array(
@@ -107,21 +107,21 @@ class notification extends \core\message\message {
         global $USER, $COURSE;
 
         // confirmation message data
-        $data = self::get_notification_data(null,
+        $data = self::get_notification_data(
+            $USER->id,
             $COURSE->id,
             $COURSE->shortname,
             $USER->id,
             $studentid,
             $exerciseid,
             $sessionstart->getTimestamp(),
-            $sessionend->getTimestamp(),
-            'i');
+            $sessionend->getTimestamp());
 
         $this->name              = 'booking_confirmation';
         $this->userto            = $USER->id;
-        $this->subject           = get_string('emailconfirmsubject', 'local_booking', $data);
-        $this->fullmessage       = get_string('emailconfirmmsg', 'local_booking', $data);
-        $this->fullmessagehtml   = get_string('emailconfirmhtml', 'local_booking', $data) . get_string('emailconfirmcalendarshtml', 'local_booking', $data) ;
+        $this->subject           = calendar_helper::get_msg_content('subject', $data);
+        $this->fullmessage       = calendar_helper::get_msg_content('body', $data, 'text');
+        $this->fullmessagehtml   = calendar_helper::get_msg_content('body', $data, 'html');
         $this->contexturl        = $data->bookingurl;
         $this->contexturlname    = get_booking_config('ato')->name . ' ' . get_string('pluginname', 'local_booking');
         $this->set_additional_content('email', array('*' => array(
@@ -150,12 +150,9 @@ class notification extends \core\message\message {
             'student'       => student::get_fullname($studentid),
             'sessiondate'   => $sessiondatetime,
             'exercise'      => $COURSE->subscriber->get_exercise_name($exerciseid),
-            'courseurl'     => (new \moodle_url('/course/view.php', array(
-                'id'        => $courseid)))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
-                'id'        => $courseid)))->out(false),
-            'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array(
-                'id'        => $exerciseid)))->out(false),
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=>$courseid)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=>$courseid)))->out(false),
+            'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=>$exerciseid)))->out(false),
             'bookingurl'        => (new \moodle_url('/local/booking/view.php', array('courseid'=>$courseid)))->out(false),
         );
 
@@ -294,10 +291,8 @@ class notification extends \core\message\message {
             'lastsessiondate'   => $lastsessiondate->format('M d, Y'),
             'suspenddate'       => $suspenddate->format('M d, Y'),
             'studentname'       => student::get_fullname($studentid),
-            'courseurl'         => (new \moodle_url('/course/view.php', array(
-                'id'            => $COURSE->id)))->out(false),
-            'assignurl'         => (new \moodle_url('/mod/assign/index.php', array(
-                'id'            => $COURSE->id)))->out(false),
+            'courseurl'         => (new \moodle_url('/course/view.php', array('id'=>$COURSE->id)))->out(false),
+            'assignurl'         => (new \moodle_url('/mod/assign/index.php', array('id'=>$COURSE->id)))->out(false),
         );
 
         $this->name              = 'onhold_notification';
@@ -333,10 +328,8 @@ class notification extends \core\message\message {
             'coursename'        => $coursename,
             'studentname'       => student::get_fullname($studentid),
             'lastsessiondate'   => $lastsessiondate->format('M d, Y'),
-            'courseurl'         => (new \moodle_url('/course/view.php', array(
-                'id'            => $COURSE->id)))->out(false),
-            'assignurl'         => (new \moodle_url('/mod/assign/index.php', array(
-                'id'            => $COURSE->id)))->out(false),
+            'courseurl'         => (new \moodle_url('/course/view.php', array('id'=>$COURSE->id)))->out(false),
+            'assignurl'         => (new \moodle_url('/mod/assign/index.php', array('id'=>$COURSE->id)))->out(false),
         );
 
         $this->name              = 'suspension_notification';
@@ -371,10 +364,8 @@ class notification extends \core\message\message {
             'coursename'    => $coursename,
             'instructorname'=> instructor::get_fullname($instructorid),
             'status'        => $status,
-            'courseurl'     => (new \moodle_url('/course/view.php', array(
-                'id'        => $courseid)))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
-                'id'        => $courseid)))->out(false),
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=>$courseid)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=>$courseid)))->out(false),
             'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$courseid)))->out(false),
         );
 
@@ -417,8 +408,7 @@ class notification extends \core\message\message {
             $msg->fullmessagehtml   = get_string('emailavailpostingnotifyhtml', 'local_booking', $data);
             $msg->contexturl        = $data['bookingurl'];
             $msg->contexturlname    = get_booking_config('ato')->name . ' ' . get_string('pluginname', 'local_booking');
-            $msg->set_additional_content('email', array('*' => array(
-                'footer' => get_string('bookingfooter', 'local_booking', $data))));
+            $msg->set_additional_content('email', array('*' => array('footer'=>get_string('bookingfooter', 'local_booking', $data))));
 
             // send notification then copy senior instructors
             $result = $result && message_send($msg) != 0;
@@ -451,8 +441,7 @@ class notification extends \core\message\message {
             $msg->fullmessagehtml   = get_string('emailrecommendationnotifyhtml', 'local_booking', $data);
             $msg->contexturl        = $data['bookingurl'];
             $msg->contexturlname    = get_booking_config('ato')->name . ' ' . get_string('pluginname', 'local_booking');
-            $msg->set_additional_content('email', array('*' => array(
-                'footer' => get_string('bookingfooter', 'local_booking', $data))));
+            $msg->set_additional_content('email', array('*' => array('footer'=>get_string('bookingfooter', 'local_booking', $data))));
 
             $result = $result && (message_send($msg) != 0);
         }
@@ -528,7 +517,7 @@ class notification extends \core\message\message {
      * Returns an array of variables used in
      * notification message to student and instructor.
      *
-     * @param array     $params the list of parameters.
+     * @param int       $userid the user targeted for the notification.
      * @param int       $courseid the course id.
      * @param string    $coursename the course short name.
      * @param int       $instructorid the instructor user id.
@@ -538,41 +527,28 @@ class notification extends \core\message\message {
      * @param int       $sessionend the  end date time of the session.
      * @return object   The array of data for the message.
      */
-    public static function get_notification_data($params = null,
+    public static function get_notification_data(
+        $userid = 0,
         $courseid = 0,
         $coursename = '',
         $instructorid = 0,
         $studentid = 0,
         $exerciseid = 0,
         $sessionstart = 0,
-        $sessionend = 0,
-        $requester = 'i') {
+        $sessionend = 0) {
 
         global $COURSE;
 
-        // parse parameters if exists
-        if (!empty($params)) {
-            $courseid = $params['id'];
-            $coursename= $params['name'];
-            $instructorid = $params['inst'];
-            $studentid = $params['std'];
-            $exerciseid = $params['extid'];
-            $sessionstart = $params['tstart'];
-            $sessionend = $params['tend'];
-            $requester = $params['req'];
-        }
-        else {
-            // ics download file array
-            $params = array(
+        $params = array(
+            'userid'=> $userid,
             'id'    => $courseid,
             'name'  => $coursename,
-            'extid' => $exerciseid,
-            'inst'  => $instructorid,
-            'std'   => $studentid,
-            'req'   => $requester,
-            'tstart'=> $sessionstart,
-            'tend'  => $sessionend);
-        }
+            'cmid'  => $exerciseid,
+            'instid'=> $instructorid,
+            'stdid' => $studentid,
+            'start' => $sessionstart,
+            'end'   => $sessionend
+        );
 
         // get the course object
         if (!empty($COURSE->subscriber)) {
@@ -584,6 +560,7 @@ class notification extends \core\message\message {
 
         // notification message data
         $data = (object) array(
+            'userid'        => $userid,
             'courseid'      => $courseid,
             'coursename'    => $coursename,
             'instructorid'  => $instructorid,
@@ -595,20 +572,15 @@ class notification extends \core\message\message {
             'sessionend'    => $sessionend,
             'exerciseid'    => $exerciseid,
             'exercise'      => $exercisename,
-            'requester'     => $requester,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $courseid)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $courseid)))->out(false),
             'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $exerciseid)))->out(false),
             'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$courseid)))->out(false),
-            'confirmurl'    => (new \moodle_url('/local/booking/confirm.php', array(
-                'courseid'  => $courseid,
-                'exeid'     => $exerciseid,
-                'userid'    => $studentid,
-                'insid'     => $instructorid)))->out(false),
-            'icsurl'        => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'i'])))->out(false),
-            'googleurl'     => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'g'])))->out(false),
-            'pixrooturl' => (new \moodle_url('/local/booking/pix'))->out(false),
-            'liveurl'       => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['action'=>'l'])))->out(false),
+            'confirmurl'    => (new \moodle_url('/local/booking/confirm.php', array('courseid'=>$courseid,'exeid'=>$exerciseid,'userid'=>$studentid,'insid'=>$instructorid)))->out(false),
+            'icsurl'        => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['type'=>'ics'])))->out(false),
+            'googleurl'     => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['type'=>'google'])))->out(false),
+            'pixrooturl'    => (new \moodle_url('/local/booking/pix'))->out(false),
+            'outlookurl'    => (new \moodle_url('/local/booking/calendar.php', array_merge($params,['type'=>'microsoft'])))->out(false),
         );
 
         return $data;

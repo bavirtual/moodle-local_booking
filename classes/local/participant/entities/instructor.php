@@ -25,6 +25,8 @@
 
 namespace local_booking\local\participant\entities;
 
+require_once($CFG->dirroot . '/group/lib.php');
+
 use local_booking\local\subscriber\entities\subscriber;
 
 class instructor extends participant {
@@ -65,5 +67,13 @@ class instructor extends participant {
         $skilltestid = $this->course->get_graduation_exercise();
         $context = \context_module::instance($skilltestid); //contextid=116
         return has_capability('mod/assign:grade', $context, $this->userid);
+    }
+
+    /**
+     * Activates the instructor if inactive.
+     */
+    public function activate() {
+        $groupid = groups_get_group_by_name($this->course->get_id(), LOCAL_BOOKING_INACTIVEGROUP);
+        return groups_remove_member($groupid, $this->userid);
     }
 }

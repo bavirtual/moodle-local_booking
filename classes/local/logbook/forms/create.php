@@ -281,7 +281,9 @@ class create extends \moodleform {
                     $mform->addRule('flighttime', get_string('required'), 'required', null, 'client');
                     $mform->addHelpButton('flighttime', 'flighttime', 'local_booking');
                     $mform->setType('flighttime', PARAM_TEXT);
-                } else $mform->addElement('static', 'description', get_string('flighttime', 'local_booking'), $value);
+                } else {
+                    $mform->addElement('static', 'description', get_string('flighttime', 'local_booking'), $value);
+                }
                 break;
 
             case 'flightrule':
@@ -352,7 +354,9 @@ class create extends \moodleform {
                     $mform->addGroup($pireps, 'pireps', get_string('pirepsgroup', 'local_booking'), '   ', false);
                     $mform->addGroupRule('pireps', array('p1pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
                     $mform->addGroupRule('pireps', array('p2pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
+                    $mform->setType('p2pirep', PARAM_INT);
                 }
+                $mform->setType('p1pirep', PARAM_INT);
                 break;
 
             case 'departure':
@@ -363,6 +367,8 @@ class create extends \moodleform {
                 $mform->addGroup($departure, 'departure', get_string('depgroup', 'local_booking'), ' ', false);
                 $mform->setDefault('depicao', $options[0]);
                 $mform->setDefault('deptime', $options[1]);
+                $mform->setType('depicao', PARAM_TEXT);
+                $mform->setType('deptime', PARAM_TEXT);
                 break;
 
             case 'arrival':
@@ -373,6 +379,8 @@ class create extends \moodleform {
                 $mform->addGroup($arrival, 'arrival', get_string('arrgroup', 'local_booking'), ' ', false);
                 $mform->setDefault('arricao', $options[0]);
                 $mform->setDefault('arrtime', $options[1]);
+                $mform->setType('arricao', PARAM_TEXT);
+                $mform->setType('arrtime', PARAM_TEXT);
                 break;
 
             case 'aircraft':
@@ -384,6 +392,7 @@ class create extends \moodleform {
                 $mform->setDefault('enginetype', $options[2]);
                 $mform->addGroup($aircraft, 'aircraft', get_string('aircraftgroup', 'local_booking'), ' ', false);
                 $mform->addHelpButton('aircraft', 'aircraft', 'local_booking');
+                $mform->setType('aircraftreg', PARAM_TEXT);
                 break;
 
             case 'nighttime':

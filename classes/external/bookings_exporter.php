@@ -119,6 +119,7 @@ class bookings_exporter extends exporter {
         $this->viewtype = $data['view'];
         $this->modules = $COURSE->subscriber->get_modules();
         $data['trainingtype'] = $COURSE->subscriber->trainingtype;
+        $data['findpirepenabled'] = $COURSE->subscriber->has_integration('pireps');
         $this->instructor = new instructor($COURSE->subscriber, $USER->id);
         if ($this->viewtype == 'confirm')
             $this->bookingstudentid = $studentid;
@@ -142,6 +143,9 @@ class bookings_exporter extends exporter {
             ],
             'trainingtype' => [
                 'type' => PARAM_RAW,
+            ],
+            'findpirepenabled' => [
+                'type' => PARAM_BOOL,
             ],
             'visible' => [
                 'type' => PARAM_INT,

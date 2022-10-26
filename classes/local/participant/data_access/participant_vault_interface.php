@@ -125,4 +125,13 @@ interface participant_vault_interface {
      * @return  bool    Whether the lessones were completed or not.
      */
     public function is_student_lessons_complete(int $userid, int $courseid, int $nextexercise);
+
+    /**
+     * Updates a user's description field with a comment
+     *
+     * @param   int    $userid  The student user id
+     * @param   string $comment The next exercise id
+     * @return  bool    Whether the comment was updated or not.
+     */
+    public function update_participant_comment(int $userid, string $comment);
 }

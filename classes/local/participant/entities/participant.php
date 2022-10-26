@@ -296,6 +296,25 @@ class participant implements participant_interface {
     }
 
     /**
+     * Returns participant's profile comment, user description field
+     *
+     * @return string   The participant comment
+     */
+    public function get_comment() {
+        return $this->get_profile_field('description', true);
+    }
+
+    /**
+     * Updates a participant's profile comment, user description field
+     *
+     * @param string $comment   The participant comment
+     * @return bool
+     */
+    public function update_comment(string $comment) {
+        return $this->vault->update_participant_comment($this->userid, $comment);
+    }
+
+    /**
      * Returns a participant's user profile field
      *
      * @param string $field     The name of the field

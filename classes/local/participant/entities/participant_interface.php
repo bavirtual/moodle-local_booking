@@ -131,6 +131,21 @@ interface participant_interface {
     public function get_callsign();
 
     /**
+     * Returns participant's profile comment, user description field
+     *
+     * @return string   The participant comment
+     */
+    public function get_comment();
+
+    /**
+     * Updates a participant's profile comment, user description field
+     *
+     * @param string $comment   The participant comment
+     * @return bool
+     */
+    public function update_comment(string $comment);
+
+    /**
      * Suspends the student's enrolment to a course.
      *
      * @param bool $status  The status of the enrolment suspended = true

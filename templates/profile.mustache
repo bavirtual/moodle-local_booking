@@ -170,6 +170,23 @@
                 </div>
             </section>
         </div>
+        <div>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    {{> core/overlay_loading}}
+                    <h3 class="lead">{{#str}} comment, local_booking {{/str}}</h3>
+                    <textarea id="comment" rows="4" style="width: 98%; max-width: 98%;">{{comment}}</textarea>
+                    <br />
+                    <button type="submit" class="save-comment-button"
+                    data-region="save-comment-button"
+                    id="save_comment_button"
+                    title="">
+                    {{#pix}} save, local_booking {{/pix}}
+                    </button>
+                    <div id="status" class="comment-status"></div>
+                </div>
+            </section>
+        </div>
         <div class="bottom" style="text-align: center;">
             <div class="singlebutton">
                 <button type="button" onclick="location.href='{{url}}'"

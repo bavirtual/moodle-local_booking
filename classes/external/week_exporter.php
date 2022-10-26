@@ -171,7 +171,7 @@ class week_exporter extends exporter {
             'alreadybooked' => !empty($this->activebooking),
             'alreadybookedmsg' => !empty($activebookinginstrname) ? get_string('activebookingmsg', 'local_booking', $activebookinginstrname) : '',
             'groupview'   => $this->view == 'all',                                              // Group view no editing or booking buttons
-            'viewalllink' => $CFG->httpswwwroot . '/local/booking/availability.php?courseid=' . $this->calendar->courseid . '&view=all',
+            'viewallurl'  => $CFG->httpswwwroot . '/local/booking/availability.php?courseid=' . $this->calendar->courseid . '&view=all',
             'hiddenclass' => $this->actiondata['action'] != 'book' && $this->view == 'user',
             'visible'     => $this->actiondata['action'] != 'book' && $this->view == 'user',
         ];
@@ -210,7 +210,7 @@ class week_exporter extends exporter {
             'groupview' => [
                 'type' => PARAM_BOOL,
             ],
-            'viewalllink' => [
+            'viewallurl' => [
                 'type' => PARAM_RAW,
             ],
             'hiddenclass' => [

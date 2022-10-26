@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use \core_customfield\api;
+
 /**
  * upgrade the logentry - this function could be skipped but it will be needed later
  * @param int $oldversion The old version of session booking
@@ -38,6 +40,26 @@ function xmldb_local_booking_upgrade($oldversion) {
 
     // Automatically generated Moodle v3.11.0 release upgrade line.
     // Put any upgrade step following this.
+
+    // change Session booking settings in course settings category from the ATO name to Session booking
+    if ($oldversion < 2022102600) {
+        if ($atoname = get_config('local_booking', 'atoname')) {
+
+            // get all categories for the site
+            $categories = api::get_categories_with_fields('core_course', 'course', 0);
+
+            foreach ($categories as $coursecategory) {
+
+                $categoryname = $coursecategory->get('name');
+
+                // update subscribing course custom field category label w/ the plugin name 'Session booking'
+                if ($categoryname == $atoname) {
+                    $coursecategory->set('name', ucfirst(get_string('pluginname', 'local_booking')));
+                    api::save_category($coursecategory);
+                }
+            }
+        }
+    }
 
     // change the PIREP field from the old char(50) to int(10)
     if ($oldversion < 2022100900) {

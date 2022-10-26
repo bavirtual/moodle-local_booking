@@ -117,7 +117,6 @@ class subscriber implements subscriber_interface {
         $this->courseid = $courseid;
         $this->fullname = $this->course->fullname;
         $this->shortname = $this->course->shortname;
-        $this->ato = get_booking_config('ato');
 
         // filter exercise and quiz modules only
         $cms = $this->coursemodinfo->get_cms();
@@ -142,7 +141,7 @@ class subscriber implements subscriber_interface {
         foreach ($customfields as $customfield) {
             $cat = $customfield->get_field()->get_category()->get('name');
 
-            if ($cat == $this->ato->name) {
+            if ($cat == ucfirst(get_string('pluginname', 'local_booking'))) {
                 // split textarea values into cleaned up array values
                 if ($customfield->get_field()->get('type') == 'textarea') {
                     $fieldvalues = array_filter(preg_split('/\n|\r\n?/', format_text($customfield->get_value(), FORMAT_MARKDOWN)));

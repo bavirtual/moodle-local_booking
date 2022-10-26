@@ -35,25 +35,11 @@ if ($hassiteconfig) {
         // add general settings section
         $settingspage->add(new admin_setting_heading('local_booking_addheading_ato', new lang_string('atosection', 'local_booking'),''));
 
-        // ATO name
-        $setting = new admin_setting_configtext('local_booking/atoname', new lang_string('atoname', 'local_booking'), null, null, PARAM_RAW, 50);
-        $setting->set_updatedcallback('update_ato_config');
-        $settingspage->add($setting);
-
-        // ATO website
-        $setting = new admin_setting_configtext('local_booking/atourl', new lang_string('atourl', 'local_booking'), null, null, PARAM_RAW, 50);
-        $setting->set_updatedcallback('update_ato_config');
-        $settingspage->add($setting);
-
-        // ATO email
-        $setting = new admin_setting_configtext('local_booking/atoemail', new lang_string('atoemail', 'local_booking'), null, null, PARAM_RAW, 50);
-        $setting->set_updatedcallback('update_ato_config');
-        $settingspage->add($setting);
-
-        // ATO logo url
-        $setting = new admin_setting_configtext('local_booking/atologourl', new lang_string('atologourl', 'local_booking'), null, null, PARAM_RAW, 80);
-        $setting->set_updatedcallback('update_ato_config');
-        $settingspage->add($setting);
+        // ATO name, website, email, and url
+        $settingspage->add(new admin_setting_configtext('local_booking/atoname', new lang_string('atoname', 'local_booking'), null, null, PARAM_RAW, 50));
+        $settingspage->add(new admin_setting_configtext('local_booking/atourl', new lang_string('atourl', 'local_booking'), null, null, PARAM_RAW, 50));
+        $settingspage->add(new admin_setting_configtext('local_booking/atoemail', new lang_string('atoemail', 'local_booking'), null, null, PARAM_RAW, 50));
+        $settingspage->add(new admin_setting_configtext('local_booking/atologourl', new lang_string('atologourl', 'local_booking'), null, null, PARAM_RAW, 80));
 
         // add general settings section
         $settingspage->add(new admin_setting_heading('local_booking_addheading_posting', new lang_string('postingsection', 'local_booking'),''));

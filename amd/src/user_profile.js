@@ -199,6 +199,44 @@ function(
     /**
      * Create all of the event listeners for the message preferences page.
      *
+     * @param  {string} courseId    The course id for suspension.
+     * @param  {string} userId      The user id to be suspended.
+     * @param  {object} root        The root element.
+     * @method processSetting
+     * @return {bool}
+     */
+     const updateComment = function(courseId, userId, root) {
+
+        // Show progressing icon
+        startLoading(root);
+        const comment = $('#comment').val();
+
+        // Save the comment
+        return Repository.updateProfileComment(courseId, userId, comment)
+        .then(function(response) {
+            // Add success status element if necessary
+            let result = response.result;
+            Str.get_string((result ? 'commentsaved' : 'commentnotsaved'), 'local_booking').then(function(string) {
+                // Show the status for a little bit
+                $('#status').addClass('comment-status-' + (result ? 'success' : 'error'));
+                $('#status').removeClass('comment-status-' + (!result ? 'success' : 'error'));
+                $('#status').text(string).slideDown(1000).delay(2000).slideUp(1000);
+                return;
+            })
+            .fail(Notification.exception);
+            return;
+        })
+        .always(function() {
+            Notification.fetchNotifications();
+            // Stop showing progressing icon
+            stopLoading(root);
+        })
+        .fail(Notification.exception);
+    };
+
+    /**
+     * Create all of the event listeners for the message preferences page.
+     *
      * @param  {object} root    The root element.
      * @method registerEventListeners
      */
@@ -231,6 +269,11 @@ function(
         // Handle restriction override toggle clicks
         $('#availabilityoverride').click(function() {
             processSetting(courseId, userId, 'availabilityoverride', this.checked, root);
+        });
+
+        // Handle save comment click
+        $('#save_comment_button').click(function() {
+            updateComment(courseId, userId, root);
         });
     };
 

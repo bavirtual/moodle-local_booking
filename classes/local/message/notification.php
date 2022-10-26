@@ -123,7 +123,7 @@ class notification extends \core\message\message {
         $this->fullmessage       = calendar_helper::get_msg_content('body', $data, 'text');
         $this->fullmessagehtml   = calendar_helper::get_msg_content('body', $data, 'html');
         $this->contexturl        = $data->bookingurl;
-        $this->contexturlname    = get_booking_config('ato')->name . ' ' . get_string('pluginname', 'local_booking');
+        $this->contexturlname    = get_config('local_booking', 'atoname') . ' ' . get_string('pluginname', 'local_booking');
         $this->set_additional_content('email', array('*' => array(
             'footer' => get_string('bookingfooter', 'local_booking', $data))));
 
@@ -407,7 +407,7 @@ class notification extends \core\message\message {
             $msg->fullmessage       = get_string('emailavailpostingnotifymsg', 'local_booking', $data);
             $msg->fullmessagehtml   = get_string('emailavailpostingnotifyhtml', 'local_booking', $data);
             $msg->contexturl        = $data['bookingurl'];
-            $msg->contexturlname    = get_booking_config('ato')->name . ' ' . get_string('pluginname', 'local_booking');
+            $msg->contexturlname    = get_config('local_booking', 'atoname') . ' ' . get_string('pluginname', 'local_booking');
             $msg->set_additional_content('email', array('*' => array('footer'=>get_string('bookingfooter', 'local_booking', $data))));
 
             // send notification then copy senior instructors
@@ -440,7 +440,7 @@ class notification extends \core\message\message {
             $msg->fullmessage       = get_string('emailrecommendationnotifymsg', 'local_booking', $data);
             $msg->fullmessagehtml   = get_string('emailrecommendationnotifyhtml', 'local_booking', $data);
             $msg->contexturl        = $data['bookingurl'];
-            $msg->contexturlname    = get_booking_config('ato')->name . ' ' . get_string('pluginname', 'local_booking');
+            $msg->contexturlname    = get_config('local_booking', 'atoname') . ' ' . get_string('pluginname', 'local_booking');
             $msg->set_additional_content('email', array('*' => array('footer'=>get_string('bookingfooter', 'local_booking', $data))));
 
             $result = $result && (message_send($msg) != 0);

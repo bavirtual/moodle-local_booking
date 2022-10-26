@@ -554,4 +554,17 @@ class participant_vault implements participant_vault_interface {
 
         return $lessonscomplete;
     }
+
+    /**
+     * Updates a user's description field with a comment
+     *
+     * @param   int    $userid  The student user id
+     * @param   string $comment The next exercise id
+     * @return  bool    Whether the comment was updated or not.
+     */
+    public function update_participant_comment(int $userid, string $comment) {
+        global $DB;
+
+        return $DB->set_field('user', 'description', $comment, array('id' => $userid));
+    }
 }

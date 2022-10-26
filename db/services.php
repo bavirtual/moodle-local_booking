@@ -203,6 +203,18 @@ $functions = array(
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
 
+    'local_booking_update_profile_comment' => array(
+        'classname' => 'local_booking_external',
+        'classpath' => '/local/booking/externallib.php',
+        'methodname' => 'update_profile_comment',
+        'description' => 'Update user comment field (description) for a user',
+        'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
+
     'local_booking_get_exercise_name' => array(
         'classname' => 'local_booking_external',
         'classpath' => '/local/booking/externallib.php',
@@ -330,6 +342,15 @@ $services = array(
         'enabled' => 1,         // if 0, then token linked to this service won't work
         'restrictedusers' => 0,
         'shortname' => 'update_user_group',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
+    'Session Booking update user comment field (description)'  => array(
+        'functions' => array('local_booking_update_profile_comment'), // Unused as we add the service in each function definition, third party services would use this.
+        'enabled' => 1,         // if 0, then token linked to this service won't work
+        'restrictedusers' => 0,
+        'shortname' => 'update_profile_comment',
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),

@@ -367,3 +367,25 @@ import Ajax from 'core/ajax';
 
     return Ajax.call([request])[0];
 };
+
+/**
+ * Update user comment (description).
+ *
+ * @method updateProfileComment
+ * @param  {number} courseId    The profile course id.
+ * @param  {number} userId      The profile user id.
+ * @param  {string} comment     Comment text.
+ * @return {promise}            Resolved with preference set promise
+ */
+ export const updateProfileComment = (courseId, userId, comment) => {
+    const request = {
+        methodname: 'local_booking_update_profile_comment',
+        args: {
+            courseid: courseId,
+            userid: userId,
+            comment: comment
+        }
+    };
+
+    return Ajax.call([request])[0];
+};

@@ -98,11 +98,11 @@ class pdf_report extends \pdf {
         $this->student = $student;
         $this->reporttype = $reporttype;
         $this->includevatsimlogo = $includevatsimlogo;
-        $this->title = $course->ato->name . ' ' . get_string($reporttype . 'report', 'local_booking');
+        $this->title = get_config('local_booking', 'atoname') . ' ' . get_string($reporttype . 'report', 'local_booking');
 
         $this->fontfamily = 'helvetica';
         $this->SetTitle($this->title);
-        $this->SetAuthor($course->ato->name);
+        $this->SetAuthor(get_config('local_booking', 'atoname'));
         $this->SetCreator('local/booking/report.php');
         $this->SetKeywords(get_string('pluginname', 'local_booking') . ', PDF');
         $this->SetSubject(get_string($reporttype . 'reportsubject', 'local_booking'));
@@ -180,7 +180,7 @@ class pdf_report extends \pdf {
         $intro = '<p style="font-size: small;"><strong>' . get_string('reportdate', 'local_booking') . ':</strong> ' . $reportdate . '</p>';
         $this->writeHTML($intro, true, false, true);
         $this->SetTextColor(144, 145, 145);
-        $intro = '<h5>' . $this->course->ato->name . ' ' . get_string('trainingaudit', 'local_booking') . '</h5>';
+        $intro = '<h5>' . get_config('local_booking', 'atoname') . ' ' . get_string('trainingaudit', 'local_booking') . '</h5>';
         $this->Ln(20);
         $this->writeHTML($intro, true, false, true);
     }

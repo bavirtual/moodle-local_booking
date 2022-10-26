@@ -29,15 +29,11 @@ require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 
 // Set up the page.
-$categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
-$studentid = optional_param('userid', 0, PARAM_INT);
-$sorttype = optional_param('sort', '', PARAM_ALPHA);
-$action = optional_param('action', 'book', PARAM_ALPHA);
 $title = get_string('pluginname', 'local_booking');
 
-$url = new moodle_url('/local/booking/view.php');
+$url = new moodle_url('/local/booking/availability.php');
 $url->param('courseid', $courseid);
 
 $PAGE->set_url($url);
@@ -45,13 +41,13 @@ $PAGE->set_url($url);
 $context = context_course::instance($courseid);
 
 require_login($course, false);
-require_capability('local/booking:view', $context);
+require_capability('local/booking:availabilityview', $context);
 
 // Flight rules library RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
-$PAGE->requires->jquery();
-$PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask-5/dist/jquery.inputmask.min.js'), true);
+// $PAGE->requires->jquery();
+// $PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask-5/dist/jquery.inputmask.min.js'), true);
 
-$navbartext = $action == 'book' ? get_string('bookingdashboard', 'local_booking') : get_string('bookingsessionselection', 'local_booking');
+$navbartext =get_string('bookingprogression', 'local_booking');
 $PAGE->navbar->add($navbartext); //userdate(time(), get_string('strftimedate')));
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title($title, 'local_booking');
@@ -64,25 +60,10 @@ echo $OUTPUT->header();
 echo $renderer->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
 
-// select the student progression booking view or the booking confirmation view
-if ($action=='book') {
-    // get students bookings and progression view
-    list($data, $template) = get_bookings_view($courseid, $sorttype);
-    echo $renderer->render_from_template($template, $data);
+// get students progression view
+list($data, $template) = get_bookings_view($courseid, '', 'active', true);
 
-    // get instructor's assigned students
-    list($data, $template) = get_students_view($courseid);
-    echo $renderer->render_from_template($template, $data);
-
-    if (has_capability('local/booking:participationview', $context)) {
-        list($data, $template) = get_participation_view($courseid);
-        echo $renderer->render_from_template($template, $data);
-    }
-} elseif ($action=='confirm') {
-    list($data, $template) = get_session_selection_view($courseid, $studentid);
-    echo $renderer->render_from_template($template, $data);
-}
-
+echo $renderer->render_from_template($template, $data);
 echo html_writer::end_tag('div');
 echo $renderer->complete_layout();
 echo $OUTPUT->footer();

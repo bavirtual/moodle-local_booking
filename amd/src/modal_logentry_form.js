@@ -555,7 +555,7 @@ define([
                         if (!$('#id_valid_p1pirep').length) {
                             Str.get_string('pirepfound', 'local_booking').then(function(string) {
                                 pirepdiv.append('<div class="form-control-feedback valid-feedback" id="id_valid_p1pirep" ' +
-                                'tabindex="0" style="">' + string + '</div');
+                                'tabindex="0" style="">' + string + '</div>');
                                 $('#id_p1pirep').addClass('is-valid');
                                 return string;
                             })

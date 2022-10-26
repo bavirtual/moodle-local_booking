@@ -39,14 +39,14 @@ function xmldb_local_booking_uninstall() {
 
 
 /**
- * Delete to ATO custom category and fields for all courses
+ * Delete plugin custom category and fields for all courses
  */
 function delete_course_customfields() {
     // get all categories and fields.
     $categories = api::get_categories_with_fields('core_course', 'course', 0);
     foreach ($categories as $coursecategory) {
         // delete ATO category and associated fields
-        if ($coursecategory->get('name') == get_booking_config('ato')->name) {
+        if ($coursecategory->get('name') == ucfirst(get_string('pluginname', 'local_booking'))) {
             // Delete custom ATO category
             api::delete_category($coursecategory);
         }

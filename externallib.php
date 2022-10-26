@@ -31,6 +31,7 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
 use local_booking\external\logentry_exporter;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
+use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 
@@ -805,6 +806,75 @@ class local_booking_external extends external_api {
      * @since Moodle 2.5
      */
     public static function update_user_group_returns() {
+        return new external_single_structure(
+            array(
+                'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function update_profile_comment_parameters() {
+        return new external_function_parameters(array(
+                'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
+                'userid' => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
+                'comment' => new external_value(PARAM_RAW, 'The comment text', VALUE_DEFAULT),
+            )
+        );
+    }
+
+    /**
+     * Update user group membership add/remove for the course.
+     *
+     * @param int    $courseid   The course id.
+     * @param int    $userid     The user id.
+     * @param string $comment    The comment text.
+     * @return bool $result      The comment save was successful.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function update_profile_comment(int $courseid, int $userid, string $comment) {
+        global $COURSE, $PAGE;
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::update_profile_comment_parameters(), array(
+            'courseid'=> $courseid,
+            'userid'  => $userid,
+            'comment' => $comment,
+            )
+        );
+
+        $warnings = array();
+
+        $context = context_course::instance($courseid);
+        self::validate_context($context);
+        $PAGE->set_url('/local/booking/');
+
+        // define subscriber globally
+        if (empty($COURSE->subscriber))
+            $COURSE->subscriber = new subscriber($courseid);
+
+        // add/remove student to group
+        $participant = new participant($COURSE->subscriber, $userid);
+        $result = $participant->update_comment($comment);
+
+        return array(
+            'result' => $result,
+            'warnings' => $warnings
+        );
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function update_profile_comment_returns() {
         return new external_single_structure(
             array(
                 'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),

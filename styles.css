@@ -228,6 +228,30 @@
 .userprofile .sb_profile_tree {
     column-count: 3;
 }
+.save-comment-button {
+    width: 25px;
+    color: grey;
+    background-color: white;
+    border-width: 0px;
+    display: inline-flex;
+    align-items: center;
+    outline: 0;
+    box-shadow: 2px 2px 2px 2px white;
+    transition: ease background-color 250ms;
+    cursor: pointer;
+}
+.comment-status {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 80%;
+}
+.comment-status-success {
+    color: #357a32;
+}
+.comment-status-error {
+    color: darkred;
+}
 
 /* custom switch checkbox */
 .toggle-input {

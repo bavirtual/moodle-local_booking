@@ -54,8 +54,9 @@
         <FIELD NAME="flightdate" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Date when the flight took place"/>
         <FIELD NAME="p1id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="P1 (instructor) user id"/>
         <FIELD NAME="p2id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="P2 (student) user id"/>
-        <FIELD NAME="pirep" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="Pilot report id number for the flight"/>
+        <FIELD NAME="pirep" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Pilot report id number for the flight"/>
         <FIELD NAME="groundtime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Training session overall time, logged for both instructor and student"/>
+        <FIELD NAME="flighttime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Flight total time logged"/>
         <FIELD NAME="pictime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Pilot in command (PIC) time is logged by a multi-crew flight captain, the instructor of dual flight, or the student on his/her checkride only if they pass"/>
         <FIELD NAME="dualtime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Dual time is logged only by the student in a training flight"/>
         <FIELD NAME="instructortime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Instructor time is only logged by the instructor in a training flight"/>

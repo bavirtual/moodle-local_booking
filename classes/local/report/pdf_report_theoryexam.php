@@ -64,7 +64,7 @@ class pdf_report_theoryexam extends pdf_report {
         foreach ($studentexams as $exam) {
             // student exam details
             $scoredata = [
-                'ato'   => $this->course->ato->name,
+                'ato'   => get_config('local_booking', 'atoname'),
                 'coursename' => $this->course->get_shortname(),
                 'studentname' => $this->student->get_name(false),
                 'vatsimid' => $this->student->get_profile_field('VATSIMID'),

@@ -136,7 +136,7 @@ class pdf_report_recommendletter extends pdf_report {
         // Declaration
         $html .= '<td colspan="2" style="font-size: x-large; font-weight: bold; text-decoration: underline">' . get_string('declarationtlabel', 'local_booking') . '</td>';
         $html .= '</tr><tr>';
-        $html .= '<td colspan="2">' . get_string('declarationtext', 'local_booking', array('ato' => $this->course->ato->name)) . '</td>';
+        $html .= '<td colspan="2">' . get_string('declarationtext', 'local_booking', array('ato'=>get_config('local_booking', 'atoname'))) . '</td>';
         $html .= '</tr><tr><br />';
 
         // Signature
@@ -156,7 +156,7 @@ class pdf_report_recommendletter extends pdf_report {
         parent::Footer();
 
         $footer = get_string('recommendationletterver', 'local_booking') . '<br />';
-        $footer .= get_string('copyright', 'local_booking', array('ato'=>$this->course->ato->name, 'year'=>(new \Datetime('@'.time()))->format('Y')));
+        $footer .= get_string('copyright', 'local_booking', array('ato'=>get_config('local_booking', 'atoname'), 'year'=>(new \Datetime('@'.time()))->format('Y')));
         $this->SetY(-50);
         // Set font
         $this->SetFont('helvetica', '', 10);

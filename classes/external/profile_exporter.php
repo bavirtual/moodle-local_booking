@@ -243,6 +243,10 @@ class profile_exporter extends exporter {
             'examinerreporturl' => [
                 'type' => PARAM_URL,
             ],
+            'comment' => [
+                'type' => PARAM_TEXT,
+                'defaul' => '',
+            ],
         ];
     }
 
@@ -428,6 +432,7 @@ class profile_exporter extends exporter {
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
             'examinerreporturl'        => $examinerurl->out(false),
             'tested'                   => $this->student->tested(),
+            'comment'                  => $this->student->get_comment(),
         ];
 
         return $return;

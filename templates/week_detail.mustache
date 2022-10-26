@@ -95,19 +95,20 @@
                     data-slot-marked="{{slotmarked}}"
                     data-slot-booked="{{slotbooked}}"
                     data-slot-status="{{slotstatus}}"
-                    data-region="{{#slotavailable}}day{{/slotavailable}}"
-                    {{#slotbooked}}
+                    data-region="{{#slotavailable}}day{{/slotavailable}}"{{!
+                    }}{{#slotbooked}}
                     data-toggle="tooltip"
                     data-html="true"
                     title="{{{slotstatustooltip}}}"
-                    {{/slotbooked}}
-                    {{#groupview}}
-                    {{#slotmarked}}
+                    {{/slotbooked}}{{!
+                    }}{{!
+                    }}{{#groupview}}{{!
+                    }}{{#slotmarked}}
                     data-toggle="tooltip"
                     data-html="true"
                     title="{{{slotstatustooltip}}}"
-                    {{/slotmarked}}
-                    {{/groupview}}
+                    {{/slotmarked}}{{!
+                    }}{{/groupview}}
                     data-new-event-timestamp="{{neweventtimestamp}}">
                     <div class="d-none d-md-block hidden-phone text-xs-center">
                         <span class="sr-only">{{daytitle}}</span>
@@ -167,7 +168,7 @@
         </div>
     </div>
     <div>
-        <br/><span class="small"><a href='{{viewalllink}}'>
+        <br/><span class="small"><a href='{{viewallurl}}'>
             {{#str}} availabilityallview, local_booking {{/str}}</a></span>
     </div>
     {{/editing}}

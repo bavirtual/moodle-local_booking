@@ -67,7 +67,7 @@ function create_user_profile_customfields() {
     global $DB;
 
     // Look for ATO category and add to the end if doesn't exist
-    $category = $DB->get_record('user_info_category', array('name'=>get_booking_config('ato')->name));
+    $category = $DB->get_record('user_info_category', array('name'=>ucfirst(get_string('pluginname', 'local_booking'))));
     $categoryid = 0;
     $sortorder = 0;
     if (empty($category)) {
@@ -78,7 +78,7 @@ function create_user_profile_customfields() {
 
         // insert ATO category
         $categoryobj = new \stdClass();
-        $categoryobj->name       = get_booking_config('ato')->name;
+        $categoryobj->name       = ucfirst(get_string('pluginname', 'local_booking'));
         $categoryobj->sortorder  = $sortorder;
 
         $categoryid = $DB->insert_record('user_info_category', $categoryobj);
@@ -168,7 +168,7 @@ function create_course_customfields() {
     foreach ($categories as $coursecategory) {
         $categoryid = $coursecategory->get('id');
         $categorysortorder = $coursecategory->get('sortorder');
-        if ($coursecategory->get('name') == get_booking_config('ato')->name) {
+        if ($coursecategory->get('name') == ucfirst(get_string('pluginname', 'local_booking'))) {
             $categoryexists = true;
             $category = $coursecategory;
             continue;
@@ -178,7 +178,7 @@ function create_course_customfields() {
     // create course category for ATO if it doesn't exist
     if (!$categoryexists) {
         $category = category_controller::create(0, new \stdClass(), $handler);
-        $category->set('name', get_booking_config('ato')->name);
+        $category->set('name', ucfirst(get_string('pluginname', 'local_booking')));
         $category->set('descriptionformat', 0);
         $category->set('sortorder', $categorysortorder + 1);
         $category->set('component', 'core_course');

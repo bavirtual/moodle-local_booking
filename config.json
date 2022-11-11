@@ -1,33 +1,11 @@
 {
-    "colors": {
-        "red": "#d50000",
-        "green": "#689f38",
-        "yellow": "#ffeb3b",
-        "deep orange": "#ff3d00",
-        "lime": "#aeea00",
-        "dark green": "#1b5e20",
-        "blue": "#2962ff",
-        "light blue": "#0091ea",
-        "orange": "#ff6d00",
-        "deep purple": "#9fa8da",
-        "pink": "#fce4ec",
-        "light green": "#00e676",
-        "dark blue": "#0d47a1",
-        "teal": "#00897b",
-        "light purple": "#c5cae9",
-        "brown": "#5d4037",
-        "light indigo": "#dcedc8",
-        "light cyan": "#b2ebf2",
-        "dark purple": "#4a148c",
-        "light yellow": "#ffff00"
-    },
     "integrations": {
         "pireps": {
             "enabled": 1,
             "host": "127.0.0.1:3306",
             "db": "bav_management",
             "data": {
-                "pirep": {
+                "pirepinfo": {
                     "table": "pireps",
                     "fields": {
                         "pilot_id": "pilot_id",
@@ -44,14 +22,7 @@
                         "fstd": "sim",
                         "linkedpirep": "linked_pirep_id"
                     },
-                    "key": "id"
-                },
-                "linkedpirep": {
-                    "table": "pireps",
-                    "fields": {
-                        "linked_pirep_id": "linked_pirep_id"
-                    },
-                    "key": "id"
+                    "primarykey": "id"
                 }
             }
         },
@@ -66,28 +37,21 @@
                         "engine_type": "engine_type",
                         "description": "description"
                     },
-                    "key": "icao"
-                },
-                "aircraftreg": {
-                    "table": "fleet_registrations",
-                    "fields": {
-                        "reg": "reg"
-                    },
-                    "key": "icao"
+                    "primarykey": "icao"
                 }
             }
         },
-        "pilot": {
+        "pilots": {
             "enabled": 1,
             "host": "localhost",
             "db": "bav_management",
             "data": {
-                "pilot": {
+                "pilotinfo": {
                     "table": "pilots",
                     "fields": {
                         "alternatename": "baw_id"
                     },
-                    "key": "id"
+                    "primarykey": "id"
                 }
             }
         }

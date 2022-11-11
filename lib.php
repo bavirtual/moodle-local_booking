@@ -122,6 +122,31 @@ define('LOCAL_BOOKING_SENIORINSTRUCTORROLE', 'seniorinstructor');
  * LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE - constant for instructor role shortname
  */
 define('LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE', 'flighttrainingmanager');
+/**
+ * LOCAL_BOOKING_SLOTCOLORS - constant array for slot colors for students availability grid
+ */
+define('LOCAL_BOOKING_SLOTCOLORS', [
+    "red"         => "#d50000",
+    "green"       => "#689f38",
+    "yellow"      => "#ffeb3b",
+    "deep orange" => "#ff3d00",
+    "lime"        => "#aeea00",
+    "dark green"  => "#1b5e20",
+    "blue"        => "#2962ff",
+    "light blue"  => "#0091ea",
+    "orange"      => "#ff6d00",
+    "deep purple" => "#9fa8da",
+    "pink"        => "#fce4ec",
+    "light green" => "#00e676",
+    "dark blue"   => "#0d47a1",
+    "teal"        => "#00897b",
+    "light purple"=> "#c5cae9",
+    "brown"       => "#5d4037",
+    "light indigo"=> "#dcedc8",
+    "light cyan"  => "#b2ebf2",
+    "dark purple" => "#4a148c",
+    "light yellow"=> "#ffff00"
+]);
 
 /**
  * This function extends the navigation with the booking item

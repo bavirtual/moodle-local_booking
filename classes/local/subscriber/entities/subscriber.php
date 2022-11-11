@@ -262,7 +262,7 @@ class subscriber implements subscriber_interface {
 
         if (empty($student)) {
             $studentrec = participant_vault::get_student($this->courseid, $studentid);
-            $colors = (array) get_booking_config('colors', true);
+            $colors = LOCAL_BOOKING_SLOTCOLORS;
 
             // add a color for the student slots from the config.json file for each student
             if (!empty($studentrec->userid)) {
@@ -286,7 +286,7 @@ class subscriber implements subscriber_interface {
     public function get_students(string $filter = 'active', bool $includeonhold = false) {
         $activestudents = [];
         $studentrecs = participant_vault::get_students($this->courseid, $filter, $includeonhold);
-        $colors = (array) get_booking_config('colors', true);
+        $colors = LOCAL_BOOKING_SLOTCOLORS;
 
         // add a color for the student slots from the config.json file for each student
         $i = 0;
@@ -444,10 +444,10 @@ class subscriber implements subscriber_interface {
         $fieldnames = array_keys((array) $target->$data->fields);
         $fields = implode(',', (array) $target->$data->fields);
         $table = $target->$data->table;
-        $keyfield = $target->$data->key;
+        $primarykey = $target->$data->primarykey;
 
         if (!$conn->connect_errno) {
-            $sql = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE ' . $keyfield . ' = "' . $value . '"';
+            $sql = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE ' . $primarykey . ' = "' . $value . '"';
             // Return name of current default database
             if ($result = $conn->query($sql)) {
                 $values = $result->fetch_row();

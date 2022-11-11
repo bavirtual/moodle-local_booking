@@ -290,15 +290,23 @@ class local_booking_external extends external_api {
         $result = true;
         $warnings = array();
         $errorcode = '';
+
+        // get PIREP integrated info
         $logentry = (new logbook($courseid, $userid))->create_logentry();
-        $rec = subscriber::get_integrated_data('pireps', 'pirep', $pirep);
-        if (!empty($rec)) {
-            $logentry->read($rec);
-            // get engine type integrated data
-            if (subscriber::has_integration('pilot')) {
-                $pilotrec = subscriber::get_integrated_data('pilot', 'pilot', $logentry->pilot_id);
+        $pireprec = subscriber::get_integrated_data('pireps', 'pirepinfo', $pirep);
+
+        if (!empty($pireprec)) {
+
+            // get logentry data from the PIREP record
+            $logentry->read($pireprec);
+
+            // get pilot integrated info
+            if (subscriber::has_integration('pilots')) {
+                $pilotrec = subscriber::get_integrated_data('pilots', 'pilotinfo', $logentry->pilot_id);
                 $alternatename = $pilotrec['alternatename'];
+
                 if (core_user::get_user($userid, 'alternatename')->alternatename == $alternatename) {
+
                     // get engine type integrated data
                     if (subscriber::has_integration('aircraft')) {
                         $enginetyperec = subscriber::get_integrated_data('aircraft', 'aircraftinfo', $logentry->get_aircraft());
@@ -311,6 +319,7 @@ class local_booking_external extends external_api {
                     $data['view'] = 'summary';
                     $data['nullable'] = false;
                     list($data, $template) = get_logentry_view($courseid, $userid, $data);
+
                 } else {
                     $result = false;
                     $errorcode = 'errorp1pirepwrongpilot';

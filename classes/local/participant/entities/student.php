@@ -311,7 +311,7 @@ class student extends participant {
     /**
      * Return student slots for a particular week/year.
      *
-     * @return array array of days
+     * @return object slot
      */
     public function get_slot(int $slotid) {
 

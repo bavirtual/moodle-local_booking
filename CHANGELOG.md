@@ -1,5 +1,11 @@
 # Change log
 
+## [2022111100] - RELEASED 2022-11-11 - hotfix
+
+### Fixed
+
+- cron task background processing of session booking scheduled notifications (availability postings)
+
 ## [2022102100] - RELEASED 2022-10-21
 
 ### Fixed

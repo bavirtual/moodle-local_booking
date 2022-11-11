@@ -141,6 +141,7 @@ class notifications_task extends \core\task\scheduled_task {
      */
     protected function process_availability_postings(student $student, subscriber $course) {
 
+        $haspostings = false;
         $slotstonotify = get_user_preferences('local_booking_' . $course->get_id() . '_postingnotify', false, $student->get_id());
         if (!empty($slotstonotify)) {
 
@@ -155,11 +156,10 @@ class notifications_task extends \core\task\scheduled_task {
                 if (!empty($slotid)) {
 
                     // get each slot posted
-                    $slot = (object) $student->get_slot($slotid);
+                    $slot = $student->get_slot($slotid);
 
                     // format the availability slots postings
-                    if (!empty($slot)) {
-
+                    if ($haspostings = !empty($slot)) {
                         $startdate = new \DateTime('@'.$slot->starttime);
                         $sameday = $startdate->format('l') == $previousday;
                         $postingstext .= !$sameday ? PHP_EOL . $startdate->format('l M d\: ') : ', ';
@@ -174,32 +174,35 @@ class notifications_task extends \core\task\scheduled_task {
 
                 }
             }
-            $postingshtml .= '<tr style="border-top: 1pt solid black"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table>';
 
-            // get message data
-            $data = array(
-                'courseurl'     => (new \moodle_url('/course/view.php', array('id'=>$course->get_id())))->out(false),
-                'coursename'    => $course->get_shortname(),
-                'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=>$course->get_id())))->out(false),
-                'studentname'   => $student->get_name(),
-                'firstname'     => $student->get_profile_field('firstname', true),
-                'postingstext'  => $postingstext,
-                'postingshtml'  => $postingshtml,
-                'bookingurl'    => (new \moodle_url('/local/booking/availability.php', array(
-                    'courseid'      => $course->get_id(),
-                    'userid'        => $student->get_id(),
-                    'exid'          => $student->get_next_exercise(),
-                    'action'        => 'book'
-                    )))->out(false),
-                'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
-                'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
-                'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise())))->out(false),
-                'exercise'      => $course->get_exercise_name($student->get_next_exercise()),
-            );
+            if ($haspostings) {
+                $postingshtml .= '<tr style="border-top: 1pt solid black"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table>';
 
-            notification::send_availability_posting_notification($course->get_instructors(), $data);
+                // get message data
+                $data = array(
+                    'courseurl'     => (new \moodle_url('/course/view.php', array('id'=>$course->get_id())))->out(false),
+                    'coursename'    => $course->get_shortname(),
+                    'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=>$course->get_id())))->out(false),
+                    'studentname'   => $student->get_name(),
+                    'firstname'     => $student->get_profile_field('firstname', true),
+                    'postingstext'  => $postingstext,
+                    'postingshtml'  => $postingshtml,
+                    'bookingurl'    => (new \moodle_url('/local/booking/availability.php', array(
+                        'courseid'      => $course->get_id(),
+                        'userid'        => $student->get_id(),
+                        'exid'          => $student->get_next_exercise(),
+                        'action'        => 'book'
+                        )))->out(false),
+                    'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
+                    'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
+                    'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise())))->out(false),
+                    'exercise'      => $course->get_exercise_name($student->get_next_exercise()),
+                );
 
-            mtrace('                availability posting notifications sent...');
+                notification::send_availability_posting_notification($course->get_instructors(), $data);
+
+                mtrace('                availability posting notifications sent...');
+            }
 
             // reset notification setting
             set_user_preference('local_booking_' . $course->get_id() . '_postingnotify', '', $student->get_id());

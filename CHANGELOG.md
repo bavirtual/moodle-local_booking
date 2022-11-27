@@ -1,5 +1,11 @@
 # Change log
 
+## [2022112700] - RELEASED 2022-11-27 - hotfix
+
+### Fixed
+
+- posted slots display should be course specific
+
 ## [2022111100] - RELEASED 2022-11-11 - hotfix
 
 ### Fixed

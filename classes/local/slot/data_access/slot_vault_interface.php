@@ -45,19 +45,15 @@ interface slot_vault_interface {
     public static function get_slot(int $slotid);
 
     /**
-     * Get all slots for a user that fall on a specific year and week.
+     * Get a list of slots for the user
      *
-     * @param int|null              $userid     slots for this user
-     * @param int|null              $year       slots that fall in this year
-     * @param int|null              $week       slots that fall in this week
-     *
-     * @return slot_interface[]     Array of slot_interfaces.
+     * @param int $courseid  The course id
+     * @param int $studentid The student id
+     * @param int $year The year of the slots
+     * @param int $week The week of the slots
+     * @return array
      */
-    public static function get_slots(
-        $userid,
-        $year = 0,
-        $week = 0
-    );
+    public static function get_slots(int $courseid, int $studentid, $week = 0, $year = 0);
 
     /**
      * Saves the passed slot

@@ -46,15 +46,17 @@ class slot_vault implements slot_vault_interface {
     /**
      * Get a list of slots for the user
      *
+     * @param int $courseid  The course id
      * @param int $studentid The student id
      * @param int $year The year of the slots
      * @param int $week The week of the slots
      * @return array
      */
-    public static function get_slots($studentid, $week = 0, $year = 0) {
+    public static function get_slots(int $courseid, int $studentid, $week = 0, $year = 0) {
         global $DB;
 
         $condition = [
+            'courseid' => $courseid,
             'userid' => $studentid,
             'week'   => $week,
             'year'   => $year

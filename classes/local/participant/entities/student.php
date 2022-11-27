@@ -329,7 +329,7 @@ class student extends participant {
     public function get_slots($weekno, $year) {
 
         if (empty($this->slots)) {
-            $this->slots = slot_vault::get_slots($this->userid, $weekno, $year);
+            $this->slots = slot_vault::get_slots($this->course->get_id(), $this->userid, $weekno, $year);
 
             // add student's slot color to each slot
             foreach ($this->slots as $slot) {

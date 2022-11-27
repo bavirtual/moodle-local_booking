@@ -149,11 +149,11 @@ class logbook implements logbook_interface {
 
         if ($logentryid != 0) {
             $logentry = $reload ?
-                logbook_vault::get_logentry($this->userid, $this->courseid, $logentryid, 0, $this) :
+                logbook_vault::get_logentry($this->userid, $this->courseid, $this, $logentryid) :
                 $this->entries[$logentryid];
         } else if ($exerciseid != 0) {
             $logentry = $reload ?
-                logbook_vault::get_logentry($this->userid, $this->courseid, 0, $exerciseid, $this) :
+                logbook_vault::get_logentry($this->userid, $this->courseid, $this, 0, $exerciseid) :
                 $this->get_logentry_by_exericseid($exerciseid);
         }
         if (!empty($logentry))

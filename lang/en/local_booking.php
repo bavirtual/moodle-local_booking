@@ -25,7 +25,9 @@ $string['bookingactive'] = 'My active bookings';
 $string['bookingavailabilityposts'] = 'Availability posted';
 $string['bookingsetpreferencesunable'] = 'Unable to save user preference setting {$a->preference} set to {$a->value}.';
 $string['bookingcancel'] = 'Cancel';
+$string['bookingcancelnoshow'] = 'No Show';
 $string['bookingcanceledsuccess'] = 'Booking with \'{$a->studentname}\' cancelled!';
+$string['bookingcanceledsuccesswnoshow'] = 'And the no-show incident was reported.';
 $string['bookingcanceledunable'] = 'Unable to cancel booking!';
 $string['bookingcancelednotfound'] = 'Booking not found!';
 $string['bookingconfirmmsg'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
@@ -49,7 +51,11 @@ $string['bookingsortbyscoretooltip'] = 'Sorts by student score';
 $string['bookingsortbyavailability'] = 'availability';
 $string['bookingsortbyavailabilitytooltip'] = 'Sorts by students with availability posts, then no posts, then incomplete lessons';
 $string['booksave'] = 'Save Booking';
-$string['cancellationcomment'] = 'Please provide the student with a short comment on this cancellation:';
+$string['commentcancel'] = 'Please provide the student with a short comment on this cancellation:';
+$string['commentnoshow'] = 'Confirm student failed to show without a prior notice.';
+$string['commentnoshow0'] = 'This is the student\'s first no-show, so he/she will be sent a warning.';
+$string['commentnoshow1'] = 'This is the student\'s second no-show within 3 months, so he/she will be suspended for one month.';
+$string['commentnoshow2'] = 'This is the student\'s third no-show within 3 months, so he/she will be scheduled to be unenroled from the course.';
 $string['evaluate'] = 'Eval.';
 $string['graduate'] = 'Grad.';
 $string['configmissing'] = 'Failed to open {$a}';
@@ -87,7 +93,7 @@ $string['slots'] = 'slots';
 $string['statusbooked'] = 'confirmed';
 $string['statustentative'] = 'tentative';
 $string['students'] = 'Students';
-$string['studentavialability'] = 'Student availability';
+$string['studentavailability'] = 'Student availability';
 $string['taskcron'] = 'Background processing for session booking activity';
 $string['tasknotifications'] = 'Background processing of session booking scheduled notifications';
 $string['unknown'] = 'No grading record!';
@@ -277,7 +283,7 @@ $string['verifypirep'] = 'Verify PIREP';
 $string['assigntoinstructor'] = 'Assign to Instructor';
 $string['auditreports'] = 'Audit';
 $string['completereport'] = 'Complete report';
-$string['comment'] = 'Comment';
+$string['comment'] = 'Comments';
 $string['commentsaved'] = '- Comment saved';
 $string['commentnotsaved'] = '- Unable to save comment';
 $string['courseactivity'] = 'Course Activity';
@@ -391,7 +397,10 @@ $string['booking:view'] = 'View session bookings';
 $string['messageprovider:booking_notification'] = 'Session booked notification';
 $string['messageprovider:booking_confirmation'] = 'Booked session instructor confirmation';
 $string['messageprovider:instructor_notification'] = 'Student confirmation of booked session';
-$string['messageprovider:session_cancellation'] = 'Student session cancellation notification';
+$string['messageprovider:session_cancellation'] = 'Student session cancellation / no-show notifications';
+$string['messageprovider:noshow_notification'] = 'Student notification of no-show and resulting actions';
+$string['messageprovider:noshow_instructor_notification'] = 'Instructor notification of student no-show actions taken';
+$string['messageprovider:reinstatement_notification'] = 'Student notification of being reinstated after suspension';
 $string['messageprovider:inactive_warning'] = 'Student inactive warning notification';
 $string['messageprovider:onhold_warning'] = 'Student on-hold warning notification';
 $string['messageprovider:onhold_notification'] = 'Student placed on-hold notification';
@@ -404,7 +413,7 @@ $string['messageprovider:graduation_notification'] = 'Graduating students notifi
 // email to student: notifying of booked session
 $string['emailnotifysubject'] = '{$a->coursename} session booking notification: \'{$a->exercise}\'';
 $string['emailnotifymsg'] = '{$a->instructor} has booked a session for your availability on {$a->sessiondate} for \'{$a->exercise}\'.
-Please confirm this booking by clicking on this link: {$a->confirmurl}';
+    Please confirm this booking by clicking on this link: {$a->confirmurl}';
 $string['emailnotifyhtml'] = '<div style="font-family:sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has booked a session for your availability on <strong>{$a->sessiondate}
     </strong> for \'<i>{$a->exercise}</i>\'.</p><p>Please <a href=\'{$a->confirmurl}\'>confirm</a> this booking.</p></div>';
@@ -440,13 +449,84 @@ $string['emailinstconfirmhtml'] = '<font face="sans-serif"><p><a href=\'{$a->cou
 
 // email to student: session cancellation
 $string['emailcancel'] = '{$a->coursename} session booking cancellation: \'{$a->exercise}\'';
-$string['emailcancelmsg'] = '{$a->instructor} has cancelled your booked session scheduled for {$a->sessiondate} on \'{$a->exercise}\'.
-Instructor\'s comment: {$a->comment}.
-Please note that you will have to post new availability slots as previous slots were purged.';
+$string['emailcancelmsg'] = '{$a->instructorname} has cancelled your booked session scheduled for {$a->sessiondate} on \'{$a->exercise}\'.
+    Instructor\'s comment: {$a->comment}.
+    Please note that you will have to post new availability slots as previous slots were purged.';
 $string['emailcancelhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
-    <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->instructor} has cancelled your booked session scheduled for
+    {$a->exercise}</p><hr /><p>{$a->instructorname} has cancelled your booked session scheduled for
     <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\'.</p><p><strong>Instructor\'s comment:</strong><br />{$a->comment}</p><p>
     <span style=\'color: red\'>Please note that you will have to post new availability slots as previous slots were purged.</span></p></p><hr />';
+
+// email to student: noshow warning (strike 1)
+$string['emailnoshow1'] = '{$a->coursename} missed session warning!';
+$string['emailnoshow1msg'] = 'You have missed an instructor-led session on {$a->sessiondate} with your instructor {$a->instructorname} for exercise \'{$a->exercise}\'.
+    According to the {$a->coursename} course policy around \'No show\' incidents, students that miss a session without a prior notice to their instructor are given a warning.
+    Please consider this as your warning and do note that repeated incidents will result in suspension and unenrollment from the course.
+    BAV Training staff';
+$string['emailnoshow1html'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    {$a->exercise}</p><hr /><p>You have missed an instructor-led session on {$a->sessiondate} with your instructor {$a->instructorname} for exercise \'{$a->exercise}\'.</p>
+    <p>According to the {$a->coursename} course policy around \'No show\' incidents, students that miss a session without a prior notice to their instructor are given a warning.</p>
+    <p>Please consider this as your warning and do note that repeated incidents will result in suspension and unenrollment from the course.</p>
+    <p>&nbsp;</p><p>BAV Training staff</p><hr />';
+
+// email to student: noshow suspension (strike 2)
+$string['emailnoshow2'] = '{$a->coursename} suspension due to repeated \'no-show\'';
+$string['emailnoshow2msg'] = 'You have missed an instructor-led session on {$a->sessiondate} with your instructor {$a->instructorname} for exercise \'{$a->exercise}\'.
+    This marks the second time you miss an instructor-led session in a {$a->noshowperiod}-day period.
+    Therefore, you are being suspended from the course for one month in accordance with the {$a->coursename} course policy until {$a->reinstatementdate}.
+    Please note that this will be a final warning and missing another instructor-led session will result in your unenrolment from the {$a->coursename} course.
+    BAV Training staff';
+$string['emailnoshow2html'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    {$a->exercise}</p><hr /><p>You have missed an instructor-led session on {$a->sessiondate} with your instructor {$a->instructorname} for exercise \'{$a->exercise}\'.</p>
+    <p>This marks the second time you miss an instructor-led session in a {$a->noshowperiod}-day period.   Therefore, you are being suspended from the course for one month in accordance with the {$a->coursename} course policy until {$a->reinstatementdate}.</p>
+    <p>Please note that this will be a final warning and missing another instructor-led session will result in your unenrolment from the {$a->coursename} course.</p>
+    <p>&nbsp;</p><p>BAV Training staff</p><hr />';
+
+// email to student: noshow unenrolment (strike 3)
+$string['emailnoshow3'] = '{$a->coursename} unenrolment from the {$a->coursename} course!';
+$string['emailnoshow3msg'] = 'You have missed an instructor-led session on {$a->sessiondate} with your instructor {$a->instructorname} for exercise \'{$a->exercise}\'.
+    This marks the third time you miss an instructor-led session in a {$a->noshowperiod}-day period.
+    Therefore, you will be unenrolled from the {$a->coursename} in accordance with the {$a->coursename} course policy.
+    BAV Training staff';
+$string['emailnoshow3html'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    {$a->exercise}</p><hr /><p>You have missed an instructor-led session on {$a->sessiondate} with your instructor {$a->instructorname} for exercise \'{$a->exercise}\'.</p>
+    <p>This marks the third time you miss an instructor-led session in a {$a->noshowperiod}-day period. Therefore, you will be unenrolled from the {$a->coursename} in accordance with the {$a->coursename} course policy.</p>
+    <p>&nbsp;</p><p>BAV Training staff</p><hr />';
+
+// email to instructor: student noshow warning (strike 1)
+$string['emailnoshowinst1'] = '{$a->coursename}: {$a->studentname} received a \'Missed session warning\'';
+$string['emailnoshowinst1msg'] = '{$a->studentname} missed an instructor-led session on {$a->sessiondate} with {$a->instructorname} for exercise \'{$a->exercise}\'.
+    {$a->studentname} was issued an automatic warning and was notified that repeated incidents will result in suspension and unenrollment from the course.
+    BAV Training staff';
+$string['emailnoshowinst1html'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    {$a->exercise}</p><hr /><p>{$a->studentname} missed an instructor-led session on {$a->sessiondate} with {$a->instructorname} for exercise \'{$a->exercise}\'.</p>
+    <p>{$a->studentname} was issued an automatic warning and was notified that repeated incidents will result in suspension and unenrollment from the course.</p>
+    <p>&nbsp;</p><p>BAV Training staff</p><hr />';
+
+// email to instructor: student noshow suspension (strike 2)
+$string['emailnoshowinst2'] = '{$a->coursename}: {$a->studentname} Suspension';
+$string['emailnoshowinst2msg'] = '{$a->studentname} missed an instructor-led session on {$a->sessiondate} with {$a->instructorname} for exercise \'{$a->exercise}\'.
+    This marks the second time {$a->studentname} misses an instructor-led session in a {$a->noshowperiod}-day period.
+    Therefore, {$a->studentname} is being suspended from the course for one month in accordance with the {$a->coursename} course policy until {$a->reinstatementdate}.
+    {$a->studentname} was notified that this will be a final warning and missing another instructor-led session will result in unenrolment from the {$a->coursename} course.
+    BAV Training staff';
+$string['emailnoshowinst2html'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    {$a->exercise}</p><hr /><p>{$a->studentname} missed an instructor-led session on {$a->sessiondate} with {$a->instructorname} for exercise \'{$a->exercise}\'.</p>
+    <p>This marks the second time {$a->studentname} misses an instructor-led session in a {$a->noshowperiod}-day period.   Therefore, {$a->studentname} is being suspended from the course for one month in accordance with the {$a->coursename} course policy until {$a->reinstatementdate}.</p>
+    <p>{$a->studentname} was notified that this will be a final warning and missing another instructor-led session will result in unenrolment from the {$a->coursename} course.</p>
+    <p>BAV Training staff</p><hr />';
+
+// email to instructor: student noshow unenrolment (strike 3)
+$string['emailnoshowinst3'] = '{$a->coursename}: {$a->studentname} unenrolment recommendation!';
+$string['emailnoshowinst3msg'] = '{$a->studentname} missed an instructor-led session on {$a->sessiondate} with {$a->instructorname} for exercise \'{$a->exercise}\'.
+    This marks the third time {$a->studentname} misses an instructor-led session in a {$a->noshowperiod}-day period.  Therefore, {$a->studentname} is recommended to be unenrolled from the {$a->coursename} in accordance with the {$a->coursename} course policy.
+    {$a->studentname} was notified of being scheduled to be unenroled from the {$a->coursename} course.
+    BAV Training staff';
+$string['emailnoshowinst3html'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    {$a->exercise}</p><hr /><p>{$a->studentname} missed an instructor-led session on {$a->sessiondate} with {$a->instructorname} for exercise \'{$a->exercise}\'.</p>
+    <p>This marks the third time {$a->studentname} misses an instructor-led session in a {$a->noshowperiod}-day period.   Therefore, {$a->studentname} is recommended to be unenrolled from the {$a->coursename} in accordance with the {$a->coursename} course policy.</p>
+    <p>{$a->studentname} was notified of being scheduled to be unenroled from  the {$a->coursename} course.</p>
+    <p>&nbsp;</p><p>BAV Training staff</p><hr />';
 
 // email to student: inactive warning
 $string['emailinactivewarning'] = '{$a->coursename}: Inactivity notification';
@@ -604,7 +684,7 @@ $string['weeksahead'] = 'Availability posting weeks lookahead';
 $string['weeksaheaddesc'] = 'allowable weeks lookahead of availability posting. 0=Unlimited';
 
 // install
-$string['useplugin'] = 'Use Session booking';
+$string['useplugin'] = 'Enable session booking';
 $string['trainingtype'] = 'Training type';
 $string['homeicao'] = 'Home airport ICAO';
 $string['exercisetitles'] = 'Course exercise titles';

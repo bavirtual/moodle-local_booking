@@ -61,6 +61,7 @@ class booking_mybookings_exporter extends exporter {
         'studentid'   => $booking->get_studentid(),
         'studentname' => student::get_fullname($booking->get_studentid()),
         'exerciseid'  => $booking->get_exerciseid(),
+        'noshows'     => count($student->get_noshow_bookings()),
         'exercise'    => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
         'sessiondate' => $sessiondate->format('D M j'),
         'groundtime' => $sessiondate->format('H:i'),
@@ -83,6 +84,9 @@ class booking_mybookings_exporter extends exporter {
                 'type' => PARAM_RAW,
             ],
             'exerciseid' => [
+                'type' => PARAM_INT,
+            ],
+            'noshows' => [
                 'type' => PARAM_INT,
             ],
             'exercise' => [

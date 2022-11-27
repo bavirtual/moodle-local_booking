@@ -72,7 +72,6 @@ class notifications_task extends \core\task\scheduled_task {
 
                 if (!empty($course->subscribed) && $course->subscribed) {
 
-                    mtrace('');
                     mtrace('    Notifications for course: ' . $sitecourse->shortname . ' (id: ' . $sitecourse->id . ')');
 
                     // get active students

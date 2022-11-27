@@ -25,6 +25,7 @@
 
 namespace local_booking\local\participant\entities;
 
+use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\priority;
 use local_booking\local\session\entities\booking;
 use local_booking\local\session\entities\grade;
@@ -118,6 +119,11 @@ class student extends participant {
      * @var bool $evaluated Whether the student was evaluated for the final skill test examination for the course.
      */
     protected $evaluated;
+
+    /**
+     * @var array $noshowbookings A array of no-show bookings
+     */
+    protected $noshowbookings;
 
     /**
      * Constructor.
@@ -389,7 +395,7 @@ class student extends participant {
             // process restriction if posting wait restriction is enabled or if the student doesn't have a waiver
             if ($this->course->postingwait > 0 && !$hasrestrictionwaiver) {
 
-                $lastsession = $this->get_last_booking();
+                $lastsession = $this->get_last_booking_date();
 
                 // fallback to last graded then enrollment date
                 if (!empty($lastsession)) {
@@ -538,9 +544,24 @@ class student extends participant {
     /**
      * Get the date timestamp of the last booked slot
      *
+     * @return int The last booked session datetime
      */
-    public function get_last_booking() {
-        return slot::get_last_booking($this->course->get_id(), $this->userid);
+    public function get_last_booking_date() {
+        return slot::get_last_booking_date($this->course->get_id(), $this->userid);
+    }
+
+    /**
+     * Get the student no-show bookings.
+     *
+     * @return array no-show bookings
+     */
+    public function get_noshow_bookings() {
+
+        if (!isset($this->noshowbookings)) {
+            $this->noshowbookings = booking_vault::get_noshow_bookings($this->course->get_id(), $this->userid);
+        }
+
+        return $this->noshowbookings;
     }
 
     /**

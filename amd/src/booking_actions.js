@@ -64,9 +64,10 @@ function(
      * @param   {object} root     The My Bookings root element
      * @param   {object} e        The click event on the Cancel button
      * @param   {string} comment  The click event on the Cancel button
+     * @param   {string} noshow   Whether the cancellation is a no-show or instructor initiated
      * @return  {object} The create modal promise
      */
-    var cancelBooking = (root, e, comment) => {
+    var cancelBooking = (root, e, comment, noshow) => {
         ViewManager.startLoading(root);
 
         var target = e.target;
@@ -75,7 +76,7 @@ function(
         const bookingId = target.dataset.bookingid;
 
         // Send the request data to the server for processing.
-        return Repository.cancelBooking(bookingId, comment)
+        return Repository.cancelBooking(bookingId, comment, noshow)
             .then(function(response) {
                 if (response.validationerror) {
                     // eslint-disable-next-line no-alert

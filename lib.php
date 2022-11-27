@@ -43,7 +43,6 @@ use local_booking\local\logbook\entities\logbook;
 use local_booking\local\logbook\entities\logentry;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
-use \core_customfield\api;
 use local_booking\local\participant\entities\instructor;
 
 /**
@@ -89,7 +88,15 @@ define('LOCAL_BOOKING_OVERDUE_PERIOD', 10);
 /**
  * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades)
  */
-define('LOCAL_BOOKING_PASTDATACUTOFF', 730); // 365
+define('LOCAL_BOOKING_PASTDATACUTOFF', 730);
+/**
+ * LOCAL_BOOKING_NOSHOWPERIOD - constant for the period within which student no-shows are evaluated
+ */
+define('LOCAL_BOOKING_NOSHOWPERIOD', 90);
+/**
+ * LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD - constant for the period of suspension due to no-show
+ */
+define('LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD', 30);
 /**
  * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group quering purposes
  */
@@ -153,7 +160,6 @@ define('LOCAL_BOOKING_SLOTCOLORS', [
  *
  * @param global_navigation $navigation The global navigation node to extend
  */
-
 function local_booking_extend_navigation(global_navigation $navigation) {
     global $COURSE, $USER;
 
@@ -349,6 +355,7 @@ function local_booking_get_fontawesome_icon_map() {
         'local_booking:trash'           => 'fa-trash',
         'local_booking:unsubscribed'    => 'fa-envelope-open-o',
         'local_booking:user'            => 'fa-user',
+        'local_booking:user-times'      => 'fa-user-times',
         'local_booking:window-close'    => 'fa-window-close',
     ];
 }
@@ -712,65 +719,6 @@ function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
     }
 
     return [$result, $time, $week];
-}
-
-/**
- * Cancel an instructor's existing booking
- *
- * @param   int   $booking  The booking id being cancelled.
- * @return  bool  $resut    The cancellation result.
- */
-function cancel_booking($bookingid, $comment) {
-    global $COURSE, $PAGE;
-    $msg = '';
-
-    // get the booking to be deleted
-    if (!empty($bookingid)) {
-
-        $booking = new booking($bookingid);
-        $booking->load();
-        $sessiondate = new DateTime('@' . ($booking->get_slot())->get_starttime());
-        $courseid = $booking->get_courseid() ?: $COURSE->id;
-
-        require_login($courseid, false);
-
-        $context = context_course::instance($courseid);
-        $PAGE->set_url('/local/booking/');
-        $PAGE->set_context($context);
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
-
-        // delete the current booking
-        $result = $booking->delete();
-
-        // notify the student
-        $cancellationmsg = [
-            'studentname' => student::get_fullname($booking->get_studentid()),
-            'sessiondate' => $sessiondate->format('D M j\, H:i'),
-        ];
-        $msg = get_string('bookingcanceledsuccess', 'local_booking', $cancellationmsg);
-
-        // enable restriction override if enabled for the course to allow student to repost slots
-        if (intval($COURSE->subscriber->overdueperiod) > 0)
-            set_user_prefs('availabilityoverride', true, $courseid, $booking->get_studentid());
-
-    } else {
-        $msg = get_string('bookingcancelednotfound', 'local_booking');
-    }
-
-    if ($result) {
-        // send email notification to the student of the booking cancellation
-        $message = new notification();
-        if ($message->send_session_cancellation($booking->get_studentid(), $booking->get_exerciseid(), $sessiondate, $comment)) {
-            \core\notification::success($msg);
-        }
-    } else {
-        \core\notification::warning($msg ?: get_string('bookingcanceledunable', 'local_booking'));
-    }
-
-    return $result;
 }
 
 /**

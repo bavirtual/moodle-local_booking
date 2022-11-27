@@ -249,8 +249,9 @@ class slot implements slot_interface {
      *
      * @param int $courseid
      * @param int $studentid
+     * @return int
      */
-    public static function get_last_booking(int $courseid, int $studentid) {
+    public static function get_last_booking_date(int $courseid, int $studentid) {
         list($lastsession, $beforelastsession) = slot_vault::get_last_booked_slot($courseid, $studentid);
         return $lastsession;
     }

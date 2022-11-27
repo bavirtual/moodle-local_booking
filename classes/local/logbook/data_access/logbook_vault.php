@@ -84,12 +84,12 @@ class logbook_vault implements logbook_vault_interface {
      *
      * @param int $userid       The logentry user id.
      * @param int $courseid     The id of the course in context.
+     * @param logbook $logbook  The logbook_interface of for all entries.
      * @param int $logentryid   The logentry id.
      * @param int $exerciseid   The logentry with exericse id.
-     * @param logbook   $logbook    The logbook_interface of for all entries.
      * @return logentry         A logentry_insterface.
      */
-    public static function get_logentry(int $userid, int $courseid, int $logentryid = 0, int $exerciseid = 0, $logbook) {
+    public static function get_logentry(int $userid, int $courseid, $logbook, int $logentryid = 0, int $exerciseid = 0) {
         global $DB;
 
         $logentry = $logbook->create_logentry();

@@ -41,6 +41,20 @@ function xmldb_local_booking_upgrade($oldversion) {
     // Automatically generated Moodle v3.11.0 release upgrade line.
     // Put any upgrade step following this.
 
+    // change local_booking_sessions table to include a noshow field to track student no-show occurrences
+    if ($oldversion < 2022111700) {
+        // Define field hidegrader to be added to local_booking_sessions.
+        $table = new xmldb_table('local_booking_sessions');
+        $field = new xmldb_field('noshow', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'confirmed');
+
+        if (!$dbmanager->field_exists($table, $field)) {
+            $dbmanager->add_field($table, $field);
+        }
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2022111700, 'local', 'booking');
+    }
+
     // change Session booking settings in course settings category from the ATO name to Session booking
     if ($oldversion < 2022102600) {
         if ($atoname = get_config('local_booking', 'atoname')) {
@@ -59,6 +73,9 @@ function xmldb_local_booking_upgrade($oldversion) {
                 }
             }
         }
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2022102600, 'local', 'booking');
     }
 
     // change the PIREP field from the old char(50) to int(10)
@@ -69,6 +86,9 @@ function xmldb_local_booking_upgrade($oldversion) {
 
         // Launch change of type for field attachment.
         $dbmanager->change_field_type($table, $field);
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2022100900, 'local', 'booking');
     }
 
     // add the flight time field

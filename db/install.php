@@ -34,6 +34,10 @@
  define('LOCAL_BOOKING_DEFAULTSIMULATOR', 'MSFS');
  define('LOCAL_BOOKING_CALLSIGN', 'callsign');
  define('LOCAL_BOOKING_CALLSIGNLABEL', 'Callsign');
+ define('LOCAL_BOOKING_NOSHOW', 'noshow');
+ define('LOCAL_BOOKING_NOSHOWLABEL', 'No-show counter');
+ define('LOCAL_BOOKING_NOSHOWDATE', 'noshowdate');
+ define('LOCAL_BOOKING_NOSHOWDATELABEL', 'No-show date');
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
 
@@ -66,7 +70,7 @@ function xmldb_local_booking_install() {
 function create_user_profile_customfields() {
     global $DB;
 
-    // Look for ATO category and add to the end if doesn't exist
+    // Look for ATO category and add to the end if it doesn't exist
     $category = $DB->get_record('user_info_category', array('name'=>ucfirst(get_string('pluginname', 'local_booking'))));
     $categoryid = 0;
     $sortorder = 0;
@@ -89,11 +93,11 @@ function create_user_profile_customfields() {
     $lastcustomfield = array_shift($customfields);
     $fieldsortorder = !empty($lastcustomfield) ? $lastcustomfield->sortorder + 1 : 1;
 
-    // Add primary simulator field under the ATO category if doesn't exist
+    // Add primary simulator field under the ATO category if it doesn't exist
     $primarysimfield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_PRIMARYSIMULATOR));
     if (empty($primarysimfield)) {
 
-        // insert ATO category
+        // build field object
         $primarysimobj = new \stdClass();
         $primarysimobj->name        = LOCAL_BOOKING_PRIMARYSIMULATORLABEL;
         $primarysimobj->shortname   = LOCAL_BOOKING_PRIMARYSIMULATOR;
@@ -111,11 +115,11 @@ function create_user_profile_customfields() {
 
     } else { $fieldsortorder = $primarysimfield->sortorder + 1 ;}
 
-    // Add secondary simulator field under the ATO category if doesn't exist
+    // Add secondary simulator field under the ATO category if it doesn't exist
     $secondarysimfield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_SECONDARYSIMULATOR));
     if (empty($secondarysimfield)) {
 
-        // insert ATO category
+        // build field object
         $secondarysimobj = new \stdClass();
         $secondarysimobj->name          = LOCAL_BOOKING_SECONDARYSIMULATORLABEL;
         $secondarysimobj->shortname     = LOCAL_BOOKING_SECONDARYSIMULATOR;
@@ -133,11 +137,11 @@ function create_user_profile_customfields() {
 
     } else { $fieldsortorder = $secondarysimfield->sortorder + 1 ;}
 
-    // Add callsign field if doesn't exist
+    // Add callsign field if it doesn't exist
     $callsignfield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_CALLSIGN));
     if (empty($callsignfield)) {
 
-        // insert ATO category
+        // build field object
         $callsignfieldobj = new \stdClass();
         $callsignfieldobj->name          = LOCAL_BOOKING_CALLSIGNLABEL;
         $callsignfieldobj->shortname     = LOCAL_BOOKING_CALLSIGN;
@@ -149,6 +153,42 @@ function create_user_profile_customfields() {
         $callsignfieldobj->sortorder     = $fieldsortorder;
 
         $categoryid = $DB->insert_record('user_info_field', $callsignfieldobj);
+    }
+
+    // Add no-show counter hidden field if it doesn't exist
+    $noshowfield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_NOSHOW));
+    if (empty($noshowfield)) {
+
+        // build field object
+        $noshowfieldobj = new \stdClass();
+        $noshowfieldobj->name          = LOCAL_BOOKING_NOSHOWLABEL;
+        $noshowfieldobj->shortname     = LOCAL_BOOKING_NOSHOW;
+        $noshowfieldobj->description   = '';
+        $noshowfieldobj->descriptionformat = 1;
+        $noshowfieldobj->visible       = 0;
+        $noshowfieldobj->datatype      = 'text';
+        $noshowfieldobj->categoryid    = $categoryid;
+        $noshowfieldobj->sortorder     = $fieldsortorder;
+
+        $categoryid = $DB->insert_record('user_info_field', $noshowfieldobj);
+    }
+
+    // Add no-show date hidden field if it doesn't exist
+    $noshowdatefield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_NOSHOWDATE));
+    if (empty($noshowdatefield)) {
+
+        // build field object
+        $noshowdatefieldobj = new \stdClass();
+        $noshowdatefieldobj->name          = LOCAL_BOOKING_NOSHOWDATELABEL;
+        $noshowdatefieldobj->shortname     = LOCAL_BOOKING_NOSHOWDATE;
+        $noshowdatefieldobj->description   = '';
+        $noshowdatefieldobj->descriptionformat = 1;
+        $noshowdatefieldobj->visible       = 0;
+        $noshowdatefieldobj->datatype      = 'datetime';
+        $noshowdatefieldobj->categoryid    = $categoryid;
+        $noshowdatefieldobj->sortorder     = $fieldsortorder;
+
+        $categoryid = $DB->insert_record('user_info_field', $noshowdatefieldobj);
     }
 }
 

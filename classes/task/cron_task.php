@@ -71,7 +71,6 @@ class cron_task extends \core\task\scheduled_task {
 
                 if (!empty($course->subscribed) && $course->subscribed) {
 
-                    mtrace('');
                     mtrace('    Course: ' . $sitecourse->shortname . ' (id: ' . $sitecourse->id . ')');
 
                     // get on-hold, suspension, and instructor overdue restrictins
@@ -79,15 +78,17 @@ class cron_task extends \core\task\scheduled_task {
                     $suspensiondays = intval($course->suspensionperiod);
                     $overdueperiod = intval($course->overdueperiod);
 
+                    // get list of senior instructors for communication
+                    $seniorinstructors = $course->get_senior_instructors();
+
                     // check if any of the restrictions are enabled
                     if ($onholddays > 0 || $suspensiondays > 0 || $overdueperiod > 0) {
-                        // get active students
+
+                        // get list of active students and instructors
                         $students = $course->get_students('active', true);
                         $instructors = $course->get_instructors();
-                        $seniorinstructors = $course->get_senior_instructors();
 
                         // note students
-                        mtrace('');
                         mtrace('    Students to evaluate: ' . count($students));
 
                         // PROCESS POSTING RESTRICTION
@@ -100,7 +101,6 @@ class cron_task extends \core\task\scheduled_task {
                         $this->processon_suspension_restriction($course, $students, $seniorinstructors);
 
                         // note instructors
-                        mtrace('');
                         mtrace('    Instructors to evaluate: ' . count($instructors));
 
                         // PROCESS SUSPENSION RESTRICTION
@@ -109,6 +109,9 @@ class cron_task extends \core\task\scheduled_task {
                     } else {
                         mtrace('        Restrictions disabled.');
                     }
+
+                    // PROCESS NOSHOW REINSTATEMENT
+                    $this->process_noshow_reinstatement($course, $seniorinstructors);
                 }
             }
         }
@@ -134,7 +137,7 @@ class cron_task extends \core\task\scheduled_task {
                 mtrace('        ' . $studentname);
 
                 // get last booked date, otherwise use last graded date instead
-                $lastsessionts = $student->get_last_booking();
+                $lastsessionts = $student->get_last_booking_date();
                 if (empty($lastsessionts)) {
                     $lastgradeddate = $student->get_last_graded_date();
                     $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
@@ -190,7 +193,7 @@ class cron_task extends \core\task\scheduled_task {
                 mtrace('        ' . $studentname);
 
                 // get last booked date, otherwise use last graded date instead
-                $lastsessionts = $student->get_last_booking();
+                $lastsessionts = $student->get_last_booking_date();
                 if (empty($lastsessionts)) {
                     $lastgradeddate = $student->get_last_graded_date();
                     $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
@@ -256,7 +259,6 @@ class cron_task extends \core\task\scheduled_task {
 
         // check for suspension restriction is enabled
         $suspensiondays = intval($course->suspensionperiod);
-        mtrace('');
         mtrace('        #### SUSPENSION RESTRICTION ' . ($suspensiondays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
         if ($suspensiondays > 0) {
             foreach ($students as $student) {
@@ -264,7 +266,7 @@ class cron_task extends \core\task\scheduled_task {
                 mtrace('        ' . $studentname);
 
                 // get suspension date, otherwise use last graded date instead
-                $lastsessionts = $student->get_last_booking();
+                $lastsessionts = $student->get_last_booking_date();
                 if (empty($lastsessionts)) {
                     $lastgradeddate = $student->get_last_graded_date();
                     $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
@@ -341,6 +343,43 @@ class cron_task extends \core\task\scheduled_task {
             }
         } else {
             mtrace('            instructor overdue notifications disabled.');
+        }
+    }
+
+    /**
+     * Process suspended students with 2 no-shows that completed their suspension period,
+     * then reinstate and notify them.
+     *
+     * @param subscriber $course    The subscribed course
+     * @param array      $seniorinstructors An array of senior instructors to notify
+     */
+    private function process_noshow_reinstatement($course, $seniorinstructors) {
+
+        mtrace('        #### SUSPENDED NO-SHOW STUDENTS REINSTATEMENT ####');
+
+        // evaluate suspended students with 2 no-shows that completed their suspension period
+        $students = $course->get_students('suspended');
+        foreach ($students as $student) {
+
+            // check the student has 2 no-shows
+            $noshows = $student->get_noshow_bookings();
+            if (count($noshows) == 2) {
+
+                // the suspended until date timestamp: suspended date + no-show suspension period
+                $suspenduntildate = strtotime('-' . LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD . ' day', array_values($noshows)[0]->timemodified);
+
+                // reinstate after suspension priod had passed
+                if ($suspenduntildate <= time()) {
+
+                    // reinstate the student
+                    $student->suspend(false);
+
+                    // notify the student and senior instructors of reinstatement
+                    mtrace('                no-show student reinstated');
+                    $message = new notification();
+                    $message->send_noshow_reinstatement_notification($course, $student, $seniorinstructors);
+                }
+            }
         }
     }
 }

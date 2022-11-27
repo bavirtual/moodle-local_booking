@@ -126,14 +126,16 @@ import Ajax from 'core/ajax';
  *
  * @param {int} bookingId   The booking id to cancel
  * @param {string} comment  The booking id to cancel
+ * @param {bool} noshow     Whether the cancellation is a no-show or instructor initiated
  * @return {promise}
  */
- export const cancelBooking = (bookingId, comment) => {
+ export const cancelBooking = (bookingId, comment, noshow) => {
     const request = {
         methodname: 'local_booking_cancel_booking',
         args: {
             bookingid: bookingId,
             comment: comment,
+            noshow: noshow,
         }
     };
 

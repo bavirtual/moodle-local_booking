@@ -195,7 +195,7 @@ class booking_session_exporter extends exporter {
             $tentative = $this->session->hasbooking() && !$this->session->get_booking()->confirmed() && !$this->session->hasgrade();
             $logentrymissing = empty($this->data['logentryid']) && $this->session->hasgrade() && $this->session->get_grade()->grade_item->itemmodule != 'quiz';
             $lastbookingdate = $logentrymissing ?
-                slot::get_last_booking($this->data['courseid'], $this->student->get_id()) :
+                slot::get_last_booking_date($this->data['courseid'], $this->student->get_id()) :
                 $this->session->get_sessiondate()->getTimestamp();
 
             $return = [

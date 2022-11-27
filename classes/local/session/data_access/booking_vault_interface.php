@@ -106,10 +106,12 @@ interface booking_vault_interface {
     public static function get_user_total_sessions(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
-     * set active flag to false to deactive the booking.
+     * Set active flag to false to deactive the booking
+     * and set no-show status of the booking accordingly
      *
-     * @param booking $booking The booking in reference.
+     * @param int  $bookingid The booking id in reference.
+     * @param bool $noshow    Whether the student didn't show for the booked session
      * @return bool
      */
-    public static function set_booking_inactive($booking);
+    public static function set_booking_inactive(int $bookingid, bool $noshow = false);
 }

@@ -50,7 +50,7 @@ class booking_vault implements booking_vault_interface {
         global $DB;
 
         $sql = 'SELECT b.id, b.userid, b.courseid, b.studentid, b.exerciseid,
-                       b.slotid, b.confirmed, b.active, b.timemodified
+                       b.slotid, b.confirmed, b.noshow, b.active, b.timemodified
                 FROM {' . static::DB_BOOKINGS. '} b
                 INNER JOIN {' . static::DB_SLOTS . '} s on s.id = b.slotid
                 WHERE b.courseid = :courseid
@@ -249,26 +249,69 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
-     * set active flag to false to deactive the booking.
+     * Set active flag to false to deactive the booking
+     * and set no-show status of the booking accordingly
      *
-     * @param booking $booking The booking in reference.
+     * @param int  $bookingid The booking id in reference.
+     * @param bool $noshow    Whether the student didn't show for the booked session
      * @return bool
      */
-    public static function set_booking_inactive($booking) {
+    public static function set_booking_inactive(int $bookingid, bool $noshow = false) {
         global $DB;
 
         $sql = 'UPDATE {' . static::DB_BOOKINGS . '}
-                SET active = 0
-                WHERE courseid = :courseid
+                SET active = 0 ' . ($noshow ? ', noshow = 1' : '') . '
+                WHERE id = :bookingid';
+
+        return $DB->execute($sql, ['bookingid'=>$bookingid]);
+    }
+
+    /**
+     * Get an array of no-show bookings for a student in a course.
+     *
+     * @param int $courseid  The associated course
+     * @param int $studentid The student id conducted the session
+     * @return array
+     */
+    public static function get_noshow_bookings(int $courseid, int $studentid) {
+        global $DB;
+
+        // get the date afterwhich no-shows are evaluated (since date)
+        $sincedate = 0;
+        $sql = 'SELECT timemodified
+            FROM {' . static::DB_BOOKINGS . '}
+            WHERE courseid = :courseid
                 AND studentid = :studentid
-                AND exerciseid = :exerciseid';
-
+                AND noshow = 1
+            ORDER BY timemodified DESC';
         $params = [
-            'courseid' => $booking->get_courseid(),
-            'studentid'  => $booking->get_studentid(),
-            'exerciseid'  => $booking->get_exerciseid()
+            'courseid'   => $courseid,
+            'studentid'  => $studentid,
+            'noshow' => 1
         ];
+        // get the last no-show date to determine period
+        $noshowrecs = $DB->get_records_sql($sql, $params);
+        if (count($noshowrecs)) {
+            $sincedate = strtotime('-' . LOCAL_BOOKING_NOSHOWPERIOD . ' day', array_values($noshowrecs)[0]->timemodified);
+        }
 
-        return $DB->execute($sql, $params);
+        // get no-show records since a specific date
+        if ($sincedate) {
+
+            $sql = 'SELECT *
+                    FROM {' . static::DB_BOOKINGS . '}
+                    WHERE courseid = :courseid
+                        AND studentid = :studentid
+                        AND noshow = 1
+                        AND timemodified >= :sincedate
+                    ORDER BY timemodified DESC';
+
+            // add since date to the array
+            $params['sincedate'] = $sincedate;
+
+            $noshowrecs = $DB->get_records_sql($sql, $params);
+        }
+
+        return $noshowrecs;
     }
 }

@@ -28,6 +28,7 @@ namespace local_booking\local\message;
 use local_booking\local\calendar\calendar_helper;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
+use local_booking\local\session\entities\booking;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -87,7 +88,7 @@ class notification extends \core\message\message {
         $this->fullmessage       = calendar_helper::get_msg_content('body', $data, 'text');
         $this->fullmessagehtml   = calendar_helper::get_msg_content('body', $data, 'html');
         $this->contexturl        = $data->confirmurl;
-        $this->contexturlname    = get_string('studentavialability', 'local_booking');
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
         $this->set_additional_content('email', array('*' => array(
             'footer' => get_string('bookingfooter', 'local_booking', $data))));
 
@@ -162,7 +163,7 @@ class notification extends \core\message\message {
         $this->fullmessage       = get_string('emailinstconfirmnmsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailinstconfirmhtml', 'local_booking', $data);
         $this->contexturl        = $data->bookingurl;
-        $this->contexturlname    = get_string('studentavialability', 'local_booking');
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
         $this->set_additional_content('email', array('*' => array(
             'footer' => get_string('bookingfooter', 'local_booking', $data))));
 
@@ -173,34 +174,141 @@ class notification extends \core\message\message {
      * Sends an email notifying the student of
      * the cancelled session.
      *
-     * @param int       $studentid the student id sending the notification message.
-     * @param int       $exerciseid the exercise id relating to the session.
-     * @param Datetime  $sessiondatetime the date time object for the session.
-     * @param string    $comment the comment sent by the instructor to the student.
-     * @return bool     The notification message id.
+     * @param booking $booking The no-show booking
+     * @param string  $comment The comment sent by the instructor to the student.
+     * @return bool            The notification message id.
      */
-    public function send_session_cancellation($studentid, $exerciseid, $sessiondate, $comment) {
+    public function send_session_cancellation($booking, $comment) {
         global $USER, $COURSE;
 
         // notification message data
         $data = (object) array(
             'coursename'    => $COURSE->shortname,
-            'instructor'    => instructor::get_fullname($USER->id),
-            'sessiondate'   => $sessiondate->format('l M j \a\t H:i \z\u\l\u'),
-            'exercise'      => $COURSE->subscriber->get_exercise_name($exerciseid),
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
+            'instructorname'=> instructor::get_fullname($USER->id),
+            'sessiondate'   => (new \DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
+            'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
             'comment'       => $comment,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
         );
 
+        // cancellation message
         $this->name              = 'session_cancellation';
-        $this->userto            = $studentid;
+        $this->userto            = $booking->get_studentid();
         $this->subject           = get_string('emailcancel', 'local_booking', $data);
         $this->fullmessage       = get_string('emailcancelmsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailcancelhtml', 'local_booking', $data);
         $this->contexturl        = $data->courseurl;
-        $this->contexturlname    = get_string('studentavialability', 'local_booking');
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
 
         return message_send($this) != 0;
+    }
+
+    /**
+     * Sends an email notifying the student of no-show and actions,
+     * copy the instructor and senior instructors of no-show actions.
+     *
+     * @param booking $booking The no-show booking
+     * @return bool            The notification message id.
+     */
+    public function send_noshow_notification(booking $booking, $instructors) {
+        global $COURSE;
+
+        // get list of recipients
+        $instructor = new instructor($COURSE->subscriber, $booking->get_instructorid());
+        $instructors[] = $instructor;
+        $student = new student($COURSE->subscriber, $booking->get_studentid());
+
+        // get no-show bookings
+        $noshowbookings = $student->get_noshow_bookings();
+        $noshowbookingscount = count($noshowbookings);
+
+        // get 2nd no-show suspension reinstatement date
+        $reinstatementdatets = $noshowbookingscount == 2 ? strtotime('-' . LOCAL_BOOKING_NOSHOWPERIOD . ' day', $noshowbookings[0]->timemodified) : 0;
+        $reinstatementdate = $reinstatementdatets != 0 ?  new \DateTime('@' . $reinstatementdatets) : null;
+
+        // No show message data
+        $data = (object) array(
+            'coursename'    => $COURSE->shortname,
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
+            'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
+            'studentname'   => $student->get_name(),
+            'instructorname'=> $instructor->get_name(),
+            'sessiondate'   => (new \DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
+            'noshowperiod'  => LOCAL_BOOKING_NOSHOWPERIOD,
+            'reinstatementdate' => !empty($reinstatementdate) ? $reinstatementdate->format('M d, Y') : ''
+        );
+
+        // No show message
+        $this->name              = 'noshow_notification';
+        $this->userto            = $booking->get_studentid();
+        $this->subject           = get_string('emailnoshow' . $noshowbookingscount, 'local_booking', $data);
+        $this->fullmessage       = get_string('emailnoshow' . $noshowbookingscount . 'msg', 'local_booking', $data);
+        $this->fullmessagehtml   = get_string('emailnoshow' . $noshowbookingscount . 'html', 'local_booking', $data);
+        $this->contexturl        = $data->courseurl;
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
+
+        $result = message_send($this) != 0;
+        $result = $result && $this->copy_senior_instructors('noshow_instructor_notification', 'emailnoshowinst' . $noshowbookingscount,
+            'emailnoshowinst' . $noshowbookingscount . 'msg', 'emailnoshowinst' . $noshowbookingscount . 'html', $data, $instructors);
+
+        return $result;
+
+    }
+
+    /**
+     * Sends an email notifying the student of no-show and actions,
+     * copy the instructor and senior instructors of no-show actions.
+     *
+     * @param booking $booking The no-show booking
+     * @return bool            The notification message id.
+     */
+    public function send_noshow_reinstatement_notification(booking $booking, $instructors) {
+        global $COURSE;
+
+        // get list of recipients
+        $instructor = new instructor($COURSE->subscriber, $booking->get_instructorid());
+        $instructors[] = $instructor;
+        $student = new student($COURSE->subscriber, $booking->get_studentid());
+
+        // get no-show bookings
+        $noshowbookings = $student->get_noshow_bookings();
+        $noshowbookingscount = count($noshowbookings);
+
+        // get 2nd no-show suspension reinstatement date
+        $reinstatementdatets = $noshowbookingscount == 2 ? strtotime('-' . LOCAL_BOOKING_NOSHOWPERIOD . ' day', $noshowbookings[0]->timemodified) : 0;
+        $reinstatementdate = $reinstatementdatets != 0 ?  new \DateTime('@' . $reinstatementdatets) : null;
+
+        // No show message data
+        $data = (object) array(
+            'coursename'    => $COURSE->shortname,
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
+            'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
+            'studentname'   => $student->get_name(),
+            'instructorname'=> $instructor->get_name(),
+            'sessiondate'   => (new \DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
+            'noshowperiod'  => LOCAL_BOOKING_NOSHOWPERIOD,
+            'reinstatementdate' => !empty($reinstatementdate) ? $reinstatementdate->format('M d, Y') : ''
+        );
+
+        // No show message
+        $this->name              = 'noshow_notification';
+        $this->userto            = $booking->get_studentid();
+        $this->subject           = get_string('emailnoshow' . $noshowbookingscount, 'local_booking', $data);
+        $this->fullmessage       = get_string('emailnoshow' . $noshowbookingscount . 'msg', 'local_booking', $data);
+        $this->fullmessagehtml   = get_string('emailnoshow' . $noshowbookingscount . 'html', 'local_booking', $data);
+        $this->contexturl        = $data->courseurl;
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
+
+        $result = message_send($this) != 0;
+        $result = $result && $this->copy_senior_instructors('noshow_instructor_notification', 'emailnoshowinst' . $noshowbookingscount,
+            'emailnoshowinst' . $noshowbookingscount . 'msg', 'emailnoshowinst' . $noshowbookingscount . 'html', $data, $instructors);
+
+        return $result;
+
     }
 
     /**
@@ -220,10 +328,8 @@ class notification extends \core\message\message {
             'coursename'    => $coursename,
             'lastbookeddate'=> $lastbookeddate->format('M d, Y'),
             'onholddate'    => $onholddate->format('M d, Y'),
-            'courseurl'     => (new \moodle_url('/course/view.php', array(
-                'id'        => $courseid)))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
-                'id'        => $courseid)))->out(false),
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $courseid)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $courseid)))->out(false),
             'slotsurl'      => (new \moodle_url('/local/booking/availability.php', array('courseid'=> $courseid)))->out(false),
         );
 
@@ -233,7 +339,7 @@ class notification extends \core\message\message {
         $this->fullmessage       = get_string('emailinactivewarningmsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailinactivewarninghtml', 'local_booking', $data);
         $this->contexturl        = $data->slotsurl;
-        $this->contexturlname    = get_string('studentavialability', 'local_booking');
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
 
         return message_send($this) != 0;
     }
@@ -253,10 +359,8 @@ class notification extends \core\message\message {
         $data = (object) array(
             'coursename'    => $coursename,
             'onholddate'    => $onholddate->format('M d, Y'),
-            'courseurl'     => (new \moodle_url('/course/view.php', array(
-                'id'        => $courseid)))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array(
-                'id'        => $courseid)))->out(false),
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=>$courseid)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=>$courseid)))->out(false),
             'slotsurl'      => (new \moodle_url('/local/booking/availability.php', array('courseid'=> $courseid)))->out(false),
         );
 
@@ -266,7 +370,7 @@ class notification extends \core\message\message {
         $this->fullmessage       = get_string('emailonholdwarningmsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailonholdwarninghtml', 'local_booking', $data);
         $this->contexturl        = $data->slotsurl;
-        $this->contexturlname    = get_string('studentavialability', 'local_booking');
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
 
         return message_send($this) != 0;
     }
@@ -300,7 +404,7 @@ class notification extends \core\message\message {
         $this->subject           = get_string('emailonholdnotify', 'local_booking', $data);
         $this->fullmessage       = get_string('emailonholdnotifymsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailonholdnotifyhtml', 'local_booking', $data);
-        $this->contexturlname    = get_string('studentavialability', 'local_booking');
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
 
         // send notification then copy senior instructors
         $result = message_send($this) != 0;
@@ -337,7 +441,7 @@ class notification extends \core\message\message {
         $this->subject           = get_string('emailsuspendnotify', 'local_booking', $data);
         $this->fullmessage       = get_string('emailsuspendnotifymsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailsuspendnotifyhtml', 'local_booking', $data);
-        $this->contexturlname    = get_string('studentavialability', 'local_booking');
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
 
         // send notification then copy senior instructors
         $result = message_send($this) != 0;
@@ -375,7 +479,7 @@ class notification extends \core\message\message {
         $this->fullmessage       = get_string('emailoverduenotifymsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailoverduenotifyhtml', 'local_booking', $data);
         $this->contexturl        = $data->bookingurl;
-        $this->contexturlname    = get_string('studentavialability', 'local_booking');
+        $this->contexturlname    = get_string('studentavailability', 'local_booking');
 
         // send notification then copy senior instructors
         $result = message_send($this) != 0;

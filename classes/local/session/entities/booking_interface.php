@@ -67,6 +67,44 @@ interface booking_interface {
     public function confirm(string $confirmationmsg);
 
     /**
+     * Get the status of the booking Confirmed or Tentative.
+     *
+     * @return string
+     */
+    public function confirmed();
+
+    /**
+     * Get the booking active status.
+     *
+     * @return bool
+     */
+    public function active();
+
+    /**
+     * Get whether the student didn't show for the booked session.
+     *
+     * @return bool
+     */
+    public function noshow();
+
+    /**
+     * Deactivates a booking after the session
+     * has been conducted.
+     *
+     * @param string    Confirmation message
+     * @return bool
+     */
+    public function deactivate();
+
+    /**
+     * Process booking cancellation and no-shows
+     *
+     * @param bool $noshow      Whether the student didn't show without prior notice
+     * @return bool
+     */
+    public function cancel(bool $noshow = false);
+
+    /**
      * Get the booking id for the booking.
      *
      * @return int
@@ -121,20 +159,6 @@ interface booking_interface {
      * @return slot
      */
     public function get_slot();
-
-    /**
-     * Get the status of the booking Confirmed or Tentative.
-     *
-     * @return string
-     */
-    public function confirmed();
-
-    /**
-     * Get the booking active status.
-     *
-     * @return bool
-     */
-    public function active();
 
     /**
      * Get the date timestamp of the booking.

@@ -30,7 +30,6 @@ use local_booking\local\participant\entities\student;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
 use \local_booking\local\slot\entities\slot;
-use \local_booking\local\message\notification;
 use \local_booking\local\calendar\event;
 use \local_booking\local\calendar\moodle_calendar;
 use moodle_exception;
@@ -79,6 +78,11 @@ class booking implements booking_interface {
      * @var bool $confirmed The booking is confirmed.
      */
     protected $confirmed;
+
+    /**
+     * @var bool $noshow The student didn't show to the booked session.
+     */
+    protected $noshow;
 
     /**
      * @var bool $active The booking is active.
@@ -144,6 +148,7 @@ class booking implements booking_interface {
             $this->slot = new slot($bookingrec->slotid);
             $this->slot->load();
             $this->confirmed = $bookingrec->confirmed;
+            $this->noshow = $bookingrec->noshow;
             $this->bookingdate = $bookingrec->timemodified;
         }
 
@@ -225,27 +230,59 @@ class booking implements booking_interface {
     }
 
     /**
+     * Get the booking confirmation.
+     *
+     * @return bool
+     */
+    public function confirmed() {
+        return $this->confirmed;
+    }
+
+    /**
+     * Get the booking active status.
+     *
+     * @return bool
+     */
+    public function active() {
+        return $this->active;
+    }
+
+    /**
+     * Get whether the student didn't show for the booked session.
+     *
+     * @return bool
+     */
+    public function noshow() {
+        return $this->noshow;
+    }
+
+    /**
      * Deactivates a booking after the session
      * has been conducted.
      *
-     * @param string    Confirmation message
      * @return bool
      */
     public function deactivate() {
-        if (booking_vault::set_booking_inactive($this)) {
-            slot_vault::delete_slots($this->courseid, 0, 0, $this->studentid, false);
+        if (booking_vault::set_booking_inactive($this->id, $this->noshow)) {
+            return slot_vault::delete_slots($this->courseid, 0, 0, $this->studentid, false);
         }
     }
 
     /**
-     * Activates a booking after the session
-     * has been conducted.
+     * Process booking cancellation and no-shows
      *
-     * @param string    Confirmation message
+     * @param bool $noshow Whether the student didn't show without prior notice
      * @return bool
      */
-    public function activate() {
-        $this->active = true;
+    public function cancel(bool $noshow = false) {
+        if ($noshow) {
+            $this->noshow = $noshow;
+            $result = $this->deactivate();
+        } else {
+            $result = $this->delete();
+        }
+
+        return $result;
     }
 
     /**
@@ -319,24 +356,6 @@ class booking implements booking_interface {
      */
     public function get_studentname() {
         return student::get_fullname($this->studentid);
-    }
-
-    /**
-     * Get the booking confirmation.
-     *
-     * @return bool
-     */
-    public function confirmed() {
-        return $this->confirmed;
-    }
-
-    /**
-     * Get the booking active status.
-     *
-     * @return bool
-     */
-    public function active() {
-        return $this->active;
     }
 
     /**

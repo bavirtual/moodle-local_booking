@@ -73,11 +73,30 @@ define([
 
         // Listen to the click on the Cancel booking buttons in 'Instructor dashboard' page.
         root.on('click', Selectors.cancelbutton, function(e) {
-            // eslint-disable-next-line no-alert
-            Str.get_string('cancellationcomment', 'local_booking').then(function(promptMsg) {
+            Str.get_string('commentcancel', 'local_booking').then(function(promptMsg) {
+                // eslint-disable-next-line no-alert
                 const comment = prompt(promptMsg);
                 if (comment !== null) {
-                    BookingActions.cancelBooking(root, e, comment);
+                    BookingActions.cancelBooking(root, e, comment, false);
+                }
+                return;
+            }).catch(Notification.exception);
+        });
+
+        // Listen to the click on the 'No-show' booking buttons in 'Instructor dashboard' page.
+        root.on('click', Selectors.noshowbutton, function(e) {
+            // Get number of no shows
+            const noshows = $(e.target).closest(Selectors.sessionbutton).data('noshows');
+            // Get the message associated with the number of no-show occurence
+            const noShowComment = Str.get_string('commentnoshow' + noshows, 'local_booking').then(function(noshowMsg) {
+                return noshowMsg;
+            }).catch(Notification.exception);
+            // Chain the two retrieved strings in the prompt
+            $.when(Str.get_string('commentnoshow', 'local_booking'), noShowComment)
+            .then(function(promptMsg, noshowMsg) {
+                // eslint-disable-next-line no-alert
+                if (confirm(promptMsg + '\n\n' + noshowMsg)) {
+                    BookingActions.cancelBooking(root, e, null, true);
                 }
                 return;
             }).catch(Notification.exception);

@@ -1,16 +1,28 @@
 # Change log
 
-## [2022112700] - RELEASED 2022-11-27 - hotfix
+## [2022112700] - RELEASED 2022-11-27 - UNRELEASED
 
-### Fixed
+### Added
 
-- posted slots display should be course specific
+- no-show (1st time warning, 2nd time suspension, 3rd unenrolment) + notifications
 
 ## [2022111100] - RELEASED 2022-11-11 - hotfix
 
-### Fixed
+### Added
 
 - cron task background processing of session booking scheduled notifications (availability postings)
+
+## [2022102600] - UNRELEASED 2022-10-26
+
+### Added
+
+- Students progression page, a read-only view for students progression
+- ability to save comments regarding a student in his/her profile (i.e. temporary leave)
+
+### Changed
+
+- replaced ATO name with the plugin name as the section (category) label in the course settings page
+- removed ATO plugin settings information from config.json
 
 ## [2022102100] - RELEASED 2022-10-21
 

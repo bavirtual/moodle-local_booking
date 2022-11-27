@@ -311,7 +311,7 @@ class participant implements participant_interface {
      * @return bool
      */
     public function update_comment(string $comment) {
-        return $this->vault->update_participant_comment($this->userid, $comment);
+        return $this->vault->update_participant_field($this->userid, 'description', $comment);
     }
 
     /**

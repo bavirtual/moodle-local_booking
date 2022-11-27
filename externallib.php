@@ -31,8 +31,10 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
 use local_booking\external\logentry_exporter;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
+use local_booking\local\message\notification;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
+use local_booking\local\session\entities\booking;
 use local_booking\local\subscriber\entities\subscriber;
 
 /**
@@ -47,6 +49,27 @@ class local_booking_external extends external_api {
 
     // Availability slots table name for.
     const DB_SLOTS = 'local_booking_slots';
+
+    /**
+     * Sets the course subscriber and context url
+     *
+     * @param string $url       PAGE url
+     * @param int    $courseid  course id for context
+     */
+    protected static function set_course_subscriber_context(string $url, int $courseid) {
+        global $PAGE, $COURSE;
+
+        $context = context_course::instance($courseid);
+        self::validate_context($context);
+        $PAGE->set_url($url);
+        $PAGE->set_context($context);
+
+        // define subscriber globally
+        if (empty($COURSE->subscriber))
+            $COURSE->subscriber = new subscriber($courseid);
+
+        return $context;
+    }
 
     /**
      * Returns description of method parameters.
@@ -81,13 +104,8 @@ class local_booking_external extends external_api {
                 )
             );
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/');
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
 
         list($data, $template) = get_bookings_view($courseid, '', $filter);
 
@@ -137,14 +155,9 @@ class local_booking_external extends external_api {
                 )
             );
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/logbook?courseid=' . $courseid);
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/logbook?courseid=' . $courseid, $courseid);
         $renderer = $PAGE->get_renderer('local_booking');
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
 
         $logbook = new logbook($courseid, $userid);
         $viewformat = get_user_preferences('local_booking_logbookformat', 'std');
@@ -211,13 +224,8 @@ class local_booking_external extends external_api {
                 )
             );
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/');
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
 
         $warnings = array();
         $logentry = (new logbook($courseid, $userid))->get_logentry($logentryid);
@@ -279,13 +287,8 @@ class local_booking_external extends external_api {
                 )
             );
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/');
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
 
         $result = true;
         $warnings = array();
@@ -476,16 +479,9 @@ class local_booking_external extends external_api {
             'exerciseid'=> $exerciseid,
         ]);
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/');
-
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
         $calendar = \calendar_information::create($time, $params['courseid'], $params['categoryid']);
-        self::validate_context($calendar->context);
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
 
         $actiondata = [
             'action'    => $action,
@@ -583,6 +579,7 @@ class local_booking_external extends external_api {
         return new external_function_parameters(array(
                 'bookingid' => new external_value(PARAM_INT, 'The booking id', VALUE_DEFAULT),
                 'comment' => new external_value(PARAM_RAW, 'The instructor comment regarding the cancellation', VALUE_DEFAULT),
+                'noshow' => new external_value(PARAM_BOOL, 'Whether the cancellation is a no-show or instructor initiated', VALUE_DEFAULT),
             )
         );
     }
@@ -592,20 +589,76 @@ class local_booking_external extends external_api {
      *
      * @param int $bookingid
      * @param string $comment
+     * @param bool $noshow
      * @return array array of slots created.
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
-    public static function cancel_booking($bookingid, $comment) {
+    public static function cancel_booking($bookingid, $comment, $noshow) {
+        global $COURSE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::cancel_booking_parameters(), array(
             'bookingid' => $bookingid,
             'comment' => $comment,
+            'noshow' => $noshow,
             )
         );
 
+        $result = false;
         $warnings = array();
-        $result = cancel_booking($bookingid, $comment);
+        $msg = '';
+
+        // get the booking to be cancelled
+        if (!empty($bookingid)) {
+
+            $booking = new booking($bookingid);
+            $booking->load();
+            $courseid = $booking->get_courseid() ?: $COURSE->id;
+
+            require_login($courseid, false);
+
+            // set the subscriber object
+            self::set_course_subscriber_context('/local/booking/', $courseid);
+
+            // cancel the booking
+            if ($result = $booking->cancel($noshow)) {
+
+                // suspend the student in the case of repetetive noshows
+                if ($noshow) {
+                    $student = new student($COURSE->subscriber, $booking->get_studentid());
+                    if (count($student->get_noshow_bookings()) > 1) {
+                        $student->suspend();
+                    }
+
+                    // send cancellation message
+                    $message = new notification();
+                    $result = $message->send_noshow_notification($booking, $COURSE->subscriber->get_senior_instructors());
+
+                } elseif (intval($COURSE->subscriber->overdueperiod) > 0) {
+
+                    // enable restriction override if enabled to allow the student to repost slots sooner
+                    set_user_prefs('availabilityoverride', true, $courseid, $booking->get_studentid());
+
+                    // send cancellation message
+                    $message = new notification();
+                    $result = $message->send_session_cancellation($booking, $comment);
+
+                }
+
+                // confirmation Moodle notification to the instructor
+                $msg = get_string('bookingcanceledsuccess', 'local_booking', ['studentname'=>student::get_fullname($booking->get_studentid())]);
+                $msg .= $noshow ? ' ' . get_string('bookingcanceledsuccesswnoshow', 'local_booking') : '';
+            }
+
+        } else {
+            $msg = get_string('bookingcancelednotfound', 'local_booking');
+        }
+
+        if ($result) {
+            \core\notification::success($msg);
+        } else {
+            \core\notification::warning($msg ?: get_string('bookingcanceledunable', 'local_booking'));
+        }
 
         return array(
             'result' => $result,
@@ -712,7 +765,7 @@ class local_booking_external extends external_api {
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
     public static function update_enrolement_status($status, $courseid, $studentid) {
-        global $COURSE, $PAGE;
+        global $COURSE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::update_enrolement_status_parameters(), array(
@@ -722,13 +775,8 @@ class local_booking_external extends external_api {
             )
         );
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/');
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
 
         // suspend a student
         $student = new student($COURSE->subscriber, $studentid);
@@ -847,7 +895,7 @@ class local_booking_external extends external_api {
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
     public static function update_profile_comment(int $courseid, int $userid, string $comment) {
-        global $COURSE, $PAGE;
+        global $COURSE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::update_profile_comment_parameters(), array(
@@ -859,13 +907,8 @@ class local_booking_external extends external_api {
 
         $warnings = array();
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/');
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
 
         // add/remove student to group
         $participant = new participant($COURSE->subscriber, $userid);
@@ -926,11 +969,10 @@ class local_booking_external extends external_api {
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
     public static function save_slots($slots, $courseid, $year, $week) {
-        global $USER, $PAGE, $COURSE;
+        global $USER, $COURSE;
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/');
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
 
         // Parameter validation.
         $params = self::validate_parameters(self::save_slots_parameters(), array(
@@ -939,10 +981,6 @@ class local_booking_external extends external_api {
                 'year'      => $year,
                 'week'      => $week)
             );
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
 
         $student = $COURSE->subscriber->get_student($USER->id);
         $warnings = array();
@@ -1008,11 +1046,10 @@ class local_booking_external extends external_api {
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
     public static function delete_slots($courseid, $year, $week) {
-        global $USER, $PAGE, $COURSE;
+        global $USER, $COURSE;
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-        $PAGE->set_url('/local/booking/');
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
 
         // Parameter validation.
         $params = self::validate_parameters(self::delete_slots_parameters(), array(
@@ -1020,10 +1057,6 @@ class local_booking_external extends external_api {
                 'year' => $year,
                 'week' => $week)
             );
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
 
         $student = $COURSE->subscriber->get_student($USER->id);
         $warnings = array();
@@ -1091,12 +1124,8 @@ class local_booking_external extends external_api {
                 )
             );
 
-        $context = context_course::instance($courseid);
-        self::validate_context($context);
-
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
 
         $warnings = array();
 
@@ -1159,12 +1188,9 @@ class local_booking_external extends external_api {
         $userid = $args['userid'];
         $editing = !empty($data['id']);
 
-        $context = \context_course::instance($courseid);
-        self::validate_context($context);
 
-        // define subscriber globally
-        if (empty($COURSE->subscriber))
-            $COURSE->subscriber = new subscriber($courseid);
+        // set the subscriber object
+        $context = self::set_course_subscriber_context('/local/booking/', $courseid);
 
         $formoptions = [
             'context'    => $context,

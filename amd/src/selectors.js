@@ -55,7 +55,9 @@ define([], function() {
         },
         toggle: '[toggle-input]',
         onhold: '[onhold-toggle]',
+        sessionbutton: '.session-button',
         cancelbutton: '[data-region="cancel-button"]',
+        noshowbutton: '[data-region="noshow-button"]',
         studentsfilter: '[data-region="students-filter"]',
         expandsection: 'a[aria-expanded]',
     };

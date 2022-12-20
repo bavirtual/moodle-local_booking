@@ -222,10 +222,11 @@ class booking_vault implements booking_vault_interface {
     public static function get_last_booked_session(int $courseid, int $userid, bool $isinstructor = false) {
         global $DB;
 
-        $sql = 'SELECT timemodified as lastbookedsession
-                FROM {' . static::DB_BOOKINGS. '}
-                WHERE courseid = :courseid AND ' . ($isinstructor ? 'userid = :userid' : 'studentid = :userid') . '
-                ORDER BY timemodified DESC
+        $sql = 'SELECT s.starttime as lastbookedsession
+                FROM {' . static::DB_BOOKINGS. '} b
+                INNER JOIN {' . static::DB_SLOTS. '} s ON s.id = b.slotid
+                WHERE b.courseid = :courseid AND ' . ($isinstructor ? 'b.userid = :userid' : 'b.studentid = :userid') . '
+                ORDER BY b.timemodified DESC
                 LIMIT 1';
 
         return $DB->get_record_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
@@ -276,14 +277,15 @@ class booking_vault implements booking_vault_interface {
     public static function get_noshow_bookings(int $courseid, int $studentid) {
         global $DB;
 
-        // get the date afterwhich no-shows are evaluated (since date)
+        // get the latest no-show date where all no-shows between this date and evaluation period are included (since date)
         $sincedate = 0;
-        $sql = 'SELECT timemodified
-            FROM {' . static::DB_BOOKINGS . '}
-            WHERE courseid = :courseid
-                AND studentid = :studentid
-                AND noshow = 1
-            ORDER BY timemodified DESC';
+        $sql = 'SELECT s.starttime AS sincedate
+            FROM {' . static::DB_BOOKINGS . '} b
+            INNER JOIN {' . static::DB_SLOTS. '} s ON s.id = b.slotid
+            WHERE b.courseid = :courseid
+                AND b.studentid = :studentid
+                AND b.noshow = 1
+            ORDER BY s.starttime DESC';
         $params = [
             'courseid'   => $courseid,
             'studentid'  => $studentid,
@@ -292,19 +294,19 @@ class booking_vault implements booking_vault_interface {
         // get the last no-show date to determine period
         $noshowrecs = $DB->get_records_sql($sql, $params);
         if (count($noshowrecs)) {
-            $sincedate = strtotime('-' . LOCAL_BOOKING_NOSHOWPERIOD . ' day', array_values($noshowrecs)[0]->timemodified);
+            $sincedate = strtotime('-' . LOCAL_BOOKING_NOSHOWPERIOD . ' day', array_values($noshowrecs)[0]->sincedate);
         }
 
         // get no-show records since a specific date
         if ($sincedate) {
-
-            $sql = 'SELECT *
-                    FROM {' . static::DB_BOOKINGS . '}
-                    WHERE courseid = :courseid
-                        AND studentid = :studentid
-                        AND noshow = 1
-                        AND timemodified >= :sincedate
-                    ORDER BY timemodified DESC';
+            $sql = 'SELECT b.timemodified, s.starttime, b.exerciseid
+                    FROM {' . static::DB_BOOKINGS . '} b
+                    INNER JOIN {' . static::DB_SLOTS. '} s ON s.id = b.slotid
+                    WHERE b.courseid = :courseid
+                        AND b.studentid = :studentid
+                        AND b.noshow = 1
+                        AND b.timemodified >= :sincedate
+                    ORDER BY b.timemodified DESC';
 
             // add since date to the array
             $params['sincedate'] = $sincedate;

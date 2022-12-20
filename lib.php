@@ -96,7 +96,7 @@ define('LOCAL_BOOKING_NOSHOWPERIOD', 90);
 /**
  * LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD - constant for the period of suspension due to no-show
  */
-define('LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD', 30);
+define('LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD', 5);
 /**
  * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group quering purposes
  */
@@ -600,125 +600,6 @@ function get_participation_view($courseid) {
     $data = $participation->export($renderer);
 
     return [$data, $template];
-}
-
-/**
- * Save a new booking for a student by the instructor.
- *
- * @param   array   $params an array containing the webservice parameters
- * @return  bool
- */
-function save_booking($params) {
-    global $USER, $COURSE;
-
-    $courseid = $params['courseid'] ?: SITEID;
-    require_login($courseid, false);
-
-    $COURSE->subscriber = new subscriber($courseid);
-    $result = false;
-    $slottobook = $params['bookedslot'];
-    $courseid   = $params['courseid'];
-    $exerciseid = $params['exerciseid'];
-    $studentid  = $params['studentid'];
-    $instructorid = $USER->id;
-
-    // add a new tentatively booked slot for the student.
-    $sessiondata = [
-        'exercise'  => $COURSE->subscriber->get_exercise_name($exerciseid),
-        'instructor'=> student::get_fullname($instructorid),
-        'status'    => ucwords(get_string('statustentative', 'local_booking')),
-    ];
-
-    // add new booking and update slot
-    $studentslot = new slot(0,
-        $studentid,
-        $courseid,
-        $slottobook['starttime'],
-        $slottobook['endtime'],
-        $slottobook['year'],
-        $slottobook['week'],
-        get_string('statustentative', 'local_booking'),
-        get_string('bookinginfo', 'local_booking', $sessiondata)
-    );
-
-    $newbooking = new booking(0, $courseid, $studentid, $exerciseid, $studentslot,'', $instructorid);
-    $result = $newbooking->save();
-
-    if ($result) {
-        // remove restriciton override for the user
-        set_user_preference('local_booking_' .$courseid . '_availabilityoverride', false, $studentid);
-
-        // remove instructor from inactive group where applicable
-        $instructor = new instructor($COURSE->subscriber, $instructorid);
-        if (!$instructor->is_active()) {
-            $instructor->activate();
-        }
-
-        // send emails to both student and instructor
-        $sessionstart = new DateTime('@' . $slottobook['starttime']);
-        $sessionend = new DateTime('@' . $slottobook['endtime']);
-        $message = new notification();
-        if ($message->send_booking_notification($studentid, $exerciseid, $sessionstart, $sessionend)) {
-            $message->send_instructor_confirmation($studentid, $exerciseid, $sessionstart, $sessionend);
-        }
-        $sessiondata['sessiondate'] = $sessionstart->format('D M j\, H:i');
-        $sessiondata['studentname'] = student::get_fullname($studentid);
-        \core\notification::success(get_string('bookingsavesuccess', 'local_booking', $sessiondata));
-    } else {
-        \core\notification::warning(get_string('bookingsaveunable', 'local_booking'));
-    }
-
-    return $result;
-}
-
-/**
- * Confirm a booking for of a tentative session
- *
- * @param   int   $couseid      The course id for this booking.
- * @param   int   $instructorid The instructor id that booked the session.
- * @param   int   $studentid    The student id being of the confirmed session.
- * @param   int   $exerciseid   The exercise id being confirmed.
- * @return  array An array containing the result and confirmation message string.
- */
-function confirm_booking($courseid, $instructorid, $studentid, $exerciseid) {
-    global $COURSE;
-
-    $COURSE->subscriber = new subscriber($courseid);
-    $result = -1;
-    $time = time();
-    $week = (int) date('W', time());
-
-    // Get the student slot
-    $booking = new booking(0, $courseid, $studentid, $exerciseid);
-    $booking->load();
-
-    if (!empty($booking->get_id())) {
-        // update the booking by the instructor.
-        $sessiondatetime = (new DateTime('@' . ($booking->get_slot())->get_starttime()))->format('D M j\, H:i');
-        $strdata = [
-            'exercise'  => $COURSE->subscriber->get_exercise_name($exerciseid),
-            'instructor'=> student::get_fullname($instructorid),
-            'status'    => ucwords(get_string('statusbooked', 'local_booking')),
-            'sessiondate'=> $sessiondatetime
-        ];
-        if ($booking->confirm(get_string('bookingconfirmmsg', 'local_booking', $strdata))) {
-            // notify the instructor of the student's confirmation
-            $message = new notification();
-            $result = $message->send_instructor_notification($courseid, $studentid, $exerciseid, $sessiondatetime, $instructorid);
-        }
-        $time = ($booking->get_slot())->get_starttime();
-        $week = ($booking->get_slot())->get_week();
-    }
-
-    if ($result == 1) {
-        \core\notification::success(get_string('bookingconfirmsuccess', 'local_booking', $strdata));
-    } elseif ($result == 0) {
-        \core\notification::ERROR(get_string('bookingconfirmunable', 'local_booking'));
-    } elseif ($result == -1) {
-        \core\notification::success(get_string('nobookingtoconfirm', 'local_booking'));
-    }
-
-    return [$result, $time, $week];
 }
 
 /**

@@ -186,7 +186,7 @@ interface booking_interface {
      * @param int $isinstructor Whether the user is an instructor
      * @return DateTime         The date of last session for that exercise
      */
-    public static function get_last_session(int $courseid, int $userid, bool $isinstructor = false);
+    public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
      * Get the total sessions for a user.

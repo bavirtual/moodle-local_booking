@@ -163,7 +163,7 @@ class session implements session_interface {
         $haspassed = false;
         if ($this->grade !== null) $haspassed = $this->grade->is_passed();
 
-        return $haspassed;
+        return $haspassed || $this->isquiz();
     }
 
     /**
@@ -183,5 +183,23 @@ class session implements session_interface {
      */
     public function empty() {
         return (!$this->hasbooking() && !$this->hasgrade());
+    }
+
+    /**
+     * Get whether this session is a quiz/exam session.
+     *
+     * @return bool
+     */
+    public function isquiz() {
+        return $this->hasgrade() && $this->get_grade()->grade_item->itemmodule == 'quiz';
+    }
+
+    /**
+     * Get whether the student didn't show up to the session.
+     *
+     * @return bool
+     */
+    public function isnoshow() {
+        return $this->hasbooking() && $this->get_booking()->noshow();
     }
 }

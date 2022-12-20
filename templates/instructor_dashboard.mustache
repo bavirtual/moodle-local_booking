@@ -138,12 +138,9 @@
                     data-html="true"
                     title="{{{sessiontooltip}}}"
                     {{/sessionempty}}>
-                    <div id="exercise-session" class="d-md-block text-xs-center{{#canlogentry}} clickable{{/canlogentry}}">
+                    <div id="exercise-session" class="d-md-block text-xs-center{{#canlogentry}}{{^sessionempty}} clickable{{/sessionempty}}{{/canlogentry}}">
                         <span id="exercise-{{studentid}}-{{exerciseid}}" class="session-date media-body fa-inverse{{!
-                            }}{{#graded}}{{#passed}} session-graded{{/passed}}{{!
-                            }}{{^passed}} session-objective-not-met{{/passed}}{{/graded}}{{!
-                            }}{{#booked}} session-booked{{/booked}}{{!
-                            }}{{#tentative}} session-tentative{{/tentative}}{{!
+                            }}{{^sessionempty}} session-{{status}}{{/sessionempty}}{{!
                             }}">{{^isquiz}}{{^logentrymissing}}{{^marknoposts}}&nbsp;{{/marknoposts}}{{/logentrymissing}}{{/isquiz}}
                             {{#logentrymissing}}
                             {{#pix}} info-circle, local_booking,{{#str}} logentrymissing, local_booking {{/str}} {{/pix}}

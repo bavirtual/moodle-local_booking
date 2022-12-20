@@ -32,9 +32,11 @@ use local_booking\external\logentry_exporter;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\message\notification;
+use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\session\entities\booking;
+use local_booking\local\slot\entities\slot;
 use local_booking\local\subscriber\entities\subscriber;
 
 /**
@@ -536,6 +538,7 @@ class local_booking_external extends external_api {
      * @return array array of slots created.
      */
     public static function save_booking($slottobook, $courseid, $exerciseid, $studentid) {
+        global $USER, $COURSE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::save_booking_parameters(), array(
@@ -546,8 +549,57 @@ class local_booking_external extends external_api {
                 )
             );
 
-        $result = save_booking($params);
+        // set the subscriber object
+        self::set_course_subscriber_context('/local/booking/', $courseid);
+
         $warnings = array();
+        $instructorid = $USER->id;
+
+        // add a new tentatively booked slot for the student.
+        $sessiondata = [
+            'exercise'  => $COURSE->subscriber->get_exercise_name($exerciseid),
+            'instructor'=> student::get_fullname($instructorid),
+            'status'    => ucwords(get_string('statustentative', 'local_booking')),
+        ];
+
+        // add new booking and update slot
+        $studentslot = new slot(0,
+            $studentid,
+            $courseid,
+            $slottobook['starttime'],
+            $slottobook['endtime'],
+            $slottobook['year'],
+            $slottobook['week'],
+            get_string('statustentative', 'local_booking'),
+            get_string('bookinginfo', 'local_booking', $sessiondata)
+        );
+
+        $newbooking = new booking(0, $courseid, $studentid, $exerciseid, $studentslot,'', $instructorid);
+        $result = $newbooking->save();
+
+        if ($result) {
+            // remove restriciton override for the user
+            set_user_preference('local_booking_' .$courseid . '_availabilityoverride', false, $studentid);
+
+            // remove instructor from inactive group where applicable
+            $instructor = new instructor($COURSE->subscriber, $instructorid);
+            if (!$instructor->is_active()) {
+                $instructor->activate();
+            }
+
+            // send emails to both student and instructor
+            $sessionstart = new DateTime('@' . $slottobook['starttime']);
+            $sessionend = new DateTime('@' . $slottobook['endtime']);
+            $message = new notification();
+            if ($message->send_booking_notification($studentid, $exerciseid, $sessionstart, $sessionend)) {
+                $message->send_instructor_confirmation($studentid, $exerciseid, $sessionstart, $sessionend);
+            }
+            $sessiondata['sessiondate'] = $sessionstart->format('D M j\, H:i');
+            $sessiondata['studentname'] = student::get_fullname($studentid);
+            \core\notification::success(get_string('bookingsavesuccess', 'local_booking', $sessiondata));
+        } else {
+            \core\notification::warning(get_string('bookingsaveunable', 'local_booking'));
+        }
 
         return array(
             'result' => $result,

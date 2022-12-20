@@ -148,6 +148,7 @@ class booking implements booking_interface {
             $this->slot = new slot($bookingrec->slotid);
             $this->slot->load();
             $this->confirmed = $bookingrec->confirmed;
+            $this->active = $bookingrec->active;
             $this->noshow = $bookingrec->noshow;
             $this->bookingdate = $bookingrec->timemodified;
         }
@@ -388,7 +389,7 @@ class booking implements booking_interface {
      * @param int $isinstructor Whether the user is an instructor
      * @return DateTime         The date of last session for that exercise
     */
-    public static function get_last_session(int $courseid, int $userid, bool $isinstructor = false) {
+    public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false) {
         return booking_vault::get_last_booked_session($courseid, $userid, $isinstructor);
     }
 

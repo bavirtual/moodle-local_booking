@@ -151,16 +151,21 @@
 .session-button-disabled {
     background-color: darkgray;
 }
-.session-button-cancelnoshow:hover {
+.session-button-noshow {
+    margin-right: 5px;
+    width: 100px;
+    background-color: #c40a0a;
+}
+.session-button-noshow:hover {
     background-color: #9b2828;
 }
 .session-button-cancel {
     margin-right: 5px;
     width: 100px;
-    background-color: #c40a0a;
+    background-color: #1565c0;
 }
 .session-button-cancel:hover {
-    background-color: #9b2828;
+    background-color: #0d47a1;
 }
 .session-button-evaluate {
     background-color: darkred;

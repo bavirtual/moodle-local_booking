@@ -42,7 +42,7 @@ function xmldb_local_booking_upgrade($oldversion) {
     // Put any upgrade step following this.
 
     // change local_booking_sessions table to include a noshow field to track student no-show occurrences
-    if ($oldversion < 2022111700) {
+    if ($oldversion < 2022122001) {
         // Define field hidegrader to be added to local_booking_sessions.
         $table = new xmldb_table('local_booking_sessions');
         $field = new xmldb_field('noshow', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'confirmed');
@@ -52,7 +52,7 @@ function xmldb_local_booking_upgrade($oldversion) {
         }
 
         // Assignment savepoint reached.
-        upgrade_plugin_savepoint(true, 2022111700, 'local', 'booking');
+        upgrade_plugin_savepoint(true, 2022122001, 'local', 'booking');
     }
 
     // change Session booking settings in course settings category from the ATO name to Session booking

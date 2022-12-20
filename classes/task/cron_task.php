@@ -129,6 +129,7 @@ class cron_task extends \core\task\scheduled_task {
 
         // check if wait-period restriction is enabled
         $postingwait = intval($course->postingwait);
+        mtrace('');
         mtrace('        #### POSTING WAIT RESTRICTION ' . ($postingwait > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
         if ($postingwait > 0) {
             foreach ($students as $student) {
@@ -185,6 +186,7 @@ class cron_task extends \core\task\scheduled_task {
 
         // check if on-hold restriction is enabled
         $onholddays = intval($course->onholdperiod);
+        mtrace('');
         mtrace('        #### ON-HOLD RESTRICTION ' . ($onholddays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
         if ($onholddays > 0) {
             foreach ($students as $student) {
@@ -259,6 +261,7 @@ class cron_task extends \core\task\scheduled_task {
 
         // check for suspension restriction is enabled
         $suspensiondays = intval($course->suspensionperiod);
+        mtrace('');
         mtrace('        #### SUSPENSION RESTRICTION ' . ($suspensiondays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
         if ($suspensiondays > 0) {
             foreach ($students as $student) {
@@ -312,6 +315,7 @@ class cron_task extends \core\task\scheduled_task {
 
         // check for suspension restriction is enabled
         $overdueperiod = intval($course->overdueperiod);
+        mtrace('');
         mtrace('        #### INSTRUCTOR OVERDUE NOTIFICATION ' . ($overdueperiod > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
         if ($overdueperiod > 0) {
             foreach ($instructors as $instructor) {
@@ -355,6 +359,7 @@ class cron_task extends \core\task\scheduled_task {
      */
     private function process_noshow_reinstatement($course, $seniorinstructors) {
 
+        mtrace('');
         mtrace('        #### SUSPENDED NO-SHOW STUDENTS REINSTATEMENT ####');
 
         // evaluate suspended students with 2 no-shows that completed their suspension period
@@ -366,18 +371,19 @@ class cron_task extends \core\task\scheduled_task {
             if (count($noshows) == 2) {
 
                 // the suspended until date timestamp: suspended date + no-show suspension period
-                $suspenduntildate = strtotime('-' . LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD . ' day', array_values($noshows)[0]->timemodified);
+                $suspenduntildate = strtotime(LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD . ' day', array_values($noshows)[0]->starttime);
 
                 // reinstate after suspension priod had passed
                 if ($suspenduntildate <= time()) {
 
                     // reinstate the student
                     $student->suspend(false);
+                    $exerciseid = array_values($noshows)[0]->exerciseid;
 
                     // notify the student and senior instructors of reinstatement
                     mtrace('                no-show student reinstated');
                     $message = new notification();
-                    $message->send_noshow_reinstatement_notification($course, $student, $seniorinstructors);
+                    $message->send_noshow_reinstatement_notification($course, $student, $exerciseid, $seniorinstructors);
                 }
             }
         }

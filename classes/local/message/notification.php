@@ -224,8 +224,9 @@ class notification extends \core\message\message {
         $noshowbookings = $student->get_noshow_bookings();
         $noshowbookingscount = count($noshowbookings);
 
-        // get 2nd no-show suspension reinstatement date
-        $reinstatementdatets = $noshowbookingscount == 2 ? strtotime('-' . LOCAL_BOOKING_NOSHOWPERIOD . ' day', $noshowbookings[0]->timemodified) : 0;
+        // get the reinstatement date for the 2nd no-show (suspension), which is the oldest no-show booking
+        // based on associated slot startime, within the evaluation period, plus the suspension period
+        $reinstatementdatets = $noshowbookingscount == 2 ? strtotime(LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD . ' day', $noshowbookings[0]->starttime) : 0;
         $reinstatementdate = $reinstatementdatets != 0 ?  new \DateTime('@' . $reinstatementdatets) : null;
 
         // No show message data
@@ -238,6 +239,7 @@ class notification extends \core\message\message {
             'instructorname'=> $instructor->get_name(),
             'sessiondate'   => (new \DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
             'noshowperiod'  => LOCAL_BOOKING_NOSHOWPERIOD,
+            'suspensiondays'=> LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD,
             'reinstatementdate' => !empty($reinstatementdate) ? $reinstatementdate->format('M d, Y') : ''
         );
 
@@ -259,53 +261,38 @@ class notification extends \core\message\message {
     }
 
     /**
-     * Sends an email notifying the student of no-show and actions,
-     * copy the instructor and senior instructors of no-show actions.
+     * Sends an email notifying the student and instructors of
+     * student suspension period expiring and student being reinstated
      *
-     * @param booking $booking The no-show booking
-     * @return bool            The notification message id.
+     * @param  subscriber $course            The subscribing course
+     * @param  student    $student           The student being reinstated
+     * @param  int        $exerciseid        The exercise id associated with the no-show
+     * @param  array      $seniorinstructors An array of senior instructors
+     * @return bool The notification message id.
      */
-    public function send_noshow_reinstatement_notification(booking $booking, $instructors) {
-        global $COURSE;
-
-        // get list of recipients
-        $instructor = new instructor($COURSE->subscriber, $booking->get_instructorid());
-        $instructors[] = $instructor;
-        $student = new student($COURSE->subscriber, $booking->get_studentid());
-
-        // get no-show bookings
-        $noshowbookings = $student->get_noshow_bookings();
-        $noshowbookingscount = count($noshowbookings);
-
-        // get 2nd no-show suspension reinstatement date
-        $reinstatementdatets = $noshowbookingscount == 2 ? strtotime('-' . LOCAL_BOOKING_NOSHOWPERIOD . ' day', $noshowbookings[0]->timemodified) : 0;
-        $reinstatementdate = $reinstatementdatets != 0 ?  new \DateTime('@' . $reinstatementdatets) : null;
+    public function send_noshow_reinstatement_notification($course, $student, $exerciseid, $seniorinstructors) {
 
         // No show message data
         $data = (object) array(
-            'coursename'    => $COURSE->shortname,
-            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
-            'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
+            'coursename'    => $course->get_shortname(),
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
+            'exercise'      => $course->get_exercise_name($exerciseid),
             'studentname'   => $student->get_name(),
-            'instructorname'=> $instructor->get_name(),
-            'sessiondate'   => (new \DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
-            'noshowperiod'  => LOCAL_BOOKING_NOSHOWPERIOD,
-            'reinstatementdate' => !empty($reinstatementdate) ? $reinstatementdate->format('M d, Y') : ''
         );
 
         // No show message
-        $this->name              = 'noshow_notification';
-        $this->userto            = $booking->get_studentid();
-        $this->subject           = get_string('emailnoshow' . $noshowbookingscount, 'local_booking', $data);
-        $this->fullmessage       = get_string('emailnoshow' . $noshowbookingscount . 'msg', 'local_booking', $data);
-        $this->fullmessagehtml   = get_string('emailnoshow' . $noshowbookingscount . 'html', 'local_booking', $data);
+        $this->name              = 'reinstatement_notification';
+        $this->userto            = $student->get_id();
+        $this->subject           = get_string('emailnoshowreinstatement', 'local_booking', $data);
+        $this->fullmessage       = get_string('emailnoshowreinstatementmsg', 'local_booking', $data);
+        $this->fullmessagehtml   = get_string('emailnoshowreinstatementhtml', 'local_booking', $data);
         $this->contexturl        = $data->courseurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
 
         $result = message_send($this) != 0;
-        $result = $result && $this->copy_senior_instructors('noshow_instructor_notification', 'emailnoshowinst' . $noshowbookingscount,
-            'emailnoshowinst' . $noshowbookingscount . 'msg', 'emailnoshowinst' . $noshowbookingscount . 'html', $data, $instructors);
+        $result = $result && $this->copy_senior_instructors('reinstatement_instructor_notification', 'emailnoshowreinstatement',
+            'emailnoshowreinstatementinstmsg', 'emailnoshowreinstatementinsthtml', $data, $seniorinstructors);
 
         return $result;
 

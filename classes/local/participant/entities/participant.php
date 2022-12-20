@@ -270,7 +270,7 @@ class participant implements participant_interface {
      * @return  \DateTime    The timestamp of the last booked session
      */
     public function get_last_booked_date() {
-        $sessiondate = booking::get_last_session($this->course->get_id(), $this->userid, !$this->is_student);
+        $sessiondate = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
 
         $lastsessiondate = !empty($sessiondate) ? new \DateTime('@' . $sessiondate->lastbookedsession) : null;
 

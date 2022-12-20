@@ -104,4 +104,18 @@ interface session_interface {
      * @return bool
      */
     public function empty();
+
+    /**
+     * Get whether this session is a quiz/exam session.
+     *
+     * @return bool
+     */
+    public function isquiz();
+
+    /**
+     * Get whether the student didn't show up to the session.
+     *
+     * @return bool
+     */
+    public function isnoshow();
 }

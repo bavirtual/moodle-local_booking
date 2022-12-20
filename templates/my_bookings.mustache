@@ -54,10 +54,10 @@
                 <span class="media-body" aria-hidden="true">{{#str}} zulutime, local_booking {{/str}}</span>
             </th>
             <th class="header booking-header booking-xbig text-xs-center">
-                <span class="media-body" aria-hidden="true">{{#str}} bookingcancelnoshow, local_booking {{/str}}</span>
+                <span class="media-body" aria-hidden="true">{{#str}} bookingcancelhdr, local_booking {{/str}}</span>
             </th>
             <th class="header booking-header booking-xbig text-xs-center">
-                <span class="media-body" aria-hidden="true">{{#str}} bookingcancel, local_booking {{/str}}</span>
+                <span class="media-body" aria-hidden="true">{{#str}} bookingcancelnoshow, local_booking {{/str}}</span>
             </th>
         </tr>
     </thead>
@@ -79,6 +79,20 @@
             <td>
                 <div class="singlebutton session-right">
                     <button class="session-button session-button-cancel"
+                        data-region="cancel-button"
+                        id="cancel_button"
+                        data-bookingid="{{bookingid}}"
+                        data-studentid="{{studentid}}"
+                        data-exerciseid="{{exerciseid}}">
+                        {{#pix}} window-close, local_booking {{/pix}}
+                        {{actionname}}
+                    </button>
+                     </a>
+                </div>
+            </td>
+            <td>
+                <div class="singlebutton session-right">
+                    <button class="session-button session-button-noshow"
                         data-region="noshow-button"
                         id="noshow_button"
                         data-bookingid="{{bookingid}}"
@@ -87,20 +101,6 @@
                         data-noshows="{{noshows}}"                        >
                         {{#pix}} user-times, local_booking {{/pix}}
                         {{#str}} bookingcancelnoshow, local_booking {{/str}}
-                    </button>
-                     </a>
-                </div>
-            </td>
-            <td>
-                <div class="singlebutton session-right">
-                    <button class="session-button session-button-cancel"
-                        data-region="cancel-button"
-                        id="cancel_button"
-                        data-bookingid="{{bookingid}}"
-                        data-studentid="{{studentid}}"
-                        data-exerciseid="{{exerciseid}}">
-                        {{#pix}} window-close, local_booking {{/pix}}
-                        {{actionname}}
                     </button>
                      </a>
                 </div>

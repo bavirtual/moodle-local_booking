@@ -176,7 +176,7 @@ class booking_session_exporter extends exporter {
 
         // get student posts
         $nextexercise = $this->student->get_next_exercise();
-        $noposts = '';
+        $noposts = ($nextexercise == $this->data['exerciseid'] && $this->student->get_total_posts() == 0) ? get_string('bookingnoposts', 'local_booking') : '';
 
         if (!empty($this->session)) {
             $graded = $this->session->hasgrade();
@@ -185,8 +185,9 @@ class booking_session_exporter extends exporter {
                 slot::get_last_booking_date($this->data['courseid'], $this->student->get_id()) :
                 $this->session->get_sessiondate()->getTimestamp();
 
-            $noposts = ($nextexercise == $this->data['exerciseid'] || $this->session->isnoshow()) && $this->student->get_total_posts() == 0 &&
-            $this->student->has_completed_lessons() ? get_string('bookingnoposts', 'local_booking') : '';
+            // consider 'No posts' tag when a 'no-show' occurs and the session is cancelled
+            if ($this->session->isnoshow())
+                $noposts = get_string('bookingnoposts', 'local_booking');
 
             $return = [
                 'graded'        => $graded,

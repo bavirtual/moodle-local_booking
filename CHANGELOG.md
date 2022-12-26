@@ -1,5 +1,11 @@
 # Change log
 
+## [2022126000] - RELEASED 2022-12-26 - hotfix
+
+### Fixed
+
+- no-post tag not showing in progression view
+
 ## [2022122003] - RELEASED 2022-12-20 - hotfix
 
 ### Fixed

@@ -96,7 +96,7 @@ define('LOCAL_BOOKING_NOSHOWPERIOD', 90);
 /**
  * LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD - constant for the period of suspension due to no-show
  */
-define('LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD', 5);
+define('LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD', 30);
 /**
  * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group quering purposes
  */

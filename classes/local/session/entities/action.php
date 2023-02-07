@@ -148,8 +148,12 @@ class action implements action_interface {
                 $name = get_string('grade', 'grades');
                 $tooltip = get_string('actiongradesession', 'local_booking');
 
+                // check if the exercise requires submission and the assignment is submitted
+                if (!$student->has_submitted_assignment($student->get_next_exercise())) {
+                    $enabled =  false;
+                    $tooltip = get_string('actiondisabledsubmissionmissingtooltip', 'local_booking');
                 // check if the exercise to be graded is the final skill test
-                if ($student->get_next_exercise() == $gradexercise) {
+                } elseif ($student->get_next_exercise() == $gradexercise) {
                     global $USER;
                     $instructor = new instructor($course, $USER->id);
                     $enabled =  $instructor->is_examiner();

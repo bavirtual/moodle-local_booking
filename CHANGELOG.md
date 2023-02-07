@@ -1,6 +1,23 @@
 # Change log
 
-## [2022126000] - RELEASED 2022-12-26 - hotfix
+## [2023020700] - RELEASED 2023-02-07
+
+### Fixed
+
+- student read-only progression view doesn’t show booked sessions
+
+### Added
+
+- verification of student assignment submission for submission-enabled exercises as a pre-requisite to grading
+
+### Changed
+
+- replaced deprecated php8.1 functions: array_key_exists(), strftime(), current(), end() https://www.php.net/manual/en/appendices.php
+- dynamic to static properties in preparation for php9: https://wiki.php.net/rfc/deprecate_dynamic_properties
+- slot notification to use a ‘notified’ field in local_booking_slots instead of user preferences
+- moved Moodle lib.php deprecation calls to other classes: set_user_prefs, process_submission_graded_event, get_week_days, get_week_start, get_booking_config, set_booking_config
+
+## [2022122600] - RELEASED 2022-12-26 - hotfix
 
 ### Fixed
 

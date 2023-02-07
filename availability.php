@@ -91,7 +91,7 @@ if (empty($time)) {
 
 $calendar = calendar_information::create($time, $courseid, !empty($categoryid) ? $categoryid : $course->category);
 
-$PAGE->navbar->add(userdate($time, get_string('strftimeweekinyear','local_booking')));
+$PAGE->navbar->add(userdate($time, get_string('weekinyear','local_booking', date('W', $time))));
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title($pluginname, 'local_booking');
 $PAGE->set_heading($pluginname, 'local_booking');// . ' course id='  . $courseid);

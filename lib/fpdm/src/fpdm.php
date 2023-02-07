@@ -1597,7 +1597,7 @@ if (!call_user_func_array('class_exists', $__tmp)) {
 		function extract_pdf_definition_value($name,$line,&$match) {
 		//-----------------------------------------------------------
 				global $FPDM_REGEXPS;
-				if(array_key_exists($name,$FPDM_REGEXPS)) {
+				if(isset($FPDM_REGEXPS[$name])) {
 					$value=$this->_extract_pdf_definition_value($name,$line,$match);
 				}else
 					$this->Error("extract_pdf_definition_value() does not support definition '$name'");
@@ -1751,11 +1751,11 @@ if (!call_user_func_array('class_exists', $__tmp)) {
 									}
 								}
 
-								if(array_key_exists("length",$stream)) { //length is mandatory
+								if(isset($stream["length"])) { //length is mandatory
 
 									if(preg_match("/\b(stream|endstream)\b/",$CurLine,$match)) {
 
-										if(!array_key_exists("filters",$stream))  {//filter type is optional, if none is given, its standard
+										if(!isset($stream["filters"]))  {//filter type is optional, if none is given, its standard
 
 											$stream["filters"]=array("type"=>array("Standard"));
 											if($verbose_parsing) {
@@ -2103,7 +2103,7 @@ if (!call_user_func_array('class_exists', $__tmp)) {
 
 			if($this->verbose) {
 
-				$refs=(array_key_exists('$_XREF_$',$lines)) ? $lines['$_XREF_$']["infos"]["count"] : 0;
+				$refs=(isset($lines['$_XREF_$'])) ? $lines['$_XREF_$']["infos"]["count"] : 0;
 				if($refs) {
 					$this->dumpContent("PDF parse retrieved $refs refs");
 				}else {
@@ -2182,7 +2182,7 @@ if (!call_user_func_array('class_exists', $__tmp)) {
 							$this->Error("Field $f ignored , Invalid field keys ({$matches[0][$f]})");
 					}
 					if($name!='') {
-						if(array_key_exists($name,$fields))
+						if(isset($fields[$name]))
 							 $this->Error("Field $f ignored , already defined");
 						else {
 							$name=$this->_unprotectContentValues($name);

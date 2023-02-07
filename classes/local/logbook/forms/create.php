@@ -26,6 +26,8 @@
 
 namespace local_booking\local\logbook\forms;
 
+use ArrayIterator;
+use ArrayObject;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\session\entities\booking;
@@ -106,6 +108,8 @@ class create extends \moodleform {
      *
      * @param MoodleQuickForm $mform
      * @param subscriber $subscriber
+     * @param logentry $logentry
+     * @param string $flighttype
      */
     protected function add_elements($mform, $subscriber, $logentry, $flighttype) {
         global $USER;
@@ -561,11 +565,12 @@ class create extends \moodleform {
      * @param subscriber $course   The subscriber course
      * @return array $enginetype The engine type of the default aircraft
      */
-    protected function get_enginetype($course) {
+    protected function get_enginetype(subscriber $course) {
         $enginetype = 'SE';
 
         if (!empty($course->aircrafticao)) {
-            $aircrafticao = current($course->aircrafticao);
+            $aircrafts = (new ArrayObject($course->aircrafticao))->getIterator();
+            $aircrafticao = $aircrafts->current();
 
             if ($course->has_integration('aircraft')) {
                 $engintyperec = subscriber::get_integrated_data('aircraft', 'aircraftinfo', $aircrafticao);

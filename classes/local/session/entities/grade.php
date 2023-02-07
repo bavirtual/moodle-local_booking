@@ -29,6 +29,7 @@ require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->libdir . '/grade/grade_grade.php');
 require_once($CFG->dirroot . '/grade/grading/lib.php');
 
+use assign;
 use local_booking\local\participant\entities\participant;
 use stdClass;
 
@@ -46,6 +47,11 @@ class grade extends \grade_grade {
      * @var \stdClass $gradeinfo The grade info class.
      */
     public $gradeinfo;
+
+    /**
+     * @var string $gradername The instructor name grading.
+     */
+    public $gradername;
 
     /**
      * @var array $attempts The grade attempts.
@@ -78,13 +84,14 @@ class grade extends \grade_grade {
      * @param {object}  $coursemodgrade The grader user id of the grade.
      * @param int       $userid         The user id of the student of the grade.
      * @param int       $exerciseid     The exercise id of the grade.
+     * @param bool      $force          Whether to force loading the grade object even before a final grade is assigned.
      */
-    public function __construct(int $gradeitemid, int $userid, int $exerciseid) {
+    public function __construct(int $gradeitemid, int $userid, int $exerciseid, bool $force = false) {
         parent::__construct(array('userid'=>$userid, 'itemid'=>$gradeitemid));
 
-        if (!empty($this->finalgrade)) {
+        if (!empty($this->finalgrade) || $force) {
             $this->exerciseid = $exerciseid;
-            $this->gradername = participant::get_fullname($this->usermodified);
+            $this->gradername = participant::get_fullname($this->usermodified ?: $userid);
             $this->load_grade_item();
             $this->gradeinfo = ((object) grade_get_grades(
                 $this->grade_item->courseid,
@@ -96,25 +103,6 @@ class grade extends \grade_grade {
             if ($this->grade_item->itemmodule == 'quiz') {
                 $this->attempts = quiz_get_user_attempts($this->grade_item->iteminstance, $userid);
             }
-
-            // get grade mark from the course's scale
-            // $scale = get_scale($coursemodgrade->scaleid);
-            $scale = null;
-
-
-                // $params = array('itemtype' => 'mod',
-                //     'itemmodule' => 'assign',
-                //     'iteminstance' => $this->course->get_modules()[$coursemodid]->instance,
-                //     'courseid' => $this->course->get_id(),
-                //     'itemnumber' => 0);
-                // $gradeitem = \grade_item::fetch($params);
-
-            // if (!empty($scale)) {
-            //     $this->scale = explode(',', $coursemodgrade->scale);
-            //     $this->grademark = $this->scale[intval($this->finalgrade)-1];
-            // } else {
-            //     $this->grademark = intval($this->finalgrade) . '/' . intval($this->totalgrade);
-            // }
         }
     }
 
@@ -235,7 +223,7 @@ class grade extends \grade_grade {
     }
 
     /**
-     * Wether the grade has rubric grading.
+     * Whether the grade has rubric grading.
      *
      * @return bool
      */

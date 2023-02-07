@@ -63,7 +63,7 @@ if ($examinerid != $USER->id)
     throw new Error(get_string('errorcertifiernotexaminer', 'local_booking'));
 
 // check if student evaluation is required and if so whether the student has been evaluated
-if ($COURSE->subscriber->has_skills_evaluation() && !$student->evaluated()) {
+if ($COURSE->subscriber->requires_skills_evaluation() && !$student->evaluated()) {
 
     // redirect to the evaluation form
     $params = ['courseid' => $courseid,'userid' => $studentid, 'report' => 'examiner'];

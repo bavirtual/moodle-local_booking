@@ -226,7 +226,7 @@ class notification extends \core\message\message {
 
         // get the reinstatement date for the 2nd no-show (suspension), which is the oldest no-show booking
         // based on associated slot startime, within the evaluation period, plus the suspension period
-        $reinstatementdatets = $noshowbookingscount == 2 ? strtotime(LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD . ' day', $noshowbookings[0]->starttime) : 0;
+        $reinstatementdatets = $noshowbookingscount == 2 ? strtotime(LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD . ' day', array_values($noshowbookings)[0]->starttime) : 0;
         $reinstatementdate = $reinstatementdatets != 0 ?  new \DateTime('@' . $reinstatementdatets) : null;
 
         // No show message data

@@ -60,15 +60,6 @@ interface participant_interface {
     public static function get_fullname(int $participantid, bool $alternate = true);
 
     /**
-     * Returns a participant's user profile field
-     *
-     * @param string $field     The name of the field
-     * @param bool   $corefield Whether the field is a core Moodle field
-     * @return string           The participant custom field
-     */
-    public function get_profile_field(string $field, bool $corefield = false);
-
-    /**
      * Get an participant's bookings
      *
      * @param bool $isStudent   Whether to get student bookings
@@ -129,6 +120,15 @@ interface participant_interface {
      * @return string   The participant callsign
      */
     public function get_callsign();
+
+    /**
+     * Returns a participant's user profile field
+     *
+     * @param string $field     The name of the field
+     * @param bool   $corefield Whether the field is a core Moodle field
+     * @return string           The participant custom field
+     */
+    public function get_profile_field(string $field, bool $corefield = false);
 
     /**
      * Returns participant's profile comment, user description field

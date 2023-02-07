@@ -27,6 +27,7 @@ namespace local_booking\external;
 
 defined('MOODLE_INTERNAL') || die();
 
+use ArrayObject;
 use core\external\exporter;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
@@ -227,7 +228,7 @@ class booking_session_exporter extends exporter {
      */
     protected function get_session($data) {
 
-        $grade = array_key_exists($data['exerciseid'], $data['grades']) ? $data['grades'][$data['exerciseid']] : null;
+        $grade = isset($data['grades'][$data['exerciseid']]) ? $data['grades'][$data['exerciseid']] : null;
         $booking = $this->find_booking($data['bookings'], $data['exerciseid']);
         $logentry = !empty($grade) ? $data['logbook']->get_logentry(0, $data['exerciseid']) : null;
 
@@ -263,17 +264,19 @@ class booking_session_exporter extends exporter {
         }
 
         // get booking info of this session if a booking is available - overrides grade
-        if (!empty($booking) && $booking->active()) {
+        if (!empty($booking)) {
             $sessiondate = new \DateTime('@' . $booking->get_slot()->get_starttime());
 
-            $sessionstatus = $this->student->is_active() && $booking->confirmed() ? 'booked' : 'tentative';
-            $infostatus = $booking->confirmed() ? 'statusbooked' : 'statustentative';
-            $bookinginfo = [
-                'instructor'    => instructor::get_fullname($booking->get_instructorid()),
-                'sessiondate'   => !empty($sessiondate) ? $sessiondate->format('D, M d \@Hi\z') : 'null',
-                'bookingstatus' => ucwords(get_string($infostatus, 'local_booking')),
-            ];
-            $sessiontooltip = get_string('sessionbookedby', 'local_booking', $bookinginfo);
+            if ($booking->active()) {
+                $sessionstatus = $this->student->is_active() && $booking->confirmed() ? 'booked' : 'tentative';
+                $infostatus = $booking->confirmed() ? 'statusbooked' : 'statustentative';
+                $bookinginfo = [
+                    'instructor'    => instructor::get_fullname($booking->get_instructorid()),
+                    'sessiondate'   => !empty($sessiondate) ? $sessiondate->format('D, M d \@Hi\z') : 'null',
+                    'bookingstatus' => ucwords(get_string($infostatus, 'local_booking')),
+                ];
+                $sessiontooltip = get_string('sessionbookedby', 'local_booking', $bookinginfo);
+            }
         }
 
         // create session object
@@ -300,8 +303,11 @@ class booking_session_exporter extends exporter {
                     return $b->get_exerciseid() == $exerciseid;
                 }
             );
-            if (count($bookingsarr) > 0)
-                $booking = end($bookingsarr);
+            if (count($bookingsarr) > 0) {
+                $bookingsIterator = (new ArrayObject($bookingsarr))->getIterator();
+                $bookingsIterator->seek(count($bookingsarr)-1);
+                $booking = $bookingsIterator->current();
+            }
         }
         return $booking;
     }

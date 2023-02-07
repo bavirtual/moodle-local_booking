@@ -33,17 +33,12 @@ use local_booking\external\assigned_students_exporter;
 use local_booking\external\instructor_participation_exporter;
 use local_booking\external\logbook_exporter;
 use local_booking\external\logentry_exporter;
-use local_booking\local\session\entities\booking;
-use local_booking\local\slot\entities\slot;
-use local_booking\local\message\notification;
 use local_booking\local\logbook\forms\create as create_logentry_form;
 use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\external\week_exporter;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\logbook\entities\logentry;
-use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\local\participant\entities\instructor;
 
 /**
  * LOCAL_BOOKING_RECENCYWEIGHT - constant value for session recency weight multipler
@@ -600,161 +595,4 @@ function get_participation_view($courseid) {
     $data = $participation->export($renderer);
 
     return [$data, $template];
-}
-
-/**
- * Set the user preferences
- *
- * @param string $preference The preference key of to be set.
- * @param string $value      The value of the preference to be set.
- * @param int $courseid      The course id.
- * @param int $studentid     The student id.
- * @return  bool  $result    The override operation result.
- */
-function set_user_prefs($preference, $value, $courseid, $studentid) {
-    $result = false;
-    $msgdata = ['preference' => $preference, 'value' => $value];
-
-    // Get user preference to show local time column
-    $result = set_user_preference('local_booking_' . $courseid . '_' . $preference, $value, $studentid);
-
-    if (!$result) {
-        \core\notification::warning(get_string('bookingsetpreferencesunable', 'local_booking', $msgdata));
-    }
-
-    return $result;
-}
-
-/**
- * Respond to submission graded events by deactivating the active booking.
- *
- */
-function process_submission_graded_event($courseid, $studentid, $exerciseid) {
-    $booking = new booking(0, $courseid, $studentid, $exerciseid);
-    $booking->load();
-
-    // update the booking status from active to inactive
-    if ($booking->active())
-        $booking->deactivate();
-
-    // revoke 'Keep Active' status
-    if (student::is_member_of($courseid, $studentid, LOCAL_BOOKING_KEEPACTIVEGROUP)) {
-        $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_KEEPACTIVEGROUP);
-        groups_remove_member($groupid, $studentid);
-    }
-}
-
-/**
- * Return the days of the week where $date falls in.
- *
- * @return array array of days
- */
-function get_week_days($date) {
-
-    $days = [];
-    // Calculate which day number is the first day of the week.
-    $type = \core_calendar\type_factory::get_calendar_instance();
-    $daysinweek = count($type->get_weekdays());
-    $week_start = get_week_start($date);
-
-    // add remaining days of the week
-    for ($i = 0; $i < $daysinweek; $i++) {
-        $days[] = $type->timestamp_to_date_array(date_timestamp_get($week_start), 0);
-        date_add($week_start, date_interval_create_from_date_string("1 days"));
-    }
-
-    return $days;
-}
-
-/**
- * Return the days of the week where $date falls in.
- *
- * @return DateTime array of days
- */
-function get_week_start($date) {
-    $week_start_date = new DateTime();
-    date_timestamp_set($week_start_date, $date[0]);
-    $week_start_date->setISODate($date['year'], strftime('%W', $date[0]))->format('Y-m-d');
-    return $week_start_date;
-}
-
-/**
- * Returns a random color.
- *
- * @return string   hex color
- */
-function random_color_part() {
-    return str_pad(dechex(mt_rand(20, 235)), 2, '0', STR_PAD_LEFT);
-}
-
-/**
- * Returns a hash of the random color for a student slot in group view.
- *
- * @return string   hex color
- */
-function random_color() {
-    return random_color_part() . random_color_part() . random_color_part();
-}
-
-/**
- * Returns the settings from config.xml
- *
- * @param  string $key      The key to look up the value for
- * @param  bool   $toarray  Whether to converted json file to class or an array
- * @return mixed  $config   The requested setting value.
- */
-function get_booking_config(string $key, bool $toarray = false) {
-    global $CFG;
-
-    $configfile = $CFG->dirroot . '/local/booking/config.json';
-    $config = null;
-
-    if (file_exists($configfile)) {
-
-        $jsoncontent = file_get_contents($configfile);
-        $configdata = json_decode($jsoncontent, $toarray);
-        $config = $toarray ? $configdata[$key] : $configdata->{$key};
-
-    } else {
-
-        var_dump(get_string('configmissing', 'local_booking', $configfile));
-
-    }
-
-    return $config;
-}
-
-/**
- * Updates a setting in the json config.xml
- *
- * @param  string $key      The key to look up the value for
- * @param  string $value    The value to set
- */
-function set_booking_config(string $key, string $value) {
-    global $CFG;
-
-    $configfile = $CFG->dirroot . '/local/booking/config.json';
-
-    if (file_exists($configfile)) {
-
-        // read config content
-        $jsoncontent = file_get_contents($configfile);
-        $configdata = json_decode($jsoncontent, true);
-
-        // recursively go through the config data for nested content
-        $params = array($key, $value);
-        array_walk_recursive($configdata, function(&$recursivevalue, $recursivekey, $params) {
-            if ($recursivekey == $params[0])
-                $recursivevalue = $params[1];
-        }, $params);
-
-        // write back config content to json file
-        $jsoncontent = json_encode($configdata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        file_put_contents($CFG->dirroot . '/local/booking/config.json', $jsoncontent);
-
-    } else {
-
-        var_dump(get_string('configmissing', 'local_booking', $configfile));
-
-    }
 }

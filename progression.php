@@ -48,7 +48,7 @@ require_capability('local/booking:availabilityview', $context);
 // $PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask-5/dist/jquery.inputmask.min.js'), true);
 
 $navbartext =get_string('bookingprogression', 'local_booking');
-$PAGE->navbar->add($navbartext); //userdate(time(), get_string('strftimedate')));
+$PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title($title, 'local_booking');
 $PAGE->set_heading($title, 'local_booking');

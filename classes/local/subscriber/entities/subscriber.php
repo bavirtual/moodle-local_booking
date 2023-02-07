@@ -29,6 +29,7 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once($CFG->dirroot . '/group/lib.php');
 
+use ArrayObject;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
@@ -71,6 +72,11 @@ class subscriber implements subscriber_interface {
     protected $shortname;
 
     /**
+     * @var course_modinfo $coursemodinfo The Moodle course modules information.
+     */
+    protected $coursemodinfo;
+
+    /**
      * @var array $activestudents An array of course active students.
      */
     protected $activestudents;
@@ -104,6 +110,56 @@ class subscriber implements subscriber_interface {
      * @var array $grading_items The subscribing course's modules grading items.
      */
     protected $grading_items = [];
+
+    /**
+     * @var bool $subscribed Whether the course is subscribed to Session Booking plugin.
+     */
+    public $subscribed;
+
+    /**
+     * @var string $vatsimrating The type of VATSIM rating for the subscribing course.
+     */
+    public $vatsimrating;
+
+    /**
+     * @var string $trainingtype The type of training of the subscribing course.
+     */
+    public $trainingtype;
+
+    /**
+     * @var string $homeicao The ICAO code of the training airport.
+     */
+    public $homeicao;
+
+    /**
+     * @var string[] $aircrafticao The ICAO code of the training aircraft.
+     */
+    public $aircrafticao = [];
+
+    /**
+     * @var string $examinerformurl The subscribing course's home url.
+     */
+    public $examinerformurl;
+
+    /**
+     * @var int $postingwait The period the student needs to wait prior to posting slots again.
+     */
+    public $postingwait;
+
+    /**
+     * @var int $onholdperiod The period the student will stay on hold for.
+     */
+    public $onholdperiod;
+
+    /**
+     * @var int $suspensionperiod The period the student will be in suspension for.
+     */
+    public $suspensionperiod;
+
+    /**
+     * @var int $overdueperiod The period the instructor can stay without booking until their overdue.
+     */
+    public $overdueperiod;
 
     /**
      * Constructor.
@@ -183,6 +239,15 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Get the subscriber's course.
+     *
+     * @return int $course
+     */
+    public function get_course() {
+        return $this->course;
+    }
+
+    /**
      * Get the subscriber's course context.
      *
      * @return \context_course $context
@@ -258,7 +323,7 @@ class subscriber implements subscriber_interface {
      * @return student          The student object
      */
     public function get_student(int $studentid, bool $populate = false, string $filter = 'active') {
-        $student = (!empty($this->activestudents) && !empty($studentid) && array_key_exists($studentid, $this->activestudents)) ? $this->activestudents[$studentid] : null;
+        $student = (!empty($this->activestudents) && !empty($studentid) && isset($this->activestudents[$studentid])) ? $this->activestudents[$studentid] : null;
 
         if (empty($student)) {
             $studentrec = participant_vault::get_student($this->courseid, $studentid);
@@ -309,7 +374,7 @@ class subscriber implements subscriber_interface {
      * @return instructor       The instructor object
      */
     public function get_instructor(int $instructorid) {
-        $instructor = (!empty($this->activeinstructors) && !empty($instructorid) && array_key_exists($instructorid, $this->activeinstructors)) ? $this->activeinstructors[$instructorid] : null;
+        $instructor = (!empty($this->activeinstructors) && !empty($instructorid) && isset($this->activeinstructors[$instructorid])) ? $this->activeinstructors[$instructorid] : null;
 
         if (empty($instructor)) {
             // instantiate the instructor object and add to the list of activeinstructors
@@ -357,7 +422,9 @@ class subscriber implements subscriber_interface {
      * @return int The last exericse id
      */
     public function get_graduation_exercise(bool $nameonly = false) {
-        $gradexerciseid = end($this->modules)->id;
+        $modulesIterator = (new ArrayObject($this->modules))->getIterator();
+        $modulesIterator->seek(count($this->modules)-1);
+        $gradexerciseid = $modulesIterator->current()->id;
         return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
     }
 
@@ -422,6 +489,34 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Returns the settings from config.xml
+     *
+     * @param  string $key      The key to look up the value for
+     * @param  bool   $toarray  Whether to converted json file to class or an array
+     * @return mixed  $config   The requested setting value.
+     */
+    public static function get_booking_config(string $key, bool $toarray = false) {
+        global $CFG;
+
+        $configfile = $CFG->dirroot . '/local/booking/config.json';
+        $config = null;
+
+        if (file_exists($configfile)) {
+
+            $jsoncontent = file_get_contents($configfile);
+            $configdata = json_decode($jsoncontent, $toarray);
+            $config = $toarray ? $configdata[$key] : $configdata->{$key};
+
+        } else {
+
+            var_dump(get_string('configmissing', 'local_booking', $configfile));
+
+        }
+
+        return $config;
+    }
+
+    /**
      * Returns an array of records from integrated database
      * that matches the passed criteria.
      *
@@ -435,7 +530,7 @@ class subscriber implements subscriber_interface {
         $record = null;
 
         // get the integration object from settings
-        $integrations = get_booking_config('integrations');
+        $integrations = self::get_booking_config('integrations');
 
         // Moodle user/password must have read access to the target host, database, and tables
         $conn = new \mysqli($integrations->$key->host, $CFG->dbuser, $CFG->dbpass, $integrations->$key->db);
@@ -471,8 +566,43 @@ class subscriber implements subscriber_interface {
      * @return bool
      */
     public static function has_integration($key) {
-        $integrations = get_booking_config('integrations');
+        $integrations = self::get_booking_config('integrations');
         return !empty($integrations->$key->enabled);
+    }
+
+    /**
+     * Updates a setting in the json config.xml
+     *
+     * @param  string $key      The key to look up the value for
+     * @param  string $value    The value to set
+     */
+    public static function set_booking_config(string $key, string $value) {
+        global $CFG;
+
+        $configfile = $CFG->dirroot . '/local/booking/config.json';
+
+        if (file_exists($configfile)) {
+
+            // read config content
+            $jsoncontent = file_get_contents($configfile);
+            $configdata = json_decode($jsoncontent, true);
+
+            // recursively go through the config data for nested content
+            $params = array($key, $value);
+            array_walk_recursive($configdata, function(&$recursivevalue, $recursivekey, $params) {
+                if ($recursivekey == $params[0])
+                    $recursivevalue = $params[1];
+            }, $params);
+
+            // write back config content to json file
+            $jsoncontent = json_encode($configdata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            file_put_contents($CFG->dirroot . '/local/booking/config.json', $jsoncontent);
+
+        } else {
+
+            var_dump(get_string('configmissing', 'local_booking', $configfile));
+
+        }
     }
 
     /**
@@ -481,7 +611,7 @@ class subscriber implements subscriber_interface {
      *
      * @return bool
      */
-    public function has_skills_evaluation() {
+    public function requires_skills_evaluation() {
         return !empty($this->examinerformurl);
     }
 

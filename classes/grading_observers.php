@@ -39,6 +39,10 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+ use local_booking\local\participant\entities\student;
+ use local_booking\local\session\entities\booking;
+
 class grading_observers {
 
     /**
@@ -48,6 +52,24 @@ class grading_observers {
      * @return void
      */
     public static function submission_graded($event) {
-        process_submission_graded_event($event->courseid, $event->relateduserid, $event->contextinstanceid);
+
+        $courseid = $event->courseid;
+        $studentid = $event->relateduserid;
+        $exerciseid = $event->contextinstanceid;
+
+        // Respond to submission graded events by deactivating the active booking.
+        $booking = new booking(0, $courseid, $studentid, $exerciseid);
+        $booking->load();
+
+        // update the booking status from active to inactive
+        if ($booking->active())
+            $booking->deactivate();
+
+        // revoke 'Keep Active' status
+        if (student::is_member_of($courseid, $studentid, LOCAL_BOOKING_KEEPACTIVEGROUP)) {
+            $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_KEEPACTIVEGROUP);
+            groups_remove_member($groupid, $studentid);
+        }
+
     }
 }

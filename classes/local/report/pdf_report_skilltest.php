@@ -71,14 +71,14 @@ class pdf_report_skilltest extends pdf_report {
         } catch (\Exception $e) {
 
             // attempt to fix the none standard FPDM file
-            $pdftk = get_booking_config('pdftkpath');
+            $pdftk = $this->course->get_booking_config('pdftkpath');
 
             // get the location of pdftk install
             if (!file_exists($pdftk)) {
 
                 // lookup the pdftk path is set
                 $pdftk = exec('find /usr -name pdftk');
-                set_booking_config('pdftkpath', $pdftk);
+                $this->course->set_booking_config('pdftkpath', $pdftk);
 
             }
 

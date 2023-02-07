@@ -47,13 +47,14 @@ interface slot_vault_interface {
     /**
      * Get a list of slots for the user
      *
-     * @param int $courseid  The course id
-     * @param int $studentid The student id
-     * @param int $year The year of the slots
-     * @param int $week The week of the slots
+     * @param int  $courseid  The course id
+     * @param int  $studentid The student id
+     * @param int  $week      The week of the slots
+     * @param int  $year      The year of the slots
+     * @param bool $notified  Whether slot notification was sent
      * @return array
      */
-    public static function get_slots(int $courseid, int $studentid, $week = 0, $year = 0);
+    public static function get_slots(int $courseid, int $studentid, $week = 0, $year = 0, $notified = false);
 
     /**
      * Saves the passed slot

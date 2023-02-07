@@ -69,14 +69,29 @@ class event {
     public $instructorid;
 
     /**
+     * @var participant $instructor The instructor object associated with the event
+     */
+    public $instructor;
+
+    /**
      * @var int $studentid The student id associated with the event
      */
     public $studentid;
 
     /**
+     * @var participant $student The student object associated with the event
+     */
+    public $student;
+
+    /**
      * @var int $exerciseid The exercise id associated with the event
      */
     public $exerciseid;
+
+    /**
+     * @var string $exercise The exercise name associated with the event
+     */
+    public $exercise;
 
     /**
      * @var string $name The event name

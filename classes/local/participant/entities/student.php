@@ -25,6 +25,9 @@
 
 namespace local_booking\local\participant\entities;
 
+require_once($CFG->dirroot . '/mod/assign/externallib.php');
+
+use ArrayObject;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\priority;
 use local_booking\local\session\entities\booking;
@@ -133,7 +136,7 @@ class student extends participant {
      */
     public function __construct(subscriber $course, int $studentid, string $studentname = '', int $enroldate = 0) {
         parent::__construct($course, $studentid);
-        $this->username = $studentname;
+        $this->fullname = $studentname;
         $this->enroldate = $enroldate;
         $this->slotcolor = self::SLOT_COLOR;
         $this->is_student = true;
@@ -266,7 +269,7 @@ class student extends participant {
     public function get_grade(int $coursemodid) {
 
         // get the grade if already exists otherwise create a new one making sure it's not empty
-        if (array_key_exists($coursemodid, $this->grades)) {
+        if (isset($this->grades[$coursemodid])) {
 
             $grade = $this->grades[$coursemodid];
 
@@ -287,7 +290,7 @@ class student extends participant {
      * Get a list of the module grades.
      *
      * @param string $modetype The module type for the course modules.
-     * @return array           An array of the student exercise grade objects.
+     * @return array An array of the student exercise grade objects.
      */
     protected function get_mod_grades(string $modtype) {
 
@@ -332,10 +335,10 @@ class student extends participant {
      *
      * @return array array of days
      */
-    public function get_slots($weekno, $year) {
+    public function get_slots($weekno, $year, bool $notified = false) {
 
         if (empty($this->slots)) {
-            $this->slots = slot_vault::get_slots($this->course->get_id(), $this->userid, $weekno, $year);
+            $this->slots = slot_vault::get_slots($this->course->get_id(), $this->userid, $weekno, $year, $notified);
 
             // add student's slot color to each slot
             foreach ($this->slots as $slot) {
@@ -492,7 +495,7 @@ class student extends participant {
                 $nextid = array_search($this->get_current_exercise(), $modids) + 1;
 
                 // check for graduated student (boundry condition)
-                if (array_key_exists($nextid, $modids)) {
+                if (isset($modids[$nextid])) {
                     $this->nextexercise = ($nextmod = $coursemodules[$modids[$nextid]]) ? $nextmod->id : 0;
                 } else {
                     $this->nextexercise = 0;
@@ -537,7 +540,13 @@ class student extends participant {
      * @return grade The student last grade.
      */
     public function get_last_grade() {
-        $grade = end($this->exercises);
+        $grade = null;
+        $exercises = $this->get_exercise_grades();
+        if (count($exercises) > 0) {
+            $exercisesIterator = (new ArrayObject($exercises))->getIterator();
+            $exercisesIterator->seek(count($this->get_exercise_grades())-1);
+            $grade = $exercisesIterator->current();
+        }
         return $grade;
     }
 
@@ -626,6 +635,36 @@ class student extends participant {
     }
 
     /**
+     * Returns whether the student submitted assignment for
+     * the passed exercise.
+     *
+     * @return  bool    Whether the course work has been completed.
+     */
+    public function has_submitted_assignment(int $exerciseid) {
+
+        $hassubmission = true;
+
+        // get the assignment associated with the exercise comments
+        $gradeitem = $this->course->get_grading_items()[$exerciseid];
+        $grade = new grade($gradeitem->id, $this->userid, $exerciseid, true);
+        $assign = $grade->get_assignment();
+
+        // check if a file submission is required for this exercise
+        if ($assign->is_any_submission_plugin_enabled()) {
+
+            // $assigngradeid = $assign->gradeid();??
+            $submissions = $assign->get_user_submission($this->userid, 0, false);
+
+            // get the file storage object and verify that an assignment file has been submitted
+            $fs = get_file_storage();
+            $hassubmission = !$fs->is_area_empty($gradeitem->get_context()->id, 'assignsubmission_file', 'submission_files', $submissions->id);
+
+        }
+
+        return $hassubmission;
+    }
+
+    /**
      * Returns whether the student is on hold or not.
      *
      * @return  bool    Whether the student is on hold.
@@ -706,7 +745,7 @@ class student extends participant {
     public function evaluated() {
 
         // check if the course requires evaluation first
-        if (!$this->course->has_skills_evaluation()) {
+        if (!$this->course->requires_skills_evaluation()) {
             return false;
         }
 

@@ -41,6 +41,23 @@ function xmldb_local_booking_upgrade($oldversion) {
     // Automatically generated Moodle v3.11.0 release upgrade line.
     // Put any upgrade step following this.
 
+    // change local_booking_sessions table to include a notified field to track student posting notifications
+    if ($oldversion < 2023020600) {
+        // Define field hidegrader to be added to local_booking_sessions.
+        $table = new xmldb_table('local_booking_slots');
+        $field = new xmldb_field('notified', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'slotstatus');
+
+        if (!$dbmanager->field_exists($table, $field)) {
+            $dbmanager->add_field($table, $field);
+        }
+
+        // update to notified as they should
+        $DB->execute('UPDATE mdl_local_booking_slots SET notified = 1');
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2023020600, 'local', 'booking');
+    }
+
     // change local_booking_sessions table to include a noshow field to track student no-show occurrences
     if ($oldversion < 2022122001) {
         // Define field hidegrader to be added to local_booking_sessions.

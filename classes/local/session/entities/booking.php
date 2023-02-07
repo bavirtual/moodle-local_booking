@@ -65,9 +65,19 @@ class booking implements booking_interface {
     protected $instructorid;
 
     /**
+     * @var string $instructorname The instructor name of this booking.
+     */
+    protected $instructorname;
+
+    /**
      * @var int $studentid The user id of the student of this booking.
      */
     protected $studentid;
+
+    /**
+     * @var string $studentname The student name of this booking.
+     */
+    protected $studentname;
 
     /**
      * @var slot $slot The booked slot.
@@ -82,7 +92,7 @@ class booking implements booking_interface {
     /**
      * @var bool $noshow The student didn't show to the booked session.
      */
-    protected $noshow;
+    protected $noshow = false;
 
     /**
      * @var bool $active The booking is active.

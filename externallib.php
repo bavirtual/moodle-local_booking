@@ -307,7 +307,9 @@ class local_booking_external extends external_api {
 
             // get pilot integrated info
             if (subscriber::has_integration('pilots')) {
-                $pilotrec = subscriber::get_integrated_data('pilots', 'pilotinfo', $logentry->pilot_id);
+                // TODO: PHP9 deprecates dynamic properties
+                $pilotidtag = 'pilot_id';
+                $pilotrec = subscriber::get_integrated_data('pilots', 'pilotinfo', $logentry->$pilotidtag);
                 $alternatename = $pilotrec['alternatename'];
 
                 if (core_user::get_user($userid, 'alternatename')->alternatename == $alternatename) {
@@ -689,11 +691,13 @@ class local_booking_external extends external_api {
                 } elseif (intval($COURSE->subscriber->overdueperiod) > 0) {
 
                     // enable restriction override if enabled to allow the student to repost slots sooner
-                    set_user_prefs('availabilityoverride', true, $courseid, $booking->get_studentid());
+                    $result = set_user_preference('local_booking_' . $courseid . '_availabilityoverride', true, $booking->get_studentid());
 
                     // send cancellation message
-                    $message = new notification();
-                    $result = $message->send_session_cancellation($booking, $comment);
+                    if ($result) {
+                        $message = new notification();
+                        $result = $message->send_session_cancellation($booking, $comment);
+                    }
 
                 }
 
@@ -743,7 +747,7 @@ class local_booking_external extends external_api {
                 'preference' => new external_value(PARAM_RAW, 'The preference key', VALUE_DEFAULT),
                 'value' => new external_value(PARAM_RAW, 'The value of the preference', VALUE_DEFAULT),
                 'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
-                'userid' => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
+                'userid' => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
             )
         );
     }
@@ -754,23 +758,28 @@ class local_booking_external extends external_api {
      * @param string $preference The preference key of to be set.
      * @param string $value      The value of the preference to be set.
      * @param int $courseid      The course id.
-     * @param int $studentid     The student id.
+     * @param int $userid        The user id.
      * @return bool $result      The result of the availability override operation.
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
-    public static function update_user_preferences($preference, $value, $courseid, $studentid) {
+    public static function update_user_preferences($preference, $value, $courseid, $userid) {
 
         // Parameter validation.
         $params = self::validate_parameters(self::update_user_preferences_parameters(), array(
             'preference' => $preference,
             'value'      => $value,
             'courseid' => $courseid,
-            'userid'     => $studentid,
+            'userid'     => $userid,
             )
         );
 
+        $msgdata = ['preference' => $preference, 'value' => $value];
         $warnings = array();
-        $result = set_user_prefs($preference, $value, $courseid, $studentid);
+        $result = set_user_preference('local_booking_' . $courseid . '_' . $preference, $value, $userid);
+
+        if (!$result) {
+            \core\notification::warning(get_string('bookingsetpreferencesunable', 'local_booking', $msgdata));
+        }
 
         return array(
             'result' => $result,

@@ -25,6 +25,7 @@
 
 namespace local_booking\local\participant\entities;
 
+use ArrayObject;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\booking;
@@ -120,8 +121,9 @@ class participant implements participant_interface {
 
         // lookup user type and active status
         if ($userid != 0) {
+            $roles = (new ArrayObject(get_user_roles($course->get_context(), $userid)))->getIterator();
             $this->is_student = count(get_user_roles($course->get_context(), $userid)) > 0 &&
-                current(get_user_roles($course->get_context(), $userid))->shortname == 'student' ? true : false;
+                $roles->current()->shortname == 'student' ? true : false;
 
             // get active participant courses
             $enroledcourses = enrol_get_users_courses($userid, true);
@@ -236,7 +238,9 @@ class participant implements participant_interface {
      * @return \DateTime $enroldate  The enrolment date of the participant.
      */
     public function get_enrol_date() {
-        $enrol = $this->enroldate ?: ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->timecreated;
+        // TODO: PHP9 deprecates dynamic properties
+        $timecreatedtag = 'timecreated';
+        $enrol = $this->enroldate ?: ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->$timecreatedtag;
         $enrolmentdate = new \DateTime('@' . $enrol);
         return $enrolmentdate;
     }
@@ -296,6 +300,23 @@ class participant implements participant_interface {
     }
 
     /**
+     * Returns a participant's user profile field
+     *
+     * @param string $field     The name of the field
+     * @param bool   $corefield Whether the field is a core Moodle field
+     * @return string           The participant custom field
+     */
+    public function get_profile_field(string $field, bool $corefield = false) {
+        $u = \core_user::get_user($this->userid);
+
+        if (!$corefield) {
+            profile_load_data($u);
+            $fld = 'profile_field_' . $field;
+        }
+        return $corefield ? $u->$field : $u->$fld;
+    }
+
+    /**
      * Returns participant's profile comment, user description field
      *
      * @return string   The participant comment
@@ -312,23 +333,6 @@ class participant implements participant_interface {
      */
     public function update_comment(string $comment) {
         return $this->vault->update_participant_field($this->userid, 'description', $comment);
-    }
-
-    /**
-     * Returns a participant's user profile field
-     *
-     * @param string $field     The name of the field
-     * @param bool   $corefield Whether the field is a core Moodle field
-     * @return string           The participant custom field
-     */
-    public function get_profile_field(string $field, bool $corefield = false) {
-        $u = \core_user::get_user($this->userid);
-
-        if (!$corefield) {
-            profile_load_data($u);
-            $fld = 'profile_field_' . $field;
-        }
-        return $corefield ? $u->$field : $u->$fld;
     }
 
     /**

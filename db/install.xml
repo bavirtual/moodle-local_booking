@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/booking/db" VERSION="20221117" COMMENT="XMLDB file for Moodle local/booking"
+<XMLDB PATH="local/booking/db" VERSION="20230125" COMMENT="XMLDB file for Moodle local/booking"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -35,6 +35,7 @@
         <FIELD NAME="starttime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Start time timestamp of the slot"/>
         <FIELD NAME="endtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="End time timestamp of the slot"/>
         <FIELD NAME="slotstatus" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="status indicating timeslot's marked and booking status"/>
+        <FIELD NAME="notified" TYPE="int" LENGTH="3" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Indicate whether the slot posting has been notified"/>
         <FIELD NAME="bookinginfo" TYPE="char" LENGTH="500" NOTNULL="false" SEQUENCE="false" COMMENT="Information about the booking includes the exercise and instructor information."/>
       </FIELDS>
       <KEYS>

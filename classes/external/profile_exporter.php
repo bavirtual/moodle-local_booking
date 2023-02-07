@@ -212,7 +212,7 @@ class profile_exporter extends exporter {
             'hasexams' => [
                 'type'  => PARAM_BOOL,
             ],
-            'hasevaluation' => [
+            'requiresevaluation' => [
                 'type'  => PARAM_BOOL,
             ],
             'loginasurl' => [
@@ -279,12 +279,12 @@ class profile_exporter extends exporter {
 
         // qualified (next exercise is the course's last exercise) and tested status
         $qualified = $this->student->qualified();
-        $hasevaluation = $COURSE->subscriber->has_skills_evaluation();
+        $requiresevaluation = $COURSE->subscriber->requires_skills_evaluation();
         $endorsed = false;
         $endorsementmsg = '';
         $hasexams = count($this->student->get_quize_grades()) > 0;
 
-        if ($hasevaluation) {
+        if ($requiresevaluation) {
 
             // endorsement information
             $endorsed = get_user_preferences('local_booking_' .$this->courseid . '_endorse', false, $studentid);
@@ -406,7 +406,7 @@ class profile_exporter extends exporter {
             'lastlessoncompleted'      => $this->student->has_completed_lessons() ? get_string('yes') : get_string('no'),
             'graduationstatus'         => $graduationstatus,
             'qualified'                => $qualified,
-            'hasevaluation'            => $hasevaluation,
+            'requiresevaluation'       => $requiresevaluation,
             'endorsed'                 => $endorsed,
             'endorser'                 => $USER->id,
             'endorsername'             => \local_booking\local\participant\entities\participant::get_fullname($USER->id),

@@ -79,7 +79,7 @@ class pdf_report extends \pdf {
     protected $title;
 
     /**
-     * @var boolean $includevatsimlogo Wether to print the VATSIM logo on the report.
+     * @var boolean $includevatsimlogo Whether to print the VATSIM logo on the report.
      */
     protected $includevatsimlogo;
 

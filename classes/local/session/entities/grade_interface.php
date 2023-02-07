@@ -59,7 +59,7 @@ interface grade_interface {
     public function get_graderubric();
 
     /**
-     * Wether the grade has rubric grading.
+     * Whether the grade has rubric grading.
      *
      * @return bool
      */

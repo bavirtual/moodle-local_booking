@@ -53,6 +53,11 @@ class logentry implements logentry_interface {
     protected $courseid = 0;
 
     /**
+     * @var int $userid The user id.
+     */
+    protected $userid = 0;
+
+    /**
      * @var int $exercise The course exercise id.
      */
     protected $exerciseid = 0;

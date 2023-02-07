@@ -61,13 +61,16 @@ class day_exporter extends exporter {
      */
     public function __construct(\calendar_information $calendar, $data, $related) {
         $this->calendar = $calendar;
+        // TODO: PHP9 deprecates dynamic properties
+        $coursetag = 'course';
+        $course = $calendar->$coursetag;
 
         $url = new moodle_url('/local/booking/availability.php', [
                 'time' => $data[0],
             ]);
 
-        if ($this->calendar->course && SITEID !== $this->calendar->course->id) {
-            $url->param('course', $this->calendar->course->id);
+        if ($course && SITEID !== $course->id) {
+            $url->param('course', $course->id);
         } else if ($this->calendar->categoryid) {
             $url->param('category', $this->calendar->categoryid);
         }

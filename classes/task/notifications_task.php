@@ -140,7 +140,9 @@ class notifications_task extends \core\task\scheduled_task {
      */
     protected function process_availability_postings(student $student, subscriber $course) {
 
+        $slots = $student->get_slots(0,0,true);
         $haspostings = false;
+
         $slotstonotify = get_user_preferences('local_booking_' . $course->get_id() . '_postingnotify', false, $student->get_id());
         if (!empty($slotstonotify)) {
 

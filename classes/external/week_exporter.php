@@ -130,11 +130,11 @@ class week_exporter extends exporter {
         $this->showlocaltime = true;
 
         // Get current week of the year and GMT date
-        $this->weekofyear = intval(strftime('%W', $this->calendar->time));
+        $this->weekofyear = (int)date('W', $this->calendar->time);
         $this->firstdayofweek = $type->get_starting_weekday();
         $calendarday = $type->timestamp_to_date_array($this->calendar->time);
         $this->GMTdate = $type->timestamp_to_date_array(gmmktime(0, 0, 0, $calendarday['mon'], $calendarday['mday'], $calendarday['year']));
-        $this->days = get_week_days($this->GMTdate);
+        $this->days = $this->get_week_days($this->GMTdate);
 
         // Update the url with time, course, and category info
         $this->url = new moodle_url('/local/booking/availability.php', [
@@ -331,28 +331,30 @@ class week_exporter extends exporter {
         list($previousperiod, $previousperiodlink) = $this->get_period($date, '-');
         list($nextperiod, $nextperiodlink) = $this->get_period($date, '+');
 
+        // TODO: PHP9 deprecates dynamic properties
+        /** @var \core_renderer $output */
         $return = [
             'contextid' => \context_course::instance($this->course->get_id())->id,
             'courseid' => $this->course->get_id(),
             // week data
             'daynames' => $this->get_day_names($output),
-            'weekofyear' => intval($this->weekofyear),
+            'weekofyear' => (int)$this->weekofyear,
             'timeslots' => $this->get_time_slots($output),
             // day slots data
             'maxlanes' => $this->maxlanes <= LOCAL_BOOKING_MAXLANES ? $this->maxlanes : LOCAL_BOOKING_MAXLANES,
             'showlocaltime' => $this->showlocaltime,
             'date' => (new date_exporter($date))->export($output),
             // navigation data
-            'periodname' => strftime(get_string('strftimeweekinyear','local_booking'), $this->calendar->time),
+            'periodname' => get_string('weekinyear', 'local_booking', date('W', $this->calendar->time)),
             'previousperiod' => (new date_exporter($previousperiod))->export($output),
-            'previousweek' => intval(strftime('%W', $previousperiod[0])),
+            'previousweek' => (int)date('W', $previousperiod[0]),
             'previousweekts' => $previousperiod[0],
-            'previousperiodname' => strftime(get_string('strftimeweekinyear','local_booking'), $previousperiod[0]),
+            'previousperiodname' => get_string('weekinyear','local_booking', date('W', $previousperiod[0])),
             'previousperiodlink' => $previousperiodlink->out(false),
             'nextperiod' => (new date_exporter($nextperiod))->export($output),
-            'nextweek' => intval(strftime('%W', $nextperiod[0])),
+            'nextweek' => (int)date('W', $nextperiod[0]),
             'nextweekts' => $nextperiod[0],
-            'nextperiodname' => strftime(get_string('strftimeweekinyear','local_booking'), $nextperiod[0]),
+            'nextperiodname' => get_string('weekinyear','local_booking', date('W', $nextperiod[0])),
             'nextperiodlink' => $nextperiodlink->out(false),
             'larrow' => $output->larrow(),
             'rarrow' => $output->rarrow(),
@@ -363,6 +365,41 @@ class week_exporter extends exporter {
         }
 
         return $return;
+    }
+
+    /**
+     * Return the days of the week where $date falls in.
+     *
+     * @return array array of days
+     */
+    protected function get_week_days($date) {
+
+        $days = [];
+        // Calculate which day number is the first day of the week.
+        $type = \core_calendar\type_factory::get_calendar_instance();
+        $daysinweek = count($type->get_weekdays());
+        $week_start = $this->get_week_start($date);
+
+        // add remaining days of the week
+        for ($i = 0; $i < $daysinweek; $i++) {
+            $days[] = $type->timestamp_to_date_array(date_timestamp_get($week_start), 0);
+            date_add($week_start, date_interval_create_from_date_string("1 days"));
+        }
+
+        return $days;
+    }
+
+    /**
+     * Return the days of the week where $date falls in.
+     *
+     * @return \DateTime array of days
+     */
+    protected function get_week_start($date) {
+        $week_start_date = new \DateTime();
+        date_timestamp_set($week_start_date, $date[0]);
+        $week_start_date->setISODate($date['year'], (int)date('W', $date[0]))->format('Y-m-d');
+
+        return $week_start_date;
     }
 
     /**
@@ -405,7 +442,7 @@ class week_exporter extends exporter {
         // Get user timezone offset
         $usertz = new \DateTimeZone(usertimezone());
         $usertime = new \DateTime("now", $usertz);
-        $usertimezoneoffset = intval($usertz->getOffset($usertime)) / 3600;
+        $usertimezoneoffset = (int)$usertz->getOffset($usertime) / 3600;
 
         // get the lanes containing student(s) slots
         $weeklanes = $this->get_week_slot_lanes($COURSE->subscriber);
@@ -540,7 +577,7 @@ class week_exporter extends exporter {
 
         $periodlink = new moodle_url($this->url);
         $periodlink->param('time', $newperioddate[0]);
-        $periodlink->param('week', intval(strftime('%W', $newperioddate[0])));
+        $periodlink->param('week', (int)date('W', $newperioddate[0]));
         $periodlink->param('view', $this->view);
         $periodlink->param('action', $this->actiondata['action']);
 

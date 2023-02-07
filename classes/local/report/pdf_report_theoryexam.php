@@ -25,6 +25,7 @@
 
 namespace local_booking\local\report;
 
+use ArrayObject;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 
@@ -76,8 +77,10 @@ class pdf_report_theoryexam extends pdf_report {
             $scorenote = get_string('mentorreportdesc', 'local_booking', $scoredata);
 
             // theory exam report information
-            $starttime = new \Datetime('@' . end($exam->attempts)->timestart);
-            $endtime = new \Datetime('@' . end($exam->attempts)->timefinish);
+            $attempts = (new ArrayObject($exam->attempts))->getIterator();
+            $attempts->seek(count($exam->attempts)-1);
+            $starttime = new \Datetime('@' . $attempts->current()->timestart);
+            $endtime = new \Datetime('@' . $attempts->current()->timefinish);
             $interval = $starttime->diff($endtime);
             $duration = $interval->format('%H:%I:%S');
 

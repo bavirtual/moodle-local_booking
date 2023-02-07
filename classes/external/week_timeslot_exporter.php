@@ -84,6 +84,21 @@ class week_timeslot_exporter extends exporter {
     protected $days = [];
 
     /**
+     * @var array $groupview - The type of UI view being requested.
+     */
+    protected $groupview;
+
+    /**
+     * @var string $bookview - The type of booking UI view being requested.
+     */
+    protected $bookview;
+
+    /**
+     * @var bool $alreadybooked - Whether the student is already booked by another instructor already.
+     */
+    protected $alreadybooked;
+
+    /**
      * Constructor.
      *
      * @param \calendar_information $calendar The calendar information for the period being displayed
@@ -247,8 +262,8 @@ class week_timeslot_exporter extends exporter {
         }
 
         // future week is not beyond the set lookahead number of weeks
-        $currentyearweekno = strftime('%W', time());
-        $futureyearweekno = strftime('%W', $date[0]);
+        $currentyearweekno = (int)date('W', time());
+        $futureyearweekno = (int)date('W', $date[0]);
         $weekslookahead = (get_config('local_booking', 'weeksahead')) ? get_config('local_booking', 'weeksahead') : LOCAL_BOOKING_WEEKSLOOKAHEAD;
         $yeardate = new DateTime();
         $yeardate->setISODate($today['year'], 53);

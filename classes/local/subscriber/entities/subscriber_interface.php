@@ -37,6 +37,13 @@ interface subscriber_interface {
     public function get_id();
 
     /**
+     * Get the subscriber's course.
+     *
+     * @return int $course
+     */
+    public function get_course();
+
+    /**
      * Get the subscriber's course context.
      *
      * @return \context_course $context
@@ -188,5 +195,5 @@ interface subscriber_interface {
      *
      * @return bool
      */
-    public function has_skills_evaluation();
+    public function requires_skills_evaluation();
 }

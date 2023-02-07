@@ -5,16 +5,16 @@
 	*@name  Url manipulation toolbox
 	*@internal Useful functions to deal with URLs
 	*@package URL_TOOLBOX
-	*@date    2010-10-27                                                          
-	*@author  0livier  
+	*@date    2010-10-27
+	*@author  0livier
 	*@version 1.0
-	*@note 
+	*@note
 	* 	V1.0 (27.10.2010) First release
 	******************************************************************/
-	
+
 	if (!defined('URL_TOOLBOX')) {
-    
-	
+
+
 		function getScheme(/*$port is optional*/) {
 		//---------------------------------------
 			$numargs = func_num_args();
@@ -23,18 +23,18 @@
 				'http'=>   80,// default for http
 				'https'=> 443, // default for https
 				'ftp' =>   21, // default for ftp
-				'ftps'=>  990 // default for ftps 
+				'ftps'=>  990 // default for ftps
 			);
 			$ports=array_flip($schemes);
-			return (array_key_exists($port,$ports)) ? $ports[$port] : 0;
+			return (isset($ports[$port])) ? $ports[$port] : 0;
 		}
-		
+
 		function getHost() {
 		//------------------
-			return $_SERVER["HTTP_HOST"];// [SERVER_NAME] 
+			return $_SERVER["HTTP_HOST"];// [SERVER_NAME]
 		}
-		
-	
+
+
 		if (!function_exists('fix_path')) {
 			// fixes windows paths...
 			// (windows accepts forward slashes and backwards slashes, so why does PHP use backwards?
@@ -43,14 +43,14 @@
 				return str_replace('\\','/',$path);
 			}
 		}
-		
+
 		function getWebDir($local_dir) {
 		//----------------------------
 			$local_root=$_SERVER["DOCUMENT_ROOT"];
 			$server_dir=str_replace($local_root,'',$local_dir);
 			return $server_dir;
 		}
-		
+
 		//Local dir may be:
 		//  the main script dir: dirname($_SERVER['PHP_SELF'])
 		//  the current script dir fix_path(dirname(__FILE__))
@@ -62,9 +62,9 @@
 			$server_host=getHost();
 			return "{$server_scheme}://{$server_host}/$server_dir";
 		}
-		
+
 		/**
-		 * Compiles url out of array of it's pieces 
+		 * Compiles url out of array of it's pieces
 		 * 'query' is ignored if 'query_params' is present
 		 *
 		 * @param Array $aUrl Array of url pieces
@@ -72,24 +72,24 @@
 		function build_url($aUrl) {
 		//-------------------------
 			//[scheme]://[user]:[pass]@[host]/[path]?[query]#[fragment]
-		   
+
 		    if (!is_array($aUrl)) {
 				return "";
 			}
-		   
+
 			$sQuery = '';
-		   
+
 			// Compile query
 			if (isset($aUrl['query_params']) && is_array($aUrl['query_params'])) {
 				$aPairs = array();
 				foreach ($aUrl['query_params'] as $sKey=>$sValue) {
-					$aPairs[] = $sKey.'='.urlencode($sValue);              
+					$aPairs[] = $sKey.'='.urlencode($sValue);
 				}
-				$sQuery = implode('&', $aPairs);   
+				$sQuery = implode('&', $aPairs);
 			} else {
 				if(isset($aUrl['query'])) $sQuery = $aUrl['query'];
 			}
-		   
+
 			// Compile url
 			$sUrl =
 				$aUrl['scheme'] . '://' . (
@@ -112,7 +112,7 @@
 				);
 			return $sUrl;
 		}
-		
+
 		function resolve_url($relative_url) {
 		//-----------------------------
 			$url=parse_url($relative_url);
@@ -120,20 +120,24 @@
 			$absolute_url=build_url($url);
 			return $absolute_url;
 		}
-		
-		
+
+
 		//Get realpath without checking existence of file like php function does..
 		function resolve_path($path) {
 		//----------------------------------
 			$out=array();
 			foreach(explode('/', $path) as $i=>$fold){
 				if ($fold=='' || $fold=='.') continue;
-				if ($fold=='..' && $i>0 && end($out)!='..') array_pop($out);
+				if ($fold=='..' && $i>0) {
+					$outIterator = (new ArrayObject($out))->getIterator();
+					$outIterator->seek(count($out)-1);
+					if ($outIterator->current()!='..') array_pop($out);
+				}
 			else $out[]= $fold;
 			} return ($path{0}=='/'?'/':'').join('/', $out);
 		}
-		
-		
+
+
 		//This part is from http://fr2.php.net/manual/en/function.parse-url.php
 		function j_parseUrl($url) {
 		//--------------------------
@@ -177,8 +181,8 @@
 									($parts['port']?":".$parts['port']:"");
 		  return $parts;
 		}
-	
+
 		define('URL_TOOLBOX',1);
-	
+
 	}//End of URL_TOOLBOX
 ?>

@@ -1,5 +1,11 @@
 # Change log
 
+## [2023022200] - RELEASED 2023-02-22 - hotfilx
+
+### Fixed
+
+- old grades for returning students are showing even when they're before past processing cutoff date 'LOCAL_BOOKING_PASTDATACUTOFF'
+
 ## [2023020700] - RELEASED 2023-02-07
 
 ### Fixed

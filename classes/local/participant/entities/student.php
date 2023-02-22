@@ -28,6 +28,7 @@ namespace local_booking\local\participant\entities;
 require_once($CFG->dirroot . '/mod/assign/externallib.php');
 
 use ArrayObject;
+use DateTime;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\priority;
 use local_booking\local\session\entities\booking;
@@ -278,7 +279,8 @@ class student extends participant {
             // fetch grade_grade then ensure it is graded!
             $grade = new grade($this->course->get_grading_items()[$coursemodid]->id, $this->userid, $coursemodid);
 
-            if (empty($grade->finalgrade)) {
+            // discard the grade if the final grade is missing or it's over before cutoff period for processing past data
+            if (empty($grade->finalgrade) || (strtotime(LOCAL_BOOKING_PASTDATACUTOFF . ' day', $grade->timemodified) < time())) {
                 $grade = null;
             }
         }

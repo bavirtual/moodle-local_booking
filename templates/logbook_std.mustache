@@ -80,7 +80,9 @@
         {{#str}} flightdate, local_booking {{/str}}&#09;&#09;&#09;&#09;{{flightdate}}
         {{#str}} flighttype, local_booking {{/str}}&#09;&#09;&#09;&#09;{{trainingflight}} {{#checkflight}}{{#passedcheck}}<span class="logbook-check-pass">[{{#str}} checkpassed , local_booking{{/str}}]</span>{{/passedcheck}}{{^passedcheck}}<span class="logbook-check-fail">[{{#str}} checkfailed , local_booking{{/str}}]</span>{{/passedcheck}}{{/checkflight}}
         {{p1label}}&#09;&#09;&#09;&#09;{{p1name}}
+        {{^soloflight}}
         {{p2label}}&#09;&#09;&#09;&#09;&#09;{{p2name}}
+        {{/soloflight}}
 
         {{^soloflight}}
         {{#str}} groundtime, local_booking {{/str}}&#09;&#09;&#09;&#09;{{groundtime}}

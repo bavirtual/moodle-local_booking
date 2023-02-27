@@ -265,6 +265,7 @@ class local_booking_external extends external_api {
                 'pirep'  => new external_value(PARAM_TEXT, 'The PIREP id', VALUE_DEFAULT),
                 'courseid'  => new external_value(PARAM_INT, 'The cousre id', VALUE_DEFAULT),
                 'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
+                'exerciseid'  => new external_value(PARAM_INT, 'The exercise id', VALUE_DEFAULT),
             )
         );
     }
@@ -274,11 +275,12 @@ class local_booking_external extends external_api {
      *
      * @param int $logentryid The logbook entry id.
      * @param int $courseid The course id in context.
-     * @param int $userid The user user id in context.
+     * @param int $userid The user id in context.
+     * @param int $exerciseid The exerciseid id in context.
      * @return array array of slots created.
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
-    public static function get_pirep($pirep, $courseid, $userid) {
+    public static function get_pirep($pirep, $courseid, $userid, $exerciseid) {
         global $PAGE, $COURSE;
 
         // Parameter validation.
@@ -323,6 +325,7 @@ class local_booking_external extends external_api {
                     $data['logentry'] = $logentry;
                     $data['courseid'] = $courseid;
                     $data['userid'] = $userid;
+                    $data['exerciseid'] = $exerciseid;
                     $data['view'] = 'summary';
                     $data['nullable'] = false;
                     list($data, $template) = get_logentry_view($courseid, $userid, $data);

@@ -57,11 +57,11 @@
         </i>
     </div>
     <div class="col-5">{{#str}} exercise, local_booking {{/str}}</div>
-    <div class="col-6">{{exercisename}}</div>
+    <div class="col-6">{{{exercisename}}}</div>
 </div>
 <div class="row mt-1">
     <div class="col-1">
-        <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} p1label, local_booking {{/str}} {{/pix}}
+        <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} pilot, local_booking {{/str}} {{/pix}}
         </i>
     </div>
     {{^soloflight}}
@@ -74,7 +74,7 @@
 {{^soloflight}}
 <div class="row mt-1">
     <div class="col-1">
-        <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} p2label, local_booking {{/str}} {{/pix}}
+        <i class="logbook-mt1">{{#pix}} user, local_booking, {{#str}} pilot, local_booking {{/str}} {{/pix}}
         </i>
     </div>
     {{#dualops}}<div class="col-5">{{#str}} p2dual, local_booking {{/str}}</div>{{/dualops}}

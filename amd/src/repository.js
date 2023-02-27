@@ -284,15 +284,17 @@ import Ajax from 'core/ajax';
  * @param  {string} pirep The passed PIREP number
  * @param  {number} courseId The logbook entry user id.
  * @param  {number} userId The logbook entry course id.
+ * @param  {number} exerciseId The logbook entry course id.
  * @return  {promise} Resolved with the pirep data
  */
- export const findPirep = (pirep, courseId, userId) => {
+ export const findPirep = (pirep, courseId, userId, exerciseId) => {
     const request = {
         methodname: 'local_booking_get_pirep',
         args: {
             pirep: pirep,
             courseid: courseId,
-            userid: userId
+            userid: userId,
+            exerciseid: exerciseId
         }
     };
 

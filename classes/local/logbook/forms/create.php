@@ -180,8 +180,9 @@ class create extends \moodleform {
         }
 
         // default to 30 hr/mins from session time for departure and 1:30 hr/mins from session time for arrival
-        $defaultdepttime = logbook::convert_time(($flightdate + (30 * 60)), 'TS_TO_TIME');
-        $defaultarrttime = logbook::convert_time(($flightdate + (90 * 60)), 'TS_TO_TIME');
+        $datetime = is_numeric($flightdate) ? $flightdate : strtotime($flightdate);
+        $defaultdepttime = logbook::convert_time(($datetime + (30 * 60)), 'TS_TO_TIME');
+        $defaultarrttime = logbook::convert_time(($datetime + (90 * 60)), 'TS_TO_TIME');
         $this->add_element($mform, 'departure', array($subscriber->homeicao, $defaultdepttime), false);
         $this->add_element($mform, 'arrival', array($subscriber->homeicao, $defaultarrttime), false);
         $this->add_element($mform, 'aircraft', array($subscriber->aircrafticao, [

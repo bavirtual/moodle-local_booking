@@ -541,10 +541,11 @@ define([
         pirepdiv = $('#id_p1pirep').parent();
         pirep = $('#id_p1pirep').val();
         courseid = this.getCourseId();
+        exerciseid = this.getExerciseId();
 
         if (pirep != '') {
             loadingContainer.removeClass('hidden');
-            return Repository.findPirep(pirep, courseid, $('#id_p1id').val())
+            return Repository.findPirep(pirep, courseid, $('#id_p1id').val(), exerciseid)
                 .then(function(response) {
                     // Clean up any past client side errors
                     $('#id_p1pirep').removeClass('is-invalid');
@@ -883,7 +884,7 @@ define([
 
         // Set ground time to 0 for none training flights as it is a required a value
         if (!($("input[name='flighttypehidden']").val() == 'training')) {
-            $('#id_groundtime').val(0);
+            $('#id_groundtime').val("00:00");
         }
 
         // Now the change events have run, see if there are any "invalid" form fields.

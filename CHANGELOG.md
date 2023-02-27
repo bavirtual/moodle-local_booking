@@ -1,5 +1,11 @@
 # Change log
 
+## [2023022700] - RELEASED 2023-02-27 - hotfilx
+
+### Fixed
+
+- solo flight persistence exception
+
 ## [2023022200] - RELEASED 2023-02-22 - hotfilx
 
 ### Fixed

@@ -57,8 +57,10 @@ class logentry_exporter extends exporter {
         $this->logentry = $data['logentry'];
         $nullable = !isset($data['nullable']) || $data['nullable'];
 
-        // add logentry properties to the exporter's data and remove the exiting logentry object
-        $data = $this->logentry->__toArray(isset($data['view']) && $data['view'] == 'summary', $nullable, (!empty($data['shortdate'])?:false)) + $data;
+        // add logentry properties to the exporter's data and remove the exiting logentry object. Maintain scalar flightdate.
+        $logentrydata = $this->logentry->__toArray(isset($data['view']) && $data['view'] == 'summary', $nullable, (!empty($data['shortdate'])?:false));
+        $data += $logentrydata;
+        $data['flightdate'] = $logentrydata['flightdate'];
         unset($data['logentry']);
 
         $data['url'] = new moodle_url('/booking/view', ['courseid'=>$data['courseid']]);
@@ -306,7 +308,7 @@ class logentry_exporter extends exporter {
     protected function get_other_values(renderer_base $output) {
         global $COURSE;
 
-        $exerciseid = !empty($this->logentry) ? $this->logentry->get_exerciseid() : $this->data['exerciseid'];
+        $exerciseid = !empty($this->logentry) ? ($this->logentry->get_exerciseid() ?: $this->data['exerciseid']) : $this->data['exerciseid'];
         $flightdate = !empty($this->logentry) ? $this->logentry->get_flightdate(isset($this->data['view']) && $this->data['view'] == 'summary') : $this->data['flightdate'];
         $p1id = !empty($this->logentry) ? $this->logentry->get_p1id() : $this->data['p1id'];
         $p2id = !empty($this->logentry) ? $this->logentry->get_p2id() : $this->data['p2id'];

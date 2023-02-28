@@ -262,6 +262,7 @@ $string['pirepfound'] = ' - PIREP found.';
 $string['pirepsgroup'] = 'PIREPs (P1/P2)';
 $string['remarks'] = 'Remarks';
 $string['sessionlength'] = 'Session length';
+$string['soloflight'] = 'Solo Flight';
 $string['solotime'] = 'Solo time';
 $string['titleeditlogentry'] = 'Editing logbook entry';
 $string['titlenewlogentry'] = 'New logbook entry';
@@ -399,6 +400,7 @@ $string['booking:view'] = 'View session bookings';
 $string['messageprovider:booking_notification'] = 'Session booked notification';
 $string['messageprovider:booking_confirmation'] = 'Booked session instructor confirmation';
 $string['messageprovider:instructor_notification'] = 'Student confirmation of booked session';
+$string['messageprovider:logbook_notification'] = 'Student notification of a logbook entry';
 $string['messageprovider:session_cancellation'] = 'Student session cancellation / no-show notifications';
 $string['messageprovider:noshow_notification'] = 'Student notification of no-show and resulting actions';
 $string['messageprovider:noshow_instructor_notification'] = 'Instructor notification of student no-show actions taken';
@@ -449,6 +451,29 @@ $string['emailinstconfirmnmsg'] = '{$a->student} confirmed your booked session f
 $string['emailinstconfirmhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p><strong>{$a->student}</strong> confirmed your booked session for \'<i>{$a->exercise}</i>\' on
     <strong>{$a->sessiondate} zulu</strong>.</p></p><hr />';
+
+// email to student: logbook entry recorded
+$string['emaillogentry'] = 'Logbook entry recorded';
+$string['emaillogentrysubject'] = '{$a->coursename} logbook entry recorded: \'{$a->title}\'';
+$string['emaillogentrymsg'] = '\'{$a->title}\' logbook entry recorded for {$a->student} by \'{$a->instructor}\' on {$a->recordeddate}.
+    Ground time: {$a->groundtime}
+    Flight time: {$a->flighttime}
+    Aircraft: {$a->aircraft}
+    PIREP: {$a->pirep}
+    Departure ICAO: {$a->dept}
+    Arrival ICAO: {$a->arr}
+    Route: {$a->route}';
+$string['emaillogentryhtml'] = '<div style="font-family:sans-serif"><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> -> {$a->title}
+    <p><hr /><p>\'{$a->title}\' <a href=\'{$a->logbookurl}\'>logbook</a> entry recorded for <strong>{$a->student}</strong> by \'<i>{$a->instructor}</i>\' on {$a->recordeddate}.</p>
+    <p><strong>Flight details:</strong></p><pre>    Ground time&#09;&#09;{$a->groundtime}
+    Flight time&#09;&#09;{$a->flighttime}
+    Aircraft&#09;&#09;{$a->aircraft}
+    PIREP&#09;&#09;{$a->pirep}
+    Departure ICAO&#09;{$a->dept}
+    Arrival ICAO&#09;{$a->arr}
+    Route&#09;&#09;{$a->route}
+    Remarks</pre><span style="font-size:14px; padding-left: 50px; position: relative; display: flex; justify-content: flex-start; flex-wrap: wrap;">{$a->remarks}</span><br />
+    <hr /><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> -> {$a->title}</div>';
 
 // email to student: session cancellation
 $string['emailcancel'] = '{$a->coursename} session booking cancellation: \'{$a->exercise}\'';

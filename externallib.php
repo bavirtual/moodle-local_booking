@@ -1303,7 +1303,13 @@ class local_booking_external extends external_api {
             // get exporter output for return values
             list($output, $template) = get_logentry_view($courseid, $userid, $data);
 
+            // send student notification for new logbook entries
+            if (!$editing) {
+                (new notification())->send_logentry_notification($logentry);
+            }
+
             \core\notification::success(get_string('logentrysavesuccess', 'local_booking'));
+
             return [ 'logentry' => $output ];
         } else {
             \core\notification::error(get_string('logentrysaveunable', 'local_booking'));

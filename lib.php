@@ -81,7 +81,7 @@ define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);
  */
 define('LOCAL_BOOKING_OVERDUE_PERIOD', 10);
 /**
- * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades)
+ * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades) - (2 years)
  */
 define('LOCAL_BOOKING_PASTDATACUTOFF', 730);
 /**
@@ -222,7 +222,7 @@ function local_booking_extend_navigation(global_navigation $navigation) {
                     }
                 }
                 // show for students only
-                if ($participant->is_student()) {
+                if (!$participant->is_instructor()) {
                     $node = $navigation->find('progression', navigation_node::NODETYPE_LEAF);
                     if (!$node && $courseid!==SITEID) {
                         $parent = $navigation->find($courseid, navigation_node::TYPE_COURSE);

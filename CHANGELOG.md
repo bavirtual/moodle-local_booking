@@ -1,5 +1,21 @@
 # Change log
 
+## [2023022800] - RELEASED 2023-02-28
+
+### Fixed
+
+- solo flight editing
+
+### Added
+
+- student notification of logbook entry recording
+
+### Changed
+
+- logbook entries to show solo flight types in the heading of an entry
+- participants list to be limited to past cutoff date for data retrieval
+- remove instructors from graduates list
+
 ## [2023022700] - RELEASED 2023-02-27 - hotfilx
 
 ### Fixed

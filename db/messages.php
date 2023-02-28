@@ -47,6 +47,14 @@ $messageproviders = array(
         ),
     ),
 
+    // Notify student of logbook entry recorded.
+    'logbook_notification' => array(
+        'capability' => 'local/booking:studentnotification',
+        'defaults' => array(
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+        ),
+    ),
+
     // Notify student of cancelled session.
     'session_cancellation' => array(
         'capability' => 'local/booking:studentnotification',

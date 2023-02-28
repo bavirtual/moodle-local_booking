@@ -958,8 +958,7 @@ class logentry implements logentry_interface {
         $this->id = $formdata->id ?: null;
         $this->exerciseid = $formdata->exerciseid;
         $this->flightdate = $formdata->flightdate;
-        $this->pirep = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($formdata->p1pirep ?: 0) :
-            (property_exists( $formdata, 'p2pirep') ? ($formdata->p2pirep ?: $formdata->linkedpirep) : '');
+        $this->pirep = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($formdata->p1pirep ?: 0) : ($formdata->p2pirep ?: $formdata->linkedpirep);
         $this->p1id = $formdata->flighttypehidden == 'solo' ? $this->parent->get_userid() : $formdata->p1id;
         $this->p2id = $formdata->flighttypehidden == 'solo' ? 0 : $formdata->p2id;
 
@@ -977,7 +976,8 @@ class logentry implements logentry_interface {
         $landingsnightrule  = $isinstructor || $formdata->flighttypehidden == 'solo' || $edit;
 
         // process flight times first for the different flight types (Training, Solo, and Check flights pass/fail)
-        $this->groundtime   = logbook::convert_time($formdata->groundtime, 'MINS_TO_NUM');
+        // handle missing ground time in solo and check flights
+        $this->groundtime   = !empty($formdata->groundtime) ? logbook::convert_time($formdata->groundtime, 'MINS_TO_NUM') : 0;
         $this->flighttime   = logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM');
         $this->pictime      = $pictimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
         $this->dualtime     = $dualtimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
@@ -1009,8 +1009,7 @@ class logentry implements logentry_interface {
         $this->fstd         = $formdata->fstd;
         $this->flighttype   = $formdata->flighttypehidden;
         $this->linkedlogentryid = $formdata->linkedlogentryid ?: 0;
-        $this->linkedpirep  = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ?
-                                (property_exists( $formdata, 'p2pirep') ? ($formdata->p2pirep ?: $formdata->linkedpirep) : '') : $formdata->p1pirep;
+        $this->linkedpirep  = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($formdata->p2pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;
     }
 
     /**

@@ -25,7 +25,6 @@
 
 namespace local_booking\local\participant\entities;
 
-use ArrayObject;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\booking;
@@ -85,7 +84,12 @@ class participant implements participant_interface {
     /**
      * @var bool $is_student The participant is a student.
      */
-    protected $is_student;
+    protected $is_student = true;
+
+    /**
+     * @var bool $is_instructor The participant is an instructor.
+     */
+    protected $is_instructor = false;
 
     /**
      * @var bool $is_active The participant is active.
@@ -121,9 +125,16 @@ class participant implements participant_interface {
 
         // lookup user type and active status
         if ($userid != 0) {
-            $roles = (new ArrayObject(get_user_roles($course->get_context(), $userid)))->getIterator();
-            $this->is_student = count(get_user_roles($course->get_context(), $userid)) > 0 &&
-                $roles->current()->shortname == 'student' ? true : false;
+            $roleobjs = get_user_roles($course->get_context(), $userid);
+            $roles = array_map(function($item) {
+                return $item->shortname;
+            }, $roleobjs);
+
+            // enrolment type
+            // $this->is_student = array_search('student', array_column($roles, 'shortname'));
+            // $this->is_instructor = array_search('instructor', array_column($roles, 'shortname'));
+            $this->is_student = in_array('student', $roles);
+            $this->is_instructor = in_array('instructor', $roles) || in_array('seniorinstructor', $roles);
 
             // get active participant courses
             $enroledcourses = enrol_get_users_courses($userid, true);
@@ -377,6 +388,15 @@ class participant implements participant_interface {
      */
     public function is_student() {
         return $this->is_student;
+    }
+
+    /**
+     * check if the participant is an instructor
+     *
+     * @return bool $is_instructor.
+     */
+    public function is_instructor() {
+        return $this->is_instructor;
     }
 
     /**

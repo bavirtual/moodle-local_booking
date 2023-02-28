@@ -357,10 +357,12 @@ class subscriber implements subscriber_interface {
         $i = 0;
         foreach ($studentrecs as $studentrec) {
             $student = new student($this, $studentrec->userid);
-            $student->populate($studentrec);
-            $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
-            $activestudents[] = $student;
-            $i++;
+            if (!$student->is_instructor()) {
+                $student->populate($studentrec);
+                $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
+                $activestudents[] = $student;
+                $i++;
+            }
         }
         $this->activestudents = $activestudents;
 

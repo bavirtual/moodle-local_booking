@@ -93,6 +93,11 @@ class participant_vault implements participant_vault_interface {
     const DB_COURSE_SECTIONS = 'course_sections';
 
     /**
+     * Process course completion table name.
+     */
+    const DB_COURSE_COMPLETIONS = 'course_completions';
+
+    /**
      * Process user assignments table name.
      */
     const DB_ASSIGN = 'assign';
@@ -153,23 +158,14 @@ class participant_vault implements participant_vault_interface {
     const DB_LESSON_TIMER = 'lesson_timer';
 
     /**
+     * Past cutoff date (timestamp) for data retrieval.
+     */
+    const PASTDATACUTOFFDAYS = LOCAL_BOOKING_PASTDATACUTOFF * 60 * 60 * 24;
+
+    /**
      * Process course sections table name.
      */
     const DB_FILES = 'files';
-
-    /**
-     * @int $pastdatacutoff timestamp of past data in the system for a student.
-     */
-    protected $pastdatacutoff;
-
-    /**
-     * Constructor.
-     *
-     */
-    public function __construct() {
-        // get the past data cutoff timestamp (seconds)
-        $this->pastdatacutoff = time() - LOCAL_BOOKING_PASTDATACUTOFF * 60 * 60 * 24;
-    }
 
     /**
      * Get all active participant from the database.
@@ -284,14 +280,18 @@ class participant_vault implements participant_vault_interface {
                     INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                     INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
                     INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
+                    INNER JOIN {' . self::DB_COURSE_COMPLETIONS . '} cc on cc.userid = ue.userid
                     INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
                     WHERE en.courseid = :courseid
                         AND ra.contextid = :contextid
                         AND r.shortname = :role
-                        AND u.deleted != 1 ' . $filterclause;
+                        AND u.deleted != 1
+                        AND cc.course = :completioncourseid
+                        AND (cc.timecompleted > ' . (time() - self::PASTDATACUTOFFDAYS) . ' OR cc.timecompleted IS NULL) ' . $filterclause;
 
         $params = [
             'courseid'  => $courseid,
+            'completioncourseid'  => $courseid,
             'gcourseid' => $courseid,
             'contextid' => \context_course::instance($courseid)->id,
             'role'      => 'student'
@@ -326,6 +326,7 @@ class participant_vault implements participant_vault_interface {
                     AND r.shortname IN (' . $roles . ')
                     AND ue.status = 0
                     AND u.deleted != 1
+                    AND u.lastlogin > ' . (time() - self::PASTDATACUTOFFDAYS) . '
                     AND u.id NOT IN (
                         SELECT userid
                         FROM {' . self::DB_GROUPS_MEM . '} gm
@@ -367,6 +368,7 @@ class participant_vault implements participant_vault_interface {
                     AND ue.status = :status
                     AND g.courseid = :gcourseid
                     AND g.name = :instructorname
+                    AND u.lastlogin > ' . (time() - self::PASTDATACUTOFFDAYS) . '
                     AND u.id NOT IN (
                         SELECT userid
                         FROM {' . self::DB_GROUPS_MEM . '} gm
@@ -486,7 +488,7 @@ class participant_vault implements participant_vault_interface {
                 WHERE cm.course = :courseid
                 AND cm.deletioninprogress = 0
                 AND ' . $usertypesql . ' = :userid
-                AND ag.timemodified > ' . $this->pastdatacutoff . '
+                AND ag.timemodified > ' . (time() - self::PASTDATACUTOFFDAYS) . '
                 ORDER BY timemodified DESC
                 LIMIT 1';
 

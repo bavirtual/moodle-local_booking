@@ -746,3 +746,10 @@ table.logbook-easa tbody {
 .logbook-mt1 {
     color: cornflowerblue;
 }
+.logbook-remarks {
+    padding-left: 75px;
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}

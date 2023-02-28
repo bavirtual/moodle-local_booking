@@ -456,6 +456,8 @@ define([
 
             // TODO: Instructor logentry edit:
             // Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_checkpilottime"));
+        } else if ($("input[name='flighttypehidden']").val() == 'solo') {
+            Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_flighttime"));
         } else {
             Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_groundtime"));
         }

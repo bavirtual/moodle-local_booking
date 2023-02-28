@@ -26,6 +26,7 @@
 namespace local_booking\local\message;
 
 use local_booking\local\calendar\calendar_helper;
+use local_booking\local\logbook\entities\logentry;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
 use local_booking\local\session\entities\booking;
@@ -166,6 +167,48 @@ class notification extends \core\message\message {
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
         $this->set_additional_content('email', array('*' => array(
             'footer' => get_string('bookingfooter', 'local_booking', $data))));
+
+        return message_send($this) != 0;
+    }
+
+    /**
+     * Sends an email notifying the student of
+     * a logbook entry recording.
+     *
+     * @param logentry $logentry The logentry recorded
+     * @return bool              The notification message id.
+     */
+    public function send_logentry_notification(logentry $logentry) {
+        global $USER, $COURSE;
+
+        // notification message data
+        $data = (object) array(
+            'coursename'    => $COURSE->shortname,
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
+            'logbookurl'    => (new \moodle_url('/local/booking/logbook.php', array('courseid'=>$COURSE->id, 'format'=>'std')))->out(false),
+            'title'         => $logentry->get_flighttype() == 'solo' ? get_string('soloflight', 'local_booking') : $COURSE->subscriber->get_exercise_name($logentry->get_exerciseid()),
+            'student'       => student::get_fullname($logentry->get_userid()),
+            'instructor'    => instructor::get_fullname($USER->id),
+            'groundtime'    => $logentry->get_groundtime(false),
+            'flighttime'    => $logentry->get_flighttime(false),
+            'aircraft'      => $logentry->get_aircraft(),
+            'pirep'         => $logentry->get_pirep(),
+            'dept'          => $logentry->get_depicao(),
+            'arr'           => $logentry->get_arricao(),
+            'route'         => $logentry->get_route(),
+            'remarks'       => $logentry->get_remarks(),
+            'recordeddate'  => (new \DateTime())->format('l M j \a\t H:i \z\u\l\u'),
+        );
+
+        // Logentry notification message
+        $this->name              = 'logbook_notification';
+        $this->userto            = $logentry->get_userid();
+        $this->subject           = get_string('emaillogentrysubject', 'local_booking', $data);
+        $this->fullmessage       = get_string('emaillogentrymsg', 'local_booking', $data);
+        $this->fullmessagehtml   = get_string('emaillogentryhtml', 'local_booking', $data);
+        $this->contexturl        = $data->courseurl;
+        $this->contexturlname    = get_string('emaillogentry', 'local_booking');
 
         return message_send($this) != 0;
     }

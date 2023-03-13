@@ -104,7 +104,6 @@ import Ajax from 'core/ajax';
  * @param {int} courseId        The course id of the booking
  * @param {int} exerciseId      The exercise id of the associated course
  * @param {int} studentId       The id of the associated user
- * @param {int} slotId          The id of the slot if exists != 0
  * @return {promise}
  */
  export const saveBookedSlot = (bookedslot, courseId, exerciseId, studentId) => {

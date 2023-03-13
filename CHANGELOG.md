@@ -1,5 +1,23 @@
 # Change log
 
+## [2023031300] - RELEASED 2023-03-13
+
+### Fixed
+
+- availability cell selection border
+
+### Added
+
+- secondary navigation callbacks
+
+### Changed
+
+- availability page formatting
+- Session booking page formatting
+- tertiary menus options and buttons moved to top of views
+- Secondary menu link selection (check mark) based on the right context
+- strtotime change to DateTimeImmutable::createFromFormat
+
 ## [2023022800] - RELEASED 2023-02-28
 
 ### Fixed
@@ -16,13 +34,13 @@
 - participants list to be limited to past cutoff date for data retrieval
 - remove instructors from graduates list
 
-## [2023022700] - RELEASED 2023-02-27 - hotfilx
+## [2023022700] - RELEASED 2023-02-27 - hotfix
 
 ### Fixed
 
 - solo flight persistence exception
 
-## [2023022200] - RELEASED 2023-02-22 - hotfilx
+## [2023022200] - RELEASED 2023-02-22 - hotfix
 
 ### Fixed
 

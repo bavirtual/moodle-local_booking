@@ -28,6 +28,7 @@ define([
         'core/str',
         'core/pending',
         'core/modal_factory',
+        'core/notification',
         'local_booking/booking_view_manager',
         'local_booking/booking_actions',
         'local_booking/events',
@@ -39,6 +40,7 @@ define([
         Str,
         Pending,
         ModalFactory,
+        Notification,
         ViewManager,
         BookingActions,
         BookingEvents,
@@ -52,8 +54,6 @@ define([
      *
      * @method registerBookingEventListeners
      * @param  {object} root The booking root element
-     * @param  {object} logentryFormModalPromise A promise reolved with the Logentry form modal
-     * @param  {object} pirepFormPromise A promise reolved with the PIREP verification form modal
      */
      const registerBookingEventListeners = function(root) {
         const body = $('body');

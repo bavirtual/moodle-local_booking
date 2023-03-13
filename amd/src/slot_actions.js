@@ -353,7 +353,7 @@ define([
     /**
      * Set cells selected and save buttons state
      *
-     * @method postSlot
+     * @method postSlots
      * @param {object} root     The calendar root element
      * @param {String} action   The action behind the active view
      * @param {object} target   The target event object (cell)

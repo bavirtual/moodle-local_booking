@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local/booking/week_detail
+    @template local/booking/availability_week
 
     Calendar detailed week view for blocks.
 
@@ -45,11 +45,11 @@
     }} data-student-id="{{studentid}}"{{!
     }} data-exercise-id="{{exerciseid}}"{{!
     }}>
-    {{> local_booking/week_navigation }}
+    {{> local_booking/availability_week_nav }}
     {{> core/overlay_loading}}
     <style>
         table.calendarmonth td:nth-child({{maxlanes}}n+2) {
-            border-right: 2px solid grey;
+            border-right: 1px solid lightgrey;
         }
     </style>
     <table id="week-detail-{{uniqid}}" data-region="slots-week" class="calendarmonth slotcalendartable mb0 table-hover">
@@ -76,15 +76,15 @@
         {{#timeslots}}
             <tr data-region="month-view-week">
                 {{#showlocaltime}}
-                <td class="text-sm-center text-md-left}}">
-                    <span class="media-body small" aria-hidden="true">{{localtimeslot}}</span>
+                <td class="text-sm-center text-md-left localtimecol">
+                    <span class="media-body small" style="display:block; text-align:center;" aria-hidden="true">{{localtimeslot}}</span>
                 </td>
                 {{/showlocaltime}}
-                <td class="text-sm-center text-md-left}} localtimecol"
+                <td class="text-sm-center text-md-left zulutimecol"
                     data-slot="{{timeslot}}">
-                    <span class="zulutimeslot" aria-hidden="true">{{timeslot}}</span>
+                    <span class="media-body small font-weight-bold" style="display:block; text-align:center;" aria-hidden="true">{{timeslot}}</span>
                 </td>
-            {{#days}}
+                {{#days}}
                 <td id="slot-{{timestamp}}" class="day text-sm-center text-md-left slot-month-day{{!
                     }}{{^groupview}}{{#slotavailable}} clickable{{/slotavailable}}{{#slotmarked}} slot-{{slotstatus}}{{/slotmarked}}{{/groupview}}{{!
                     }}{{#groupview}}{{#slotbooked}} slot-{{slotstatus}}{{/slotbooked}}{{/groupview}}{{!
@@ -95,7 +95,7 @@
                     data-slot-marked="{{slotmarked}}"
                     data-slot-booked="{{slotbooked}}"
                     data-slot-status="{{slotstatus}}"
-                    data-region="{{#slotavailable}}day{{/slotavailable}}"{{!
+                    data-region="{{#slotavailable}}{{^groupview}}day{{/groupview}}{{/slotavailable}}"{{!
                     }}{{#slotbooked}}
                     data-toggle="tooltip"
                     data-html="true"
@@ -110,60 +110,44 @@
                     {{/slotmarked}}{{!
                     }}{{/groupview}}
                     data-new-event-timestamp="{{neweventtimestamp}}">
-                    <div class="d-none d-md-block hidden-phone text-xs-center">
-                        <span class="sr-only">{{daytitle}}</span>
-                    </div>
-                    <div class="d-md-none hidden-desktop hidden-tablet">
-                        <span class="sr-only">{{daytitle}}</span>
-                    </div>
                 </td>
-            {{/days}}
+                {{/days}}
             </tr>
         {{/timeslots}}
         </tbody>
     </table>
     {{#editing}}
-    <div>
-        <div>
-            <div class="slot-editing">
-                <div class="singlebutton">
-                    <button type="submit" class="slot-button slot-button-blue"
-                        data-region="copy-button"
-                        id="copy_button"{{uniqid}}
-                        title="">
-                        {{#pix}} copy, local_booking {{/pix}}
-                        {{#str}} buttoncopy, local_booking {{/str}}
-                    </button>
-                </div>
-                <div class="singlebutton">
-                    <button type="submit" class="slot-button slot-button-gray"
-                        data-region="paste-button"
-                        id="paste_button"
-                        title="">
-                        {{#pix}} paste, local_booking {{/pix}}
-                        {{#str}} buttonpaste, local_booking {{/str}}
-                    </button>
-                </div>
-                <div class="singlebutton single-button-clear">
-                    <button type="submit" class="slot-button slot-button-red"
-                        data-region="clear-button"
-                        id="clear_button"{{uniqid}}
-                        title="">
-                        {{#pix}} trash, local_booking {{/pix}}
-                        {{#str}} buttonclear, local_booking {{/str}}
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="bottom">
+    <div style="margin-top: 10px; text-align: center;">
         <div class="singlebutton">
-            <button type="submit" class="slot-action-button slot-button-gray"
+            <button type="submit" class="btn btn-primary"
                 data-region="save-button"
                 id="save_button"
                 title="">
-                {{#pix}} save, local_booking {{/pix}}
                 {{#str}} buttonsave, local_booking {{/str}}
+            </button>
+        </div>
+        <div class="singlebutton">
+            <button type="submit" class="btn btn-secondary"
+                data-region="copy-button"
+                id="copy_button"{{uniqid}}
+                title="">
+                {{#str}} buttoncopy, local_booking {{/str}}
+            </button>
+        </div>
+        <div class="singlebutton">
+            <button type="submit" class="btn btn-secondary"
+                data-region="paste-button"
+                id="paste_button"
+                title="">
+                {{#str}} buttonpaste, local_booking {{/str}}
+            </button>
+        </div>
+        <div class="singlebutton">
+            <button type="submit" class="btn btn-danger"
+                data-region="clear-button"
+                id="clear_button"{{uniqid}}
+                title="">
+                {{#str}} buttonclear, local_booking {{/str}}
             </button>
         </div>
     </div>
@@ -174,13 +158,13 @@
     {{/editing}}
     {{^editing}}
     {{^groupview}}
-    <div class="bottom">
+    <div class="bottom" style="text-align: center;">
         <div class="singlebutton">
-            <button type="submit" class="slot-action-button slot-action-book slot-button-gray" style="width: 160px;"
+            <button type="submit" class="btn {{#alreadybooked}}btn-secondary{{/alreadybooked}}{{^alreadybooked}}btn-primary{{/alreadybooked}}" style="margin-top: 20px;"
                 data-region="book-button"
                 id="book_button"
-                title="">
-                {{#pix}} book, local_booking {{/pix}}
+                title=""
+                {{#alreadybooked}}disabled{{/alreadybooked}}>
                 {{#str}} booksave, local_booking {{/str}}
             </button>
         </div>

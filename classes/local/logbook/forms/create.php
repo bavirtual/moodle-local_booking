@@ -26,8 +26,8 @@
 
 namespace local_booking\local\logbook\forms;
 
-use ArrayIterator;
 use ArrayObject;
+use DateTimeImmutable;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\session\entities\booking;
@@ -57,7 +57,6 @@ class create extends \moodleform {
 
         $mform = $this->_form;
         $logentry = isset($this->_customdata['logentry']) ? $this->_customdata['logentry'] : null;
-        $courseid = isset($this->_customdata['courseid']) ? $this->_customdata['courseid'] : null;
         $newentry = true;
         if (!empty($logentry))
             $newentry = $logentry->get_id() == 0;
@@ -116,9 +115,9 @@ class create extends \moodleform {
         $integratedpireps = $subscriber->has_integration('pireps');
         $newlogentry = empty($logentry) || empty($logentry->get_id());
 
-        // set additional information
-        if ($newlogentry) {
-            $flightdate = isset($this->_customdata['flightdate']) ? $this->_customdata['flightdate'] : null;
+        // set core logentry data
+        if ($newlogentry && isset($this->_customdata['flightdate'])) {
+            $flightdate = is_numeric($this->_customdata['flightdate']) ? $this->_customdata['flightdate'] : (new DateTimeImmutable(str_replace("- ", "", $this->_customdata['flightdate'])))->getTimestamp();
             $p1id = $USER->id;
             $p2id = $this->_customdata['userid'];
         } else {
@@ -148,7 +147,7 @@ class create extends \moodleform {
         }
 
         // add primary elements
-        $this->add_element($mform, 'flightdate', array($flightdate));
+        $this->add_element($mform, 'flightdate', $flightdate);
         $this->add_element($mform, 'p1id', array($pilots, $p1id, $subscriber->trainingtype));
         $this->add_element($mform, 'p2id', array($pilots, $p2id, $subscriber->trainingtype));
 

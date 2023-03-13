@@ -52,7 +52,7 @@ $string['bookingsortbyscore'] = 'score';
 $string['bookingsortbyscoretooltip'] = 'Sorts by student score';
 $string['bookingsortbyavailability'] = 'availability';
 $string['bookingsortbyavailabilitytooltip'] = 'Sorts by students with availability posts, then no posts, then incomplete lessons';
-$string['booksave'] = 'Save Booking';
+$string['booksave'] = 'Save booking';
 $string['commentcancel'] = 'Please provide the student with a short comment on this cancellation:';
 $string['commentnoshow'] = 'Confirm student failed to show without a prior notice.';
 $string['commentnoshow0'] = 'This is the student\'s first no-show, therefore they will be sent a warning.';
@@ -75,7 +75,6 @@ $string['nextlesson'] = 'Next Lesson';
 $string['nobookingtoconfirm'] = 'You have no booking to confirm.';
 $string['participation'] = 'Instructor participation';
 $string['pluginname'] = 'Session booking';
-$string['progression'] = 'Students Progression';
 $string['role'] = 'Role';
 $string['sequencetooltip'] = 'Score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
 <br/>Availability: {$a->slots} posts<br/>Completion: {$a->completion} lessons';
@@ -104,7 +103,7 @@ $string['zulutime'] = 'Zulu';
 // Availability posting
 $string['activebookingmsg'] = 'This session has already been booked by instructor {$a}';
 $string['availability'] = 'My availability';
-$string['availabilityinst'] = 'Student availability';
+$string['availabilityinst'] = 'Students availability';
 $string['availabilityallview'] = 'View everyone\'s availability';
 $string['buttonsave'] = 'Save';
 $string['buttoncopy'] = 'Copy';
@@ -755,6 +754,7 @@ $string['groupexaminersdesc'] = 'Group to identify examiner instructors.';
 // Plugin errors
 $string['errorcertifiernotexaminer'] = 'Permission denied. Only the examiner can certify a graduating student.';
 $string['errordelete'] = 'Failed to delete logentry';
+$string['errorexercisemissing'] = 'Exercise not found!';
 $string['errorinvaliddate'] = 'Flight date cannot be before booked session date';
 $string['errorinvalidarrtime'] = 'Arrival date/time must be greater than departure date/time';
 $string['errorlandings'] = 'Number from 1-9';

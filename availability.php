@@ -34,6 +34,7 @@ require_once($CFG->dirroot . '/calendar/lib.php');
 defined('MOODLE_INTERNAL') || die();
 
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\output\manage_action_bar;
 
 global $USER, $COURSE;
 
@@ -51,8 +52,6 @@ $view =  optional_param('view', 'user', PARAM_RAW);
 $userid = optional_param('userid', $USER->id, PARAM_INT);
 $exerciseid = optional_param('exid', 0, PARAM_INT);
 $course = get_course($courseid);
-$pluginname = $course->shortname . ' ' . get_config('local_booking', 'atoname') . ' ' . get_string('pluginname', 'local_booking');
-$title = get_string('weeklytitle', 'local_booking');
 $week = get_string('week', 'local_booking');
 $time = optional_param('time', 0, PARAM_INT);
 
@@ -61,8 +60,9 @@ $url->param('courseid', $courseid);
 
 // view all capability for instructors
 if (has_capability('local/booking:view', $context)) {
+
     $view = $action == 'book' ? 'user' : 'all';
-    // $url->param('view', $view);
+
 } else {
     // define subscriber globally
     if (empty($COURSE->subscriber))
@@ -85,21 +85,23 @@ if (!empty($day) && !empty($mon) && !empty($year)) {
     }
 }
 
+// go to next week if we're on the last day of the week and no booking can be made
 if (empty($time)) {
-    $time = time();
+    $time =  time();//endofweek(time()) ? getnextweek() : time();
 }
 
 $calendar = calendar_information::create($time, $courseid, !empty($categoryid) ? $categoryid : $course->category);
 
 $PAGE->navbar->add(userdate($time, get_string('weekinyear','local_booking', date('W', $time))));
 $PAGE->set_pagelayout('standard');
-$PAGE->set_title($pluginname, 'local_booking');
-$PAGE->set_heading($pluginname, 'local_booking');// . ' course id='  . $courseid);
+$PAGE->set_title($COURSE->shortname . ': ' . get_string('pluginname', 'local_booking'), 'local_booking');
+$PAGE->set_heading(get_string('availabilityinst', 'local_booking'), 'local_booking');
 $PAGE->add_body_class('path-availability');
 
-$template = 'local_booking/calendar_week';
-$renderer = $PAGE->get_renderer('core_calendar');
-$calendar->add_sidecalendar_blocks($renderer, true, null);
+$template = 'local_booking/availability_calendar';
+$calenderrenderer = $PAGE->get_renderer('core_calendar');
+$renderer = $PAGE->get_renderer('local_booking');
+$calendar->add_sidecalendar_blocks($calenderrenderer, true);
 
 echo $OUTPUT->header();
 echo $renderer->start_layout();
@@ -112,6 +114,7 @@ $actiondata = [
     'exerciseid' => $exerciseid,
     ];
 
+// output availability view
 list($data, $template) = get_weekly_view($calendar, $actiondata, $view);
 echo $renderer->render_from_template($template, $data);
 

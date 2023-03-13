@@ -30,6 +30,7 @@
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\output\manage_action_bar;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -56,9 +57,9 @@ require_capability('local/booking:view', $context);
 
 $navbartext = participant::get_fullname($userid);
 $PAGE->navbar->add($navbartext);
-$PAGE->set_pagelayout('standard');
+$PAGE->set_pagelayout('admin');
 $PAGE->set_context($context);
-$PAGE->set_title($title, 'local_booking');
+$PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
 $PAGE->set_heading($title, 'local_booking');
 $PAGE->add_body_class('path-local-booking');
 
@@ -69,41 +70,29 @@ echo $renderer->start_layout();
 
 $COURSE->subscriber = new subscriber($courseid);
 $student = new student($COURSE->subscriber, $userid);
+$tertiarynavadditional = ['userid'=>$userid];
 
-// determine button action
-if ($reporttype != 'examiner' || $student->evaluated()) {
-
-    $nextactionurl = '/local/booking/profile.php';
-    $params = [
-        'courseid' => $courseid,
-        'userid'   => $userid
-    ];
-    $buttonlabel = get_string('back');
-
-} else {
-
-    $buttonlabel = get_string('uploadreport', 'local_booking');
-    $nextactionurl = '/mod/assign/view.php';
-    $params = [
-        'id'     => $COURSE->subscriber->get_graduation_exercise(),
-        'rownum' => 0,
-        'userid' => $userid,
-        'action' => 'grader'
-    ];
+// check for exam processing action
+if ($reporttype == 'examiner') {
+    if ($student->evaluated()) {
+        $tertiarynavadditional['examaction']  = true;
+        $tertiarynavadditional['actionlabel'] = get_string('uploadreport', 'local_booking');
+        $tertiarynavadditional['actionurl']   = new moodle_url('/mod/assign/view.php', [
+            'id'     => $COURSE->subscriber->get_graduation_exercise(),
+            'rownum' => 0,
+            'userid' => $userid,
+            'action' => 'grader'
+        ]);
+    } else {
+        $tertiarynavadditional['evalmsg'] = get_string('uploadreportmsg1', 'local_booking');
+        $tertiarynavadditional['evalmsg'] .= '&nbsp;&nbsp;<i class="icon fa fa-download fa-fw " aria-hidden="true"></i>';
+        $tertiarynavadditional['evalmsg'] .= get_string('uploadreportmsg2', 'local_booking');
+    }
 }
 
-// add next action button
-echo html_writer::start_tag('div', array('class'=>'container d-flex align-items-center justify-content-center text-center flex-column mb-2'));
-echo $OUTPUT->render(new single_button(new moodle_url($nextactionurl, $params), $buttonlabel, 'get', true));
-
-// show evaluation message
-if ($reporttype == 'examiner' && !$student->evaluated()) {
-    echo get_string('uploadreportmsg1', 'local_booking');
-    echo '&nbsp;&nbsp;<i class="icon fa fa-download fa-fw " aria-hidden="true"></i>';
-    echo get_string('uploadreportmsg2', 'local_booking');
-}
-
-echo html_writer::end_tag('div');
+// output action bar
+$actionbar = new manage_action_bar($PAGE, 'report', $tertiarynavadditional);
+echo $renderer->render_tertiary_navigation($actionbar);
 
 // report section
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));

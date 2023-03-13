@@ -26,6 +26,7 @@
  */
 
 use local_booking\local\participant\entities\participant;
+use local_booking\output\manage_action_bar;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -51,7 +52,7 @@ require_capability('local/booking:view', $context);
 $navbartext = participant::get_fullname($userid);
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('standard');
-$PAGE->set_title($title, 'local_booking');
+$PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
 $PAGE->set_heading($title, 'local_booking');
 $PAGE->add_body_class('path-local-booking');
 

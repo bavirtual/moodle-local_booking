@@ -324,7 +324,6 @@ class week_exporter extends exporter {
                 \core\notification::WARNING(get_string('lessonsincomplete', 'local_booking'));
             }
         }
-
         $date = $this->related['type']->timestamp_to_date_array($this->calendar->time);
 
         // Get previous and next periods navigation information

@@ -71,8 +71,6 @@ function(
         ViewManager.startLoading(root);
 
         var target = e.target;
-        // Get course id and booking id
-        const courseId = courseId || root.find(BookingSelectors.bookingwrapper).data('courseid');
         const bookingId = target.dataset.bookingid;
 
         // Send the request data to the server for processing.

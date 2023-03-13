@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template availability/calendar_week
+    @template availability/availability_calendar
 
     Calendar week view for availability posting.
 
@@ -32,8 +32,8 @@
     }
 }}
 
-<div id="calendar-week-{{uniqid}}" data-template="local_booking/week_detail">
-    {{> local_booking/week_detail}}
+<div id="calendar-week-{{uniqid}}" data-template="local_booking/availability_week">
+    {{> local_booking/availability_week}}
 </div>
 
 {{#js}}

@@ -49,4 +49,14 @@ class local_booking_renderer extends plugin_renderer_base {
     public function complete_layout() {
         return html_writer::end_tag('div');
     }
+
+    /**
+     * Render the tertiary navigation for the page.
+     *
+     * @param base_action_bar $actionbar
+     * @return bool|string
+     */
+    public function render_tertiary_navigation(\local_booking\output\base_action_bar $actionbar) {
+        return $this->render_from_template($actionbar->get_template(), $actionbar->export_for_template($this));
+    }
 }

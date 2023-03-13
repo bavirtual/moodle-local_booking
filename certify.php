@@ -24,8 +24,6 @@
  */
 
 use core_badges\badge;
-use local_booking\local\logbook\entities\logbook;
-use local_booking\local\message\notification;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
@@ -54,7 +52,7 @@ require_capability('local/booking:view', $context);
 // get the graduating student
 $COURSE->subscriber = new subscriber($courseid);
 $student = new student($COURSE->subscriber, $studentid);
-$title = $COURSE->subscriber->get_shortname() . ' ' . get_string('pluginname', 'local_booking');
+$title = $COURSE->shortname . ' ' . get_string('pluginname', 'local_booking');
 $title = get_string('pluginname', 'local_booking');
 
 // verify credentials, if the certifier is not the same as the examiner throw invalid permissions error
@@ -120,7 +118,7 @@ if ($COURSE->subscriber->requires_skills_evaluation() && !$student->evaluated())
     $PAGE->navbar->add($navbartext);
     $PAGE->set_pagelayout('standard');
     $PAGE->set_context($context);
-    $PAGE->set_title($title, 'local_booking');
+    $PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
     $PAGE->set_heading($title, 'local_booking');
     $PAGE->add_body_class('path-local-booking');
 
@@ -128,11 +126,6 @@ if ($COURSE->subscriber->requires_skills_evaluation() && !$student->evaluated())
 
     echo $OUTPUT->header();
     echo $renderer->start_layout();
-
-    // add next action button
-    echo html_writer::start_tag('div', array('class'=>'container d-flex align-items-center justify-content-center mb-2'));
-    echo $OUTPUT->render(new single_button(new moodle_url('/local/booking/view.php', ['courseid'=>$courseid]), get_string('back'), 'get', true));
-    echo html_writer::end_tag('div');
 
     // message section
     $data = [

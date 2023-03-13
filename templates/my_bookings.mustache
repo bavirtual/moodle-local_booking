@@ -64,42 +64,40 @@
     <tbody>
     {{#activebookings}}
         <tr id="{{bookingid}}">
-            <td class="booking-text-big text-md-left">
+            <td class="booking-text-big text-md-left" style="vertical-align: middle;">
                 <span>{{studentname}}</span>
             </td>
-            <td class="booking-text booking-text-med text-sm-center">
+            <td class="booking-text booking-text-small" style="vertical-align: middle;">
                 <span><i>{{exercise}}</i></span>
             </td>
-            <td class="booking-text booking-text-small text-sm-center">
+            <td class="booking-text booking-text-small text-sm-center" style="vertical-align: middle;">
                 <span>{{sessiondate}}</span>
             </td>
-            <td class="booking-text booking-text-small text-sm-center">
+            <td class="booking-text booking-text-small text-sm-center" style="vertical-align: middle;">
                 <span>{{groundtime}}</span>
             </td>
-            <td>
-                <div class="singlebutton session-right">
-                    <button class="session-button session-button-cancel"
+            <td style="vertical-align: middle;">
+                <div class="singlebutton">
+                    <button class="btn btn-primary"
                         data-region="cancel-button"
                         id="cancel_button"
                         data-bookingid="{{bookingid}}"
                         data-studentid="{{studentid}}"
                         data-exerciseid="{{exerciseid}}">
-                        {{#pix}} window-close, local_booking {{/pix}}
                         {{actionname}}
                     </button>
                      </a>
                 </div>
             </td>
-            <td>
-                <div class="singlebutton session-right">
-                    <button class="session-button session-button-noshow"
+            <td style="vertical-align: middle;">
+                <div class="singlebutton">
+                    <button type="button" class="btn btn-danger"
                         data-region="noshow-button"
                         id="noshow_button"
                         data-bookingid="{{bookingid}}"
                         data-studentid="{{studentid}}"
                         data-exerciseid="{{exerciseid}}"
                         data-noshows="{{noshows}}"                        >
-                        {{#pix}} user-times, local_booking {{/pix}}
                         {{#str}} bookingcancelnoshow, local_booking {{/str}}
                     </button>
                      </a>

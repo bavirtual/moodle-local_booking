@@ -395,7 +395,8 @@ class student extends participant {
         if (empty($this->restrictiondate)) {
             // get wait time restriction waiver if exists
             $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->course->get_id() . '_availabilityoverride', false, $this->userid);
-            $nextsessiondate = new \DateTime('@' . time());
+            $today = new \DateTime('@' . time());
+            $nextsessiondate = $today;
 
             // process restriction if posting wait restriction is enabled or if the student doesn't have a waiver
             if ($this->course->postingwait > 0 && !$hasrestrictionwaiver) {
@@ -417,8 +418,14 @@ class student extends participant {
                 date_add($nextsessiondate, date_interval_create_from_date_string($this->course->postingwait . ' days'));
 
                 // return today's date if the posting wait restriction date had passed
-                if ($nextsessiondate->getTimestamp() < time())
+                if ($nextsessiondate->getTimestamp() < time()) {
                     $nextsessiondate = new \DateTime('@' . time());
+                }
+            }
+
+            // If at end of the week, the next session date would be the first day of the following week.
+            if ($nextsessiondate == $today && date('N') == 7) {
+                $nextsessiondate->modify('+1 day');
             }
 
             // rest the hours to start of the day
@@ -644,23 +651,26 @@ class student extends participant {
      */
     public function has_submitted_assignment(int $exerciseid) {
 
-        $hassubmission = true;
+        if ($hassubmission = !empty($exerciseid)) {
+            // get the assignment associated with the exercise comments
+            $gradeitem = $this->course->get_grading_items()[$exerciseid];
 
-        // get the assignment associated with the exercise comments
-        $gradeitem = $this->course->get_grading_items()[$exerciseid];
-        $grade = new grade($gradeitem->id, $this->userid, $exerciseid, true);
-        $assign = $grade->get_assignment();
+            if (!empty($gradeitem)) {
+                $grade = new grade($gradeitem->id, $this->userid, $exerciseid, true);
+                $assign = $grade->get_assignment();
 
-        // check if a file submission is required for this exercise
-        if ($assign->is_any_submission_plugin_enabled()) {
+                // check if a file submission is required for this exercise
+                if ($assign->is_any_submission_plugin_enabled()) {
 
-            // $assigngradeid = $assign->gradeid();??
-            $submissions = $assign->get_user_submission($this->userid, 0, false);
+                    // $assigngradeid = $assign->gradeid();??
+                    $submissions = $assign->get_user_submission($this->userid, 0, false);
 
-            // get the file storage object and verify that an assignment file has been submitted
-            $fs = get_file_storage();
-            $hassubmission = !$fs->is_area_empty($gradeitem->get_context()->id, 'assignsubmission_file', 'submission_files', $submissions->id);
+                    // get the file storage object and verify that an assignment file has been submitted
+                    $fs = get_file_storage();
+                    $hassubmission = !$fs->is_area_empty($gradeitem->get_context()->id, 'assignsubmission_file', 'submission_files', $submissions->id);
 
+                }
+            }
         }
 
         return $hassubmission;

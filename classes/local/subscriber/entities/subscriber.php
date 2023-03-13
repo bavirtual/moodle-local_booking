@@ -479,12 +479,16 @@ class subscriber implements subscriber_interface {
     public function get_exercise_name(int $exerciseid, int $courseid = 0) {
 
         // look in another course
-        if ($courseid != 0 && $courseid != $this->courseid) {
-            $coursemodinfo = get_fast_modinfo($courseid);
-            $mods = $coursemodinfo->get_cms();
-            $modname = $mods[$exerciseid]->name;
+        if (!empty($exerciseid)) {
+            if ($courseid != 0 && $courseid != $this->courseid) {
+                $coursemodinfo = get_fast_modinfo($courseid);
+                $mods = $coursemodinfo->get_cms();
+                $modname = $mods[$exerciseid]->name;
+            } else {
+                $modname = $this->modules[$exerciseid]->name;
+            }
         } else {
-            $modname = $this->modules[$exerciseid]->name;
+            $modname = get_string('errorexercisemissing', 'local_booking');
         }
 
         return $modname;

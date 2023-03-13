@@ -120,11 +120,10 @@
 
 /* Buttons */
 .session-button {
-    padding-left: 10px;
     display: inline-flex;
     align-items: center;
     height: 26px;
-    width: 80px;
+    width: 70px;
     color: white;
     font-size: small;
     font-weight: bold;
@@ -509,7 +508,7 @@
     table-layout: fixed;
 }
 .path-availability .slotcalendartable tr:not(:first-child):last-child td:not(:nth-child(1)):not(:nth-child(2)) {
-    border-bottom: 2px solid grey;
+    border-bottom: 1px solid lightgrey;
 }
 .path-availability .slotcalendartable th,
 .path-availability .slotcalendartable td {
@@ -524,10 +523,18 @@
     vertical-align: bottom;
 }
 .path-availability .slotcalendartable .localtimecol {
-    border-right: 2px solid grey;
+    vertical-align: middle;
+    border: 0.1pt solid lightgrey;
+}
+.path-availability .slotcalendartable .zulutimecol {
+    vertical-align: middle;
+    border-top: 0.1pt solid lightgrey;
+    border-left: 0.1pt solid lightgrey;
+    border-bottom: 0.1pt solid lightgrey;
+    border-right: 1px solid lightgrey;
 }
 .path-availability .slotcalendartable .daynames {
-    border: 2px solid grey;
+    border: 1px solid lightgrey;
 }
 .path-availability .slotcalendartable .zulutime {
     color: rgb(122, 26, 26);

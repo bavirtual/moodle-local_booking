@@ -69,7 +69,7 @@ import * as Selectors from 'local_booking/selectors';
                 courseId = option.dataset.courseid,
                 categoryId = option.dataset.categoryid;
 
-            refreshWeekContent(root, year, week, time, courseId, categoryId, e.target, 'local_booking/calendar_week')
+            refreshWeekContent(root, year, week, time, courseId, categoryId, e.target, 'local_booking/availability_calendar')
                 .then(() => {
                     return window.history.pushState({}, '', '?view=user');
                 }).fail(Notification.exception);

@@ -281,7 +281,6 @@ class local_booking_external extends external_api {
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
     public static function get_pirep($pirep, $courseid, $userid, $exerciseid) {
-        global $PAGE, $COURSE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_pirep_parameters(), array(

@@ -103,35 +103,14 @@
             </tbody>
         </table>
         <p>
-        <table class="booking-override">
-            <tr style="height: 80px;">
-                <td>
-                    <h4>{{#str}} bookingavailabilityposts, local_booking {{/str}}:</h4>
-                </td>
-                <td class="mdl-right">
-                    <div style="text-align: left; text-indent: 22px; font-weight: bolder; font-size: x-large;">
-                        <span>{{posts}}&nbsp;{{#str}} slots, local_booking {{/str}}</span>
-                    </div>
-                </td>
-            </tr>
-        </table>
-        </p>
+        <h5>{{#str}} bookingavailabilityposts, local_booking {{/str}}: {{posts}}&nbsp;{{#str}} slots, local_booking {{/str}}</h5>
         <div class="bottom" style="text-align: center;">
-            <div class="singlebutton">
-                <button type="button" onclick="window.history.back()"
-                    class="session-button-confirm"
-                    data-region="back-button"
-                    id="back_button"
-                    title="">
-                    {{#str}} back {{/str}}
-                </button>
-                <button type="submit"
-                    class="session-button-confirm"
-                    id="continue_button"
-                    formaction="{{formaction}}">
-                    {{#str}} continue {{/str}}
-                </button>
-            </div>
+            <button type="submit"
+                class="btn btn-primary"
+                id="continue_button"
+                formaction="{{formaction}}">
+                {{#str}} continue {{/str}}
+            </button>
         </div>
         {{/activestudents}}
     </form>

@@ -311,6 +311,15 @@ class participant implements participant_interface {
     }
 
     /**
+     * Returns pilot's fleet association
+     *
+     * @return string   The participant's fleet
+     */
+    public function get_fleet() {
+        return $this->get_profile_field('fleet');
+    }
+
+    /**
      * Returns a participant's user profile field
      *
      * @param string $field     The name of the field

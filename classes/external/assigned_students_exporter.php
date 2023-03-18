@@ -34,12 +34,17 @@ use moodle_url;
 /**
  * Class for displaying instructor's 'My assigned students' view.
  *
- * @package   local_booking
+ * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assigned_students_exporter extends exporter {
+
+    /**
+     * @var instructor $instructor The instructor being evaluated
+     */
+    protected $instructor;
 
     /**
      * Constructor.
@@ -54,6 +59,7 @@ class assigned_students_exporter extends exporter {
             ]);
 
         $data['url'] = $url->out(false);
+        $this->instructor = $data['instructor'];
 
         parent::__construct($data, $related);
     }
@@ -122,11 +128,10 @@ class assigned_students_exporter extends exporter {
      * @return  assigned_student_exporter[]
      */
     protected function get_assigned_students($output) {
-        global $USER, $COURSE;
+        global $COURSE;
         $assignedstudents = [];
 
-        $instructor = $COURSE->subscriber->get_instructor($USER->id);
-        $students = $instructor->get_assigned_students();
+        $students = $this->instructor->get_assigned_students();
         foreach ($students as $student) {
             $nextexercise = $student->get_next_exercise();
             $student->set_next_lesson(!empty($nextexercise) ? $COURSE->subscriber->get_exercise_name($nextexercise) : '--');

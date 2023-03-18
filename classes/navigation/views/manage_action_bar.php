@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_booking\output;
+namespace local_booking\navigation\views;
 
 use moodle_url;
 use renderer_base;
@@ -24,7 +24,7 @@ use moodle_page;
 /**
  * Class manage_action_bar - Display the action bar
  *
- * @package   local_booking
+ * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -184,12 +184,13 @@ class manage_action_bar extends base_action_bar {
 
         // check for exam evaluation
         if (!empty($this->additional['examaction'])) {
-            $elements[] = new single_button($this->additional['actionurl'], $this->additional['actionlabel'], 'post', true);
-        }
 
-        // check for exam evaluation
-        if (!empty($this->additional['evalmsg'])) {
-
+            // evaluate the row to be placed on
+            if ($this->additional['firstrow']) {
+                $elements[] = new text_label ($this->additional['evalmsg']);
+            } else {
+                $elements[] = new single_button($this->additional['actionurl'], $this->additional['actionlabel'], 'post', true);
+            }
         }
 
         return $elements;
@@ -239,5 +240,44 @@ class manage_action_bar extends base_action_bar {
         }
 
         return ['renderedcontent' => $elements];
+    }
+}
+
+/**
+ * Class for outputing renderable simple text label in the tertiary navigation bar.
+ *
+ * @package    local_booking
+ * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @copyright  BAVirtual.co.uk © 2023
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class text_label implements \renderable {
+
+    /**
+     * @var string Button label
+     */
+    public $html;
+
+    /**
+     * Constructor
+     * @param string $html button text
+     */
+    public function __construct(string $html) {
+        $this->html = $html;
+    }
+
+    /**
+     * Export data.
+     *
+     * @param renderer_base $output Renderer.
+     * @return stdClass
+     */
+    public function export_for_template(renderer_base $output) {
+
+        $data = new \stdClass();
+        $data->id = \html_writer::random_id('text_label');
+        $data->html = $this->html;
+
+        return $data;
     }
 }

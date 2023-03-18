@@ -43,7 +43,7 @@
         </tr>
     </table>
     <p>
-    </table><table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover table-bordered">
+    </table><table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover table-bordered booking-table">
         <thead>
             <tr>
                 <th class="header booking-header booking-xsmall text-xs-center ">
@@ -58,7 +58,10 @@
                 <th class="header booking-header booking-med text-xs-center">
                     <span class="media-body" aria-hidden="true">{{#str}} simulator, local_booking {{/str}}</span>
                 </th>
-                {{#coursemodules}}
+                <th class="header booking-header booking-med text-xs-center">
+                    <span class="media-body" aria-hidden="true">{{#str}} fleet, local_booking {{/str}}</span>
+                </th>
+               {{#coursemodules}}
                 <th class="header booking-header booking-xbig text-xs-center"
                     data-toggle="tooltip"
                     title="{{{exercisename}}}"
@@ -91,6 +94,9 @@
                 <td class="day text-sm-center">
                     <span class="media-body small" aria-hidden="true">{{simulator}}</span>
                 </td>
+                <td class="day text-sm-center">
+                    <span class="media-body small" aria-hidden="true">{{fleet}}</span>
+                </td>
                 {{#sessions}}
                 <td class="text-sm-center" style="max-width: 20px;"
                     data-exercise-status="{{sessionstatus}}"{{!
@@ -106,9 +112,9 @@
                         <span class="session-date media-body fa-inverse{{!
                             }}{{^sessionempty}} session-{{status}}{{/sessionempty}}{{!
                             }}">{{^isquiz}}{{^marknoposts}}&nbsp;{{/marknoposts}}{{/isquiz}}
-                            {{#isquiz}}
+                            {{#quizpassed}}
                             {{#pix}} check, local_booking {{/pix}}
-                            {{/isquiz}}
+                            {{/quizpassed}}
                             {{#marknoposts}}<span class="d-md-block session-posts">{{noposts}}</span>{{/marknoposts}}
                         </span>
                     </div>

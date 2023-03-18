@@ -68,6 +68,9 @@
                 <th class="header booking-header booking-med text-xs-center">
                     <span class="media-body" aria-hidden="true">{{#str}} simulator, local_booking {{/str}}</span>
                 </th>
+                <th class="header booking-header booking-med text-xs-center">
+                    <span class="media-body" aria-hidden="true">{{#str}} fleet, local_booking {{/str}}</span>
+                </th>
                 <th class="header booking-header booking-big text-xs-center">
                     <span class="media-body" aria-hidden="true">{{#str}} sessionaction, local_booking {{/str}}</span>
                 </th>
@@ -103,6 +106,9 @@
                 </td>
                 <td class="day text-sm-center">
                     <span class="media-body small" aria-hidden="true">{{simulator}}</span>
+                </td>
+                <td class="day text-sm-center">
+                    <span class="media-body small" aria-hidden="true">{{fleet}}</span>
                 </td>
                 <td class="day"
                     data-toggle="tooltip"
@@ -145,9 +151,9 @@
                             {{#logentrymissing}}
                             {{#pix}} info-circle, local_booking,{{#str}} logentrymissing, local_booking {{/str}} {{/pix}}
                             {{/logentrymissing}}
-                            {{#isquiz}}
+                            {{#quizpassed}}
                             {{#pix}} check, local_booking {{/pix}}
-                            {{/isquiz}}
+                            {{/quizpassed}}
                             {{#marknoposts}}<span class="d-md-block session-posts">{{noposts}}</span>{{/marknoposts}}
                         </span>
                     </div>

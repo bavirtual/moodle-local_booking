@@ -37,7 +37,7 @@ use moodle_url;
 /**
  * Class for displaying instructor's booked sessions view.
  *
- * @package   local_booking
+ * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -120,7 +120,7 @@ class bookings_exporter extends exporter {
         $this->modules = $COURSE->subscriber->get_modules();
         $data['trainingtype'] = $COURSE->subscriber->trainingtype;
         $data['findpirepenabled'] = $COURSE->subscriber->has_integration('pireps');
-        $this->instructor = new instructor($COURSE->subscriber, $USER->id);
+        $this->instructor = $data['instructor'];
         if ($this->viewtype == 'confirm')
             $this->bookingstudentid = $studentid;
         $this->filter = !empty($data['filter']) ? $data['filter'] : 'active';
@@ -258,10 +258,12 @@ class bookings_exporter extends exporter {
             ];
 
             // show the graduation exercise booking option for examiners only
-            if ($this->viewtype == 'confirm' && $module->id == $COURSE->subscriber->get_graduation_exercise() && $this->instructor->is_examiner() ||
-                $this->viewtype != 'confirm' || $module->id != $COURSE->subscriber->get_graduation_exercise()) {
-                    $exercisename = new exercise_name_exporter($data);
-                    $modsexports[] = $exercisename->export($output);
+            if (!empty($this->instructor)) {
+                if ($this->viewtype == 'confirm' && $module->id == $COURSE->subscriber->get_graduation_exercise() && $this->instructor->is_examiner() ||
+                    $this->viewtype != 'confirm' || $module->id != $COURSE->subscriber->get_graduation_exercise()) {
+                        $exercisename = new exercise_name_exporter($data);
+                        $modsexports[] = $exercisename->export($output);
+                }
             }
         }
 

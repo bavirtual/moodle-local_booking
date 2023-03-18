@@ -38,6 +38,7 @@ use local_booking\local\logbook\forms\create as update_logentry_form;
 use local_booking\external\week_exporter;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\logbook\entities\logentry;
+use local_booking\local\participant\entities\instructor;
 use local_booking\local\subscriber\entities\subscriber;
 
 /**
@@ -91,7 +92,7 @@ define('LOCAL_BOOKING_NOSHOWPERIOD', 90);
 /**
  * LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD - constant for the period of suspension due to no-show
  */
-define('LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD', 30);
+define('LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD', 1);
 /**
  * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group quering purposes
  */
@@ -415,22 +416,24 @@ function get_profile_view(int $courseid, int $userid) {
 /**
  * Get the student's progression view output.
  *
- * @param   int     $courseid the associated course.
- * @param   string  $sorttype student progression sorting.
- * @param   string  $filter the filter to show students, inactive (including graduates), suspended, and default to active.
+ * @param   int        $courseid the associated course.
+ * @param   instructor $instructor the associated course.
+ * @param   string     $sorttype student progression sorting.
+ * @param   string     $filter the filter to show students, inactive (including graduates), suspended, and default to active.
  * @return  array[array, string]
  */
-function get_bookings_view(int $courseid, string $sorttype = '', string $filter = 'active', bool $readonly = false) {
+function get_bookings_view(int $courseid, ?instructor $instructor, string $sorttype = '', string $filter = 'active', bool $readonly = false) {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
 
     $template = 'local_booking/bookings' . ($readonly ? '_readonly' : '');
     $data = [
-        'courseid'=>$courseid,
+        'courseid'  => $courseid,
+        'instructor'=> $instructor,
         'view'      => 'sessions',
         'sorttype'  => $sorttype,
-        'filter'  => $filter
+        'filter'    => $filter
     ];
     $related = [
         'context'   => \context_course::instance($courseid),
@@ -445,19 +448,21 @@ function get_bookings_view(int $courseid, string $sorttype = '', string $filter 
 /**
  * Get the booking confirmation output view.
  *
- * @param   int     $courseid the associated course.
- * @param   int     $studentid the student user id being confirmed.
+ * @param   int        $courseid the associated course.
+ * @param   instructor $instructor the associated course.
+ * @param   int        $studentid the student user id being confirmed.
  * @return  array[array, string]
  */
-function get_session_selection_view(int $courseid, int $studentid) {
+function get_session_selection_view(int $courseid, instructor $instructor, int $studentid) {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
 
     $template = 'local_booking/booking';
     $data = [
-        'courseid'=>$courseid,
-        'view'      => 'confirm'
+        'courseid'    => $courseid,
+        'instructor'  => $instructor,
+        'view'        => 'confirm'
     ];
     $related = [
         'context'   => \context_course::instance($courseid),
@@ -557,17 +562,19 @@ function get_logentry_view(int $courseid, int $userid, array $formdata = null) {
 /**
  * Get instructor assigned students view output.
  *
- * @param   int     $courseid the associated course id.
+ * @param   int         $courseid the associated course id.
+ * @param   instructor  $instructor the instructor requesting the view.
  * @return  array[array, string]
  */
-function get_students_view(int $courseid) {
+function get_students_view(int $courseid, instructor $instructor) {
     global $PAGE;
 
     $renderer = $PAGE->get_renderer('local_booking');
 
     $template = 'local_booking/my_students';
     $data = [
-        'courseid'  => $courseid,
+        'courseid'    => $courseid,
+        'instructor'  => $instructor,
     ];
 
     $students = new assigned_students_exporter($data, ['context' => \context_course::instance($courseid)]);

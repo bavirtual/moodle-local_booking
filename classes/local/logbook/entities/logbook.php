@@ -300,7 +300,7 @@ class logbook implements logbook_interface {
                     if ($value > 0 && is_numeric($value)) {
                         $daymins = ($value - strtotime("today", $value))  / 60;
                         $hrs = floor($daymins / 60);
-                        $mins = $daymins % 60;
+                        $mins = (int) $daymins % 60;
                         $result = ($hrs < 10 ? substr('00' . $hrs, -2) : $hrs) . ':' . substr('00' . $mins, -2);
                     }
                     break;

@@ -958,7 +958,8 @@ class logentry implements logentry_interface {
         $this->id = $formdata->id ?: null;
         $this->exerciseid = $formdata->exerciseid;
         $this->flightdate = $formdata->flightdate;
-        $this->pirep = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($formdata->p1pirep ?: 0) : ($formdata->p2pirep ?: $formdata->linkedpirep);
+        $p2pirep = property_exists('formdata', 'p2pirep') ? $formdata->p1pirep : '';
+        $this->pirep = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($p2pirep ?: 0) : ($p2pirep ?: $formdata->linkedpirep);
         $this->p1id = $formdata->flighttypehidden == 'solo' ? $this->parent->get_userid() : $formdata->p1id;
         $this->p2id = $formdata->flighttypehidden == 'solo' ? 0 : $formdata->p2id;
 
@@ -1009,7 +1010,7 @@ class logentry implements logentry_interface {
         $this->fstd         = $formdata->fstd;
         $this->flighttype   = $formdata->flighttypehidden;
         $this->linkedlogentryid = $formdata->linkedlogentryid ?: 0;
-        $this->linkedpirep  = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($formdata->p2pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;
+        $this->linkedpirep  = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($p2pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;
     }
 
     /**

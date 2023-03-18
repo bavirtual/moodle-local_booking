@@ -26,7 +26,6 @@
  */
 
 use local_booking\local\participant\entities\participant;
-use local_booking\output\manage_action_bar;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -37,7 +36,7 @@ $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $userid = optional_param('userid', 0, PARAM_INT);
-$title = get_string('pluginname', 'local_booking');
+$title = get_string('studentprofile', 'local_booking');
 
 $url = new moodle_url('/local/booking/view.php');
 $url->param('courseid', $courseid);
@@ -52,8 +51,8 @@ require_capability('local/booking:view', $context);
 $navbartext = participant::get_fullname($userid);
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('standard');
-$PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
-$PAGE->set_heading($title, 'local_booking');
+$PAGE->set_title($COURSE->shortname . ': ' . $title . ' - ' . participant::get_fullname($userid), 'local_booking');
+$PAGE->set_heading($COURSE->fullname . ' ' . strtolower($title), 'local_booking');
 $PAGE->add_body_class('path-local-booking');
 
 $renderer = $PAGE->get_renderer('local_booking');

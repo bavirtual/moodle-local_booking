@@ -34,7 +34,6 @@ require_once($CFG->dirroot . '/calendar/lib.php');
 defined('MOODLE_INTERNAL') || die();
 
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\output\manage_action_bar;
 
 global $USER, $COURSE;
 

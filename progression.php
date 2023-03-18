@@ -57,7 +57,7 @@ echo $renderer->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
 
 // get students progression view
-list($data, $template) = get_bookings_view($courseid, '', 'active', true);
+list($data, $template) = get_bookings_view($courseid, null, '', 'active', true);
 
 echo $renderer->render_from_template($template, $data);
 echo html_writer::end_tag('div');

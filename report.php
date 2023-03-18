@@ -30,7 +30,7 @@
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\output\manage_action_bar;
+use local_booking\navigation\views\manage_action_bar;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -73,26 +73,28 @@ $student = new student($COURSE->subscriber, $userid);
 $tertiarynavadditional = ['userid'=>$userid];
 
 // check for exam processing action
-if ($reporttype == 'examiner') {
-    if ($student->evaluated()) {
-        $tertiarynavadditional['examaction']  = true;
-        $tertiarynavadditional['actionlabel'] = get_string('uploadreport', 'local_booking');
-        $tertiarynavadditional['actionurl']   = new moodle_url('/mod/assign/view.php', [
-            'id'     => $COURSE->subscriber->get_graduation_exercise(),
-            'rownum' => 0,
-            'userid' => $userid,
-            'action' => 'grader'
-        ]);
-    } else {
-        $tertiarynavadditional['evalmsg'] = get_string('uploadreportmsg1', 'local_booking');
-        $tertiarynavadditional['evalmsg'] .= '&nbsp;&nbsp;<i class="icon fa fa-download fa-fw " aria-hidden="true"></i>';
-        $tertiarynavadditional['evalmsg'] .= get_string('uploadreportmsg2', 'local_booking');
-    }
-}
+if ($reporttype == 'examiner' && !$student->evaluated()) {
+    $tertiarynavadditionalrow1['examaction']  = true;
+    $tertiarynavadditionalrow1['firstrow']  = true;
+    $tertiarynavadditionalrow1['evalmsg'] = '<br/>' . get_string('uploadreportmsg1', 'local_booking');
+    $tertiarynavadditionalrow1['evalmsg'] .= '&nbsp;&nbsp;<i class="icon fa fa-download fa-fw " aria-hidden="true"></i>';
+    $tertiarynavadditionalrow1['evalmsg'] .= get_string('uploadreportmsg2', 'local_booking');
+    $tertiarynavadditionalrow2['examaction']  = true;
+    $tertiarynavadditionalrow2['firstrow']  = false;
+    $tertiarynavadditionalrow2['actionlabel'] = get_string('uploadreport', 'local_booking');
+    $tertiarynavadditionalrow2['actionurl']   = new moodle_url('/mod/assign/view.php', [
+        'id'     => $COURSE->subscriber->get_graduation_exercise(),
+        'rownum' => 0,
+        'userid' => $userid,
+        'action' => 'grader'
+    ]);
 
-// output action bar
-$actionbar = new manage_action_bar($PAGE, 'report', $tertiarynavadditional);
-echo $renderer->render_tertiary_navigation($actionbar);
+    // output action bar
+    $actionbartop = new manage_action_bar($PAGE, 'report', $tertiarynavadditionalrow1);
+    $actionbarbottom = new manage_action_bar($PAGE, 'report', $tertiarynavadditionalrow2);
+    echo $renderer->render_tertiary_navigation($actionbartop);
+    echo $renderer->render_tertiary_navigation($actionbarbottom);
+}
 
 // report section
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));

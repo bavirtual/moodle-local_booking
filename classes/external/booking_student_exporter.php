@@ -38,7 +38,7 @@ use local_booking\local\subscriber\entities\subscriber;
 /**
  * Class for displaying each student row in progression view.
  *
- * @package   local_booking
+ * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -70,6 +70,7 @@ class booking_student_exporter extends exporter {
         $data['studentname'] = $this->student->get_name();
         $data['dayssincelast'] = $this->student->get_priority()->get_recency_days();
         $data['recencytooltip'] = $data['filter'] != 'suspended' ? $this->student->get_priority()->get_recency_info() : 'N/A';
+        $data['fleet'] = $this->student->get_fleet();
         $data['simulator'] = $this->student->get_simulator();
         $data['profileurl'] = $CFG->wwwroot . '/local/booking/profile.php?courseid=' . $this->course->get_id() . '&userid=' . $this->student->get_id();
 
@@ -108,6 +109,9 @@ class booking_student_exporter extends exporter {
                 'type' => PARAM_BOOL,
             ],
             'simulator' => [
+                'type' => PARAM_RAW,
+            ],
+            'fleet' => [
                 'type' => PARAM_RAW,
             ],
             'profileurl' => [
@@ -276,8 +280,11 @@ class booking_student_exporter extends exporter {
 
                     // show the graduation exercise booking option for examiners only
                     $gradexercise = $COURSE->subscriber->get_graduation_exercise();
-                    if (($coursemod->id ==  $gradexercise && ($this->data['instructor'])->is_examiner()) ||
-                        $coursemod->id != $gradexercise) {
+                    $examiner = false;
+                    if (!empty($this->data['instructor']))
+                        $examiner = $this->data['instructor']->is_examiner();
+
+                    if (($coursemod->id ==  $gradexercise && $examiner) || $coursemod->id != $gradexercise) {
                         $sessionoptions[] = [
                             'nextsession' => ($action->get_exerciseid() == $coursemod->id ? "checked" : ""),
                             'bordered' => $action->get_exerciseid() == $coursemod->id,

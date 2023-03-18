@@ -32,6 +32,11 @@ use local_booking\local\subscriber\entities\subscriber;
 class instructor extends participant {
 
     /**
+     * @var array $assigned_students The students assigned to the instructor.
+     */
+    protected $assigned_students = [];
+
+    /**
      * Constructor.
      *
      * @param subscriber $course The subscribing course the student is enrolled in.
@@ -48,13 +53,15 @@ class instructor extends participant {
      * @return {Object}[]   Array of students.
      */
     public function get_assigned_students() {
-        $assignedstudents = [];
-        $studentrecs = $this->vault->get_assigned_students($this->course->get_id(), $this->userid);
-        foreach ($studentrecs as $studentrec) {
-            $student = $this->course->get_student($studentrec->userid);
-            $assignedstudents[$student->userid] = $student;
+
+        if (!isset($this->assigned_students)) {
+            $studentrecs = $this->vault->get_assigned_students($this->course->get_id(), $this->userid);
+            foreach ($studentrecs as $studentrec) {
+                $student = $this->course->get_student($studentrec->userid);
+                $this->assigned_students[$student->userid] = $student;
+            }
         }
-        return $assignedstudents;
+        return $this->assigned_students;
     }
 
     /**

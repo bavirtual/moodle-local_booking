@@ -161,9 +161,11 @@ class session implements session_interface {
      */
     public function haspassed() {
         $haspassed = false;
-        if ($this->grade !== null) $haspassed = $this->grade->is_passed();
+        if ($this->grade !== null) {
+            $haspassed = $this->grade->is_passed();
+        }
 
-        return $haspassed || $this->isquiz();
+        return $haspassed;
     }
 
     /**

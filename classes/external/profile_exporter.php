@@ -37,7 +37,7 @@ use moodle_url;
 /**
  * Class for displaying instructor's booked sessions view.
  *
- * @package   local_booking
+ * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -105,6 +105,10 @@ class profile_exporter extends exporter {
             ],
             'timezone' => [
                 'type' => PARAM_RAW,
+            ],
+            'fleet' => [
+                'type' => PARAM_RAW,
+                'optional' => true
             ],
             'sim1' => [
                 'type' => PARAM_RAW,
@@ -392,6 +396,7 @@ class profile_exporter extends exporter {
         $return = [
             'fullname'                 => $this->student->get_name(),
             'timezone'                 => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone,
+            'fleet'                    => $customfields->fleet,
             'sim1'                     => $customfields->simulator,
             'sim2'                     => $customfields->simulator2,
             'moodleprofileurl'         => $moodleprofile->out(false),

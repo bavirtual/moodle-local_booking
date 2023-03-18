@@ -86,7 +86,7 @@ define([
         // Listen to the click on the 'No-show' booking buttons in 'Instructor dashboard' page.
         root.on('click', Selectors.noshowbutton, function(e) {
             // Get number of no shows
-            const noshows = $(e.target).closest(Selectors.sessionbutton).data('noshows');
+            const noshows = $(e.target).closest(Selectors.noshowbutton).data('noshows');
             // Get the message associated with the number of no-show occurence
             const noShowComment = Str.get_string('commentnoshow' + noshows, 'local_booking').then(function(noshowMsg) {
                 return noshowMsg;

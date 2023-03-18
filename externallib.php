@@ -97,7 +97,7 @@ class local_booking_external extends external_api {
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
     public static function get_bookings_view(int $courseid, string $filter) {
-        global $PAGE, $COURSE;
+        global $COURSE, $USER;
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_bookings_view_parameters(), array(
@@ -109,7 +109,11 @@ class local_booking_external extends external_api {
         // set the subscriber object
         self::set_course_subscriber_context('/local/booking/', $courseid);
 
-        list($data, $template) = get_bookings_view($courseid, '', $filter);
+        // define subscriber globally
+        if (empty($COURSE->subscriber))
+            $COURSE->subscriber = new subscriber($courseid);
+
+        list($data, $template) = get_bookings_view($courseid, $COURSE->subscriber->get_instructor($USER->id), '', $filter);
 
         return $data;
     }
@@ -1284,7 +1288,7 @@ class local_booking_external extends external_api {
                 $studentlogentry = $studentlogbook->create_logentry();
                 $studentlogentry->populate($validateddata);
 
-                if ($validateddata->flighttype != 'solo') {
+                if (property_exists('validateddata', 'flighttype') && $validateddata->flighttype != 'solo') {
                     // add instructor logentry, the user creating the entry is always the instructor
                     $instructorlogbook = new logbook($courseid, $USER->id);
                     $instructorlogentry = $instructorlogbook->create_logentry();

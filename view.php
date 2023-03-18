@@ -24,7 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_booking\output\manage_action_bar;
+use local_booking\local\subscriber\entities\subscriber;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -63,23 +63,34 @@ echo $OUTPUT->header();
 echo $renderer->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
 
+// define subscriber globally
+if (empty($COURSE->subscriber)) {
+    $COURSE->subscriber = new subscriber($courseid);
+}
+
+// instructor object
+$instructor = $COURSE->subscriber->get_instructor($USER->id);
+
 // select the student progression booking view or the booking confirmation view
 if ($action=='book') {
     // get students bookings and progression view
-    list($data, $template) = get_bookings_view($courseid, $sorttype);
-    echo $renderer->render_from_template($template, $data);
-
-    // get instructor's assigned students
-    list($data, $template) = get_students_view($courseid);
+    list($data, $template) = get_bookings_view($courseid, $instructor, $sorttype);
     echo $renderer->render_from_template($template, $data);
 
     if (has_capability('local/booking:participationview', $context)) {
+
+        if (count($instructor->get_assigned_students()) > 0) {
+            // get instructor's assigned students
+            list($data, $template) = get_students_view($courseid, $instructor);
+            echo $renderer->render_from_template($template, $data);
+        }
+
         list($data, $template) = get_participation_view($courseid);
         echo $renderer->render_from_template($template, $data);
     }
 } elseif ($action=='confirm') {
 
-    list($data, $template) = get_session_selection_view($courseid, $studentid);
+    list($data, $template) = get_session_selection_view($courseid, $instructor, $studentid);
     echo $renderer->render_from_template($template, $data);
 }
 

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_booking\output;
+namespace local_booking\navigation\views;
 
 use renderable;
 use renderer_base;
@@ -25,7 +25,7 @@ use templatable;
 /**
  * Abstract class for the Session booking tertiary navigation. The class initialises the page and type class variables.
  *
- * @package   local_booking
+ * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

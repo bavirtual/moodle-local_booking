@@ -52,8 +52,7 @@ require_capability('local/booking:view', $context);
 // get the graduating student
 $COURSE->subscriber = new subscriber($courseid);
 $student = new student($COURSE->subscriber, $studentid);
-$title = $COURSE->shortname . ' ' . get_string('pluginname', 'local_booking');
-$title = get_string('pluginname', 'local_booking');
+$title = $student->get_name()  . ' ' . get_string('coursecompletion', 'local_booking');
 
 // verify credentials, if the certifier is not the same as the examiner throw invalid permissions error
 $examinerid = $student->get_grade($COURSE->subscriber->get_graduation_exercise())->usermodified;
@@ -103,7 +102,6 @@ if ($COURSE->subscriber->requires_skills_evaluation() && !$student->evaluated())
                 }
             }
         }
-
     }
 
     // flag the student activating graduation notifications
@@ -126,6 +124,7 @@ if ($COURSE->subscriber->requires_skills_evaluation() && !$student->evaluated())
 
     echo $OUTPUT->header();
     echo $renderer->start_layout();
+    echo html_writer::start_tag('div');
 
     // message section
     $data = [

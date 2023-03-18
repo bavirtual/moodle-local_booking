@@ -151,6 +151,10 @@ class booking_session_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
+            'quizpassed' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
             'lastbookingts' => [
                 'type' => PARAM_INT,
                 'default' => 0,
@@ -197,6 +201,7 @@ class booking_session_exporter extends exporter {
                 'canlogentry'   => $graded && !$this->session->isquiz(),
                 'logentrymissing' => $logentrymissing,
                 'isquiz'        => $this->session->isquiz(),
+                'quizpassed'    => $this->session->isquiz() && $this->session->haspassed(),
                 'lastbookingts' => $lastbookingdate
             ];
         }

@@ -193,7 +193,7 @@ class notification extends \core\message\message {
             'groundtime'    => $logentry->get_groundtime(false),
             'flighttime'    => $logentry->get_flighttime(false),
             'aircraft'      => $logentry->get_aircraft(),
-            'pirep'         => $logentry->get_pirep(),
+            'pirep'         => $logentry->get_pirep() ?: '',
             'dept'          => $logentry->get_depicao(),
             'arr'           => $logentry->get_arricao(),
             'route'         => $logentry->get_route(),

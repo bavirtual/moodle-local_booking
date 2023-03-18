@@ -14,55 +14,35 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_booking\navigation\views;
+
+use core\navigation\views\secondary as core_secondary;
+
 /**
- * Class for displaying availability view exercise names.
+ * Class secondary_navigation_view to reorder
+ * secondary menu navigation
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_booking\external;
-
-defined('MOODLE_INTERNAL') || die();
-
-use core\external\exporter;
-
-/**
- * Class for displaying each exercise session in progression view.
- *
- * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class exercise_name_exporter extends exporter {
-
+class secondary extends core_secondary {
     /**
-     * Constructor.
-     *
-     * @param array $names The list of exercise names.
-     */
-    public function __construct($data) {
-        parent::__construct($data, []);
-    }
-
-    /**
-     * Return the list of properties.
+     * Define a custom secondary nav order/view
      *
      * @return array
      */
-    protected static function define_properties() {
+    protected function get_default_module_mapping(): array {
         return [
-            'exerciseid' => [
-                'type' => PARAM_INT,
+            self::TYPE_SETTING => [
+                'bookings' => 1,
             ],
-            'exercisename' => [
-                'type' => PARAM_RAW,
+            self::TYPE_CUSTOM => [
+                'availabilityinst' => 2,
             ],
-            'exercisetitle' => [
-                'type' => PARAM_RAW,
+            self::TYPE_CUSTOM => [
+                'logbookmy' => 3,
             ],
         ];
     }

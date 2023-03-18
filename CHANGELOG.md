@@ -1,5 +1,15 @@
 # Change log
 
+## [2023031800] - RELEASED 2023-03-18
+
+### Fixed
+
+- logbook entry quick form search PIREP null fix
+
+### Added
+
+- fleet field MVC
+
 ## [2023031300] - RELEASED 2023-03-13
 
 ### Fixed

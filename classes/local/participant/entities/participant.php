@@ -62,6 +62,11 @@ class participant implements participant_interface {
     protected $name;
 
     /**
+     * @var array $roles The participant assigned roles.
+     */
+    protected $roles;
+
+    /**
      * @var int $enroldate The participant enrolment date timestamp.
      */
     protected $enroldate;
@@ -125,16 +130,10 @@ class participant implements participant_interface {
 
         // lookup user type and active status
         if ($userid != 0) {
-            $roleobjs = get_user_roles($course->get_context(), $userid);
-            $roles = array_map(function($item) {
-                return $item->shortname;
-            }, $roleobjs);
 
             // enrolment type
-            // $this->is_student = array_search('student', array_column($roles, 'shortname'));
-            // $this->is_instructor = array_search('instructor', array_column($roles, 'shortname'));
-            $this->is_student = in_array('student', $roles);
-            $this->is_instructor = in_array('instructor', $roles) || in_array('seniorinstructor', $roles);
+            $this->is_student = $this->has_role('student');
+            $this->is_instructor = $this->has_role('instructor') || $this->has_role('seniorinstructor');
 
             // get active participant courses
             $enroledcourses = enrol_get_users_courses($userid, true);
@@ -375,6 +374,25 @@ class participant implements participant_interface {
         $this->enroldate = $record->enroldate;
         $this->lastlogin = $record->lastlogin;
         $this->simulator = $this->get_simulator();
+    }
+
+    /**
+     * checkes whether the participant has a particular role.
+     *
+     * @param string $role The role to check.
+     * @return bool        Whether the participant has the role.
+     */
+    public function has_role(string $role) {
+
+        // assign roles if not already available
+        if (!isset($this->roles)) {
+            $roleobjs = get_user_roles($this->course->get_context(), $this->userid);
+            $this->roles = array_map(function($item) {
+                return $item->shortname;
+            }, $roleobjs);
+        }
+
+        return in_array($role, $this->roles);
     }
 
     /**

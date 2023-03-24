@@ -168,6 +168,14 @@ interface participant_interface {
     public function populate($record);
 
     /**
+     * checkes whether the participant has a particular role.
+     *
+     * @param string $role The role to check.
+     * @return bool        Whether the participant has the role.
+     */
+    public function has_role(string $role);
+
+    /**
      * verifies whether the participant is part of a course group
      *
      * @param int    $courseid  The associated course id.

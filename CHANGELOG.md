@@ -1,5 +1,11 @@
 # Change log
 
+## [2023032400] - RELEASED 2023-03-24 - hotfix
+
+### Fixed
+
+- rendering of students progression page in student view
+
 ## [2023031800] - RELEASED 2023-03-18
 
 ### Fixed

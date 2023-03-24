@@ -433,7 +433,8 @@ function get_bookings_view(int $courseid, ?instructor $instructor, string $sortt
         'instructor'=> $instructor,
         'view'      => 'sessions',
         'sorttype'  => $sorttype,
-        'filter'    => $filter
+        'filter'    => $filter,
+        'readonly'   => $readonly
     ];
     $related = [
         'context'   => \context_course::instance($courseid),

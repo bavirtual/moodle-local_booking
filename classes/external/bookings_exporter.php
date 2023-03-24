@@ -257,8 +257,8 @@ class bookings_exporter extends exporter {
                 'exercisetitle' => $title,
             ];
 
-            // show the graduation exercise booking option for examiners only
-            if (!empty($this->instructor)) {
+            // show the graduation exercise booking option for examiners only or student view
+            if (!empty($this->instructor) || $this->data['readonly']) {
                 if ($this->viewtype == 'confirm' && $module->id == $COURSE->subscriber->get_graduation_exercise() && $this->instructor->is_examiner() ||
                     $this->viewtype != 'confirm' || $module->id != $COURSE->subscriber->get_graduation_exercise()) {
                         $exercisename = new exercise_name_exporter($data);

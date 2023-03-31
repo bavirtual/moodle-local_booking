@@ -43,7 +43,7 @@
             <table class="table-hover table-striped logbook-easa display compact" id="logbook">
                 <thead>
                     <tr>
-                        <th rowspan="2" style="width: 85px; font-size: xs-small;">{{#str}} logbookdate, local_booking {{/str}}</th>
+                        <th rowspan="2" style="width: 55px; font-size: xs-small;">{{#str}} logbookdate, local_booking {{/str}}</th>
                         <th class="text-center" colspan="2" style="width: 65px; font-size: xs-small;">{{#str}} logbookdep, local_booking {{/str}}</th>
                         <th class="text-center" colspan="2" style="width: 65px; font-size: xs-small;">{{#str}} logbookarr, local_booking {{/str}}</th>
                         <th class="text-center" colspan="2" style="width: 65px; font-size: xs-small;">{{#str}} aircraft, local_booking {{/str}}</th>
@@ -54,7 +54,7 @@
                         <th class="text-center" colspan="2" style="width: 70px; font-size: xs-small;">{{#str}} logbooklandings, local_booking {{/str}}</th>
                         <th class="text-center" colspan="2" style="width: 70px; font-size: xs-small;">{{#str}} logbookops, local_booking {{/str}}</th>
                         <th class="text-center" colspan="5" style="width: 175px; font-size: xs-small;">{{#str}} logbookfunc, local_booking {{/str}}</th>
-                        <th rowspan="2" style="width: 35px; font-size: xs-small;">{{#str}} logbookfstd, local_booking {{/str}}</th>
+                        <th rowspan="2" style="width: 55px; font-size: xs-small;">{{#str}} logbookfstd, local_booking {{/str}}</th>
                         <th rowspan="2" style="width: 195px; font-size: xs-small;">{{#str}} logbookremarks, local_booking {{/str}}</th>
                     </tr>
                     <tr>
@@ -87,8 +87,8 @@
                         <td>{{arrtime}}</td>
                         <td>{{aircraft}}</td>
                         <td>{{aircraftreg}}</td>
-                        <td>{{se}}</td>
-                        <td>{{me}}</td>
+                        <td style="text-align: center;">{{se}}</td>
+                        <td style="text-align: center;">{{me}}</td>
                         <td>{{multipilottime}}</td>
                         <td>{{flighttime}}</td>
                         <td>{{p1name}}</td>
@@ -118,7 +118,7 @@
                     <tr>
                         <td class="border-less"></td><td class="border-less"></td><td class="border-less"></td><td class="border-less"></td>
                         <td class="border-less"></td><td class="border-less"></td><td class="border-less"></td>
-                        <td colspan="2" style="text-align: right; font-weight: bold; white-space: nowrap; padding-left: 2px;">Grand Total:</td><td>{{totalmultipilottime}}</td>
+                        <td colspan="2" style="text-align: right; font-weight: bold; padding-left: 2px;">Grand Total:</td><td>{{totalmultipilottime}}</td>
                         <td>{{totalflighttime}}</td><td></td>
                         <td class="text-center">{{totallandingsday}}</td><td class="text-center">{{totallandingsnight}}</td><td>{{totalnighttime}}</td><td>{{totalifrtime}}</td>
                         <td>{{totalpictime}}</td>

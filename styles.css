@@ -760,3 +760,15 @@ table.logbook-easa tbody {
     justify-content: flex-start;
     flex-wrap: wrap;
 }
+.logbook-button {
+    font-size: large;
+    color: black;
+    background-color: white;
+    border-width: 0px;
+    display: inline-flex;
+    align-items: center;
+    outline: 0;
+    box-shadow: 2px 2px 2px 2px white;
+    transition: ease background-color 250ms;
+    cursor: pointer;
+}

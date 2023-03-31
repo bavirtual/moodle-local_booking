@@ -272,6 +272,7 @@ $string['totalcheckpilottime'] = 'Total examiner flight time';
 $string['totalcopilottime'] = 'Total Co-pilot flight time';
 $string['totaldualtime'] = 'Total dual flight time';
 $string['totalgroundtime'] = 'Total ground time';
+$string['totalinstructorime'] = 'Total Instructor flight time';
 $string['totalifrtime'] = 'Total IFR flight time';
 $string['totalinstructortime'] = 'Total instructor flight time';
 $string['totallandingsday'] = 'Total day landings';

@@ -484,7 +484,7 @@ function get_session_selection_view(int $courseid, instructor $instructor, int $
  * @return  array[array, string]
  */
 function get_logbook_view(int $courseid, int $userid, string $templateformat) {
-    global $PAGE, $COURSE;
+    global $PAGE, $COURSE, $USER;
 
     $renderer = $PAGE->get_renderer('local_booking');
 
@@ -501,15 +501,19 @@ function get_logbook_view(int $courseid, int $userid, string $templateformat) {
 
     // get summary information (not requested by the webservice)
     $pilot = $COURSE->subscriber->get_participant($userid);
+    $instructor = $COURSE->subscriber->get_instructor($USER->id);
     $logbook = $pilot->get_logbook(true, $templateformat == 'easa');
     $totals = (array) $logbook->get_summary(true, $templateformat == 'easa');
     $data = [
+        'contextid'     => $COURSE->subscriber->get_context()->id,
         'courseid'      => $courseid,
         'userid'        => $userid,
         'username'      => $pilot->get_fullname($userid),
         'courseshortname' => $PAGE->course->shortname,
         'logbook'       => $logbook,
         'isstudent'     => $pilot->is_student(),
+        'isinstructor'  => $instructor->is_instructor(),
+        'hasfindpirep'  => $COURSE->subscriber->has_integration('pireps'),
         'easaformaturl' => $PAGE->url . '&format=easa',
         'stdformaturl'  => $PAGE->url . '&format=std',
         'shortdate'     => $templateformat == 'easa'

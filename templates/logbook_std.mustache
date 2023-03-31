@@ -31,7 +31,13 @@
     {
     }
 }}
-<div class="logbook-body">
+<div id="logbook-{{uniqid}}"
+    data-template="local_booking/logbook_std"
+    class="logbookwrapper logbook-body"{{!
+    }} data-userid="{{userid}}"{{!
+    }} data-courseid="{{courseid}}"{{!
+    }} data-contextid="{{contextid}}"{{!
+    }}>
     <br>
     <div class="logbook-card logbook-shadow2">
         <h2 class="logbook-h2">{{#str}} logbooksummary, local_booking {{/str}}</h2>
@@ -45,6 +51,9 @@
         {{#isstudent}}
         {{#str}} totaldualtime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totaldualtime}}</span>
         {{/isstudent}}
+        {{#isinstructor}}
+        {{#str}} totalinstructortime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalinstructortime}}</span>
+        {{/isinstructor}}
         {{/dualops}}
         {{^dualops}}
         {{#str}} totalmultipilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalmultipilottime}}</span>
@@ -95,11 +104,11 @@
         {{^isstudent}}
         {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;{{pictime}}
         {{/isstudent}}
-        {{^isstudent}}
+        {{#isinstructor}}
         {{^checkflight}}
         {{#str}} instructortime, local_booking {{/str}}&#09;&#09;&#09;{{instructortime}}
         {{/checkflight}}
-        {{/isstudent}}
+        {{/isinstructor}}
         {{#dualops}}
         {{#isstudent}}
         {{^soloflight}}
@@ -133,8 +142,40 @@
 
         {{#str}} remarks, local_booking {{/str}}:</pre><span class="logbook-remarks">{{remarks}}</span>
 
+        {{#isinstructor}}
+        <div style="float: right;"{{!
+            }} data-region="summary-modal-container"{{!
+            }} data-logentry-id="{{id}}"{{!
+            }} data-flight-date="{{flightdate}}"{{!
+            }} data-flight-type="{{flighttype}}"{{!
+            }} data-find-pirep="{{hasfindpirep}}"{{!
+            }} data-user-id="{{userid}}"{{!
+            }} data-exercise-id="{{exerciseid}}"{{!
+            }}>
+            <button class="icon-no-margin logbook-button"
+                type="button"
+                data-action="delete"
+                data-region="delete-button"
+                id="delete_button">
+                <span>{{#pix}} i/trash, moodle, {{/pix}}</span>
+            </button>
+            <button class="icon-no-margin logbook-button"
+                type="button"
+                data-action="edit"
+                data-region="edit-button"
+                id="edit_button">
+                <span>{{#pix}} i/edit, moodle, {{/pix}}</span>
+            </button>
+        </div>
+        {{/isinstructor}}
+
   </div>
 {{/entries}}
 <br>
 </div>
 
+{{#js}}
+require(['jquery', 'local_booking/logbook_std'], function($, Logbook) {
+    Logbook.init($("#logbook-{{uniqid}}"));
+});
+{{/js}}

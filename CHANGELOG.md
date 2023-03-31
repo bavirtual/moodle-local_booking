@@ -1,5 +1,11 @@
 # Change log
 
+## [2023033100] - RELEASED 2023-03-31 - hotfix
+
+### Fixed
+
+- flex no-wrap fleet column in instructor dashboard and students progression views
+
 ## [2023032400] - RELEASED 2023-03-24 - hotfix
 
 ### Fixed

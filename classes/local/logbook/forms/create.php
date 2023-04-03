@@ -359,7 +359,7 @@ class create extends \moodleform {
                 if ($options[0]) {
                     // Show P1 PIREP vs PIREP depending on whether it's a new entry or not (options[1])
                     $mform->addElement('text', 'p1pirep', get_string(($options[1] ? 'instpirep' : 'pirep'), 'local_booking'),
-                        'placeholder="' . get_string('pireplabel', 'local_booking') . '"');
+                        ($options[1] ? 'placeholder="' . get_string('pireplabel', 'local_booking') . '"' : ''));
                     $mform->addRule('p1pirep', get_string('err_numeric', 'form'), 'numeric', null, 'client');
                     if ($options[1])
                         $mform->addHelpButton('p1pirep', 'instpirep', 'local_booking');

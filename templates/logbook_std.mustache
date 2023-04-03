@@ -79,7 +79,7 @@
     </div>
 
 {{#entries}}
-    <div class="logbook-card logbook-shadow1">
+    <div class="logbook-card logbook-shadow1" id="cardid_{{id}}">
     <h2 class="logbook-h2">{{{sectionname}}}</h2>
         {{^soloflight}}
         <h4>{{{exercisename}}}</h4><br/>
@@ -87,7 +87,7 @@
         {{#soloflight}}
         <h4>{{#str}} soloflight, local_booking {{/str}}</h4><br/>
         {{/soloflight}}
-        <pre><strong>{{#str}} logentry, local_booking {{/str}}:</strong>
+        <pre id="logentryid_{{id}}"><strong>{{#str}} logentry, local_booking {{/str}}:</strong>
         {{#str}} flightdate, local_booking {{/str}}&#09;&#09;&#09;{{flightdate}}
         {{#str}} flighttype, local_booking {{/str}}&#09;&#09;&#09;{{trainingflight}} {{#checkflight}}{{#passedcheck}}<span class="logbook-check-pass">[{{#str}} checkpassed , local_booking{{/str}}]</span>{{/passedcheck}}{{^passedcheck}}<span class="logbook-check-fail">[{{#str}} checkfailed , local_booking{{/str}}]</span>{{/passedcheck}}{{/checkflight}}
         {{p1label}}&#09;&#09;&#09;{{p1name}}
@@ -142,7 +142,7 @@
 
         {{#str}} remarks, local_booking {{/str}}:</pre><span class="logbook-remarks">{{remarks}}</span>
 
-        {{#isinstructor}}
+        {{#canedit}}
         <div style="float: right;"{{!
             }} data-region="summary-modal-container"{{!
             }} data-logentry-id="{{id}}"{{!
@@ -167,7 +167,7 @@
                 <span>{{#pix}} i/edit, moodle, {{/pix}}</span>
             </button>
         </div>
-        {{/isinstructor}}
+        {{/canedit}}
 
   </div>
 {{/entries}}

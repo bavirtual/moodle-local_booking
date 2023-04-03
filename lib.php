@@ -500,11 +500,11 @@ function get_logbook_view(int $courseid, int $userid, string $templateformat) {
     $template = 'local_booking/logbook_' . $templateformat;
 
     // get summary information (not requested by the webservice)
-    $pilot = $COURSE->subscriber->get_participant($userid);
-    $instructor = $COURSE->subscriber->get_instructor($USER->id);
+    $pilot   = $COURSE->subscriber->get_participant($userid);
+    $editor  = $COURSE->subscriber->get_instructor($USER->id);
     $logbook = $pilot->get_logbook(true, $templateformat == 'easa');
-    $totals = (array) $logbook->get_summary(true, $templateformat == 'easa');
-    $data = [
+    $totals  = (array) $logbook->get_summary(true, $templateformat == 'easa');
+    $data    = [
         'contextid'     => $COURSE->subscriber->get_context()->id,
         'courseid'      => $courseid,
         'userid'        => $userid,
@@ -512,7 +512,8 @@ function get_logbook_view(int $courseid, int $userid, string $templateformat) {
         'courseshortname' => $PAGE->course->shortname,
         'logbook'       => $logbook,
         'isstudent'     => $pilot->is_student(),
-        'isinstructor'  => $instructor->is_instructor(),
+        'isinstructor'  => $pilot->is_instructor(),
+        'canedit'       => $editor->is_instructor(),
         'hasfindpirep'  => $COURSE->subscriber->has_integration('pireps'),
         'easaformaturl' => $PAGE->url . '&format=easa',
         'stdformaturl'  => $PAGE->url . '&format=std',

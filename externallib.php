@@ -1279,7 +1279,7 @@ class local_booking_external extends external_api {
         if ($validateddata = $mform->get_data()) {
             // for entry update, populate logentry then save
             if ($editing) {
-                $logentry->populate($validateddata, !$logentryuser->is_student(), true);
+                $logentry->populate($validateddata, $logentryuser->is_instructor(), true);
                 $logentry->save();
             // for new entries, populate instructor and student logentries then save
             } else {

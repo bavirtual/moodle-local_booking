@@ -61,9 +61,9 @@ define([
         userId = $(Selectors.logbookwrapper).data('userid');
 
         if (contextId) {
-            // Listen the click on the progression table of sessions for a logentry (new/view).
+            // Listen the edit click of a logbook entry.
             root.on('click', Selectors.actions.edit, function(e) {
-                // From lib get_logentry_view
+                // From logbook
                 const target = e.target;
                 let logegntry = target.closest(Selectors.containers.summaryForm),
                     logentryId = logegntry.dataset.logentryId;
@@ -72,6 +72,18 @@ define([
                 e.preventDefault();
                 e.stopPropagation();
                 registerLogentryEditForm(root, e, contextId, courseId, userId, logentryId);
+                e.stopImmediatePropagation();
+            });
+
+            // Listen the delete click of a logbook entry.
+            root.on('click', Selectors.actions.delete, function(e) {
+                // From logbook
+                const target = e.target;
+                let logegntry = target.closest(Selectors.containers.summaryForm),
+                    logentryId = logegntry.dataset.logentryId;
+
+                // Detele logentry
+                $('#cardid_' + logentryId).slideUp(300);
                 e.stopImmediatePropagation();
             });
         }

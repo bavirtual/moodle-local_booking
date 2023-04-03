@@ -118,7 +118,7 @@ class action implements action_interface {
                     global $USER;
 
                     $instructor = new instructor($course, $USER->id);
-                    $enabled = $instructor->is_examiner() && $student->is_active();
+                    $enabled = ($instructor->is_examiner() || !$lastgrade->is_passed())&& $student->is_active();
                     $tooltip = !$this->enabled ? get_string('actiondisabledexaminersonlytooltip', 'local_booking') : '';
 
                 }

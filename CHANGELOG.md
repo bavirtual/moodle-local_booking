@@ -1,5 +1,11 @@
 # Change log
 
+## [2023040300] - RELEASED 2023-03-31 - hotfix
+
+### Fixed
+
+- last session booking disabled if instructor is not an examiner for progressing and objective not met sessions
+
 ## [2023033100] - RELEASED 2023-03-31 - hotfix
 
 ### Fixed

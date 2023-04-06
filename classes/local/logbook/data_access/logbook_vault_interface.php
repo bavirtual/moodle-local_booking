@@ -55,14 +55,15 @@ interface logbook_vault_interface {
     public static function get_logentry(int $userid, int $courseid, $logbook, int $logentryid = 0, int $exerciseid = 0);
 
     /**
-     * Update a user's logbook entry
+     * Get summary of logentries of the entire logbook.
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
-     * @param  bool $allcourses The totals of all courses
-     * @return object    $totaldualtime, $totalgroundtime, $totalpictime
+     * @param int       $examid     The exam id associated with the course.
+     * @param  bool     $allcourses The totals of all courses
+     * @return object   $totaldualtime, $totalgroundtime, $totalpictime
      */
-    public static function get_logbook_summary(int $courseid, int $userid, bool $allcourses = false);
+    public static function get_logbook_summary(int $courseid, int $userid, int $examid, bool $allcourses = false);
 
     /**
      * Get summary of logentries up to a specific exercise.

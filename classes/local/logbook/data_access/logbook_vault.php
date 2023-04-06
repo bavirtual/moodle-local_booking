@@ -216,10 +216,11 @@ class logbook_vault implements logbook_vault_interface {
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
-     * @param  bool $allcourses The totals of all courses
-     * @return object    $totaldualtime, $totalgroundtime, $totalpictime
+     * @param int       $examid     The exam id associated with the course.
+     * @param  bool     $allcourses The totals of all courses
+     * @return object   $totaldualtime, $totalgroundtime, $totalpictime
      */
-    public static function get_logbook_summary(int $courseid, int $userid, bool $allcourses = false) {
+    public static function get_logbook_summary(int $courseid, int $userid, int $examid, bool $allcourses = false) {
         global $DB;
 
         $sql = 'SELECT SUM(groundtime) + SUM(flighttime) as totalsessiontime,
@@ -228,6 +229,11 @@ class logbook_vault implements logbook_vault_interface {
                     SUM(pictime) as totalpictime,
                     SUM(dualtime) as totaldualtime,
                     SUM(instructortime) as totalinstructortime,
+                    SUM(CASE
+                        WHEN exerciseid = :examexerciseid AND p1id = :examinerid
+                        THEN flighttime
+                        ELSE 0
+                        END) as totalexaminertime,
                     SUM(picustime) as totalpicustime,
                     SUM(multipilottime) as totalmultipilottime,
                     SUM(copilottime) as totalcopilottime,
@@ -241,8 +247,10 @@ class logbook_vault implements logbook_vault_interface {
                     'userid = :userid';
 
         $params = [
-            'courseid' => $courseid,
-            'userid' => $userid
+            'courseid'       => $courseid,
+            'userid'         => $userid,
+            'examinerid'     => $userid,
+            'examexerciseid' => $examid
         ];
 
         return $DB->get_record_sql($sql, $params);

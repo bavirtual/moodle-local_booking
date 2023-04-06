@@ -83,7 +83,7 @@ function(
                 return;
             })
             .always(function() {
-                $('body').trigger(BookingSessions.canceled, [root, false]);
+                $('body').trigger(BookingSessions.sessioncanceled, [root, false]);
                 Notification.fetchNotifications();
                 ViewManager.stopLoading(root);
             })

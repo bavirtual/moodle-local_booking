@@ -129,23 +129,23 @@
         <table>
             <tr>
                 <td><span class="session-date session-graded" style="width: 30px; height: 15px;">&nbsp;</span></td>
-                <td style="width: 200px;"><span class="d-md-block session-posts">&nbsp;Session completed</span></td>
+                <td style="width: 200px;"><span class="d-md-block session-posts">&nbsp;{{#str}} sessioncompleted, local_booking {{/str}}</span></td>
             </tr>
             <tr>
                 <td><span class="session-date session-objective-not-met" style="width: 30px; height: 15px;">&nbsp;</span></td>
-                <td><span class="d-md-block session-posts">&nbsp;Session incomplete</span></td>
+                <td><span class="d-md-block session-posts">&nbsp;{{#str}} sessionincomplete, local_booking {{/str}}</span></td>
             </tr>
             <tr>
                 <td><span class="fa-inverse session-date session-graded" style="font-size:xx-small; text-align: center; width: 30px; height: 15px;">&nbsp;&nbsp;{{#pix}} check, local_booking {{/pix}}</span></td>
-                <td><span class="d-md-block session-posts">&nbsp;Exam</span></td>
+                <td><span class="d-md-block session-posts">&nbsp;{{#str}} sessionexam, local_booking {{/str}}</span></td>
             </tr>
             <tr>
                 <td><span class="session-date session-booked" style="width: 30px; height: 15px;">&nbsp;</span></td>
-                <td><span class="d-md-block session-posts">&nbsp;Session booked and confirmed by student</span></td>
+                <td><span class="d-md-block session-posts">&nbsp;{{#str}} sessionconfirmed, local_booking {{/str}}</span></td>
             </tr>
             <tr>
                 <td><span class="session-date session-tentative" style="width: 30px; height: 15px;">&nbsp;</span></td>
-                <td><span class="d-md-block session-posts">&nbsp;Session booked but not confirm by student</span></td>
+                <td><span class="d-md-block session-posts">&nbsp;{{#str}} sessionnotconfirmed, local_booking {{/str}}</span></td>
             </tr>
         </table>
     </div>

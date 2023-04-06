@@ -97,6 +97,11 @@ class participant implements participant_interface {
     protected $is_instructor = false;
 
     /**
+     * @var bool $is_examiner The participant is an examiner.
+     */
+    protected $is_examiner = false;
+
+    /**
      * @var bool $is_active The participant is active.
      */
     protected $is_active = false;
@@ -134,6 +139,7 @@ class participant implements participant_interface {
             // enrolment type
             $this->is_student = $this->has_role('student');
             $this->is_instructor = $this->has_role('instructor') || $this->has_role('seniorinstructor');
+            $this->is_examiner = $this->has_role('examiner');
 
             // get active participant courses
             $enroledcourses = enrol_get_users_courses($userid, true);
@@ -424,6 +430,15 @@ class participant implements participant_interface {
      */
     public function is_instructor() {
         return $this->is_instructor;
+    }
+
+    /**
+     * check if the participant is an examiner
+     *
+     * @return bool $is_examiner.
+     */
+    public function is_examiner() {
+        return $this->is_examiner;
     }
 
     /**

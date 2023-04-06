@@ -31,9 +31,10 @@
     {
     }
 }}
-<div id="logbook-{{uniqid}}"
-    data-template="local_booking/logbook_std"
-    class="logbookwrapper logbook-body"{{!
+<div {{!
+    }} id="logbook-{{uniqid}}"{{!
+    }} data-template="local_booking/logbook_std"{{!
+    }} class="logbookwrapper logbook-body"{{!
     }} data-userid="{{userid}}"{{!
     }} data-courseid="{{courseid}}"{{!
     }} data-contextid="{{contextid}}"{{!
@@ -54,6 +55,9 @@
         {{#isinstructor}}
         {{#str}} totalinstructortime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalinstructortime}}</span>
         {{/isinstructor}}
+        {{#isexaminer}}
+        {{#str}} totalexaminertime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalexaminertime}}</span>
+        {{/isexaminer}}
         {{/dualops}}
         {{^dualops}}
         {{#str}} totalmultipilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalmultipilottime}}</span>
@@ -79,7 +83,7 @@
     </div>
 
 {{#entries}}
-    <div class="logbook-card logbook-shadow1" id="cardid_{{id}}">
+    <div class="logbook-card logbook-shadow1" id="logentry_{{id}}">
     <h2 class="logbook-h2">{{{sectionname}}}</h2>
         {{^soloflight}}
         <h4>{{{exercisename}}}</h4><br/>
@@ -87,60 +91,7 @@
         {{#soloflight}}
         <h4>{{#str}} soloflight, local_booking {{/str}}</h4><br/>
         {{/soloflight}}
-        <pre id="logentryid_{{id}}"><strong>{{#str}} logentry, local_booking {{/str}}:</strong>
-        {{#str}} flightdate, local_booking {{/str}}&#09;&#09;&#09;{{flightdate}}
-        {{#str}} flighttype, local_booking {{/str}}&#09;&#09;&#09;{{trainingflight}} {{#checkflight}}{{#passedcheck}}<span class="logbook-check-pass">[{{#str}} checkpassed , local_booking{{/str}}]</span>{{/passedcheck}}{{^passedcheck}}<span class="logbook-check-fail">[{{#str}} checkfailed , local_booking{{/str}}]</span>{{/passedcheck}}{{/checkflight}}
-        {{p1label}}&#09;&#09;&#09;{{p1name}}
-        {{^soloflight}}
-        {{p2label}}&#09;&#09;&#09;&#09;{{p2name}}
-        {{/soloflight}}
-
-        {{^soloflight}}
-        {{#str}} groundtime, local_booking {{/str}}&#09;&#09;&#09;{{groundtime}}
-        {{/soloflight}}
-        {{#soloflight}}
-        {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;{{pictime}}
-        {{/soloflight}}
-        {{^isstudent}}
-        {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;{{pictime}}
-        {{/isstudent}}
-        {{#isinstructor}}
-        {{^checkflight}}
-        {{#str}} instructortime, local_booking {{/str}}&#09;&#09;&#09;{{instructortime}}
-        {{/checkflight}}
-        {{/isinstructor}}
-        {{#dualops}}
-        {{#isstudent}}
-        {{^soloflight}}
-        {{#str}} dualtime, local_booking {{/str}}&#09;&#09;&#09;{{dualtime}}
-        {{/soloflight}}
-        {{/isstudent}}
-        {{/dualops}}
-        {{^dualops}}
-        {{#str}} multipilottime, local_booking {{/str}}&#09;&#09;{{multipilottime}}
-        {{#str}} nighttime, local_booking {{/str}}&#09;&#09;&#09;{{nighttime}}
-        {{#isstudent}}
-        {{#str}} copilottime, local_booking {{/str}}&#09;&#09;&#09;{{copilottime}}
-        {{/isstudent}}
-        {{/dualops}}
-        {{#str}} ifrtime, local_booking {{/str}}&#09;&#09;&#09;{{ifrtime}}
-        {{#checkflight}}
-        {{#isstudent}}
-        {{#str}} picustime, local_booking {{/str}}&#09;&#09;&#09;{{picustime}}
-        {{/isstudent}}
-        {{^isstudent}}
-        {{#str}} checkpilottime, local_booking {{/str}}&#09;&#09;&#09;{{checkpilottime}}
-        {{/isstudent}}
-        {{/checkflight}}
-
-        {{#str}} aircraft, local_booking {{/str}}&#09;&#09;&#09;{{aircraft}}
-        {{#str}} callsign, local_booking {{/str}}&#09;&#09;&#09;{{callsign}}
-        {{#str}} pirep, local_booking {{/str}}&#09;&#09;&#09;&#09;{{pirep}}
-        {{#str}} depicao, local_booking {{/str}}&#09;&#09;&#09;{{depicao}} - {{deptime}}
-        {{#str}} arricao, local_booking {{/str}}&#09;&#09;&#09;{{arricao}} - {{arrtime}}
-        {{#str}} route, local_booking {{/str}}:&#09;&#09;&#09;&#09;{{route}}
-
-        {{#str}} remarks, local_booking {{/str}}:</pre><span class="logbook-remarks">{{remarks}}</span>
+{{> local_booking/logbook_std_detail}}
 
         {{#canedit}}
         <div style="float: right;"{{!

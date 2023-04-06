@@ -52,6 +52,9 @@ define([], function() {
         containers: {
             loadingIcon: '[data-region="overlay-icon-container"]',
             summaryForm: '[data-region="summary-modal-container"]',
+            logEntry: '[data-region="logentry-container"]',
+            content: '[data-region="view-content"]',
+            loadingPlaceholder: '[data-region="loading-placeholder"]',
         },
         toggle: '[toggle-input]',
         onhold: '[onhold-toggle]',

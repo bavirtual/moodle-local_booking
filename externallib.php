@@ -219,7 +219,7 @@ class local_booking_external extends external_api {
      * @return array array of slots created.
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
-    public static function get_logentry_by_id($logentryid, $courseid, $userid) {
+    public static function get_logentry_by_id(int $logentryid, int $courseid, int $userid) {
         global $PAGE, $COURSE;
 
         // Parameter validation.
@@ -1288,7 +1288,7 @@ class local_booking_external extends external_api {
                 $studentlogentry = $studentlogbook->create_logentry();
                 $studentlogentry->populate($validateddata);
 
-                if (property_exists('validateddata', 'flighttype') && $validateddata->flighttype != 'solo') {
+                if (property_exists($validateddata, 'flighttype') && $validateddata->flighttype != 'solo') {
                     // add instructor logentry, the user creating the entry is always the instructor
                     $instructorlogbook = new logbook($courseid, $USER->id);
                     $instructorlogentry = $instructorlogbook->create_logentry();

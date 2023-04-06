@@ -120,6 +120,10 @@ class logbook_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],
+            'totalexaminertime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
             'totalpicustime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true
@@ -171,6 +175,10 @@ class logbook_exporter extends exporter {
                 'default' => true
             ],
             'isinstructor' => [
+                'type' => PARAM_BOOL,
+                'default' => true
+            ],
+            'isexaminer' => [
                 'type' => PARAM_BOOL,
                 'default' => true
             ],
@@ -227,6 +235,7 @@ class logbook_exporter extends exporter {
             $data['trainingtype']    = $trainingtype;
             $data['isstudent']       = $this->data['isstudent'];
             $data['isinstructor']    = $this->data['isinstructor'];
+            $data['isexaminer']      = $this->data['isexaminer'];
             $data['shortdate']       = $this->data['shortdate'];
             $data['courseshortname'] = $this->data['courseshortname'];
             $entry = new logentry_exporter($data, $this->related);

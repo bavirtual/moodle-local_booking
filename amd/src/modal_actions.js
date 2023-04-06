@@ -91,7 +91,7 @@ function(
                 var pendingPromise = new Pending('local_booking/booking_actions:initModal:deletedlogentry');
                 Repository.deleteLogentry(logentryId, userId, courseId)
                     .then(function() {
-                        $('body').trigger(BookingSessions.deleted, [logentryId, false]);
+                        $('body').trigger(BookingSessions.logentrydeleted, [logentryId, false]);
                         return;
                     })
                     .then(pendingPromise.resolve)
@@ -122,10 +122,13 @@ function(
      var registerDelete = (root) => {
         root.on('click', BookingSelectors.actions.deleteLogentry, function(e) {
             // Fetch the logentry title, and pass them into the new dialogue.
+            const target = e.target;
             var logentrySource = root.find(BookingSelectors.logentryitem),
-                logentryId = logentrySource.data('logentryId'),
-                userId = logentrySource.data('userId'),
-                courseId = logentrySource.data('courseId');
+                logentryId = logentrySource.data('logentryId') ||
+                target.closest(BookingSelectors.containers.summaryForm).dataset.logentryId,
+                userId = logentrySource.data('userId') ||
+                target.closest(BookingSelectors.containers.summaryForm).dataset.userId,
+                courseId = logentrySource.data('courseId') || $(BookingSelectors.logbookwrapper).data('courseid');
             confirmDeletion(logentryId, userId, courseId);
 
             e.preventDefault();

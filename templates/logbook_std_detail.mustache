@@ -1,0 +1,100 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_booking/logbook_std_detail
+
+    Log book view for summary and log book entries.
+
+    The purpose of this template is to render the main, detailed weekly view.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+    }
+}}
+<div{{!
+    }} id="cardid_{{id}}"{{!
+    }}  data-region="logentry-container"{{!
+    }}  data-logentry-id="{{id}}"{{!
+    }}>
+    <div class="hidden" id="placeholder" data-region="loading-placeholder">
+        <div class="card-deck dashboard-card-deck one-row overflow-hidden" style="height: 420px;">
+            {{> local_booking/logentry_placeholder }}
+        </div>
+    </div>
+    <div data-region="view-content" id="content">
+    <pre id="logentryid_{{id}}"><strong>{{#str}} logentry, local_booking {{/str}}:</strong>
+        {{#str}} flightdate, local_booking {{/str}}&#09;&#09;&#09;{{flightdate}}
+        {{#str}} flighttype, local_booking {{/str}}&#09;&#09;&#09;{{trainingflight}} {{#checkflight}}{{#passedcheck}}<span class="logbook-check-pass">[{{#str}} checkpassed , local_booking{{/str}}]</span>{{/passedcheck}}{{^passedcheck}}<span class="logbook-check-fail">[{{#str}} checkfailed , local_booking{{/str}}]</span>{{/passedcheck}}{{/checkflight}}
+        {{p1label}}&#09;&#09;&#09;{{p1name}}
+        {{^soloflight}}
+        {{p2label}}&#09;&#09;&#09;&#09;{{p2name}}
+        {{/soloflight}}
+
+        {{^soloflight}}
+        {{#str}} groundtime, local_booking {{/str}}&#09;&#09;&#09;{{groundtime}}
+        {{/soloflight}}
+        {{#soloflight}}
+        {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;{{pictime}}
+        {{/soloflight}}
+        {{^isstudent}}
+        {{#str}} pictime, local_booking {{/str}}&#09;&#09;&#09;{{pictime}}
+        {{/isstudent}}
+        {{#isinstructor}}
+        {{^checkflight}}
+        {{#str}} instructortime, local_booking {{/str}}&#09;&#09;&#09;{{instructortime}}
+        {{/checkflight}}
+        {{/isinstructor}}
+        {{#dualops}}
+        {{#isstudent}}
+        {{^soloflight}}
+        {{#str}} dualtime, local_booking {{/str}}&#09;&#09;&#09;{{dualtime}}
+        {{/soloflight}}
+        {{/isstudent}}
+        {{/dualops}}
+        {{^dualops}}
+        {{#str}} multipilottime, local_booking {{/str}}&#09;&#09;{{multipilottime}}
+        {{#str}} nighttime, local_booking {{/str}}&#09;&#09;&#09;{{nighttime}}
+        {{#isstudent}}
+        {{#str}} copilottime, local_booking {{/str}}&#09;&#09;&#09;{{copilottime}}
+        {{/isstudent}}
+        {{/dualops}}
+        {{#str}} ifrtime, local_booking {{/str}}&#09;&#09;&#09;{{ifrtime}}
+        {{#checkflight}}
+        {{#isstudent}}
+        {{#str}} picustime, local_booking {{/str}}&#09;&#09;&#09;{{picustime}}
+        {{/isstudent}}
+        {{^isstudent}}
+        {{#str}} checkpilottime, local_booking {{/str}}&#09;&#09;&#09;{{checkpilottime}}
+        {{/isstudent}}
+        {{/checkflight}}
+
+        {{#str}} aircraft, local_booking {{/str}}&#09;&#09;&#09;{{aircraft}}
+        {{#str}} callsign, local_booking {{/str}}&#09;&#09;&#09;{{callsign}}
+        {{#str}} pirep, local_booking {{/str}}&#09;&#09;&#09;&#09;{{pirep}}
+        {{#str}} depicao, local_booking {{/str}}&#09;&#09;&#09;{{depicao}} - {{deptime}}
+        {{#str}} arricao, local_booking {{/str}}&#09;&#09;&#09;{{arricao}} - {{arrtime}}
+        {{#str}} route, local_booking {{/str}}&#09;&#09;&#09;&#09;{{route}}
+
+        {{#str}} remarks, local_booking {{/str}}:<span class="logbook-remarks">{{remarks}}</span></pre>
+    </div>
+</div>

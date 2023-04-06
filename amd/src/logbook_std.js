@@ -28,11 +28,13 @@ define([
         'core/str',
         'core/pending',
         'core/modal_factory',
+        'core/templates',
         'core/notification',
         'local_booking/booking_view_manager',
-        'local_booking/booking_actions',
+        'local_booking/modal_actions',
         'local_booking/events',
         'local_booking/modal_logentry_form',
+        'local_booking/repository',
         'local_booking/selectors'
     ],
     function(
@@ -40,11 +42,13 @@ define([
         Str,
         Pending,
         ModalFactory,
+        Templates,
         Notification,
         ViewManager,
-        BookingActions,
+        ModalActions,
         BookingEvents,
         ModalLogentryEditForm,
+        Repository,
         Selectors
     ) {
 
@@ -54,6 +58,19 @@ define([
      * @param {object} root The root element.
      */
     const registerEventListeners = (root) => {
+
+        // Listen to logentry updated events
+        $('body').on(BookingEvents.logentryupdated, function(e, logentry) {
+            // Refresh logbook
+            refreshLogbookContent(root, logentry);
+        });
+
+        // Listen to logentry deleted event
+        $('body').on(BookingEvents.logentrydeleted, function(e, logentryid) {
+            // Remove logentry from the logbook
+            $('#logentry_' + logentryid).slideUp(300);
+            e.stopImmediatePropagation();
+        });
 
         // Get promise for the logentry form for create and edit
         const contextId = $(Selectors.logbookwrapper).data('contextid'),
@@ -74,19 +91,38 @@ define([
                 registerLogentryEditForm(root, e, contextId, courseId, userId, logentryId);
                 e.stopImmediatePropagation();
             });
-
-            // Listen the delete click of a logbook entry.
-            root.on('click', Selectors.actions.delete, function(e) {
-                // From logbook
-                const target = e.target;
-                let logegntry = target.closest(Selectors.containers.summaryForm),
-                    logentryId = logegntry.dataset.logentryId;
-
-                // Detele logentry
-                $('#cardid_' + logentryId).slideUp(300);
-                e.stopImmediatePropagation();
-            });
         }
+    };
+
+    /**
+     * Refresh the logbook entry edited.
+     *
+     * @method  refreshLogbookContent
+     * @param   {object} root     The root element.
+     * @param   {object} logentry The updated logentry.
+     * @return  {promise}
+     */
+    const refreshLogbookContent = (root, logentry) => {
+        let card = $('#cardid_' + logentry.id);
+
+        showPlaceholder(card);
+
+        const courseId = $(Selectors.logbookwrapper).data('courseid'),
+        userId = $(Selectors.logbookwrapper).data('userid');
+
+        M.util.js_pending(root.get('id') + '-' + courseId);
+        return Repository.getLogentryById(logentry.id, courseId, userId)
+            .then((context) => {
+                return Templates.render('local_booking/logbook_std_detail', context.logentry);
+            })
+            .then((html, js) => {
+                return Templates.replaceNode(card, html, js);
+            })
+            .always(() => {
+                M.util.js_complete(root.get('id') + '-' + courseId);
+                return showContent(card);
+            })
+            .fail(Notification.exception);
     };
 
     /**
@@ -116,10 +152,31 @@ define([
         .catch();
     };
 
+    /**
+     * Show the empty message when no logentries are found.
+     *
+     * @param {object} card The card element for the logentry view.
+     */
+    const showPlaceholder = function(card) {
+        card.find(Selectors.containers.loadingPlaceholder).removeClass('hidden');
+        card.find(Selectors.containers.content).addClass('hidden');
+    };
+
+    /**
+     * Show the empty message when no logentries are found.
+     *
+     * @param {object} card The card element for the logentry view.
+     */
+    const showContent = function(card) {
+        card.find(Selectors.containers.content).removeClass('hidden');
+        card.find(Selectors.containers.loadingPlaceholder).addClass('hidden');
+    };
+
     return {
         init: function(root) {
             var root = $(root);
             registerEventListeners(root);
+            ModalActions.registerDelete(root);
             ViewManager.stopLoading(root);
         }
     };

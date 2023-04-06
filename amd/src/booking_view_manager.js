@@ -56,7 +56,6 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
     M.util.js_pending([root.get('id'), courseId, categoryId].join('-'));
     return Repository.getBookingsData(courseId, filter)
         .then((context) => {
-            context.viewingbooking = true;
             bookingsContext = context;
             return Templates.render(template, context);
         })

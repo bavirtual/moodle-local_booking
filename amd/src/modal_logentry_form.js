@@ -28,7 +28,7 @@
 
 define([
     'jquery',
-    'core/event',
+    'core_form/events',
     'core/str',
     'core/notification',
     'core/custom_interaction_events',
@@ -41,7 +41,7 @@ define([
 ],
 function(
     $,
-    Event,
+    FormEvents,
     Str,
     Notification,
     CustomEvents,
@@ -95,7 +95,7 @@ ModalLogEntryForm.prototype.setContextId = function(id) {
 };
 
 /**
- * Retrieve the current context id, if any.
+ * Get the current context id, if any.
  *
  * @method getContextId
  * @return {Number|null} The context id
@@ -115,7 +115,7 @@ ModalLogEntryForm.prototype.setCourseId = function(id) {
 };
 
 /**
- * Retrieve the current course id, if any.
+ * Get the current course id, if any.
  *
  * @method getCourseId
  * @return {int|null} The course id
@@ -145,7 +145,7 @@ ModalLogEntryForm.prototype.hasCourseId = function() {
 };
 
 /**
- * Retrieve the current exercise id, if any.
+ * Get the current exercise id, if any.
  *
  * @method getExerciseId
  * @return {int|null} The exercise id
@@ -175,7 +175,7 @@ ModalLogEntryForm.prototype.getExerciseId = function() {
 };
 
 /**
- * Retrieve the current user id, if any.
+ * Get the current user id, if any.
  *
  * @method getUserId
  * @return {int|null} The user id
@@ -205,7 +205,7 @@ ModalLogEntryForm.prototype.setLogentryId = function(id) {
 };
 
 /**
- * Retrieve the current logentry id, if any.
+ * Get the current logentry id, if any.
  *
  * @method getLogentryId
  * @return {int|null} The logentry id
@@ -235,7 +235,7 @@ ModalLogEntryForm.prototype.setFlightDate = function(time) {
 };
 
 /**
- * Retrieve the current start time, if any.
+ * Get the current start time, if any.
  *
  * @method getFlightDate
  * @return {int|null} The start time
@@ -265,7 +265,7 @@ ModalLogEntryForm.prototype.hasFlightDate = function() {
 };
 
 /**
- * Retrieve flight type of the logentry.
+ * Get flight type of the logentry.
  *
  * @method getFlightType
  * @return {string} The flight type (training/solo/check)
@@ -535,7 +535,7 @@ ModalLogEntryForm.prototype.registerChangeListeners = function() {
 };
 
 /**
- * Retrieve and populate log entry data from
+ * Get and populate log entry data from
  * the server's PIREP lookup service.
  *
  * @method getPIREPData
@@ -932,9 +932,9 @@ ModalLogEntryForm.prototype.save = function() {
 
                 // Trigger the appropriate logbook event so that the view can be updated.
                 if (isExisting) {
-                    $('body').trigger(LogbookEvents.updated, [response.logentry]);
+                    $('body').trigger(LogbookEvents.logentryupdated, [response.logentry]);
                 } else {
-                    $('body').trigger(LogbookEvents.created, [response.logentry]);
+                    $('body').trigger(LogbookEvents.logentrycreated, [response.logentry]);
                 }
             }
 
@@ -973,7 +973,7 @@ ModalLogEntryForm.prototype.registerEventListeners = function() {
     // Catch the submit event before it is actually processed by the browser and
     // prevent the submission. We'll take it from here.
     this.getModal().on('submit', function(e) {
-        Event.notifyFormSubmitAjax(this.getForm()[0]);
+        FormEvents.notifyFormSubmittedByJavascript(this.getForm()[0]);
 
         this.save();
 

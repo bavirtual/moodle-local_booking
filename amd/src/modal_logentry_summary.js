@@ -202,7 +202,7 @@ function(
             M.util.js_complete('local_booking/modal_logentry_summary:registerEventListeners:bodyRendered');
         }.bind(this));
 
-        $('body').on(BookingEvents.deleted, function() {
+        $('body').on(BookingEvents.logentrydeleted, function() {
             // Close the dialogue on delete.
             this.hide();
         }.bind(this));

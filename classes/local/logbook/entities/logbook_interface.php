@@ -102,11 +102,12 @@ interface logbook_interface {
     /**
      * Get the logbook entries time totals
      *
-     * @param  bool $tostring The totals in string time format
+     * @param  bool $tostring   The totals in string time format
      * @param  bool $allcourses The totals of all courses
+     * @param  int  $examid     The graduation exam exericse id
      * @return object           The logbook time table totals
      */
-    public function get_summary(bool $tostring = false, bool $allcourses = false);
+    public function get_summary(bool $tostring = false, bool $allcourses = false, int $examid = 0);
 
     /**
      * Get the logbook entries time totals until a specific exercise

@@ -24,10 +24,10 @@
  */
 define([], function() {
     return {
-        canceled: 'booking-sessions:canceled',
-        created: 'booking-sessions:created',
-        deleted: 'booking-sessions:deleted',
-        updated: 'booking-sessions:updated',
+        sessioncanceled: 'booking-sessions:booking_canceled',
+        logentrycreated: 'booking-sessions:logentry_created',
+        logentrydeleted: 'booking-sessions:logentry_deleted',
+        logentryupdated: 'booking-sessions:logentry_updated',
         addLogentry: 'booking-sessions:add_logentry',
         editLogentry: 'booking-sessions:edit_logentry',
         viewUpdated: 'booking-sessions:view_updated',

@@ -200,6 +200,13 @@ interface participant_interface {
     public function is_instructor();
 
     /**
+     * check if the participant is an examiner
+     *
+     * @return bool $is_examiner.
+     */
+    public function is_examiner();
+
+    /**
      * check if the participant is active
      *
      * @return bool $is_active.

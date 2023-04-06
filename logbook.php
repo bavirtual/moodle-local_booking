@@ -39,7 +39,7 @@ $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $userid = optional_param('userid', $USER->id, PARAM_INT);
 $username = participant::get_fullname($userid);
-$format = optional_param('format', 'easa', PARAM_TEXT);
+$format = optional_param('format', '', PARAM_TEXT);
 $course = get_course($courseid);
 $title = ($USER->id == $userid ? get_string('logbookmy', 'local_booking') : $username)
     . ' ' . get_string('logbook', 'local_booking');

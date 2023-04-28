@@ -211,27 +211,6 @@ import Ajax from 'core/ajax';
 /**
  * Get a graded session logbook entry by id.
  *
- * @method getPilotLogbook
- * @param  {number} courseId The associated course id.
- * @param  {number} userId The user id of entry.
- * @return {promise} Resolved with requested calendar event
- */
- export const getPilotLogbook = (courseId, userId) => {
-
-    const request = {
-        methodname: 'local_booking_get_pilot_logbook',
-        args: {
-            courseid: courseId,
-            userid: userId
-        }
-    };
-
-    return Ajax.call([request])[0];
-};
-
-/**
- * Get a graded session logbook entry by id.
- *
  * @method getLogentryById
  * @param {number} logentryId The logbook entry id.
  * @param {number} courseId The associated course id.

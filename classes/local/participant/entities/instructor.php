@@ -34,7 +34,7 @@ class instructor extends participant {
     /**
      * @var array $assigned_students The students assigned to the instructor.
      */
-    protected $assigned_students = [];
+    protected $assigned_students;
 
     /**
      * Constructor.
@@ -56,9 +56,13 @@ class instructor extends participant {
 
         if (!isset($this->assigned_students)) {
             $studentrecs = $this->vault->get_assigned_students($this->course->get_id(), $this->userid);
-            foreach ($studentrecs as $studentrec) {
-                $student = $this->course->get_student($studentrec->userid);
-                $this->assigned_students[$student->userid] = $student;
+            if ($studentrecs) {
+                foreach ($studentrecs as $studentrec) {
+                    $student = $this->course->get_student($studentrec->userid);
+                    $this->assigned_students[$student->userid] = $student;
+                }
+            } else {
+                $this->assigned_students = [];
             }
         }
         return $this->assigned_students;

@@ -24,7 +24,9 @@
  */
 
 use local_booking\local\participant\entities\participant;
+use local_booking\local\subscriber\entities\subscriber;
 use local_booking\navigation\views\manage_action_bar;
+use local_booking\output\views\logbook_view;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -53,22 +55,35 @@ $context = context_course::instance($courseid);
 
 require_login($course, false);
 require_capability('local/booking:logbookview', $context);
+
 // deny access if not an instructor and not view own logbook
 if (!has_capability('local/booking:view', $context) && $USER->id != $userid) {
     throw new required_capability_exception($context, $capability, 'nopermissions', '');
 }
 
+// define subscriber globally
+if (empty($COURSE->subscriber))
+    $COURSE->subscriber = new subscriber($courseid);
+
+// add jquery, logbook_easa.js for EASA datatable, and RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
 $PAGE->requires->jquery();
-// RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
+$PAGE->requires->js(new \moodle_url($CFG->wwwroot . '/local/booking/js/datatables/logbook_easa.js'));
 $PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask-5/dist/jquery.inputmask.min.js'), true);
 
-$PAGE->requires->js(new \moodle_url('https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js'), true);
-$PAGE->requires->js(new \moodle_url('https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js'), true);
-$PAGE->requires->css(new \moodle_url('https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css'));
-$PAGE->requires->js(new \moodle_url('https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js'), true);
-$PAGE->requires->js(new \moodle_url('https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js'), true);
-$PAGE->requires->css(new \moodle_url('https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap4.min.css'));
-$PAGE->requires->js(new \moodle_url($CFG->wwwroot . '/local/booking/js/datatables/logbook_easa.js'));
+// add js and css requires from config
+$datatablecdns = $COURSE->subscriber->get_booking_config('datatables', true);
+if (!empty($datatablecdns)) {
+    $jscdns = $datatablecdns['js'];
+    $csscdns = $datatablecdns['css'];
+    // get all js CDNs
+    foreach ($jscdns as $jscdn) {
+        $PAGE->requires->js(new \moodle_url($jscdn), true);
+    }
+    // get all css CDNs
+    foreach ($csscdns as $csscdn) {
+        $PAGE->requires->css(new \moodle_url($csscdn));
+    }
+}
 
 $PAGE->navbar->add($USER->id == $userid ? get_string('logbookmy', 'local_booking') : ucfirst(get_string('logbook', 'local_booking')));
 $PAGE->set_pagelayout('admin'); // wide page layout
@@ -76,17 +91,45 @@ $PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
 $PAGE->set_heading($title, 'local_booking');
 $PAGE->add_body_class('path-local-booking');
 
-$renderer = $PAGE->get_renderer('local_booking');
+// set user preference for logbook template format
+if (empty($format)) {
+    $format = get_user_preferences('local_booking_logbookformat', 'std');
+} else {
+    $setformat = get_user_preferences('local_booking_logbookformat', 'std');
+    if ($format != $setformat)
+        set_user_preferences(array('local_booking_logbookformat'=>$format));
+}
 
-echo $OUTPUT->header();
-echo $renderer->start_layout();
-
-// output action bar
+// get logbook view data
+$pilot   = $COURSE->subscriber->get_participant($userid);
+$editor  = $COURSE->subscriber->get_instructor($USER->id);
+$logbook = $pilot->get_logbook(true, $format == 'easa');
+$totals  = (array) $logbook->get_summary(true, $format == 'easa', $COURSE->subscriber->get_graduation_exercise());
+$data    = [
+    'contextid'     => $context->id,
+    'courseid'      => $courseid,
+    'userid'        => $userid,
+    'username'      => $pilot->get_fullname($userid),
+    'courseshortname' => $COURSE->shortname,
+    'logbook'       => $logbook,
+    'isstudent'     => $pilot->is_student(),
+    'isinstructor'  => $pilot->is_instructor(),
+    'isexaminer'    => $pilot->is_examiner(),
+    'canedit'       => $editor->is_instructor(),
+    'hasfindpirep'  => $COURSE->subscriber->has_integration('pireps'),
+    'format'        => $format,
+    'easaformaturl' => $PAGE->url . '&format=easa',
+    'stdformaturl'  => $PAGE->url . '&format=std',
+    'shortdate'     => $format == 'easa'
+];
+// get logbook view
+$logbookview = new logbook_view($context, $courseid, $data + $totals);
 $actionbar = new manage_action_bar($PAGE, 'logbook');
-echo $renderer->render_tertiary_navigation($actionbar);
 
-list($data, $template) = get_logbook_view($courseid, $userid, $format);
-echo $renderer->render_from_template($template, $data);
-
-echo $renderer->complete_layout();
+// output logbook page
+echo $OUTPUT->header();
+echo $logbookview->get_renderer()->start_layout();
+echo $logbookview->get_renderer()->render_tertiary_navigation($actionbar);
+echo $logbookview->output();
+echo $logbookview->get_renderer()->complete_layout();
 echo $OUTPUT->footer();

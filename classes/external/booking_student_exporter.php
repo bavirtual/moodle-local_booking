@@ -84,11 +84,18 @@ class booking_student_exporter extends exporter {
      */
     protected static function define_properties() {
         return [
+            'tag' => [
+                'type' => PARAM_RAW,
+                'optional' => true,
+                'default' => '',
+            ],
             'sequence' => [
                 'type' => PARAM_INT,
             ],
             'sequencetooltip' => [
                 'type' => PARAM_RAW,
+                'optional' => true,
+                'default' => '',
             ],
             'studentid' => [
                 'type' => PARAM_INT,

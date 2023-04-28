@@ -14,47 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_booking\navigation\views;
+namespace local_booking\output\views;
 
-use renderable;
-use moodle_page;
-use templatable;
+use local_booking\external\profile_exporter;
 
 /**
- * Abstract class for the Session booking tertiary navigation. The class initialises the page and type class variables.
+ * Class to output student profile view.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class base_action_bar implements renderable, templatable {
+class profile_view extends base_view {
 
     /**
-     * @var moodle_page $page The context we are operating within.
-     */
-    protected $page;
-
-    /**
-     * @var string $type The type of page being rendered.
-     */
-    protected $type;
-
-    /**
-     * standard_action_bar constructor.
+     * calendar view constructor.
      *
-     * @param moodle_page $page
-     * @param string $type
+     * @param \context $context   The course context
+     * @param int      $courseid  The course id
+     * @param array    $data      The data required for output
      */
-    public function __construct(moodle_page $page, string $type) {
-        $this->page = $page;
-        $this->type = $type;
+    public function __construct(\context $context, int $courseid, array $data) {
+        parent::__construct($context, $courseid, $data, 'local_booking/profile');
+
+        // set class properties
+        $this->data['courseid'] = $courseid;
+        $related = [
+            'context'   => $this->context,
+        ];
+        $profile = new profile_exporter($this->data, $related);
+        $this->exporteddata = $profile->export($this->renderer);
     }
-
-    /**
-     * The template that this tertiary nav should use.
-     *
-     * @return string
-     */
-    abstract public function get_template(): string;
 }

@@ -26,6 +26,8 @@
  */
 
 use local_booking\local\participant\entities\participant;
+use local_booking\local\subscriber\entities\subscriber;
+use local_booking\output\views\profile_view;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -48,6 +50,10 @@ $context = context_course::instance($courseid);
 require_login($course, false);
 require_capability('local/booking:view', $context);
 
+// define subscriber globally
+if (empty($COURSE->subscriber))
+    $COURSE->subscriber = new subscriber($courseid);
+
 $navbartext = participant::get_fullname($userid);
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('standard');
@@ -55,17 +61,14 @@ $PAGE->set_title($COURSE->shortname . ': ' . $title . ' - ' . participant::get_f
 $PAGE->set_heading($COURSE->fullname . ' ' . strtolower($title), 'local_booking');
 $PAGE->add_body_class('path-local-booking');
 
-$renderer = $PAGE->get_renderer('local_booking');
+// get student profile view
+$profileview = new profile_view($context, $courseid, ['subscriber'=>$COURSE->subscriber, 'userid'=>$userid]);
 
+// output profile page
 echo $OUTPUT->header();
-echo $renderer->start_layout();
+echo $profileview->get_renderer()->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
-
-// select the student profile view
-list($data, $template) = get_profile_view($courseid, $userid);
-echo $renderer->render_from_template($template, $data);
-
+echo $profileview->output();
 echo html_writer::end_tag('div');
-
-echo $renderer->complete_layout();
+echo $profileview->get_renderer()->complete_layout();
 echo $OUTPUT->footer();

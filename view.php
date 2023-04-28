@@ -25,6 +25,7 @@
  */
 
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\output\views\booking_view;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -57,43 +58,28 @@ $PAGE->set_title($COURSE->shortname . ': ' . get_string('pluginname', 'local_boo
 $PAGE->set_heading(get_string('bookingdashboard', 'local_booking'), 'local_booking');
 $PAGE->add_body_class('path-local-booking');
 
-$renderer = $PAGE->get_renderer('local_booking');
-
-echo $OUTPUT->header();
-echo $renderer->start_layout();
-echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
-
-// define subscriber globally
+// instructor object
 if (empty($COURSE->subscriber)) {
     $COURSE->subscriber = new subscriber($courseid);
 }
-
-// instructor object
 $instructor = $COURSE->subscriber->get_instructor($USER->id);
 
-// select the student progression booking view or the booking confirmation view
-if ($action=='book') {
-    // get students bookings and progression view
-    list($data, $template) = get_bookings_view($courseid, $instructor, $sorttype);
-    echo $renderer->render_from_template($template, $data);
+// get booking view data
+$data = [
+    'instructor' => $instructor,
+    'studentid'  => $studentid,
+    'action'     => $action,
+    'view'       => 'sessions',
+    'sorttype'   => $sorttype,
+    'filter'     => 'active',
+];
+// get booking view
+$bookingview = new booking_view($context, $courseid, $data);
 
-    if (has_capability('local/booking:participationview', $context)) {
-
-        if (count($instructor->get_assigned_students()) > 0) {
-            // get instructor's assigned students
-            list($data, $template) = get_students_view($courseid, $instructor);
-            echo $renderer->render_from_template($template, $data);
-        }
-
-        list($data, $template) = get_participation_view($courseid);
-        echo $renderer->render_from_template($template, $data);
-    }
-} elseif ($action=='confirm') {
-
-    list($data, $template) = get_session_selection_view($courseid, $instructor, $studentid);
-    echo $renderer->render_from_template($template, $data);
-}
-
+echo $OUTPUT->header();
+echo $bookingview->get_renderer()->start_layout();
+echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
+echo $bookingview->output();
 echo html_writer::end_tag('div');
-echo $renderer->complete_layout();
+echo $bookingview->get_renderer()->complete_layout();
 echo $OUTPUT->footer();

@@ -116,7 +116,7 @@ class week_exporter extends exporter {
      * @param string $view the type of view (single student or all)
      * @param array $related Related objects.
      */
-    public function __construct($actiondata, $view, $related) {
+    public function __construct($actiondata, $related) {
         global $CFG, $COURSE, $USER;
 
         // Use core calendar and action
@@ -124,7 +124,7 @@ class week_exporter extends exporter {
         $type = $related['type'];
         $this->calendar = $calendar;
         $this->actiondata = $actiondata;
-        $this->view = $view;
+        $this->view = $actiondata['view'];
 
         // Get user preference to show local time column ## future feature ##
         $this->showlocaltime = true;
@@ -148,7 +148,7 @@ class week_exporter extends exporter {
 
         // identify the student to view the slots (single student view 'user' or 'all' students)
         $activebookinginstrname = '';
-        if ($view == 'user') {
+        if ($actiondata['view'] == 'user') {
             if ($actiondata['action'] == 'book') {
                 // view the slot for the student id passed in action data
                 $this->student = $this->course->get_student($actiondata['student']->get_id());

@@ -106,8 +106,8 @@ class bookings_exporter extends exporter {
      * @param array $related Related objects.
      * @param int   $studentid optional parameter for confirming a student booking.
      */
-    public function __construct($data, $related, $studentid = 0) {
-        global $COURSE, $USER;
+    public function __construct($data, $related) {
+        global $COURSE;
 
         $url = new moodle_url('/local/booking/view.php', [
                 'courseid' => $data['courseid'],
@@ -120,9 +120,9 @@ class bookings_exporter extends exporter {
         $this->modules = $COURSE->subscriber->get_modules();
         $data['trainingtype'] = $COURSE->subscriber->trainingtype;
         $data['findpirepenabled'] = $COURSE->subscriber->has_integration('pireps');
-        $this->instructor = $data['instructor'];
+        $this->instructor = key_exists('instructor', $data) ? $data['instructor'] : null;
         if ($this->viewtype == 'confirm')
-            $this->bookingstudentid = $studentid;
+            $this->bookingstudentid = $data['studentid'];
         $this->filter = !empty($data['filter']) ? $data['filter'] : 'active';
         $data['visible'] = true;
 
@@ -258,7 +258,7 @@ class bookings_exporter extends exporter {
             ];
 
             // show the graduation exercise booking option for examiners only or student view
-            if (!empty($this->instructor) || $this->data['readonly']) {
+            if (!empty($this->instructor) || $this->data['action'] == 'readonly') {
                 if ($this->viewtype == 'confirm' && $module->id == $COURSE->subscriber->get_graduation_exercise() && $this->instructor->is_examiner() ||
                     $this->viewtype != 'confirm' || $module->id != $COURSE->subscriber->get_graduation_exercise()) {
                         $exercisename = new exercise_name_exporter($data);
@@ -306,19 +306,12 @@ class bookings_exporter extends exporter {
         $totaldays = 0;
         foreach ($this->activestudents as $student) {
             $i++;
-            $sequencetooltip = [
-                'score'     => $this->filter != 'suspended' ?  $student->get_priority()->get_score() : 'N/A',
-                'recency'   => $this->filter != 'suspended' ?  $student->get_priority()->get_recency_days() : 'N/A',
-                'slots'     => $this->filter != 'suspended' ?  $student->get_priority()->get_slot_count() : 'N/A',
-                'activity'  => $this->filter != 'suspended' ?  $student->get_priority()->get_activity_count(false) : 'N/A',
-                'completion'=> $this->filter != 'suspended' ?  $student->get_priority()->get_completions() : 'N/A',
-            ];
 
+            // data for the student's exporter
             $waringflag = $this->get_warning($this->filter != 'suspended' ?  $student->get_priority()->get_recency_days() : $COURSE->subscriber->onholdperiod);
             $data = [
                 'course'          => $COURSE->subscriber,
                 'sequence'        => $i,
-                'sequencetooltip' => get_string('sequencetooltip', 'local_booking', $sequencetooltip),
                 'instructor'      => $this->instructor,
                 'student'         => $student,
                 'overduewarning'  => $waringflag == self::OVERDUEWARNING,
@@ -326,6 +319,25 @@ class bookings_exporter extends exporter {
                 'view'            => $this->viewtype,
                 'filter'          => $this->filter,
             ];
+
+            // get tooltip
+            // if (!empty($sorttype) && $student->is_active() && !$student->graduated()) {
+            if (!empty($sorttype) && $this->filter == 'active') {
+                if ($sorttype == 'a') {
+                    $sequencetooltip = ['tag' => get_string('tag_' . $student->tag, 'local_booking')];
+                } elseif ($sorttype == 's') {
+                    $sequencetooltip = [
+                        'score'     => $this->filter != 'suspended' ?  $student->get_priority()->get_score() : 'N/A',
+                        'recency'   => $this->filter != 'suspended' ?  $student->get_priority()->get_recency_days() : 'N/A',
+                        'slots'     => $this->filter != 'suspended' ?  $student->get_priority()->get_slot_count() : 'N/A',
+                        'activity'  => $this->filter != 'suspended' ?  $student->get_priority()->get_activity_count(false) : 'N/A',
+                        'completion'=> $this->filter != 'suspended' ?  $student->get_priority()->get_completions() : 'N/A',
+                    ];
+                }
+                $data['tag'] = $student->tag;
+                $data['sequencetooltip'] = get_string('sequencetooltip_' . (!empty($sorttype) ? $sorttype : 'a'), 'local_booking', $sequencetooltip);
+            }
+
             $studentexporter = new booking_student_exporter($data, [
                 'context' => \context_system::instance(),
                 'coursemodules' => $this->modules,
@@ -360,9 +372,12 @@ class bookings_exporter extends exporter {
         if ($sorttype == 'a') {
             // filtering students that have posted slots and completed lessons
             $posts_completed = array_filter($activestudents, function($std) {
+                if ($std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0) {
+                    $std->tag = 'posts_completed';
+                }
                 return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0;
             });
-            // order active students by: price ASC the inStock DESC s
+            // order active students by: recency days then posted slots
             usort($posts_completed, function($st1, $st2) {
                 if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
                     return $st2->get_priority()->get_slot_count() <=> $st1->get_priority()->get_slot_count();
@@ -372,6 +387,9 @@ class bookings_exporter extends exporter {
 
             // filtering students that have no posted slots but completed lessons
             $noposts_completed = array_filter($activestudents, function($std) {
+                if ($std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0) {
+                    $std->tag = 'noposts_completed';
+                }
                 return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0;
             });
             // order active students by session recency
@@ -381,13 +399,17 @@ class bookings_exporter extends exporter {
 
             // filtering students that have not completed lessons
             $not_completed = array_filter($activestudents, function($std) {
+                if (!$std->has_completed_lessons()) {
+                    $std->tag = 'not_completed';
+                }
                 return !$std->has_completed_lessons();
             });
-            // order active students by: price ASC the inStock DESC s
+            // order active students that has not completed ground lessons modules by recency days
             usort($not_completed, function($st1, $st2) {
                 return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
             });
 
+            // merge all three arrays
             $finallist = array_merge($posts_completed, $noposts_completed, $not_completed);
 
         } elseif ($sorttype == 's') {

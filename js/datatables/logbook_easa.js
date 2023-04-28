@@ -20,46 +20,66 @@
  *
  * @module     local_booking/logbook_easa
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 // Define column constants
 $(document).ready(function() {
-    var FLIGHTDATE = 0, DEPICAO = 1, DEPTIME = 2, ARRICAO = 3, ARRTIME = 4, AIRCRAFT = 5,
-        AIRCRAFTREG = 6, ENGINETYPE_SE = 7, ENGINETYPE_ME = 8, MULTIPILOT = 9, TOTALTIME = 10,
-        P1NAME = 11, LANDINGSDAY = 12, LANDINGSNIGHT = 13, NIGHTTIME = 14, IFRTIME = 15,
-        PICTIME = 16, COPILOTTIME = 17, DUALTIME = 18, INSTTIME = 19, PICUSTIME = 20,
-        FSTD = 21, REMARKS = 22;
+    var FLIGHTDATE = 0,
+        DEPICAO = 1,
+        DEPTIME = 2,
+        ARRICAO = 3,
+        ARRTIME = 4,
+        AIRCRAFT = 5,
+        AIRCRAFTREG = 6,
+        ENGINETYPE_SE = 7,
+        ENGINETYPE_ME = 8,
+        MULTIPILOT = 9,
+        TOTALTIME = 10,
+        P1NAME = 11,
+        LANDINGSDAY = 12,
+        LANDINGSNIGHT = 13,
+        NIGHTTIME = 14,
+        IFRTIME = 15,
+        PICTIME = 16,
+        COPILOTTIME = 17,
+        DUALTIME = 18,
+        INSTTIME = 19,
+        PICUSTIME = 20,
+        FSTD = 21,
+        REMARKS = 22;
 
-    $('#logbook').DataTable({
+    var table = $('#logbook').DataTable({
         "order": [[0, "desc"]],
+        "ordering": true,
+        "lengthChange": true,
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        "autoWidth": "false",
+        "autoWidth": "true",
         "columnDefs": [
-            {"width": "50px", "targets": FLIGHTDATE}, // Column: flightdate
-            {"width": "50px", "targets": DEPICAO}, // Column: depicao
-            {"width": "45px", "targets": DEPTIME}, // Column: deptime
-            {"width": "50px", "targets": ARRICAO}, // Column: arricao
-            {"width": "45px", "targets": ARRTIME}, // Column: arrtime
-            {"width": "50px", "targets": AIRCRAFT}, // Column: aircraft
-            {"width": "50px", "targets": AIRCRAFTREG}, // Column: aircraftreg
-            {"width": "25px", "className": "dt-center", "targets": ENGINETYPE_SE}, // Column: enginetype 'SE'
-            {"width": "25px", "className": "dt-center", "targets": ENGINETYPE_ME}, // Column: enginetype 'ME'
-            {"width": "10px", "targets": MULTIPILOT}, // Column: multipilot
-            {"width": "10px", "targets": TOTALTIME}, // Column: totaltime
-            {"width": "130px", "targets": P1NAME}, // Column: p1name
-            {"width": "35px", "className": "dt-center", "targets": LANDINGSDAY}, // Column: landingsday
-            {"width": "35px", "className": "dt-center", "targets": LANDINGSNIGHT}, // Column: landingsnight
-            {"width": "35px", "targets": NIGHTTIME}, // Column: nighttime
-            {"width": "35px", "targets": IFRTIME}, // Column: ifrtime
-            {"width": "45px", "targets": PICTIME}, // Column: pictime
-            {"width": "45px", "targets": COPILOTTIME}, // Column: copilottime
-            {"width": "45px", "targets": DUALTIME}, // Column: dualtime
-            {"width": "45px", "targets": INSTTIME}, // Column: instructortime
-            {"width": "45px", "targets": PICUSTIME}, // Column: picustime
-            {"width": "15px", "targets": FSTD}, // Column: fstd
-            {"width": "160px", "targets": REMARKS} // Column: remarks
+            {"min-width": "40px", "targets": FLIGHTDATE}, // Column: flightdate
+            {"min-width": "35px", "targets": DEPICAO}, // Column: depicao
+            {"min-width": "35px", "targets": DEPTIME}, // Column: deptime
+            {"min-width": "50px", "targets": ARRICAO}, // Column: arricao
+            {"min-width": "45px", "targets": ARRTIME}, // Column: arrtime
+            {"min-width": "50px", "targets": AIRCRAFT}, // Column: aircraft
+            {"min-width": "50px", "targets": AIRCRAFTREG}, // Column: aircraftreg
+            {"min-width": "25px", "className": "dt-center", "targets": ENGINETYPE_SE}, // Column: enginetype 'SE'
+            {"min-width": "25px", "className": "dt-center", "targets": ENGINETYPE_ME}, // Column: enginetype 'ME'
+            {"min-width": "10px", "targets": MULTIPILOT}, // Column: multipilot
+            {"min-width": "10px", "targets": TOTALTIME}, // Column: totaltime
+            {"min-width": "130px", "targets": P1NAME}, // Column: p1name
+            {"min-width": "35px", "className": "dt-center", "targets": LANDINGSDAY}, // Column: landingsday
+            {"min-width": "35px", "className": "dt-center", "targets": LANDINGSNIGHT}, // Column: landingsnight
+            {"min-width": "35px", "targets": NIGHTTIME}, // Column: nighttime
+            {"min-width": "35px", "targets": IFRTIME}, // Column: ifrtime
+            {"min-width": "50px", "targets": PICTIME}, // Column: pictime
+            {"min-width": "45px", "targets": COPILOTTIME}, // Column: copilottime
+            {"min-width": "45px", "targets": DUALTIME}, // Column: dualtime
+            {"min-width": "50px", "targets": INSTTIME}, // Column: instructortime
+            {"min-width": "45px", "targets": PICUSTIME}, // Column: picustime
+            {"min-width": "15px", "targets": FSTD}, // Column: fstd
+            {"min-width": "160px", "targets": REMARKS} // Column: remarks
         ],
         "footerCallback": function(row, data, start, end, display) {
             var api = this.api();
@@ -142,6 +162,9 @@ $(document).ready(function() {
             $(api.column(INSTTIME).footer()).html(insttimeTotal != 0 ? timeVal(insttimeTotal) : '');
             $(api.column(PICUSTIME).footer()).html(picustimeTotal != 0 ? timeVal(picustimeTotal) : '');
         },
+        dom: 'Blfrtip',
         "processing": true
     });
+
+    table.buttons(0, null).containers().appendTo('#logbook_filter');
 });

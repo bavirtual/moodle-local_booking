@@ -34,6 +34,7 @@ require_once($CFG->dirroot . '/calendar/lib.php');
 defined('MOODLE_INTERNAL') || die();
 
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\output\views\calendar_view;
 
 global $USER, $COURSE;
 
@@ -57,20 +58,20 @@ $time = optional_param('time', 0, PARAM_INT);
 $url = new moodle_url('/local/booking/availability.php');
 $url->param('courseid', $courseid);
 
+// define subscriber globally
+if (empty($COURSE->subscriber))
+    $COURSE->subscriber = new subscriber($courseid);
+
 // view all capability for instructors
 if (has_capability('local/booking:view', $context)) {
 
     $view = $action == 'book' ? 'user' : 'all';
 
 } else {
-    // define subscriber globally
-    if (empty($COURSE->subscriber))
-        $COURSE->subscriber = new subscriber($courseid);
 
     $student = $COURSE->subscriber->get_student($USER->id);
     $action = 'post';
     $url->param('time', $student->get_next_allowed_session_date()->getTimestamp());
-    // $url->param('action', $action);
 }
 
 $PAGE->set_url($url);
@@ -86,7 +87,7 @@ if (!empty($day) && !empty($mon) && !empty($year)) {
 
 // go to next week if we're on the last day of the week and no booking can be made
 if (empty($time)) {
-    $time =  time();//endofweek(time()) ? getnextweek() : time();
+    $time =  time();
 }
 
 $calendar = calendar_information::create($time, $courseid, !empty($categoryid) ? $categoryid : $course->category);
@@ -97,26 +98,25 @@ $PAGE->set_title($COURSE->shortname . ': ' . get_string('pluginname', 'local_boo
 $PAGE->set_heading(get_string('availabilityinst', 'local_booking'), 'local_booking');
 $PAGE->add_body_class('path-availability');
 
-$template = 'local_booking/availability_calendar';
 $calenderrenderer = $PAGE->get_renderer('core_calendar');
-$renderer = $PAGE->get_renderer('local_booking');
 $calendar->add_sidecalendar_blocks($calenderrenderer, true);
 
-echo $OUTPUT->header();
-echo $renderer->start_layout();
-echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
-
-// action data for booking view
-$actiondata = [
+// get data for calendar view
+$data = [
+    'calendar'   => $calendar,
+    'view'       => $view,
     'action'     => $action,
     'student'    => $COURSE->subscriber->get_participant($userid),
     'exerciseid' => $exerciseid,
     ];
+// get calendar view for Session booking
+$calendarview = new calendar_view($context, $courseid, $data);
 
-// output availability view
-list($data, $template) = get_weekly_view($calendar, $actiondata, $view);
-echo $renderer->render_from_template($template, $data);
-
+// output calendar view
+echo $OUTPUT->header();
+echo $calendarview->get_renderer()->start_layout();
+echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
+echo $calendarview->output();
 echo html_writer::end_tag('div');
-echo $renderer->complete_layout();
+echo $calendarview->get_renderer()->complete_layout();
 echo $OUTPUT->footer();

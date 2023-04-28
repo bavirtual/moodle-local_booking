@@ -15,6 +15,15 @@
     border: 1px solid lightgray;
     border-collapse: collapse;
 }
+.posts_completed {
+    border-left: .3rem solid green !important;
+}
+.noposts_completed {
+    border-left: .3rem solid orange !important;
+}
+.not_completed {
+    border-left: .3rem solid red !important;
+}
 .booking-title {
     width: 100%;
 }
@@ -53,10 +62,6 @@
 .booking-text-small {
     padding: 4px;
     width: 140px;
-}
-.booking-text-xsmall {
-    padding: 4px;
-    width: 100px;
 }
 .booking-truncate {
     font-size: smaller;
@@ -213,24 +218,6 @@
     user-select: none;
 }
 
-/* Hide the browser's default radio button */
-.booking-container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-}
-
-/* Create a custom radio button */
-.checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 25px;
-    width: 25px;
-    background-color: #eee;
-    border-radius: 50%;
-}
-
 /* profile */
 .userprofile .sb_profile_tree {
     column-count: 3;
@@ -320,31 +307,6 @@
     content: "";
     background: 50% / 50% 50% no-repeat;
 }
-.custom-checkbox .toggle-input:checked ~ .toggle-label::after {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%23fff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26l2.974 2.99L8 2.193z'/%3e%3c/svg%3e");
-}
-.custom-checkbox .toggle-input:indeterminate ~ .toggle-label::before {
-    border-color: #0f6fc5;
-    background-color: #0f6fc5;
-}
-.custom-checkbox .toggle-input:indeterminate ~ .toggle-label::after {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3e%3cpath stroke='%23fff' d='M0 2h4'/%3e%3c/svg%3e");
-}
-.custom-checkbox .toggle-input:disabled:checked ~ .toggle-label::before {
-    background-color: rgba(15, 111, 197, 0.5);
-}
-.custom-checkbox .toggle-input:disabled:indeterminate ~ .toggle-label::before {
-    background-color: rgba(15, 111, 197, 0.5);
-}
-.custom-radio .toggle-label::before {
-    border-radius: 50%;
-}
-.custom-radio .toggle-input:checked ~ .toggle-label::after {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
-}
-.custom-radio .toggle-input:disabled:checked ~ .toggle-label::before {
-    background-color: rgba(15, 111, 197, 0.5);
-}
 .custom-switch {
     padding-left: 2.6875rem;
 }
@@ -374,42 +336,6 @@
     background-color: rgba(15, 111, 197, 0.5);
 }
 
-.checkmark:focus {
-    outline: 0;
-}
-
-/* On mouse-over, add a grey background color */
-.booking-container:hover input ~ .checkmark {
-    background-color: #ccc;
-}
-
-/* When the radio button is checked, add a blue background */
-.booking-container input:checked ~ .checkmark {
-    background-color: #2196F3;
-}
-
-/* Create the indicator (the dot/circle - hidden when not checked) */
-.checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-/* Show the indicator (dot/circle) when checked */
-.booking-container input:checked ~ .checkmark:after {
-    display: block;
-}
-
-/* Style the indicator (dot/circle) */
-.booking-container .checkmark:after {
-    top: 9px;
-    left: 9px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: white;
-}
-
 /* Availability calendar */
 .availability-student {
     font-size: small;
@@ -437,25 +363,6 @@
 }
 
 /* Availability posting buttons */
-.slot-action-button {
-    width: 85px;
-    color: white;
-    padding: 5px 15px;
-    margin: 5px 5px;
-    border-width: 0px;
-    display: inline-flex;
-    align-items: center;
-    outline: 0;
-    box-shadow: 0px 2px 2px lightgray;
-    transition: ease background-color 250ms;
-    cursor: pointer;
-}
-.slot-action-book {
-    width: 160px;
-}
-.slot-editing {
-    margin-left: 10px;
-}
 .slot-button {
     display: inline-flex;
     align-items: center;
@@ -496,10 +403,6 @@
 }
 .slot-button-black:hover {
     background-color: darkgray;
-}
-.single-button-clear {
-    float: right;
-    margin-right: 10px;
 }
 
 /* availability calendar */
@@ -663,7 +566,7 @@
 .logbook-easa-card {
     padding: 20px;
     background: #fff;
-    max-width: 1500px;
+    max-width: 1600px;
     border-radius: 20px;
     margin: 20px auto;
 }

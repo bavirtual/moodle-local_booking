@@ -31,6 +31,7 @@ defined('MOODLE_INTERNAL') || die();
 use core\external\exporter;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
+use local_booking\local\subscriber\entities\subscriber;
 use renderer_base;
 use moodle_url;
 
@@ -43,6 +44,11 @@ use moodle_url;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class profile_exporter extends exporter {
+
+    /**
+     * @var subscriber $subscriber The plugin subscribing course
+     */
+    protected $subscriber;
 
     /**
      * @var student $student The user of the profile
@@ -68,9 +74,10 @@ class profile_exporter extends exporter {
 
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
+        $data['userid'] = $data['userid'];
         $this->courseid = $data['courseid'];
-        $this->student = $data['user'];
-        $data['userid'] = $this->student->get_id();
+        $this->subscriber = $data['subscriber'];
+        $this->student = $this->subscriber->get_student($data['userid'], true);
 
         parent::__construct($data, $related);
     }
@@ -261,7 +268,7 @@ class profile_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
-        global $COURSE, $USER, $CFG;
+        global $USER, $CFG;
 
         // moodle user object
         $studentid = $this->student->get_id();
@@ -270,11 +277,11 @@ class profile_exporter extends exporter {
 
         // student current lesson
         $exerciseid = $this->student->get_current_exercise();
-        $currentlesson = array_values($COURSE->subscriber->get_lesson($exerciseid))[1];
+        $currentlesson = array_values($this->subscriber->get_lesson($exerciseid))[1];
 
         // module completion information
         $usermods = $this->student->get_priority()->get_completions();
-        $coursemods = count($COURSE->subscriber->get_modules());
+        $coursemods = count($this->subscriber->get_modules());
         $modsinfo = [
             'usermods' => $usermods,
             'coursemods' => $coursemods,
@@ -283,7 +290,7 @@ class profile_exporter extends exporter {
 
         // qualified (next exercise is the course's last exercise) and tested status
         $qualified = $this->student->qualified();
-        $requiresevaluation = $COURSE->subscriber->requires_skills_evaluation();
+        $requiresevaluation = $this->subscriber->requires_skills_evaluation();
         $endorsed = false;
         $endorsementmsg = '';
         $hasexams = count($this->student->get_quize_grades()) > 0;
@@ -324,11 +331,11 @@ class profile_exporter extends exporter {
 
         } elseif ($this->student->tested()) {
 
-            $graduationstatus = get_string('checkpassed', 'local_booking') . ' ' .  $COURSE->subscriber->get_graduation_exercise(true);
+            $graduationstatus = get_string('checkpassed', 'local_booking') . ' ' .  $this->subscriber->get_graduation_exercise(true);
 
         } else {
             $graduationstatus = ($qualified ? get_string('qualified', 'local_booking') . ' ' .
-                $COURSE->subscriber->get_graduation_exercise(true) : get_string('notqualified', 'local_booking'));
+                $this->subscriber->get_graduation_exercise(true) : get_string('notqualified', 'local_booking'));
         }
 
         // log in as url
@@ -419,12 +426,12 @@ class profile_exporter extends exporter {
             'endorsementmgs'           => $endorsementmsg,
             'recommendationletterlink' => $recommendationletterlink->out(false),
             'suspended'                => !$this->student->is_active(),
-            'onholdrestrictionenabled' => $COURSE->subscriber->onholdperiod != 0,
+            'onholdrestrictionenabled' => $this->subscriber->onholdperiod != 0,
             'onhold'                   => student::is_member_of($this->courseid, $studentid, LOCAL_BOOKING_ONHOLDGROUP),
             'onholdgroup'              => LOCAL_BOOKING_ONHOLDGROUP,
             'keepactive'               => student::is_member_of($this->courseid, $studentid,LOCAL_BOOKING_KEEPACTIVEGROUP),
             'keepactivegroup'          => LOCAL_BOOKING_KEEPACTIVEGROUP,
-            'waitrestrictionenabled'   => $COURSE->subscriber->postingwait != 0,
+            'waitrestrictionenabled'   => $this->subscriber->postingwait != 0,
             'restrictionoverride'      => get_user_preferences('local_booking_' . $this->courseid . '_availabilityoverride', false, $studentid),
             'admin'                    => has_capability('moodle/user:loginas', $this->related['context']),
             'hasexams'                 => $hasexams,

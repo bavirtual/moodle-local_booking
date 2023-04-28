@@ -118,7 +118,7 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
                     exerciseId = logegntrySession.dataset.exerciseId;
                     flightType = logegntrySession.dataset.flightType;
                 } else {
-                    // From get_logentry_view
+                    // From logentry_view
                     logegntrySession = root.find(Selectors.containers.summaryForm);
                     flightDate = logegntrySession.data('flight-date');
                     exerciseId = logegntrySession.data('exercise-id');

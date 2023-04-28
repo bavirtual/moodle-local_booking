@@ -14,47 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_booking\navigation\views;
+namespace local_booking\output\views;
 
-use renderable;
-use moodle_page;
-use templatable;
+use local_booking\external\week_exporter;
 
 /**
- * Abstract class for the Session booking tertiary navigation. The class initialises the page and type class variables.
+ * Class to output calendar view.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class base_action_bar implements renderable, templatable {
+class calendar_view extends base_view {
 
     /**
-     * @var moodle_page $page The context we are operating within.
-     */
-    protected $page;
-
-    /**
-     * @var string $type The type of page being rendered.
-     */
-    protected $type;
-
-    /**
-     * standard_action_bar constructor.
+     * calendar view constructor.
      *
-     * @param moodle_page $page
-     * @param string $type
+     * @param \context $context   The course context
+     * @param int      $courseid  The course id
+     * @param array    $data      The data required for output
      */
-    public function __construct(moodle_page $page, string $type) {
-        $this->page = $page;
-        $this->type = $type;
+    public function __construct(\context $context, int $courseid, array $data) {
+        parent::__construct($context, $courseid, $data, 'local_booking/availability_calendar');
+
+        $related = [
+            'type' => \core_calendar\type_factory::get_calendar_instance(),
+            'calendar' => $data['calendar']
+        ];
+
+        $week = new week_exporter($data, $related);
+        $this->exporteddata = $week->export($this->renderer);
+        $this->exporteddata->viewingmonth = true;
     }
-
-    /**
-     * The template that this tertiary nav should use.
-     *
-     * @return string
-     */
-    abstract public function get_template(): string;
 }

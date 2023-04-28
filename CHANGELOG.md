@@ -1,12 +1,20 @@
 # Change log
 
+## [2023042801] - RELEASED 2023-04-28 - hotfix
+
+### Fixed
+
+- missing my active bookings section
+
 ## [2023042800] - RELEASED 2023-04-28
 
 ### Added
+
 - sorting color coding for posts_completed, noposts_completed, and not_completed
 - datatable buttons in EASA logbook format (copy/excel/csv/pdf/print)
 
 ### Changed
+
 - move lib views to output/views
 - clean up styles.css of unused directives from old Moodle 3.x classes
 

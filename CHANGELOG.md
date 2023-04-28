@@ -1,22 +1,6 @@
 # Change log
 
-## [2023050900] - UNRELEASED 2023-05-09
-
-### Added
-
-- No show history in student profile
-
-### Fixed
-
-- active students sort
-- cron task on-hold notifications for booked students
-- logbook page title
-
-### Changed
-
-- moodle 4.2 compatibility for single_button::BUTTON_PRIMARY type
-
-## [2023042802] - RELEASED 2023-04-28 - hotfix
+## [2023042801] - RELEASED 2023-04-28 - hotfix
 
 ### Fixed
 
@@ -26,12 +10,10 @@
 
 ### Added
 
-
 - sorting color coding for posts_completed, noposts_completed, and not_completed
 - datatable buttons in EASA logbook format (copy/excel/csv/pdf/print)
 
 ### Changed
-
 
 - move lib views to output/views
 - clean up styles.css of unused directives from old Moodle 3.x classes

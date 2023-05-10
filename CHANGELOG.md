@@ -1,5 +1,21 @@
 # Change log
 
+## [2023050900] - UNRELEASED 2023-05-09
+
+### Added
+
+- No show history in student profile
+
+### Fixed
+
+- active students sort
+- cron task on-hold notifications for booked students
+- logbook page title
+
+### Changed
+
+- moodle 4.2 compatibility for single_button::BUTTON_PRIMARY type
+
 ## [2023042802] - RELEASED 2023-04-28 - hotfix
 
 ### Fixed

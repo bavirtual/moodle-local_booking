@@ -1,0 +1,37 @@
+[10-May-2023 06:12:40 UTC] Xdebug: [Step Debug] Could not connect to debugging client. Tried: 127.0.0.1:9003 (from REMOTE_ADDR HTTP header), localhost:9003 (fallback through xdebug.client_host/xdebug.client_port).
+[10-May-2023 06:12:41 UTC] Xdebug: [Step Debug] Could not connect to debugging client. Tried: 127.0.0.1:9003 (from REMOTE_ADDR HTTP header), localhost:9003 (fallback through xdebug.client_host/xdebug.client_port).
+[10-May-2023 06:12:41 UTC] Default exception handler: Exception - Class "course" not found Debug: 
+Error code: generalexceptionmessage
+* line 45 of /local/booking/availability.php: Error thrown
+
+[10-May-2023 06:13:59 UTC] Xdebug: [Step Debug] Could not connect to debugging client. Tried: 127.0.0.1:9003 (from REMOTE_ADDR HTTP header), localhost:9003 (fallback through xdebug.client_host/xdebug.client_port).
+[10-May-2023 06:14:12 UTC] Xdebug: [Step Debug] Could not connect to debugging client. Tried: 127.0.0.1:9003 (from REMOTE_ADDR HTTP header), localhost:9003 (fallback through xdebug.client_host/xdebug.client_port).
+[10-May-2023 06:14:36 UTC] Xdebug: [Step Debug] Could not connect to debugging client. Tried: 127.0.0.1:9003 (from REMOTE_ADDR HTTP header), localhost:9003 (fallback through xdebug.client_host/xdebug.client_port).
+[10-May-2023 06:17:11 UTC] PHP Warning:  fopen(/usr/local/var/www/moodleprod/filedir/b5/0f/b50f1ee87aa74f402c86183c92500eb8f3bc19ad): Failed to open stream: No such file or directory in /usr/local/var/www/moodle/local/booking/lib/fpdm/src/fpdm.php on line 1038
+[10-May-2023 06:17:11 UTC] PHP Warning:  filesize(): stat failed for /usr/local/var/www/moodleprod/filedir/b5/0f/b50f1ee87aa74f402c86183c92500eb8f3bc19ad in /usr/local/var/www/moodle/local/booking/lib/fpdm/src/fpdm.php on line 1039
+[10-May-2023 06:17:11 UTC] Default exception handler: Exception - fread(): Argument #1 ($stream) must be of type resource, bool given Debug: 
+Error code: generalexceptionmessage
+* line 1039 of /local/booking/lib/fpdm/src/fpdm.php: TypeError thrown
+* line 1039 of /local/booking/lib/fpdm/src/fpdm.php: call to fread()
+* line 1074 of /local/booking/lib/fpdm/src/fpdm.php: call to FPDM->getContent()
+* line 213 of /local/booking/lib/fpdm/src/fpdm.php: call to FPDM->getEntries()
+* line 179 of /local/booking/lib/fpdm/src/fpdm.php: call to FPDM->load_file()
+* line 69 of /local/booking/classes/local/report/pdf_report_skilltest.php: call to FPDM->__construct()
+* line 82 of /local/booking/pdfwriter.php: call to local_booking\local\report\pdf_report_skilltest->Generate()
+
+[10-May-2023 06:18:25 UTC] PHP Warning:  fopen(/usr/local/var/www/moodleprod/filedir/b5/0f/b50f1ee87aa74f402c86183c92500eb8f3bc19ad): Failed to open stream: No such file or directory in /usr/local/var/www/moodle/local/booking/lib/fpdm/src/fpdm.php on line 1038
+[10-May-2023 06:18:25 UTC] PHP Warning:  filesize(): stat failed for /usr/local/var/www/moodleprod/filedir/b5/0f/b50f1ee87aa74f402c86183c92500eb8f3bc19ad in /usr/local/var/www/moodle/local/booking/lib/fpdm/src/fpdm.php on line 1039
+[10-May-2023 06:18:28 UTC] Default exception handler: Exception - fread(): Argument #1 ($stream) must be of type resource, bool given Debug: 
+Error code: generalexceptionmessage
+* line 1039 of /local/booking/lib/fpdm/src/fpdm.php: TypeError thrown
+* line 1039 of /local/booking/lib/fpdm/src/fpdm.php: call to fread()
+* line 1074 of /local/booking/lib/fpdm/src/fpdm.php: call to FPDM->getContent()
+* line 213 of /local/booking/lib/fpdm/src/fpdm.php: call to FPDM->getEntries()
+* line 179 of /local/booking/lib/fpdm/src/fpdm.php: call to FPDM->load_file()
+* line 69 of /local/booking/classes/local/report/pdf_report_skilltest.php: call to FPDM->__construct()
+* line 82 of /local/booking/pdfwriter.php: call to local_booking\local\report\pdf_report_skilltest->Generate()
+
+[10-May-2023 08:16:47 UTC] Xdebug: [Step Debug] Could not connect to debugging client. Tried: 127.0.0.1:9003 (from REMOTE_ADDR HTTP header), localhost:9003 (fallback through xdebug.client_host/xdebug.client_port).
+[10-May-2023 08:19:50 UTC] Xdebug: [Step Debug] Could not connect to debugging client. Tried: 127.0.0.1:9003 (from REMOTE_ADDR HTTP header), localhost:9003 (fallback through xdebug.client_host/xdebug.client_port).
+[10-May-2023 08:20:00 UTC] Xdebug: [Step Debug] Could not connect to debugging client. Tried: 127.0.0.1:9003 (from REMOTE_ADDR HTTP header), localhost:9003 (fallback through xdebug.client_host/xdebug.client_port).
+[10-May-2023 08:20:17 UTC] Xdebug: [Step Debug] Could not connect to debugging client. Tried: 127.0.0.1:9003 (from REMOTE_ADDR HTTP header), localhost:9003 (fallback through xdebug.client_host/xdebug.client_port).

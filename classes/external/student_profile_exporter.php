@@ -416,9 +416,15 @@ class student_profile_exporter extends exporter {
         $return = [
             'fullname'                 => $this->student->get_name(),
             'timezone'                 => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone,
+<<<<<<< HEAD:classes/external/student_profile_exporter.php
             'fleet'                    => $this->student->get_fleet() ?: get_string('none'),
             'sim1'                     => $this->student->get_simulator(),
             'sim2'                     => $this->student->get_simulator(false),
+=======
+            'fleet'                    => $customfields->fleet ?: get_string('none'),
+            'sim1'                     => $customfields->simulator,
+            'sim2'                     => $customfields->simulator2,
+>>>>>>> 754c1b3af2 (Moodle 4.2 fixes, noshow history, and minor fixes):classes/external/profile_exporter.php
             'noshows'                  => $noshows,
             'moodleprofileurl'         => $moodleprofile->out(false),
             'recency'                  => $this->student->get_priority()->get_recency_days(),

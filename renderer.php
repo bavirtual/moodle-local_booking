@@ -56,7 +56,7 @@ class local_booking_renderer extends plugin_renderer_base {
      * @param base_action_bar $actionbar
      * @return bool|string
      */
-    public function render_tertiary_navigation(\local_booking\navigation\views\base_action_bar $actionbar) {
+    public function render_tertiary_navigation(\local_booking\local\views\base_action_bar $actionbar) {
         return $this->render_from_template($actionbar->get_template(), $actionbar->export_for_template($this));
     }
 
@@ -65,7 +65,7 @@ class local_booking_renderer extends plugin_renderer_base {
      *
      * @return string
      */
-    public function render_text_label(\local_booking\navigation\views\text_label $text_label) {
+    public function render_text_label(\local_booking\local\views\text_label $text_label) {
         return $text_label->html;
     }
 }

@@ -30,7 +30,7 @@
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\navigation\views\manage_action_bar;
+use local_booking\local\views\manage_action_bar;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');

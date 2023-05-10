@@ -125,6 +125,10 @@ class profile_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true
             ],
+            'noshows' => [
+                'type' => PARAM_URL,
+                'optional' => true
+            ],
             'moodleprofileurl' => [
                 'type' => PARAM_URL,
             ],
@@ -288,6 +292,16 @@ class profile_exporter extends exporter {
             'percent' => round(($usermods*100)/$coursemods)
         ];
 
+        // no shows
+        $noshows = get_string('none');
+        $noshowdates = [];
+        if ($noshowslist = array_column($this->student->get_noshow_bookings(), 'starttime')) {
+            foreach ($noshowslist as $noshowdate) {
+                $noshowdates[] = (new \DateTime('@' . $noshowdate))->format('M d, Y');
+            }
+            $noshows = implode('<br>', $noshowdates);
+        }
+
         // qualified (next exercise is the course's last exercise) and tested status
         $qualified = $this->student->qualified();
         $requiresevaluation = $this->subscriber->requires_skills_evaluation();
@@ -403,9 +417,10 @@ class profile_exporter extends exporter {
         $return = [
             'fullname'                 => $this->student->get_name(),
             'timezone'                 => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone,
-            'fleet'                    => $customfields->fleet,
+            'fleet'                    => $customfields->fleet ?: get_string('none'),
             'sim1'                     => $customfields->simulator,
             'sim2'                     => $customfields->simulator2,
+            'noshows'                  => $noshows,
             'moodleprofileurl'         => $moodleprofile->out(false),
             'recency'                  => $this->student->get_priority()->get_recency_days(),
             'courseactivity'           => $this->student->get_priority()->get_activity_count(false),

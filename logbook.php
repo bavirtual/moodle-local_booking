@@ -25,7 +25,7 @@
 
 use local_booking\local\participant\entities\participant;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\navigation\views\manage_action_bar;
+use local_booking\local\views\manage_action_bar;
 use local_booking\output\views\logbook_view;
 
 // Standard GPL and phpdocs
@@ -43,8 +43,7 @@ $userid = optional_param('userid', $USER->id, PARAM_INT);
 $username = participant::get_fullname($userid);
 $format = optional_param('format', '', PARAM_TEXT);
 $course = get_course($courseid);
-$title = ($USER->id == $userid ? get_string('logbookmy', 'local_booking') : $username)
-    . ' ' . get_string('logbook', 'local_booking');
+$title = $USER->id == $userid ? get_string('logbookmy', 'local_booking') : ($username . ' ' . get_string('logbook', 'local_booking'));
 
 $params = array('courseid'=>$courseid, 'userid'=>$userid);
 $url = new moodle_url('/local/booking/logbook.php', $params);

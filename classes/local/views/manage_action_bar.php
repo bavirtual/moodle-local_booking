@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_booking\navigation\views;
+namespace local_booking\local\views;
 
 use moodle_url;
 use renderer_base;
@@ -110,7 +110,7 @@ class manage_action_bar extends base_action_bar {
         // availability posting actions for students
         if ($access == 'instructor' && !$groupview) {
 
-            $elements['button'] = new single_button(new moodle_url('/local/booking/availability'), get_string('booksave', 'local_booking'), 'submit', true, $attributes);
+            $elements['button'] = new single_button(new moodle_url('/local/booking/availability'), get_string('booksave', 'local_booking'), 'submit', single_button::BUTTON_PRIMARY, $attributes);
 
         } else if ($access == 'student') {
 
@@ -134,7 +134,7 @@ class manage_action_bar extends base_action_bar {
         $buttons = [];
         $buttons[] = $this->get_back_button('dashboard');
         $attributes = ['data-region'=>'back-button', 'id'=>'continue_button'];
-        $buttons[] = new single_button(new moodle_url('/local/booking/availability.php', $attributes), get_string('continue'), 'post', true, $attributes);
+        $buttons[] = new single_button(new moodle_url('/local/booking/availability.php', $attributes), get_string('continue'), 'post', single_button::BUTTON_PRIMARY, $attributes);
 
         return $buttons;
     }
@@ -151,12 +151,12 @@ class manage_action_bar extends base_action_bar {
         $buttons = [];
 
         $easabuttonlabel     = get_string('logbookformateasa', 'local_booking') . ' ' . get_string('logbook', 'local_booking');
-        $easabutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'easa']), $easabuttonlabel, 'post', true);
+        $easabutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'easa']), $easabuttonlabel, 'post', single_button::BUTTON_PRIMARY);
         $easabutton->tooltip = get_string('logbookformateasatip', 'local_booking');
         $buttons[]           = $easabutton;
 
         $stdbuttonlabel     = $COURSE->shortname . ' ' . get_string('logbook', 'local_booking');
-        $stdbutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'std']), $stdbuttonlabel, 'post', true);
+        $stdbutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'std']), $stdbuttonlabel, 'post', single_button::BUTTON_PRIMARY);
         $stdbutton->tooltip = get_string('logbookformatcourse', 'local_booking');
         $buttons[]          = $stdbutton;
 
@@ -189,7 +189,7 @@ class manage_action_bar extends base_action_bar {
             if ($this->additional['firstrow']) {
                 $elements[] = new text_label ($this->additional['evalmsg']);
             } else {
-                $elements[] = new single_button($this->additional['actionurl'], $this->additional['actionlabel'], 'post', true);
+                $elements[] = new single_button($this->additional['actionurl'], $this->additional['actionlabel'], 'post', single_button::BUTTON_PRIMARY);
             }
         }
 
@@ -220,7 +220,7 @@ class manage_action_bar extends base_action_bar {
                 break;
         }
         $attributes = ['data-region'=>'back-button', 'id'=>'back_button'];
-        $backbutton = new single_button(new moodle_url($pagefile, $params), get_string('back'), 'get', true, $attributes);
+        $backbutton = new single_button(new moodle_url($pagefile, $params), get_string('back'), 'get', single_button::BUTTON_PRIMARY, $attributes);
 
         return $backbutton;
     }

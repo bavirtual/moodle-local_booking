@@ -206,6 +206,7 @@ class cron_task extends \core\task\scheduled_task {
                     $alreayonhold = $student->is_onhold();
                     $keepactive =  $student->is_kept_active();
                     $isactive = $student->has_completed_lessons() && $student->get_total_posts() > 0;
+                    $booked = !empty($student->get_active_booking());
 
                     // on-hold date from last booked session
                     $lastsessiondate = new DateTime('@' . $lastsessionts);
@@ -225,14 +226,14 @@ class cron_task extends \core\task\scheduled_task {
                     mtrace('            on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
                     mtrace('            keep active status: ' . ($keepactive ? 'ON' : 'OFF'));
                     $message = new notification();
-                    if (getdate($onholdwarningdate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$keepactive && !$isactive) {
+                    if (getdate($onholdwarningdate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$keepactive && !$isactive && !$booked) {
                         mtrace('        Notifying student of becoming on-hold in a week');
                         $message->send_onhold_warning($student->get_id(), $onholddate, $course->get_id(), $course->get_shortname());
                     }
 
                     // ON-HOLD PLACEMENT NOTIFICATION
                     // place student on-hold and send notification
-                    if ($onholddate->getTimestamp() <= time() && !$alreayonhold && !$keepactive && !$isactive) {
+                    if ($onholddate->getTimestamp() <= time() && !$alreayonhold && !$keepactive && !$isactive && !$booked) {
 
                         // add student to on-hold group
                         $onholdgroupid = groups_get_group_by_name($course->get_id(), LOCAL_BOOKING_ONHOLDGROUP);

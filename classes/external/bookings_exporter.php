@@ -372,10 +372,10 @@ class bookings_exporter extends exporter {
         if ($sorttype == 'a') {
             // filtering students that have posted slots and completed lessons
             $posts_completed = array_filter($activestudents, function($std) {
-                if ($std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0) {
+                if ($std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0 && empty($std->get_active_booking())) {
                     $std->tag = 'posts_completed';
                 }
-                return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0;
+                return property_exists($std, 'tag') ? $std->tag == 'posts_completed' : false;
             });
             // order active students by: recency days then posted slots
             usort($posts_completed, function($st1, $st2) {
@@ -387,10 +387,10 @@ class bookings_exporter extends exporter {
 
             // filtering students that have no posted slots but completed lessons
             $noposts_completed = array_filter($activestudents, function($std) {
-                if ($std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0) {
+                if (($std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0) || !empty($std->get_active_booking())) {
                     $std->tag = 'noposts_completed';
                 }
-                return $std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0;
+                return property_exists($std, 'tag') ? $std->tag == 'noposts_completed' : false;
             });
             // order active students by session recency
             usort($noposts_completed, function($st1, $st2) {
@@ -402,7 +402,7 @@ class bookings_exporter extends exporter {
                 if (!$std->has_completed_lessons()) {
                     $std->tag = 'not_completed';
                 }
-                return !$std->has_completed_lessons();
+                return property_exists($std, 'tag') ? $std->tag == 'not_completed' : false;
             });
             // order active students that has not completed ground lessons modules by recency days
             usort($not_completed, function($st1, $st2) {

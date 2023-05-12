@@ -1,20 +1,24 @@
 # Change log
 
-## [2023050900] - UNRELEASED 2023-05-09
+## [2023051200] - RELEASED 2023-05-12
 
 ### Added
 
-- No show history in student profile
+- no show history in student profile
+- notification to booked student attempting to post availability
+- instructor profile
 
 ### Fixed
 
 - active students sort
 - cron task on-hold notifications for booked students
 - logbook page title
+- error handling for pdf output
 
 ### Changed
 
-- moodle 4.2 compatibility for single_button::BUTTON_PRIMARY type
+- moodle 4.2 compatibility (i.e. single_button::BUTTON_PRIMARY type)
+- show graduates regardless of how far back
 
 ## [2023042802] - RELEASED 2023-04-28 - hotfix
 

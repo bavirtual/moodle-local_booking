@@ -277,27 +277,21 @@ class participant_vault implements participant_vault_interface {
                         'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
                         ue.timecreated AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
                     FROM {' . self::DB_USER . '} u
-                    INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
-                    INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
-                    INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
-                    INNER JOIN {' . self::DB_COURSE_COMPLETIONS . '} cc on cc.userid = ue.userid
+                    INNER JOIN {' . self::DB_USER_ENROL . '} ue on u.id = ue.userid
                     INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
                     WHERE en.courseid = :courseid
-                        AND ra.contextid = :contextid
-                        AND r.shortname = :role
                         AND u.deleted != 1
-                        AND cc.course = :completioncourseid
-                        AND (cc.timecompleted > ' . (time() - self::PASTDATACUTOFFDAYS) . ' OR cc.timecompleted IS NULL) ' . $filterclause;
+                        AND u.suspended = 0 ' . $filterclause;
 
         $params = [
             'courseid'  => $courseid,
             'completioncourseid'  => $courseid,
             'gcourseid' => $courseid,
-            'contextid' => \context_course::instance($courseid)->id,
-            'role'      => 'student'
+            'contextid' => \context_course::instance($courseid)->id
         ];
 
-        return $DB->get_records_sql($sql, $params);
+        $students = $DB->get_records_sql($sql, $params);
+        return $students;
     }
 
     /**

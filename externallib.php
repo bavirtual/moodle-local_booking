@@ -399,9 +399,9 @@ class local_booking_external extends external_api {
         $logbook = new logbook($courseid, $userid);
 
         if ($logbook->delete($logentryid))
-            \core\notification::success(get_string('logentrydeletesuccess', 'local_booking'));
+            \core\notification::SUCCESS(get_string('logentrydeletesuccess', 'local_booking'));
         else
-            \core\notification::error(get_string('logentrydeletefailed', 'local_booking'));
+            \core\notification::ERROR(get_string('logentrydeletefailed', 'local_booking'));
 
         return null;
     }
@@ -583,9 +583,9 @@ class local_booking_external extends external_api {
             }
             $sessiondata['sessiondate'] = $sessionstart->format('D M j\, H:i');
             $sessiondata['studentname'] = student::get_fullname($studentid);
-            \core\notification::success(get_string('bookingsavesuccess', 'local_booking', $sessiondata));
+            \core\notification::SUCCESS(get_string('bookingsavesuccess', 'local_booking', $sessiondata));
         } else {
-            \core\notification::warning(get_string('bookingsaveunable', 'local_booking'));
+            \core\notification::WARNING(get_string('bookingsaveunable', 'local_booking'));
         }
 
         return array(
@@ -673,16 +673,16 @@ class local_booking_external extends external_api {
                     $message = new notification();
                     $result = $message->send_noshow_notification($booking, $subscriber->get_senior_instructors());
 
-                } elseif (intval($subscriber->overdueperiod) > 0) {
+                } else {
 
                     // enable restriction override if enabled to allow the student to repost slots sooner
-                    $result = set_user_preference('local_booking_' . $courseid . '_availabilityoverride', true, $booking->get_studentid());
+                    if (intval($subscriber->overdueperiod) > 0) {
+                        set_user_preference('local_booking_' . $courseid . '_availabilityoverride', true, $booking->get_studentid());
+                    }
 
                     // send cancellation message
-                    if ($result) {
-                        $message = new notification();
-                        $result = $message->send_session_cancellation($booking, $comment);
-                    }
+                    $message = new notification();
+                    $result = $message->send_session_cancellation($booking, $comment);
 
                 }
 
@@ -696,9 +696,9 @@ class local_booking_external extends external_api {
         }
 
         if ($result) {
-            \core\notification::success($msg);
+            \core\notification::SUCCESS($msg);
         } else {
-            \core\notification::warning($msg ?: get_string('bookingcanceledunable', 'local_booking'));
+            \core\notification::WARNING($msg ?: get_string('bookingcanceledunable', 'local_booking'));
         }
 
         return array(
@@ -763,7 +763,7 @@ class local_booking_external extends external_api {
         $result = set_user_preference('local_booking_' . $courseid . '_' . $preference, $value, $userid);
 
         if (!$result) {
-            \core\notification::warning(get_string('bookingsetpreferencesunable', 'local_booking', $msgdata));
+            \core\notification::WARNING(get_string('bookingsetpreferencesunable', 'local_booking', $msgdata));
         }
 
         return array(
@@ -1038,9 +1038,9 @@ class local_booking_external extends external_api {
         set_user_preference('local_booking_' . $courseid . '_postingnotify', $slotstonotify, $student->get_id());
 
         if (!empty($slots)) {
-            \core\notification::success(get_string('slotssavesuccess', 'local_booking'));
+            \core\notification::SUCCESS(get_string('slotssavesuccess', 'local_booking'));
         } else {
-            \core\notification::error(get_string('slotssaveunable', 'local_booking'));
+            \core\notification::ERROR(get_string('slotssaveunable', 'local_booking'));
         }
 
         return array(
@@ -1109,9 +1109,9 @@ class local_booking_external extends external_api {
         $result = $student->delete_slots($params);
 
         if ($result) {
-            \core\notification::success(get_string('slotsdeletesuccess', 'local_booking'));
+            \core\notification::SUCCESS(get_string('slotsdeletesuccess', 'local_booking'));
         } else {
-            \core\notification::error(get_string('slotsdeleteunable', 'local_booking'));
+            \core\notification::ERROR(get_string('slotsdeleteunable', 'local_booking'));
         }
 
         return array(
@@ -1288,11 +1288,11 @@ class local_booking_external extends external_api {
                 (new notification())->send_logentry_notification($logentry);
             }
 
-            \core\notification::success(get_string('logentrysavesuccess', 'local_booking'));
+            \core\notification::SUCCESS(get_string('logentrysavesuccess', 'local_booking'));
 
             return [ 'logentry' => $output ];
         } else {
-            \core\notification::error(get_string('logentrysaveunable', 'local_booking'));
+            \core\notification::ERROR(get_string('logentrysaveunable', 'local_booking'));
             return [ 'validationerror' => true ];
         }
     }

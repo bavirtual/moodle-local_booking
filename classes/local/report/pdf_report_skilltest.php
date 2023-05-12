@@ -69,27 +69,21 @@ class pdf_report_skilltest extends pdf_report {
             $pdf = new FPDM($pdffilename);
 
         } catch (\Exception $e) {
-
-            // attempt to fix the none standard FPDM file
-            $pdftk = $this->course->get_booking_config('pdftkpath');
-
-            // get the location of pdftk install
-            if (!file_exists($pdftk)) {
-
-                // lookup the pdftk path is set
-                $pdftk = exec('find /usr -name pdftk');
-                $this->course->set_booking_config('pdftkpath', $pdftk);
-
-            }
-
-            // attempt to fix the none standard FPDM file and rename fixed
-            exec("$pdftk $pdffilename output $path/fixed.pdf");
-            exec("mv $path/fixed.pdf $pdffilename");
-
             // try again and fail if still not fixed
             try {
+
+                // attempt to fix the none standard FPDM file
+                $pdftk = $this->course->get_booking_config('pdftkpath');
+                exec("$pdftk $pdffilename output $path/fixed.pdf");
+                exec("mv $path/fixed.pdf $pdffilename");
                 $pdf = new FPDM($pdffilename);
+
             } catch (\Exception $e) {
+
+                // output error and redirect to file location
+                echo get_string('errorredirecttofile', 'local_booking');
+                $redirecturl = '/pluginfile.php/' . $grade->get_context()->id .'/assignfeedback_file/feedback_files/' . $grade->get_user_grade()->id . '/' . $filename;
+                redirect(new moodle_url($redirecturl, ['forcedownload'=>'1']));
                 die('<b>FPDF-Merge Error:</b> '.$e->getMessage());
             }
 

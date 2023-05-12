@@ -102,6 +102,7 @@ class instructor_participation_exporter extends exporter {
             $courserole = strip_tags(get_user_roles_in_course($instructor->get_id(), $courseid));
 
             $participation[] = [
+                'instructorid' => $instructor->get_id(),
                 'instructorname' => $instructor->get_name(),
                 'lastsessionts' => !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : 0,
                 'lastgradeddate' => !empty($lastgradeddate) ? $lastgradeddate->format('l M d, Y') : get_string('unknown', 'local_booking'),

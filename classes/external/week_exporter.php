@@ -153,7 +153,13 @@ class week_exporter extends exporter {
                 // view the slot for the student id passed in action data
                 $this->student = $this->course->get_student($actiondata['student']->get_id());
             } else {
+                // student attempting to post availability
                 $this->student = $this->course->get_student($USER->id);
+
+                // push notification if the student is already booked
+                if (!empty($this->student->get_active_booking()) && !$actiondata['confirm']) {
+                    \core\notification::INFO(get_string('alreadybooked', 'local_booking'));
+                }
             }
 
             // get student active booking and instructor id if exists

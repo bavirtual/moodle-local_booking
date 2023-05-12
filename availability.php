@@ -54,6 +54,7 @@ $exerciseid = optional_param('exid', 0, PARAM_INT);
 $course = get_course($courseid);
 $week = get_string('week', 'local_booking');
 $time = optional_param('time', 0, PARAM_INT);
+$confirm = optional_param('confirm', 0, PARAM_INT);
 
 $url = new moodle_url('/local/booking/availability.php');
 $url->param('courseid', $courseid);
@@ -108,6 +109,7 @@ $data = [
     'action'     => $action,
     'student'    => $COURSE->subscriber->get_participant($userid),
     'exerciseid' => $exerciseid,
+    'confirm'    => $confirm,
     ];
 // get calendar view for Session booking
 $calendarview = new calendar_view($context, $courseid, $data);

@@ -64,6 +64,11 @@ class grade extends \grade_grade {
     protected $assign;
 
     /**
+     * @var stdClass $usergrade The user grade item associated with this grade.
+     */
+    protected $usergrade;
+
+    /**
      * @var int $exerciseid The exercise id for the grade.
      */
     protected $exerciseid;
@@ -132,6 +137,19 @@ class grade extends \grade_grade {
     }
 
     /**
+     * Get the user grade item for the grade.
+     *
+     * @return stdClass
+     */
+    public function get_user_grade() {
+        if (!isset($this->usergrade)) {
+            $this->usergrade = $this->get_assignment()->get_user_grade($this->userid, false, 0);
+        }
+
+        return $this->usergrade;
+    }
+
+    /**
      * Get the student's grade feedback comments.
      *
      * @return string
@@ -152,8 +170,9 @@ class grade extends \grade_grade {
 
         $path = '';
         if (!isset($this->feedbackfile)) {
+
             // get the grade item id
-            $itemid = $itemid ?: $this->get_assignment()->get_user_grade($this->userid, false, 0)->id;
+            $itemid = $itemid ?: $this->get_user_grade()->id;
 
             // get the file storage object
             $fs = get_file_storage();

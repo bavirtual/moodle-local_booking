@@ -101,7 +101,7 @@ class booking_view extends base_view {
                 // get instructor participation
                 $participation = new instructor_participation_exporter($this->data, $this->related);
                 $exporteddata = $participation->export($this->renderer);
-                $output .= parent::output('local_booking/participation', $exporteddata);
+                $output .= parent::output('local_booking/instructor_participation', $exporteddata);
             }
 
         } elseif ($this->data['action'] == 'readonly') {

@@ -219,7 +219,7 @@
 }
 
 /* profile */
-.userprofile .sb_profile_tree {
+.sb_profile_tree {
     column-count: 3;
 }
 .save-comment-button {

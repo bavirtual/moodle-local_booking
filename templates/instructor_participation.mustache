@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_booking/participation
+    @template local_booking/instructor_participation
 
     Instructor participation view for course managers.
 
@@ -58,7 +58,7 @@
     {{#participation}}
         <tr data-region="booking">
             <td class="booking-text-big text-md-left" style="vertical-align: middle;">
-                <span>{{instructorname}}</span>
+                <a href="/local/booking/profile.php?courseid={{courseid}}&userid={{instructorid}}"><span>{{instructorname}}</span></a>
             </td>
             <td class="booking-text booking-text-med text-sm-center" style="vertical-align: middle;">
                 <span>{{roles}}</span>

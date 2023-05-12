@@ -167,6 +167,12 @@ class subscriber implements subscriber_interface {
      * @param string $courseid  The description's value.
      */
     public function __construct($courseid) {
+
+        if ($courseid == 1) {
+            // throw error
+            throw new \Exception(get_string('errorcoresubscriber', 'local_booking') . " [courseid=$courseid]");
+        }
+
         $this->coursemodinfo = get_fast_modinfo($courseid);
         $this->context = \context_course::instance($courseid);
         $this->course = get_course($courseid);
@@ -357,7 +363,7 @@ class subscriber implements subscriber_interface {
         $i = 0;
         foreach ($studentrecs as $studentrec) {
             $student = new student($this, $studentrec->userid);
-            if (!$student->is_instructor()) {
+            if ($student->has_role('student')) {
                 $student->populate($studentrec);
                 $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
                 $activestudents[] = $student;
@@ -379,8 +385,10 @@ class subscriber implements subscriber_interface {
         $instructor = (!empty($this->activeinstructors) && !empty($instructorid) && isset($this->activeinstructors[$instructorid])) ? $this->activeinstructors[$instructorid] : null;
 
         if (empty($instructor)) {
+            $instructorrec = participant_vault::get_participant($this->courseid, $instructorid);
             // instantiate the instructor object and add to the list of activeinstructors
             $instructor = new instructor($this, $instructorid);
+            $instructor->populate($instructorrec);
             $this->activeinstructors[$instructorid] = $instructor;
         }
 

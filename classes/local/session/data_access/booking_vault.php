@@ -214,6 +214,29 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
+     * Get an array of session count for each exercise for the user.
+     *
+     * @param int $courseid The associated course
+     * @param int $userid   The user id conducting the session
+     * @return array
+     */
+    public static function get_user_sessions_count(int $courseid, int $userid) {
+        global $DB;
+
+        $sql = 'SELECT exerciseid, count(id) AS sessions
+                FROM {' . static::DB_BOOKINGS. '}
+                WHERE userid=:userid AND courseid = :courseid
+                GROUP BY exerciseid, userid, courseid';
+
+        $params = [
+            'courseid'  => $courseid,
+            'userid'    => $userid
+        ];
+
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
      * Get the date of the last booked session
      *
      * @param int $isinstructor

@@ -91,6 +91,15 @@ interface booking_vault_interface {
     public static function get_booked_exercise_date(int $courseid, int $studentid, int $exerciseid);
 
     /**
+     * Get an array of session count for each exercise for the user.
+     *
+     * @param int $courseid The associated course
+     * @param int $userid   The user id conducting the session
+     * @return array
+     */
+    public static function get_user_sessions_count(int $courseid, int $userid);
+
+    /**
      * Get the date of the last booked session
      *
      * @param int $instructorid

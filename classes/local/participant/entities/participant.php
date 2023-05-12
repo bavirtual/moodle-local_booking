@@ -25,6 +25,7 @@
 
 namespace local_booking\local\participant\entities;
 
+use DateTime;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\entities\booking;
@@ -172,6 +173,20 @@ class participant implements participant_interface {
     }
 
     /**
+     * Get participant's roles in the course.
+     *
+     * @return array $roles
+     */
+    public function get_roles() {
+
+        // assign roles if not already available
+        if (!isset($this->roles)) {
+            $this->roles = get_user_roles($this->course->get_context(), $this->userid);
+        }
+        return $this->roles;
+    }
+
+    /**
      * Get course id.
      *
      * @return int $course->id
@@ -300,10 +315,11 @@ class participant implements participant_interface {
     /**
      * Returns participant's simulator user field
      *
+     * @param  bool $primary Whether requesting the primary|secondary simulator
      * @return string   The participant callsign
      */
-    public function get_simulator() {
-        return $this->get_profile_field('simulator');
+    public function get_simulator(bool $primary = true) {
+        return $this->get_profile_field('simulator' . ($primary ? '' : '2'));
     }
 
     /**
@@ -389,16 +405,29 @@ class participant implements participant_interface {
      * @return bool        Whether the participant has the role.
      */
     public function has_role(string $role) {
+        return in_array($role, array_column($this->get_roles(), 'shortname'));
+    }
 
-        // assign roles if not already available
-        if (!isset($this->roles)) {
-            $roleobjs = get_user_roles($this->course->get_context(), $this->userid);
-            $this->roles = array_map(function($item) {
-                return $item->shortname;
-            }, $roleobjs);
+    /**
+     * Returns the date from which the participant had
+     * the passed role otherwise returns a null.
+     *
+     * @param string $role      The role to check.
+     * @param bool   $tostring  Whether to return a string or the date object.
+     * @return DateTime|string  The date the participant had the role (null if not found).
+     */
+    public function has_role_since(string $role, bool $tostring = true) {
+        $returnval = null;
+        $roles = array_values($this->get_roles());
+        $idx = array_search($role, array_column($roles, 'shortname'));
+
+        // determine return value format
+        if ($idx !== false) {
+            $sincedate = new DateTime ('@'.$roles[$idx]->timemodified);
+            $returnval = $tostring ? $sincedate->format('M j\, Y') : $sincedate;
         }
 
-        return in_array($role, $this->roles);
+        return $returnval;
     }
 
     /**

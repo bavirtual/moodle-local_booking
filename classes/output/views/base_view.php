@@ -17,8 +17,10 @@
 namespace local_booking\output\views;
 
 use stdClass;
+use renderer_base;
 use local_booking_renderer;
-;
+use local_booking\external\exercise_name_exporter;
+use local_booking\local\subscriber\entities\subscriber;
 
 /**
  * Abstract class for the Session booking page view output.
@@ -116,5 +118,65 @@ abstract class base_view {
         $rendertemplate = $template ?: $this->template;
         $renderdata = $exporteddata ?: $this->exporteddata;
         return $this->renderer->render_from_template($rendertemplate, $renderdata);
+    }
+
+    /**
+     * Retrieves modules (exercises & quizes) for the course
+     *
+     * @param renderer_base $output     The renderer for output
+     * @param subscriber    $subscriber The subscribing course
+     * @param string        $viewtype   The view type [book]|confirm
+     * @param bool          $readonly   Whether the viewer is a student
+     * @param bool          $instructor Whether the viewer is an instructor
+     * @param bool          $examiner   Whether the viewer is an examiner
+     * @return array
+     */
+    public static function get_modules(renderer_base $output, subscriber $subscriber, array $options) {
+        // get titles from the course custom fields exercise titles array
+        $modsexport = [];
+
+        $exercisetitles = 'exercisetitles';
+        $titlevalues = array_values($subscriber->$exercisetitles);
+        $modules = $subscriber->get_modules();
+
+        foreach($modules as $module) {
+            // exclude quizes from interim booking view
+            if ($options['viewtype'] == 'confirm' && $module->modname == 'quiz') {
+                $customtitle = array_shift($titlevalues);
+                continue;
+            }
+
+            // break down each setting title by <br/> tag, until a better way is identified
+            $customtitle = array_shift($titlevalues);
+            $title = $customtitle ?: $module->name;
+            $data = [
+                'exerciseid'    => $module->id,
+                'exercisename'  => $module->name,
+                'exercisetype'  => $module->modname,
+                'exercisetitle' => $title,
+            ];
+
+            // show the graduation exercise booking option for examiners only or student view
+            if ($options['isinstructor'] || $options['readonly']) {
+                if ($options['viewtype'] == 'confirm' && $module->id == $subscriber->get_graduation_exercise() && $options['isexaminer'] ||
+                    $options['viewtype'] != 'confirm' || $module->id != $subscriber->get_graduation_exercise()) {
+                        $exercisename = new exercise_name_exporter($data);
+                        $modsexport[] = $exercisename->export($output);
+                }
+            }
+        }
+
+        // pop exams
+        if (array_key_exists('excludeexams', $options) && $options['excludeexams']) {
+            unset($modsexport[array_search($subscriber->get_graduation_exercise(), array_column($modsexport, 'exerciseid'))]);
+        }
+
+        // // pop quizes
+        if (array_key_exists('excludequizes', $options) && $options['excludequizes']) {
+            $filtered = array_filter($modsexport, function($property) { return ($property->exercisetype == 'assign');});
+            $modsexport = array_values($filtered);
+        }
+
+        return $modsexport;
     }
 }

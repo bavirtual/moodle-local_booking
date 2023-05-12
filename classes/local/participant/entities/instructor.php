@@ -28,6 +28,7 @@ namespace local_booking\local\participant\entities;
 require_once($CFG->dirroot . '/group/lib.php');
 
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\local\session\data_access\booking_vault;
 
 class instructor extends participant {
 
@@ -66,6 +67,16 @@ class instructor extends participant {
             }
         }
         return $this->assigned_students;
+    }
+
+    /**
+     * Get a breakdown of conducted sessions count per exercise.
+     *
+     * @param  $exerciseid  Optional exerices id.
+     * @return {Object}[]   Array of sessions conducted count per module.
+     */
+    public function get_sessions_count() {
+        return booking_vault::get_user_sessions_count($this->course->get_id(), $this->userid);
     }
 
     /**

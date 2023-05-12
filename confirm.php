@@ -70,20 +70,21 @@ if (!empty($booking->get_id())) {
 }
 
 if ($result == 1) {
-    \core\notification::success(get_string('bookingconfirmsuccess', 'local_booking', $strdata));
+    \core\notification::SUCCESS(get_string('bookingconfirmsuccess', 'local_booking', $strdata));
 } elseif ($result == 0) {
     \core\notification::ERROR(get_string('bookingconfirmunable', 'local_booking'));
 } elseif ($result == -1) {
-    \core\notification::success(get_string('nobookingtoconfirm', 'local_booking'));
+    \core\notification::SUCCESS(get_string('nobookingtoconfirm', 'local_booking'));
 }
 
 if ($result) {
     // redirect
     $url = new moodle_url('/local/booking/availability.php', array(
-        'courseid'    => $courseid,
+        'courseid'  => $courseid,
         'userid'    => $studentid,
         'time'      => $time,
         'week'      => $week,
+        'confirm'   => true
     ));
 
     $PAGE->set_url($url);

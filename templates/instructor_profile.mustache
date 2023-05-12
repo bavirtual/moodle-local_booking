@@ -1,0 +1,148 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_booking/instructor_profile
+
+    Log book view for summary and log book entries.
+
+    The purpose of this template is to render the main, detailed weekly view.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+    }
+}}
+<div id="user-profile-{{uniqid}}">
+    <div class="userprofile userprofilewrapper"
+        data-courseid="{{courseid}}"
+        data-userid="{{userid}}"
+        data-onholdgroup="{{onholdgroup}}"
+        data-keepactivegroup="{{keepactivegroup}}"
+        data-endorser="{{endorser}}"
+        data-endorsername="{{endorsername}}">
+        <div class="sb_profile_tree">
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} profile {{/str}}</h3>
+                    <dl><dt>{{#str}} name {{/str}}</dt><dd>{{fullname}}</dd></dl>
+                    <dl><dt>{{#str}} timezone {{/str}}</dt><dd>{{timezone}}</dd></dl>
+                    <dl><dt>{{#str}} fleet , local_booking {{/str}}</dt><dd>{{fleet}}</dd></dl>
+                    <dl><dt>{{#str}} sim1 , local_booking {{/str}}</dt><dd>{{sim1}}</dd></dl>
+                    <dl><dt>{{#str}} sim2 , local_booking {{/str}}</dt><dd>{{sim2}}</dd></dl>
+                    <span><a href="{{moodleprofileurl}}">{{#str}} moodleprofile , local_booking {{/str}}</a></span>
+                </div>
+            </section>
+            <section style="visibility: hidden;">
+            </section>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} courseactivity , local_booking {{/str}}</h3>
+                    <dl><dt>{{#str}} enroldate , local_booking {{/str}}</dt><dd>{{enroldate}}</dd></dl>
+                    <dl><dt>{{#str}} lastlogin {{/str}}</dt><dd>{{lastlogin}}</dd></dl>
+                    <dl><dt>{{#str}} instructorsince , local_booking{{/str}}</dt><dd>{{instructordate}}</dd></dl>{{!
+                    }}{{#examiner}}<dl><dt>{{#str}} examinersince , local_booking{{/str}}</dt><dd>{{examinerdate}}</dd></dl>{{/examiner}}{{!
+                    }}
+                    <dl><dt>{{#str}} lastgraded , local_booking{{/str}}</dt><dd>{{lastgraded}}</dd></dl>
+                    <dl><dt>{{#str}} lastsessiondate , local_booking{{/str}}</dt><dd>{{lastbooked}}</dd></dl>
+                    <dd><span><a href="{{logbookurl}}">{{#str}} logbooklabel , local_booking {{/str}}</a></span></dd>
+                </div>
+            </section>
+            <section style="visibility: hidden;">
+            </section>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} sessionssummary ,  local_booking {{/str}}</h3>
+                    <dl><dt>{{#str}} sessionsgroundtime ,  local_booking {{/str}}</dt><dd>{{totalgroundhours}}</dd></dl>
+                    <dl><dt>{{#str}} sessionsflighttime ,  local_booking {{/str}}</dt><dd>{{totalflighthours}}</dd></dl>
+                    <dl><dt>{{#str}} totalsessionhours ,  local_booking {{/str}}</dt><dd>{{totalhours}}</dd></dl>
+                    <dl><dt>{{#str}} totalsessions ,  local_booking {{/str}}</dt><dd>{{totalsessions}}</dd></dl>{{!
+                    }}{{#examiner}}<dl><dt>{{#str}} totalexamhours ,  local_booking {{/str}}</dt><dd>{{totalexamhours}}</dd></dl>
+                    <dl><dt>{{#str}} totalexamsessions ,  local_booking {{/str}}</dt><dd>{{totalexams}}</dd></dl>{{/examiner}}
+                    {{#admin}}
+                    <span><a href="{{loginasurl}}">{{#str}} loginas {{/str}}</a></span>
+                    {{/admin}}{{!
+                    }}
+                </div>
+            </section>
+        </div>
+        <div>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} roles {{/str}}</h3>
+                    <dl><dt>{{roles}}</dt></dl>
+                </div>
+            </section>
+        </div>
+        <div>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} conductedsessions, local_booking {{/str}}</h3>
+                    <table class="table-hover table-bordered" style="width: 600px; margin: 0 auto;">
+                        <thead>
+                            <tr>
+                                {{#coursemodules}}
+                                <th class="header booking-header booking-xbig text-xs-center"
+                                    data-toggle="tooltip"
+                                    title="{{{exercisename}}}"
+                                    data-html="true">
+                                    <span class="media-body small" aria-hidden="true">{{#shortentext}} 30, {{{exercisetitle}}} {{/shortentext}}</span>
+                                </th>
+                                {{/coursemodules}}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {{#conductedsessions}}
+                                <td class="header booking-header booking-xbig text-xs-center">
+                                    <span class="media-body small" aria-hidden="true">{{count}}</span>
+                                </td>
+                                {{/conductedsessions}}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        <div>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    {{> core/overlay_loading}}
+                    <h3 class="lead">{{#str}} comment, local_booking {{/str}}</h3>
+                    <textarea id="comment" rows="4" style="width: 98%; max-width: 98%;">{{comment}}</textarea>
+                    <button type="submit" class="save-comment-button mt-3"
+                    data-region="save-comment-button"
+                    id="save_comment_button"
+                    title="">
+                    {{#pix}} save, local_booking {{/pix}}
+                    </button>
+                    <div id="status" class="comment-status"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+{{#js}}
+require(['jquery', 'local_booking/user_profile'], function($, UserProfile) {
+    UserProfile.init($("#user-profile-{{uniqid}}"));
+});
+{{/js}}

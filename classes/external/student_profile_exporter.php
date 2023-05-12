@@ -16,7 +16,7 @@
 
 /**
  * Session Booking Plugin
- * Class for displaying students progression and instructor active bookings.
+ * Class for displaying students profile.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -36,14 +36,14 @@ use renderer_base;
 use moodle_url;
 
 /**
- * Class for displaying instructor's booked sessions view.
+ * Class for displaying student profile page.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class profile_exporter extends exporter {
+class student_profile_exporter extends exporter {
 
     /**
      * @var subscriber $subscriber The plugin subscribing course
@@ -51,7 +51,7 @@ class profile_exporter extends exporter {
     protected $subscriber;
 
     /**
-     * @var student $student The user of the profile
+     * @var student $student The student user of the profile
      */
     protected $student;
 
@@ -63,7 +63,7 @@ class profile_exporter extends exporter {
     /**
      * Constructor.
      *
-     * @param mixed $data An array of student progress data.
+     * @param mixed $data An array of student profile data.
      * @param array $related Related objects.
      */
     public function __construct($data, $related) {
@@ -277,7 +277,6 @@ class profile_exporter extends exporter {
         // moodle user object
         $studentid = $this->student->get_id();
         $moodleuser = \core_user::get_user($studentid, 'timezone');
-        $customfields = profile_user_record($studentid);
 
         // student current lesson
         $exerciseid = $this->student->get_current_exercise();
@@ -417,9 +416,9 @@ class profile_exporter extends exporter {
         $return = [
             'fullname'                 => $this->student->get_name(),
             'timezone'                 => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone,
-            'fleet'                    => $customfields->fleet ?: get_string('none'),
-            'sim1'                     => $customfields->simulator,
-            'sim2'                     => $customfields->simulator2,
+            'fleet'                    => $this->student->get_fleet() ?: get_string('none'),
+            'sim1'                     => $this->student->get_simulator(),
+            'sim2'                     => $this->student->get_simulator(false),
             'noshows'                  => $noshows,
             'moodleprofileurl'         => $moodleprofile->out(false),
             'recency'                  => $this->student->get_priority()->get_recency_days(),
@@ -472,8 +471,7 @@ class profile_exporter extends exporter {
      */
     protected static function define_related() {
         return array(
-            'context' => 'context',
-            'exercises' => 'stdClass[]?',
+            'context' => 'context'
         );
     }
 }

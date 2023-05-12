@@ -16,7 +16,7 @@
 
 namespace local_booking\output\views;
 
-use local_booking\external\profile_exporter;
+require_once($CFG->dirroot . '/local/booking/classes/external/student_profile_exporter.php');
 
 /**
  * Class to output student profile view.
@@ -36,14 +36,25 @@ class profile_view extends base_view {
      * @param array    $data      The data required for output
      */
     public function __construct(\context $context, int $courseid, array $data) {
-        parent::__construct($context, $courseid, $data, 'local_booking/profile');
+        global $CFG;
+
+        // get user type: instructor|student
+        $user = $data['subscriber']->get_participant($data['userid']);
+        $role = $user->is_instructor() ? 'instructor' : 'student';
+        $template = 'local_booking/' . $role .'_profile';
+
+        parent::__construct($context, $courseid, $data, $template);
 
         // set class properties
         $this->data['courseid'] = $courseid;
         $related = [
             'context'   => $this->context,
         ];
-        $profile = new profile_exporter($this->data, $related);
+
+        // dynamically load the right exporter based on role
+        $class = $role . '_profile_exporter';
+        $profileexporter = "\\local_booking\\external\\$class";
+        $profile = new $profileexporter($this->data, $related);
         $this->exporteddata = $profile->export($this->renderer);
     }
 }

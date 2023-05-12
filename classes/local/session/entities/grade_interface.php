@@ -36,6 +36,27 @@ defined('MOODLE_INTERNAL') || die();
 interface grade_interface {
 
     /**
+     * Get the exercise assignment.
+     *
+     * @return \assign
+     */
+    public function get_assignment();
+
+    /**
+     * Get the studnet user id of the grade.
+     *
+     * @return int
+     */
+    public function get_userid();
+
+    /**
+     * Get the user grade item for the grade.
+     *
+     * @return stdClass
+     */
+    public function get_user_grade();
+
+    /**
      * Get the student's grade feedback comments.
      *
      * @return string

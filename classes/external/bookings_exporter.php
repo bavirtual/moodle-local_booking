@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 use local_booking\local\participant\entities\instructor;
-use local_booking\local\subscriber\entities\subscriber;
+use local_booking\output\views\base_view;
 use renderer_base;
 use moodle_url;
 
@@ -88,11 +88,6 @@ class bookings_exporter extends exporter {
      * @var int $bookingstudentid the user id of the student being booked, applicable in confirmation only.
      */
     protected $bookingstudentid = 0;
-
-    /**
-     * @var subscriber $subscribedcourse The subscribing course.
-     */
-    protected $subscribedcourse;
 
     /**
      * @var int $averagewait The average wait time for students.
@@ -201,9 +196,17 @@ class bookings_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
+        global $COURSE;
+
+        $options = [
+            'isinstructor' => !empty($this->instructor),
+            'isexaminer'   => !empty($this->instructor) ? $this->instructor->is_examiner() : false,
+            'viewtype'     => 'book',
+            'readonly'     => $this->data['action'] == 'readonly'
+        ];
 
         $return = [
-            'coursemodules'  => $this->get_modules($output),
+            'coursemodules'  => base_view::get_modules($output, $COURSE->subscriber, $options),
             'activestudents' => $this->get_students($output),
             'activebookings' => $this->get_bookings($output),
             'avgwait' => $this->averagewait,
@@ -226,48 +229,6 @@ class bookings_exporter extends exporter {
             'context' => 'context',
             'coursemodules' => 'cm_info[]?',
         );
-    }
-
-    /**
-     * Retrieves modules (exercises & quizes) for the course
-     *
-     * @return array
-     */
-    protected function get_modules($output) {
-        global $COURSE;
-
-        // get titles from the course custom fields exercise titles array
-        $modsexports = [];
-
-        $titlevalues = array_values($COURSE->subscriber->exercisetitles);
-        foreach($this->modules as $module) {
-
-            // exclude quizes from interim booking view
-            if ($this->viewtype == 'confirm' && $module->modname == 'quiz') {
-                $customtitle = array_shift($titlevalues);
-                continue;
-            }
-
-            // break down each setting title by <br/> tag, until a better way is identified
-            $customtitle = array_shift($titlevalues);
-            $title = $customtitle ?: $module->name;
-            $data = [
-                'exerciseid'    => $module->id,
-                'exercisename'  => $module->name,
-                'exercisetitle' => $title,
-            ];
-
-            // show the graduation exercise booking option for examiners only or student view
-            if (!empty($this->instructor) || $this->data['action'] == 'readonly') {
-                if ($this->viewtype == 'confirm' && $module->id == $COURSE->subscriber->get_graduation_exercise() && $this->instructor->is_examiner() ||
-                    $this->viewtype != 'confirm' || $module->id != $COURSE->subscriber->get_graduation_exercise()) {
-                        $exercisename = new exercise_name_exporter($data);
-                        $modsexports[] = $exercisename->export($output);
-                }
-            }
-        }
-
-        return $modsexports;
     }
 
     /**
@@ -321,7 +282,6 @@ class bookings_exporter extends exporter {
             ];
 
             // get tooltip
-            // if (!empty($sorttype) && $student->is_active() && !$student->graduated()) {
             if (!empty($sorttype) && $this->filter == 'active') {
                 if ($sorttype == 'a') {
                     $sequencetooltip = ['tag' => get_string('tag_' . $student->tag, 'local_booking')];

@@ -44,6 +44,13 @@ interface participant_interface {
     public function get_course();
 
     /**
+     * Get participant's roles in the course.
+     *
+     * @return array $roles
+     */
+    public function get_roles();
+
+    /**
      * Get fullname.
      *
      * @return string $fullname;
@@ -110,9 +117,10 @@ interface participant_interface {
     /**
      * Returns participant's simulator user field
      *
+     * @param  bool $primary Whether requesting the primary|secondary simulator
      * @return string   The participant callsign
      */
-    public function get_simulator();
+    public function get_simulator(bool $primary = true);
 
     /**
      * Returns pilot's callsign user field
@@ -174,6 +182,16 @@ interface participant_interface {
      * @return bool        Whether the participant has the role.
      */
     public function has_role(string $role);
+
+    /**
+     * Returns the date from which the participant had
+     * the passed role otherwise returns a null.
+     *
+     * @param string $role      The role to check.
+     * @param bool   $tostring  Whether to return a string or the date object.
+     * @return DateTime|string  The date the participant had the role.
+     */
+    public function has_role_since(string $role, bool $tostring = true);
 
     /**
      * verifies whether the participant is part of a course group

@@ -33,26 +33,6 @@ use local_booking\local\slot\entities\slot;
 interface booking_vault_interface {
 
     /**
-     * get booked sessions for a user
-     *
-     * @param bool   $courseid    The course id.
-     * @param int    $userid      The student user id in the booking.
-     * @param bool   $isstudent   Whether to get student bookings
-     * @param bool   $oldestfirst Sort order of the returned records.
-     * @param bool   $activeonly  Retrieve active bookings only.
-     * @return array {Object}
-     */
-    public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true);
-
-    /**
-     * Get booking based on passed object.
-     *
-     * @param booking $booking
-     * @return Object
-     */
-    public static function get_booking(booking $booking);
-
-    /**
      * Delete a specific booking.
      *
      * @param   booking $booking  The bookingid id to be deleted.
@@ -81,6 +61,26 @@ interface booking_vault_interface {
     public static function confirm_booking(int $courseid, int $studentid, int $exerciseid, slot $slot, string $confirmationmsg);
 
     /**
+     * get booked sessions for a user
+     *
+     * @param bool   $courseid    The course id.
+     * @param int    $userid      The student user id in the booking.
+     * @param bool   $isstudent   Whether to get student bookings
+     * @param bool   $oldestfirst Sort order of the returned records.
+     * @param bool   $activeonly  Retrieve active bookings only.
+     * @return array {Object}
+     */
+    public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true);
+
+    /**
+     * Get booking based on passed object.
+     *
+     * @param booking $booking
+     * @return Object
+     */
+    public static function get_booking(booking $booking);
+
+    /**
      * Get the date of the booked exercise
      *
      * @param int $courseid      The associated course
@@ -91,15 +91,6 @@ interface booking_vault_interface {
     public static function get_booked_exercise_date(int $courseid, int $studentid, int $exerciseid);
 
     /**
-     * Get an array of session count for each exercise for the user.
-     *
-     * @param int $courseid The associated course
-     * @param int $userid   The user id conducting the session
-     * @return array
-     */
-    public static function get_user_sessions_count(int $courseid, int $userid);
-
-    /**
      * Get the date of the last booked session
      *
      * @param int $instructorid
@@ -107,12 +98,22 @@ interface booking_vault_interface {
     public static function get_last_booked_session(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
-     * Get the date of the last booked session
+     * Get an array of booked session count for each exercise for the user.
+     *
+     * @param int $courseid The associated course
+     * @param int $userid   The user id conducting the session
+     * @return array
+     */
+    public static function get_user_total_booked_sessions(int $courseid, int $userid);
+
+    /**
+     * Get an array of graded session count for each exercise for the user.
      *
      * @param int $isinstructor
      * @param int $userid
+     * @return int
      */
-    public static function get_user_total_sessions(int $courseid, int $userid, bool $isinstructor = false);
+    public static function get_user_total_graded_sessions(int $courseid, int $userid);
 
     /**
      * Set active flag to false to deactive the booking

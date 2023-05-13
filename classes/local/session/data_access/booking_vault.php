@@ -37,60 +37,6 @@ class booking_vault implements booking_vault_interface {
     const DB_SLOTS = 'local_booking_slots';
 
     /**
-     * get booked sessions for a user
-     *
-     * @param bool   $courseid    The course id.
-     * @param int    $userid      The student user id in the booking.
-     * @param bool   $isstudent   Whether to get student bookings
-     * @param bool   $oldestfirst Sort order of the returned records.
-     * @param bool   $activeonly  Retrieve active bookings only.
-     * @return array {Object}
-     */
-    public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true) {
-        global $DB;
-
-        $sql = 'SELECT b.id, b.userid, b.courseid, b.studentid, b.exerciseid,
-                       b.slotid, b.confirmed, b.noshow, b.active, b.timemodified
-                FROM {' . static::DB_BOOKINGS. '} b
-                INNER JOIN {' . static::DB_SLOTS . '} s on s.id = b.slotid
-                WHERE b.courseid = :courseid
-                    AND ' . ($isstudent ? 'b.studentid' : 'b.userid') . ' = :userid' .
-                    ($activeonly ? ' AND b.active = 1' : '') .
-                    ($oldestfirst ? ' ORDER BY s.starttime' : '');
-
-        return $DB->get_records_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
-    }
-
-    /**
-     * Get booking based on passed object.
-     *
-     * @param booking $booking
-     * @return Object
-     */
-    public static function get_booking($booking) {
-        global $DB;
-
-        $conditions = [];
-        if (!empty($booking->get_id())) {
-            $conditions['id'] = $booking->get_id();
-        }
-        if (!empty($booking->get_courseid())) {
-            $conditions['courseid'] = $booking->get_courseid();
-        }
-        if (!empty($booking->get_studentid())) {
-            $conditions['studentid'] = $booking->get_studentid();
-        }
-        if (!empty($booking->get_exerciseid())) {
-            $conditions['exerciseid'] = $booking->get_exerciseid();
-        }
-        if (!empty($booking->active())) {
-            $conditions['active'] = '1';
-        }
-
-        return $DB->get_record(static::DB_BOOKINGS, $conditions);
-    }
-
-    /**
      * remove all bookings for a user for a
      *
      * @param string $username The username.
@@ -185,6 +131,60 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
+     * get booked sessions for a user
+     *
+     * @param bool   $courseid    The course id.
+     * @param int    $userid      The student user id in the booking.
+     * @param bool   $isstudent   Whether to get student bookings
+     * @param bool   $oldestfirst Sort order of the returned records.
+     * @param bool   $activeonly  Retrieve active bookings only.
+     * @return array {Object}
+     */
+    public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true) {
+        global $DB;
+
+        $sql = 'SELECT b.id, b.userid, b.courseid, b.studentid, b.exerciseid,
+                       b.slotid, b.confirmed, b.noshow, b.active, b.timemodified
+                FROM {' . static::DB_BOOKINGS. '} b
+                INNER JOIN {' . static::DB_SLOTS . '} s on s.id = b.slotid
+                WHERE b.courseid = :courseid
+                    AND ' . ($isstudent ? 'b.studentid' : 'b.userid') . ' = :userid' .
+                    ($activeonly ? ' AND b.active = 1' : '') .
+                    ($oldestfirst ? ' ORDER BY s.starttime' : '');
+
+        return $DB->get_records_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
+    }
+
+    /**
+     * Get booking based on passed object.
+     *
+     * @param booking $booking
+     * @return Object
+     */
+    public static function get_booking($booking) {
+        global $DB;
+
+        $conditions = [];
+        if (!empty($booking->get_id())) {
+            $conditions['id'] = $booking->get_id();
+        }
+        if (!empty($booking->get_courseid())) {
+            $conditions['courseid'] = $booking->get_courseid();
+        }
+        if (!empty($booking->get_studentid())) {
+            $conditions['studentid'] = $booking->get_studentid();
+        }
+        if (!empty($booking->get_exerciseid())) {
+            $conditions['exerciseid'] = $booking->get_exerciseid();
+        }
+        if (!empty($booking->active())) {
+            $conditions['active'] = '1';
+        }
+
+        return $DB->get_record(static::DB_BOOKINGS, $conditions);
+    }
+
+    /**
      * Get the date of the booked exercise
      *
      * @param int $courseid      The associated course
@@ -214,19 +214,46 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
-     * Get an array of session count for each exercise for the user.
+     * Get an array of booked session count for each exercise for the user.
      *
      * @param int $courseid The associated course
      * @param int $userid   The user id conducting the session
      * @return array
      */
-    public static function get_user_sessions_count(int $courseid, int $userid) {
+    public static function get_user_total_booked_sessions(int $courseid, int $userid) {
         global $DB;
 
         $sql = 'SELECT exerciseid, count(id) AS sessions
                 FROM {' . static::DB_BOOKINGS. '}
                 WHERE userid=:userid AND courseid = :courseid
                 GROUP BY exerciseid, userid, courseid';
+
+        $params = [
+            'courseid'  => $courseid,
+            'userid'    => $userid
+        ];
+
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
+     * Get an array of graded session count for each exercise for the user.
+     *
+     * @param int $isinstructor
+     * @param int $userid
+     * @return int
+     */
+    public static function get_user_total_graded_sessions(int $courseid, int $userid) {
+        global $DB;
+
+        $sql = 'SELECT cm.id AS exerciseid, count(cm.id) AS sessions FROM mdl_course_modules cm
+                INNER JOIN mdl_grade_items gi ON gi.iteminstance = cm.instance
+                INNER JOIN mdl_grade_grades g ON g.itemid = gi.id
+                WHERE gi.courseid = :courseid
+                    AND gi.itemmodule = "assign"
+                    AND g.usermodified = :userid
+                    AND g.finalgrade != ""
+                GROUP BY g.usermodified, cm.instance, cm.id';
 
         $params = [
             'courseid'  => $courseid,

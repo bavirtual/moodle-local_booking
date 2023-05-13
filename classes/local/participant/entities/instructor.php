@@ -75,8 +75,18 @@ class instructor extends participant {
      * @param  $exerciseid  Optional exerices id.
      * @return {Object}[]   Array of sessions conducted count per module.
      */
-    public function get_sessions_count() {
-        return booking_vault::get_user_sessions_count($this->course->get_id(), $this->userid);
+    public function get_booked_sessions_count() {
+        return booking_vault::get_user_total_booked_sessions($this->course->get_id(), $this->userid);
+    }
+
+    /**
+     * Get a breakdown of conducted sessions count per exercise.
+     *
+     * @param  $exerciseid  Optional exerices id.
+     * @return {Object}[]   Array of sessions conducted count per module.
+     */
+    public function get_graded_sessions_count() {
+        return booking_vault::get_user_total_graded_sessions($this->course->get_id(), $this->userid);
     }
 
     /**

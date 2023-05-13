@@ -352,7 +352,8 @@ $string['theoryexamreport']='Theory examination report';
 $string['totalexamhours']='Total exam hours';
 $string['totalexamsessions']='Total exam sessions';
 $string['totalsessionhours']='Total session hours';
-$string['totalsessions']='Total sessions';
+$string['totalsessionsbooked']='Total booked sessions';
+$string['totalsessionsgraded']='Total graded sessions';
 
 // reports
 $string['aircrafttypelabel'] = 'Aircraft type/class course conducted in';

@@ -112,7 +112,7 @@ class instructor_profile_exporter extends exporter {
                 'type' => exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
-            'conductedsessions' => [
+            'sessions' => [
                 'type' => exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
@@ -179,7 +179,11 @@ class instructor_profile_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true
             ],
-            'totalsessions' => [
+            'totalgradedsessions' => [
+                'type' => PARAM_INT,
+                'optional' => true
+            ],
+            'totalbookedsessions' => [
                 'type' => PARAM_INT,
                 'optional' => true
             ],
@@ -227,11 +231,34 @@ class instructor_profile_exporter extends exporter {
         $logbook = $this->instructor->get_logbook(true);
         $summary = $logbook->get_summary(false, false, $examid);
 
-        // get conducted session totals
-        $conductedsessions = $this->instructor->get_sessions_count();
-        $totalsessions = array_sum(array_column($conductedsessions, 'sessions'));
-        $totalexams = $this->instructor->is_examiner() && !empty($conductedsessions[$examid]) ? $conductedsessions[$examid]->sessions : 0;
+        // get booked session totals
+        $bookedsessions = $this->instructor->get_booked_sessions_count();
+        $totalbookedsessions = array_sum(array_column($bookedsessions, 'sessions'));
+        // get graded session totals
+        $gradedsessions = $this->instructor->get_graded_sessions_count();
+        $totalexams = $this->instructor->is_examiner() && !empty($gradedsessions[$examid]) ? $gradedsessions[$examid]->sessions : 0;
         $instructorsince = $this->instructor->has_role_since('instructor') ?: $this->instructor->has_role_since('seniorinstructor');
+
+        // Sessions conducted data
+        $options = [
+            'isinstructor' => true,
+            'isexaminer'   => $this->instructor->is_examiner(),
+            'viewtype'     => 'book',
+            'readonly'     => false,
+            'excludeexams' => !$this->instructor->is_examiner(),
+            'excludequizes'=> true
+        ];
+        $exercisenames = base_view::get_modules($output, $this->subscriber, $options);
+        $sessions = $exercisenames;
+        // add graded sessions count
+        foreach ($sessions as $session) {
+            if (array_key_exists($session->exerciseid, $gradedsessions)) {
+                $session->gradedcount = $gradedsessions[$session->exerciseid]->sessions;
+            } else {
+                $session->gradedcount = 0;
+            }
+        }
+        $totalgradedsessions = array_sum(array_column($sessions, 'gradedcount'));
 
         // moodle profile url
         $moodleprofile = new moodle_url('/user/view.php', [
@@ -260,26 +287,6 @@ class instructor_profile_exporter extends exporter {
         $lastbookeddate = $this->instructor->get_last_booked_date();
         $lastbookeddate = !empty($lastbookeddate) ? $lastbookeddate->format('M j\, Y') : '';
 
-        // Sessions conducted data
-        $options = [
-            'isinstructor' => true,
-            'isexaminer'   => $this->instructor->is_examiner(),
-            'viewtype'     => 'book',
-            'readonly'     => false,
-            'excludeexams' => !$this->instructor->is_examiner(),
-            'excludequizes'=> true
-        ];
-        $exercisenames = base_view::get_modules($output, $this->subscriber, $options);
-        $sessions = $exercisenames;
-        // add sessions count
-        foreach ($sessions as $session) {
-            if (array_key_exists($session->exerciseid, $conductedsessions)) {
-                $session->count = $conductedsessions[$session->exerciseid]->sessions;
-            } else {
-                $session->count = 0;
-            }
-        }
-
         $return = [
             'fullname'         => $this->instructor->get_name(),
             'timezone'         => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone,
@@ -298,14 +305,15 @@ class instructor_profile_exporter extends exporter {
             'totalgroundhours' => logbook::convert_time($summary->totalgroundtime),
             'totalflighthours' => logbook::convert_time($summary->totalflighttime),
             'totalhours'       => logbook::convert_time($summary->totalgroundtime+$summary->totalflighttime),
-            'totalsessions'    => $totalsessions,
+            'totalbookedsessions'=> $totalbookedsessions,
             'totalexamhours'   => logbook::convert_time($summary->totalexaminertime),
             'totalexams'       => $totalexams,
             'loginasurl'       => $loginas->out(false),
             'admin'            => has_capability('moodle/user:loginas', $this->related['context']),
             'roles'            => strip_tags(get_user_roles_in_course($instructorid, $this->courseid)),
             'coursemodules'    => $exercisenames,
-            'conductedsessions'=> $sessions,
+            'sessions'         => $sessions,
+            'totalgradedsessions'=> $totalgradedsessions,
             'comment'          => $this->instructor->get_comment(),
         ];
 

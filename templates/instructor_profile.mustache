@@ -48,6 +48,7 @@
                     <dl><dt>{{#str}} fleet , local_booking {{/str}}</dt><dd>{{fleet}}</dd></dl>
                     <dl><dt>{{#str}} sim1 , local_booking {{/str}}</dt><dd>{{sim1}}</dd></dl>
                     <dl><dt>{{#str}} sim2 , local_booking {{/str}}</dt><dd>{{sim2}}</dd></dl>
+                    <dl><dt>{{#str}} lastlogin {{/str}}</dt><dd>{{lastlogin}}</dd></dl>
                     <span><a href="{{moodleprofileurl}}">{{#str}} moodleprofile , local_booking {{/str}}</a></span>
                 </div>
             </section>
@@ -57,7 +58,6 @@
                 <div class="card-body">
                     <h3 class="lead">{{#str}} courseactivity , local_booking {{/str}}</h3>
                     <dl><dt>{{#str}} enroldate , local_booking {{/str}}</dt><dd>{{enroldate}}</dd></dl>
-                    <dl><dt>{{#str}} lastlogin {{/str}}</dt><dd>{{lastlogin}}</dd></dl>
                     <dl><dt>{{#str}} instructorsince , local_booking{{/str}}</dt><dd>{{instructordate}}</dd></dl>{{!
                     }}{{#examiner}}<dl><dt>{{#str}} examinersince , local_booking{{/str}}</dt><dd>{{examinerdate}}</dd></dl>{{/examiner}}{{!
                     }}
@@ -74,7 +74,8 @@
                     <dl><dt>{{#str}} sessionsgroundtime ,  local_booking {{/str}}</dt><dd>{{totalgroundhours}}</dd></dl>
                     <dl><dt>{{#str}} sessionsflighttime ,  local_booking {{/str}}</dt><dd>{{totalflighthours}}</dd></dl>
                     <dl><dt>{{#str}} totalsessionhours ,  local_booking {{/str}}</dt><dd>{{totalhours}}</dd></dl>
-                    <dl><dt>{{#str}} totalsessions ,  local_booking {{/str}}</dt><dd>{{totalsessions}}</dd></dl>{{!
+                    <dl><dt>{{#str}} totalsessionsbooked ,  local_booking {{/str}}</dt><dd>{{totalbookedsessions}}</dd></dl>
+                    <dl><dt>{{#str}} totalsessionsgraded ,  local_booking {{/str}}</dt><dd>{{totalgradedsessions}}</dd></dl>{{!
                     }}{{#examiner}}<dl><dt>{{#str}} totalexamhours ,  local_booking {{/str}}</dt><dd>{{totalexamhours}}</dd></dl>
                     <dl><dt>{{#str}} totalexamsessions ,  local_booking {{/str}}</dt><dd>{{totalexams}}</dd></dl>{{/examiner}}
                     {{#admin}}
@@ -111,11 +112,11 @@
                         </thead>
                         <tbody>
                             <tr>
-                                {{#conductedsessions}}
+                                {{#sessions}}
                                 <td class="header booking-header booking-xbig text-xs-center">
-                                    <span class="media-body small" aria-hidden="true">{{count}}</span>
+                                    <span class="media-body small" aria-hidden="true">{{gradedcount}}</span>
                                 </td>
-                                {{/conductedsessions}}
+                                {{/sessions}}
                             </tr>
                         </tbody>
                     </table>

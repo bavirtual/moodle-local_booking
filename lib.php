@@ -73,9 +73,9 @@ define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);
  */
 define('LOCAL_BOOKING_OVERDUE_PERIOD', 10);
 /**
- * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades) - (2 years)
+ * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades) - (3 years)
  */
-define('LOCAL_BOOKING_PASTDATACUTOFF', 730);
+define('LOCAL_BOOKING_PASTDATACUTOFF', 1095);
 /**
  * LOCAL_BOOKING_NOSHOWPERIOD - constant for the period within which student no-shows are evaluated
  */

@@ -43,7 +43,7 @@ $userid = optional_param('userid', $USER->id, PARAM_INT);
 $username = participant::get_fullname($userid);
 $format = optional_param('format', '', PARAM_TEXT);
 $course = get_course($courseid);
-$title = $USER->id == $userid ? get_string('logbookmy', 'local_booking') : ($username . ' ' . get_string('logbook', 'local_booking'));
+$title = $USER->id == $userid ? get_string('logbookmy', 'local_booking') : (get_string('pilotlogbook', 'local_booking') . ' - ' . $username);
 
 $params = array('courseid'=>$courseid, 'userid'=>$userid);
 $url = new moodle_url('/local/booking/logbook.php', $params);
@@ -52,6 +52,7 @@ $PAGE->set_url($url);
 
 $context = context_course::instance($courseid);
 
+// basic access check
 require_login($course, false);
 require_capability('local/booking:logbookview', $context);
 
@@ -61,8 +62,9 @@ if (!has_capability('local/booking:view', $context) && $USER->id != $userid) {
 }
 
 // define subscriber globally
-if (empty($COURSE->subscriber))
+if (empty($COURSE->subscriber)) {
     $COURSE->subscriber = new subscriber($courseid);
+}
 
 // add jquery, logbook_easa.js for EASA datatable, and RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
 $PAGE->requires->jquery();

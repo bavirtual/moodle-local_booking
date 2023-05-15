@@ -345,7 +345,6 @@ $string['pageviews'] = 'page views';
 $string['practicalexamreport']='Practical examination report';
 $string['profilestudent'] = 'Student profile';
 $string['profileinstructor'] = 'Instructor profile';
-$string['progression'] = 'Session progression';
 $string['qualified'] = 'Qualified for';
 $string['recency'] = 'Recency';
 $string['recommendationletterlink'] = 'Recommendation letter';

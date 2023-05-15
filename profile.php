@@ -47,20 +47,25 @@ $PAGE->set_url($url);
 
 $context = context_course::instance($courseid);
 $title = get_string('profile' . ($role?'instructor':'student'), 'local_booking');
+$title = get_string('profile' . (current(get_user_roles($context, $USER->id))->shortname!='student' ? 'instructor' : 'student'), 'local_booking');
 
+// basic access check
 // basic access check
 require_login($course, false);
 require_capability('local/booking:view', $context);
 
 // define subscriber globally
 if (empty($COURSE->subscriber)) {
+if (empty($COURSE->subscriber)) {
     $COURSE->subscriber = new subscriber($courseid);
+}
 }
 
 $navbartext = participant::get_fullname($userid);
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title($COURSE->shortname . ': ' . $title . ' - ' . participant::get_fullname($userid), 'local_booking');
+$PAGE->set_heading($title . ' - ' . participant::get_fullname($userid), 'local_booking');
 $PAGE->set_heading($title . ' - ' . participant::get_fullname($userid), 'local_booking');
 $PAGE->add_body_class('path-local-booking');
 

@@ -392,10 +392,12 @@ class participant implements participant_interface {
      * @param string   The participant callsign
      */
     public function populate($record) {
-        $this->fullname = $record->fullname;
-        $this->enroldate = $record->enroldate;
-        $this->lastlogin = $record->lastlogin;
-        $this->simulator = $this->get_simulator();
+        if (!empty($record)) {
+            $this->fullname = $record->fullname;
+            $this->enroldate = $record->enroldate;
+            $this->lastlogin = $record->lastlogin;
+            $this->simulator = $this->get_simulator();
+        }
     }
 
     /**

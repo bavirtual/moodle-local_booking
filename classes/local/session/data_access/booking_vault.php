@@ -42,6 +42,12 @@ class booking_vault implements booking_vault_interface {
     /** Availability Slots table name for the persistent. */
     const DB_ASSIGN_GRADES = 'assign_grades';
 
+    /** Course modules for graded sessions */
+    const DB_COURSE_MODS = 'course_modules';
+
+    /** Availability Slots table name for the persistent. */
+    const DB_ASSIGN_GRADES = 'assign_grades';
+
     /**
      * remove all bookings for a user for a
      *
@@ -234,6 +240,33 @@ class booking_vault implements booking_vault_interface {
                 FROM {' . static::DB_BOOKINGS . '}
                 WHERE userid=:userid AND courseid = :courseid
                 GROUP BY exerciseid, userid, courseid';
+
+        $params = [
+            'courseid'  => $courseid,
+            'userid'    => $userid
+        ];
+
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
+     * Get an array of graded session count for each exercise for the user.
+     *
+     * @param int $isinstructor
+     * @param int $userid
+     * @return int
+     */
+    public static function get_user_total_graded_sessions(int $courseid, int $userid) {
+        global $DB;
+
+        $sql = 'SELECT cm.id AS exerciseid, count(cm.id) AS sessions FROM mdl_course_modules cm
+                INNER JOIN mdl_grade_items gi ON gi.iteminstance = cm.instance
+                INNER JOIN mdl_grade_grades g ON g.itemid = gi.id
+                WHERE gi.courseid = :courseid
+                    AND gi.itemmodule = "assign"
+                    AND g.usermodified = :userid
+                    AND g.finalgrade != ""
+                GROUP BY g.usermodified, cm.instance, cm.id';
 
         $params = [
             'courseid'  => $courseid,

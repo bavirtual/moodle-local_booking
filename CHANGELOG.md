@@ -1,5 +1,34 @@
 # Change log
 
+## [2023061702] - RELEASED 2023-06-17 - hotfix
+
+### Fixed
+
+- keep student active when taken off-hold
+- instructor profile 'Sessions Conducted' based on assignment grades and grader id
+
+## [2023061700] - RELEASED 2023-06-17
+
+### Fixed
+
+- instructor profile view based user role
+
+### Added
+
+- conflicting session booking validation for instructor and student
+- course column in ‘My bookings’ list based on instructor preferences
+
+### Changed
+
+- session cancellation to delete Moodle calendar event
+- session canceled confirmation to the instructor same as student
+
+## [2023061100] - RELEASED 2023-06-11
+
+### Changed
+
+- revereted 4.2+ compatibility
+
 ## [2023051500] - RELEASED 2023-05-15
 
 ### Fixed

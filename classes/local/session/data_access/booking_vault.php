@@ -232,7 +232,7 @@ class booking_vault implements booking_vault_interface {
 
         $sql = 'SELECT exerciseid, count(id) AS sessions
                 FROM {' . static::DB_BOOKINGS . '}
-                WHERE userid=:userid AND courseid = :courseid AND active = 0
+                WHERE userid=:userid AND courseid = :courseid
                 GROUP BY exerciseid, userid, courseid';
 
         $params = [

@@ -263,6 +263,9 @@ function(
         // Handle on-hold toggle clicks
         $('#onhold').click(function() {
             processSetting(courseId, userId, 'onhold', this.checked, root);
+            // Toggle 'Keep Alive' so the student is not automatically placed on-hold again
+            $('#keepactive').prop("checked", !this.checked);
+            processSetting(courseId, userId, 'keepactive', !this.checked, root);
         });
 
         // Handle keep active toggle clicks

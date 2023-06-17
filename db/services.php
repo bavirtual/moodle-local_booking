@@ -71,6 +71,18 @@ $functions = array(
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
 
+    'local_booking_is_conflicting_booking' => array(
+        'classname' => 'local_booking_external',
+        'classpath' => '/local/booking/externallib.php',
+        'methodname' => 'is_conflicting_booking',
+        'description' => 'Checks for conflicting bookings',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => '',
+        'loginrequired' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
+
     'local_booking_get_weekly_view' => array(
         'classname' => 'local_booking_external',
         'classpath' => '/local/booking/externallib.php',
@@ -240,6 +252,15 @@ $services = array(
         'enabled' => 1,         // if 0, then token linked to this service won't work
         'restrictedusers' => 0,
         'shortname' => 'cancel_booking',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
+    'Checks for a conflicting booking when an instructor attempts to save a booking web service'  => array(
+        'functions' => array('local_booking_is_conflicting_booking'), // Unused as we add the service in each function definition, third party services would use this.
+        'enabled' => 1,         // if 0, then token linked to this service won't work
+        'restrictedusers' => 0,
+        'shortname' => 'is_conflicting_booking',
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),

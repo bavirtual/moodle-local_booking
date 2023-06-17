@@ -62,7 +62,7 @@ class cron_task extends \core\task\scheduled_task {
     public function execute() {
 
         // get course list
-        $sitecourses = get_courses();
+        $sitecourses = \get_courses();
 
         foreach ($sitecourses as $sitecourse) {
             if ($sitecourse->id != SITEID) {

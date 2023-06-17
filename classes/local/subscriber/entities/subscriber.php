@@ -52,6 +52,11 @@ class subscriber implements subscriber_interface {
     protected $context;
 
     /**
+     * @var array $courses Moodle courses.
+     */
+    protected $courses;
+
+    /**
      * @var int $course The global course.
      */
     protected $course;
@@ -168,9 +173,11 @@ class subscriber implements subscriber_interface {
      */
     public function __construct($courseid) {
 
+        // check if called at the site level from other than subscribing courses
         if ($courseid == 1) {
             // throw error
-            throw new \Exception(get_string('errorcoresubscriber', 'local_booking') . " [courseid=$courseid]");
+            // throw new \Exception(get_string('errorcoresubscriber', 'local_booking') . " [courseid=$courseid]");
+            return;
         }
 
         $this->coursemodinfo = get_fast_modinfo($courseid);
@@ -245,12 +252,17 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Get the subscriber's course.
+     * Retrieves a Moodle course based on the courseid.
      *
-     * @return int $course
+     * @param int  $courseid  The course id.
+     * @return string
      */
-    public function get_course() {
-        return $this->course;
+    public function get_course(int $courseid) {
+        if (!isset($this->courses)) {
+            $this->courses = \get_courses();
+        }
+
+        return $this->courses[$courseid];
     }
 
     /**

@@ -202,6 +202,10 @@ class instructor_profile_exporter extends exporter {
             'loginasurl' => [
                 'type' => PARAM_URL,
             ],
+            'xcoursebookings' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
             'roles' => [
                 'type' => PARAM_RAW,
                 'optional' => true
@@ -310,6 +314,7 @@ class instructor_profile_exporter extends exporter {
             'totalexams'       => $totalexams,
             'loginasurl'       => $loginas->out(false),
             'admin'            => has_capability('moodle/user:loginas', $this->related['context']),
+            'xcoursebookings'  => \get_user_preferences('local_booking_1_xcoursebookings', false, $instructorid),
             'roles'            => strip_tags(get_user_roles_in_course($instructorid, $this->courseid)),
             'coursemodules'    => $exercisenames,
             'sessions'         => $sessions,

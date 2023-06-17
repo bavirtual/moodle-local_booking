@@ -88,6 +88,20 @@
         <div>
             <section class="node_category card d-inline-block w-100 mb-3">
                 <div class="card-body">
+                    <h3 class="lead">{{#str}} preferences {{/str}}</h3>
+                    <dl><dt><dd>
+                        <div id="xcourse-bookings-region" class="custom-control custom-switch" title="{{#str}} xcoursebookings_help , local_booking {{/str}}">
+                            <input type="checkbox" class="toggle-input" id="xcoursebookings" {{#xcoursebookings}}checked{{/xcoursebookings}}>
+                            <label class="toggle-label" for="xcoursebookings">{{#str}} xcoursebookings , local_booking {{/str}}</label>
+                            {{> core/overlay_loading}}
+                        </div>
+                    </dd></dt></dl>
+                </div>
+            </section>
+        </div>
+        <div>
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
                     <h3 class="lead">{{#str}} roles {{/str}}</h3>
                     <dl><dt>{{roles}}</dt></dl>
                 </div>

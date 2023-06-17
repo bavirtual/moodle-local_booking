@@ -177,6 +177,10 @@ function(
                 // Process student endorsement and handle UI
                 setEndorsement(courseId, userId, value, root);
                 break;
+            case 'xcoursebookings':
+                // Process availability override in user preferences and handle UI, site level courseid=1
+                processUserPreference(key, value, 1, userId, key);
+                break;
             case 'availabilityoverride':
                 // Process availability override in user preferences and handle UI
                 processUserPreference(key, value, courseId, userId, key);
@@ -269,6 +273,11 @@ function(
         // Handle restriction override toggle clicks
         $('#availabilityoverride').click(function() {
             processSetting(courseId, userId, 'availabilityoverride', this.checked, root);
+        });
+
+        // Handle show cross-course bookings toggle clicks
+        $('#xcoursebookings').click(function() {
+            processSetting(courseId, userId, 'xcoursebookings', this.checked, root);
         });
 
         // Handle save comment click

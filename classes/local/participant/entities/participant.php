@@ -139,7 +139,7 @@ class participant implements participant_interface {
 
             // enrolment type
             $this->is_student = $this->has_role('student');
-            $this->is_instructor = $this->has_role('instructor') || $this->has_role('seniorinstructor');
+            $this->is_instructor = $this->has_role('instructor') || $this->has_role('seniorinstructor') || $this->has_role('manager');
             $this->is_examiner = $this->has_role('examiner');
 
             // get active participant courses
@@ -234,7 +234,8 @@ class participant implements participant_interface {
 
         if (empty($this->bookings)) {
             $bookings = [];
-            $bookingobjs = booking_vault::get_bookings($this->course->get_id(), $this->userid, $isstudent, $oldestfirst, $activeonly);
+            $allcourses = \get_user_preferences('local_booking_1_xcoursebookings', false, $this->userid);
+            $bookingobjs = booking_vault::get_bookings($this->course->get_id(), $this->userid, $isstudent, $oldestfirst, $activeonly, $allcourses);
             foreach ($bookingobjs as $bookingobj) {
                 $booking = new booking();
                 $booking->load($bookingobj);

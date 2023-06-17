@@ -100,6 +100,7 @@ import Ajax from 'core/ajax';
 /**
  * Send booked slots to the server for persistence
  *
+ * @method saveBookedSlot
  * @param {array} bookedslot    The array of booked slots
  * @param {int} courseId        The course id of the booking
  * @param {int} exerciseId      The exercise id of the associated course
@@ -123,6 +124,7 @@ import Ajax from 'core/ajax';
 /**
  * Cancel a sepcific booking for a student.
  *
+ * @method cancelBooking
  * @param {int} bookingId   The booking id to cancel
  * @param {string} comment  The booking id to cancel
  * @param {bool} noshow     Whether the cancellation is a no-show or instructor initiated
@@ -142,9 +144,30 @@ import Ajax from 'core/ajax';
 };
 
 /**
+ * Checks if the booking conflicts with another booking.
+ *
+ * @method isConflictingBookings
+ * @param {int}   studentid    The student id the booking is for
+ * @param {array} bookedslot   The array of booked slots
+ * @return {promise}
+ */
+export const isConflictingBookings = (studentid, bookedslot) => {
+    const request = {
+        methodname: 'local_booking_is_conflicting_booking',
+        args: {
+            studentid: studentid,
+            bookedslot: bookedslot,
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
  * Send marked availability posts (time slots)
  * to the server to be persisted
  *
+ * @method saveSlots
  * @param {string} weekSlots The URL encoded values from the form
  * @param {int} course The id of the associated course
  * @param {int} year The id of the event to update
@@ -169,6 +192,7 @@ import Ajax from 'core/ajax';
  * Remove all saved slots for a specific week & year
  * for the current user (student)
  *
+ * @method clearSlots
  * @param {int} course The id of the associated course
  * @param {int} year The id of the event to update
  * @param {int} week A timestamp for some time during the target day
@@ -282,7 +306,7 @@ import Ajax from 'core/ajax';
 /**
  * Update Suspended status from the user profile.
  *
- * @method updateSuspended
+ * @method updateSuspendedStatus
  * @param  {bool}   status   Suspended true or false.
  * @param  {number} courseId The profile user id.
  * @param  {number} userId   The profile course id.

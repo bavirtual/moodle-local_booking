@@ -40,7 +40,12 @@
 <br/><p><h3>{{#str}} bookingactive, local_booking {{/str}}</h3></p>
 <table id="bookings-detail-{{uniqid}}" data-region="instructor-bookings" class="calendartable booking-table table-hover">
     <thead>
-        <tr>
+        <tr>{{!
+            }}{{#showallcourses}}
+            <th class="header booking-header text-xs-center" style="width: 10px;">
+                <span class="media-body" aria-hidden="true">{{#str}} course {{/str}}</span>
+            </th>{{/showallcourses}}{{!
+            }}
             <th class="header booking-header text-xs-center">
                 <span class="media-body" aria-hidden="true">{{#str}} students, local_booking {{/str}}</span>
             </th>
@@ -50,8 +55,11 @@
             <th class="header booking-header booking-xxbig text-xs-center">
                 <span class="media-body" aria-hidden="true">{{#str}} sessiondate, local_booking {{/str}}</span>
             </th>
-            <th class="header booking-header booking-xbig text-xs-center">
-                <span class="media-body" aria-hidden="true">{{#str}} zulutime, local_booking {{/str}}</span>
+            <th class="header booking-header booking-xbig text-xs-center" style="width: 20px;">
+                <span class="media-body" aria-hidden="true">{{#str}} sessionstart, local_booking {{/str}}</span>
+            </th>
+            <th class="header booking-header booking-xbig text-xs-center" style="width: 20px;">
+                <span class="media-body" aria-hidden="true">{{#str}} sessionend, local_booking {{/str}}</span>
             </th>
             <th class="header booking-header booking-xbig text-xs-center">
                 <span class="media-body" aria-hidden="true">{{#str}} bookingcancelhdr, local_booking {{/str}}</span>
@@ -63,8 +71,13 @@
     </thead>
     <tbody>
     {{#activebookings}}
-        <tr id="{{bookingid}}">
-            <td class="booking-text-big text-md-left" style="vertical-align: middle;">
+        <tr id="{{bookingid}}">{{!
+            }}{{#showallcourses}}
+            <td class="booking-text-big text-md-center" style="vertical-align: middle; width: 10px;">
+                <span>{{coursename}}</span>
+            </td>{{/showallcourses}}{{!
+            }}
+            <td class="booking-text-big text-md-center" style="vertical-align: middle;">
                 <span>{{studentname}}</span>
             </td>
             <td class="booking-text booking-text-small" style="vertical-align: middle;">
@@ -73,8 +86,11 @@
             <td class="booking-text booking-text-small text-sm-center" style="vertical-align: middle;">
                 <span>{{sessiondate}}</span>
             </td>
-            <td class="booking-text booking-text-small text-sm-center" style="vertical-align: middle;">
-                <span>{{groundtime}}</span>
+            <td class="booking-text booking-text-small text-sm-center" style="vertical-align: middle; width: 20px;">
+                <span>{{starttime}}</span>
+            </td>
+            <td class="booking-text booking-text-small text-sm-center" style="vertical-align: middle; width: 20px;">
+                <span>{{endtime}}</span>
             </td>
             <td style="vertical-align: middle;">
                 <div class="singlebutton">

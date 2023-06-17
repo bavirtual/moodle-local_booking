@@ -30,7 +30,6 @@ use local_booking\local\participant\entities\student;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
 use \local_booking\local\slot\entities\slot;
-use \local_booking\local\calendar\event;
 use \local_booking\local\calendar\moodle_calendar;
 use moodle_exception;
 
@@ -172,7 +171,7 @@ class booking implements booking_interface {
      * @return bool
      */
     public function save() {
-        global $DB, $COURSE;
+        global $DB;
 
         $transaction = $DB->start_delegated_transaction();
 
@@ -180,34 +179,14 @@ class booking implements booking_interface {
         // booking info, and purge student availability posts
         $result = false;
         if ($this->slot->save()) {
+            // save new booking
             if ($this->id = booking_vault::save_booking($this)) {
-                $result = slot_vault::delete_slots($this->courseid, $this->studentid, 0, 0, false);
-
-                // add a moodle event for this booking for both instructor and student
-                // get the event information object
-                $eventdata = (object) [
-                    'type'  => 'moodle',
-                    'userid'=> $this->instructorid,
-                    'id'    => $this->courseid,
-                    'name'  => $COURSE->shortname,
-                    'cmid'  => $this->exerciseid,
-                    'instid'=> $this->instructorid,
-                    'stdid' => $this->studentid,
-                    'start' => $this->slot->get_starttime(),
-                    'end'   => $this->slot->get_endtime()
-                ];
-
-                // add instructor then student events to Moodle calendar
-                $moodlecalendar =  new moodle_calendar();
-
-                // create instructor calendar event
-                $instructorevent = new event($eventdata);
-                $result = $result && $moodlecalendar->add($instructorevent);
-
-                // create student calendar event
-                $eventdata->userid = $this->studentid;
-                $studentevent = new event($eventdata);
-                $result = $result && $moodlecalendar->add($studentevent);
+                // delete other posted slots
+                if (slot_vault::delete_slots($this->courseid, $this->studentid, 0, 0, false)) {
+                    // add instructor and student Moodle calendar events
+                    $moodlecalendar =  new moodle_calendar($this);
+                    $result = $moodlecalendar->add_events();
+                }
             }
         }
 
@@ -222,11 +201,15 @@ class booking implements booking_interface {
     }
 
     /**
-     * Deletes this booking from database.
+     * Deletes this booking from database along with
+     * assocaited instructor and student Moodle calendar events
      *
      * @return bool
      */
     public function delete() {
+        // delete associated Moodle calendar events
+        $moodlecalendar =  new moodle_calendar($this);
+        $moodlecalendar->delete_events();
         return booking_vault::delete_booking($this);
     }
 
@@ -247,6 +230,20 @@ class booking implements booking_interface {
      */
     public function confirmed() {
         return $this->confirmed;
+    }
+
+    /**
+     * Returns whether the booking conflicts with another
+     * for the same instructor.
+     *
+     * @param int   $instructorid The instructor id making the booking.
+     * @param int   $studentid    The student id the booking is for.
+     * @param array $slottobook   The booking start & end timestamps.
+     * @return {object?}
+     */
+    public static function conflicts(int $instructorid, int $studentid, array $slottobook) {
+        // check if there is a conflict, if no end time is specified, then substitude it with start time + 1 hr
+        return booking_vault::get_booking_conflict($instructorid, $studentid, $slottobook['starttime'], $slottobook['endtime'] ?: $slottobook['starttime'] + (60 * 60));
     }
 
     /**

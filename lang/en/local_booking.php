@@ -86,6 +86,7 @@ $string['sessionaction'] = 'Action';
 $string['sessioncompleted'] = 'Session completed';
 $string['sessionconfirmed'] = 'Session booked and confirmed by student';
 $string['sessiondate'] = 'Session Date';
+$string['sessionend'] = 'End time';
 $string['sessionexam'] = 'Exam';
 $string['sessionbookedby'] = '{$a->sessiondate}<br/>{$a->bookingstatus}<br/>{$a->instructor}';
 $string['sessionincomplete'] = 'Session incomplete';
@@ -93,6 +94,7 @@ $string['sessiongradedby'] = '{$a->sessiondate}Graded by:<br/>{$a->instructor}<b
 $string['sessiongradeexampass'] = 'Exam Results<br/>Grade: {$a->grade}<br/>Date: {$a->gradedate}';
 $string['sessionprogressing'] = 'Objective Not Met<br/>(click for feedback)<br/>{$a->sessiondate}{$a->instructor}';
 $string['sessionnotconfirmed'] = 'Session booked but not confirm by student';
+$string['sessionstart'] = 'Start time';
 $string['sessionvenue'] = 'Discord';
 $string['showactive'] = 'Active students';
 $string['showonhold'] = 'On-hold students';
@@ -355,6 +357,8 @@ $string['totalexamsessions']='Total exam sessions';
 $string['totalsessionhours']='Total session hours';
 $string['totalsessionsbooked']='Total booked sessions';
 $string['totalsessionsgraded']='Total graded sessions';
+$string['xcoursebookings']='Show bookings from all courses';
+$string['xcoursebookings_help']='Show bookings from all course';
 
 // reports
 $string['aircrafttypelabel'] = 'Aircraft type/class course conducted in';
@@ -506,12 +510,17 @@ $string['emaillogentryhtml'] = '<div style="font-family:sans-serif"><a href=\'{$
 // email to student: session cancellation
 $string['emailcancel'] = '{$a->coursename} session booking cancellation: \'{$a->exercise}\'';
 $string['emailcancelmsg'] = '{$a->instructorname} has cancelled your booked session scheduled for {$a->sessiondate} on \'{$a->exercise}\'.
-    Instructor\'s comment: {$a->comment}.
+    Instructor\'s comments: {$a->comment}.
     Please note that you will have to post new availability slots as previous slots were purged.';
 $string['emailcancelhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     {$a->exercise}</p><hr /><p>{$a->instructorname} has cancelled your booked session scheduled for
-    <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\'.</p><p><strong>Instructor\'s comment:</strong><br />{$a->comment}</p><p>
+    <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\'.</p><p><strong>Instructor\'s comments:</strong><br />{$a->comment}</p><p>
     <span style=\'color: red\'>Please note that you will have to post new availability slots as previous slots were purged.</span></p></p><hr />';
+$string['emailcancelinstmsg'] = '{$a->studentname} session scheduled for {$a->sessiondate} on \'{$a->exercise}\' has been cancelled.
+    Your comments: {$a->comment}.';
+$string['emailcancelinsthtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
+    {$a->exercise}</p><hr /><p>{$a->studentname} session scheduled for <strong>{$a->sessiondate}</strong> on \'<i>{$a->exercise}</i>\' has been cancelled.
+    </p><p><strong>Your comments:</strong><br />{$a->comment}</p><p><hr />';
 
 // email to student: noshow warning (strike 1)
 $string['emailnoshow1'] = '{$a->coursename} missed session warning!';
@@ -782,6 +791,7 @@ $string['groupexaminersdesc'] = 'Group to identify examiner instructors.';
 
 // Plugin errors
 $string['errorcertifiernotexaminer'] = 'Permission denied. Only the examiner can certify a graduating student.';
+$string['errorconflictingbooking'] = 'Conflicts with existing booking with {$a->studentname} for {$a->coursename} \'{$a->exercisename}\' on {$a->date}.';
 $string['errorcoresubscriber'] = 'The site can not be a Session Booking plugin subscriber';
 $string['errordelete'] = 'Failed to delete logentry';
 $string['errorexercisemissing'] = 'Exercise not found!';

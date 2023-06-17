@@ -186,6 +186,10 @@ class bookings_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'default' => false,
             ],
+            'showallcourses' => [
+                'type' => \PARAM_BOOL,
+                'default' => false,
+            ],
         ];
     }
 
@@ -214,6 +218,7 @@ class bookings_exporter extends exporter {
             'showonhold' => $this->filter == 'onhold' ? 'checked' : '',
             'showgraduates' => $this->filter == 'graduates' ? 'checked' : '',
             'showsuspended' => $this->filter == 'suspended' ? 'checked' : '',
+            'showallcourses'=> \get_user_preferences('local_booking_1_xcoursebookings', false, !empty($this->instructor) ? $this->instructor->get_id() : 0),
         ];
 
         return $return;
@@ -227,7 +232,6 @@ class bookings_exporter extends exporter {
     protected static function define_related() {
         return array(
             'context' => 'context',
-            'coursemodules' => 'cm_info[]?',
         );
     }
 

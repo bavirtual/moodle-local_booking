@@ -230,6 +230,7 @@ class notification extends \core\message\message {
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
             'instructorname'=> instructor::get_fullname($USER->id),
+            'studentname'   => student::get_fullname($booking->get_studentid()),
             'sessiondate'   => (new \DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
             'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
             'comment'       => $comment,
@@ -245,7 +246,15 @@ class notification extends \core\message\message {
         $this->contexturl        = $data->courseurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
 
-        return message_send($this) != 0;
+        // send student message
+        $result = message_send($this) != 0;
+
+        // instructor copy
+        $this->userto            = $USER->id;
+        $this->fullmessage       = get_string('emailcancelinstmsg', 'local_booking', $data);
+        $this->fullmessagehtml   = get_string('emailcancelinsthtml', 'local_booking', $data);
+
+        return $result && message_send($this) != 0;
     }
 
     /**

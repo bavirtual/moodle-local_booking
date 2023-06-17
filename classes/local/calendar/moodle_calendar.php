@@ -29,6 +29,9 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/calendar/lib.php');
 
+use \local_booking\local\calendar\event;
+use \local_booking\local\session\entities\booking;
+
 /**
  * Class for inserting calendar events
  * in Moodle Calendar for booked sessions.
@@ -39,6 +42,20 @@ require_once($CFG->dirroot . '/calendar/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class moodle_calendar implements calendar_interface {
+
+    /**
+     * @var booking $booking The The booking assciated with the event
+     */
+    protected $booking;
+
+    /**
+     * Constructor.
+     *
+     * @param booking $booking The booking assciated with the event
+     */
+    public function __construct(booking $booking) {
+        $this->booking = $booking;
+    }
 
     /**
      * Create an event based on its type.
@@ -61,5 +78,80 @@ class moodle_calendar implements calendar_interface {
 
         $result = \calendar_event::create($moodleevent, false);
         return !empty($result);
+    }
+
+    /**
+     * Create events for both instructor and student.
+     *
+     * @return bool $result The event creation result where applicable
+     */
+    public function add_events() {
+
+        $instructorevent = $this->get_event($this->booking->get_instructorid());
+        $result = $this->add($instructorevent);
+        $studentrevent = $this->get_event($this->booking->get_studentid());
+        return $result && $this->add($studentrevent);
+    }
+
+    /**
+     * Deletes an event based on its type.
+     *
+     * @param event $event  The event to add
+     * @return bool $result The event creation result where applicable
+     */
+    public function delete(event $event) {
+
+        $events = \calendar_get_events($event->start, $event->end, $event->userid, false, $event->courseid);
+        if (!empty($events)) {
+            $eventid = array_values($events)[0]->id;
+            $event = \calendar_event::load($eventid);
+            $event->delete();
+        }
+
+        return;
+    }
+
+    /**
+     * Delete instructor and student events
+     *
+     * @param event $event  The event to add
+     * @return bool $result The event creation result where applicable
+     */
+    public function delete_events() {
+
+        // create instructor calendar event
+        $instructorevent = $this->get_event($this->booking->get_instructorid());
+        $this->delete($instructorevent);
+
+        // create student calendar event
+        $studentevent = $this->get_event($this->booking->get_studentid());
+        $this->delete($studentevent);
+
+        return;
+    }
+
+    /**
+     * Get the total sessions for a user.
+     *
+     * @param int     $userid  The event's owner user id
+     * @return event  The event object
+     */
+    protected function get_event(int $usedid) {
+        global $COURSE;
+
+        // get the event information object
+        $eventdata = (object) [
+            'type'  => 'moodle',
+            'userid'=> $usedid,
+            'id'    => $this->booking->get_courseid(),
+            'name'  => $COURSE->shortname,
+            'cmid'  => $this->booking->get_exerciseid(),
+            'instid'=> $this->booking->get_instructorid(),
+            'stdid' => $this->booking->get_studentid(),
+            'start' => $this->booking->get_slot()->get_starttime(),
+            'end'   => $this->booking->get_slot()->get_endtime()
+        ];
+
+        return new event($eventdata);
     }
 }

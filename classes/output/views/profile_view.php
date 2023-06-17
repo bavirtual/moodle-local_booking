@@ -36,11 +36,10 @@ class profile_view extends base_view {
      * @param array    $data      The data required for output
      */
     public function __construct(\context $context, int $courseid, array $data) {
-        global $CFG;
 
         // get user type: instructor|student
         $user = $data['subscriber']->get_participant($data['userid']);
-        $role = $user->is_instructor() ? 'instructor' : 'student';
+        $role = $data['role'];
         $template = 'local_booking/' . $role .'_profile';
 
         parent::__construct($context, $courseid, $data, $template);

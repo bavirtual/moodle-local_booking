@@ -456,7 +456,10 @@ class participant_vault implements participant_vault_interface {
 
             $param = ['userid'=>$userid];
             $userinfo = $DB->get_record_sql($sql ,$param);
-            $fullusername = $includealternate ? $userinfo->bavname : $userinfo->username;
+
+            if (!empty($userinfo)) {
+                $fullusername = $includealternate ? $userinfo->bavname : $userinfo->username;
+            }
         }
 
         return $fullusername;

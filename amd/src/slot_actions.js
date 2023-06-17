@@ -67,6 +67,7 @@ define([
         const year = root.find(SELECTORS.CALENDAR_WRAPPER).data('year');
         const week = root.find(SELECTORS.CALENDAR_WRAPPER).data('week');
 
+        // Get marked availability slots
         getUISlots(root);
 
         let serverCall = null;
@@ -110,28 +111,49 @@ define([
         const exercise = root.find(SELECTORS.CALENDAR_WRAPPER).data('exercise-id');
         const studentid = root.find(SELECTORS.CALENDAR_WRAPPER).data('student-id');
 
+        // Get marked availability slots
         getUISlots(root, 'book');
 
-        // Send the form data to the server for processing.
-        return Repository.saveBookedSlot(BookedSlot, course, exercise, studentid)
+        // Check if the instructor has conflicting bookings
+        return Repository.isConflictingBookings(studentid, BookedSlot)
             .then(function(response) {
                 if (response.validationerror) {
                     // eslint-disable-next-line no-alert
-                    alert('Errors encountered: Unable to save slot!');
+                    alert('Errors encountered: Unable to check conflicting bookings!');
                 } else {
-                    // Redirect to bookings view
-                    location.href = M.cfg.wwwroot + '/local/booking/view.php?courseid=' + course;
+                    // Check if there are no conflicting messages
+                    if (response.result) {
+                        alert(response.warnings[0].message);
+                    } else {
+                        // No conflicting bookings, save the booking.
+                        return Repository.saveBookedSlot(BookedSlot, course, exercise, studentid)
+                            .then(function(response) {
+                                if (response.validationerror) {
+                                    // eslint-disable-next-line no-alert
+                                    alert('Errors encountered: Unable to save slot!');
+                                } else {
+                                    // Redirect to bookings view
+                                    location.href = M.cfg.wwwroot + '/local/booking/view.php?courseid=' + course;
+                                }
+                                return;
+                            }
+                            .bind(this))
+                            .always(function() {
+                                CalendarViewManager.stopLoading(root);
+                                return;
+                            }
+                            .bind(this))
+                            .fail(Notification.exception);
+                    }
+                    return !response.result;
                 }
-                return;
             }
             .bind(this))
             .always(function() {
                 CalendarViewManager.stopLoading(root);
-                return;
-            }
-            .bind(this))
+            })
             .fail(Notification.exception);
-    }
+        }
 
     /**
      * Update Slots & BookedSlots with marked availability
@@ -302,6 +324,7 @@ define([
      * @param {bool} forceenable Enable save button
      */
     function setSaveButtonState(root, action, forceenable) {
+        // Get marked availability slots
         getUISlots(root, action);
 
         const enabled = 'slot-button-blue';

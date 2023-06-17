@@ -623,7 +623,7 @@ class local_booking_external extends external_api {
      * @param int $bookingid
      * @param string $comment
      * @param bool $noshow
-     * @return array array of slots created.
+     * @return bool $result
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
     public static function cancel_booking($bookingid, $comment, $noshow) {
@@ -674,9 +674,13 @@ class local_booking_external extends external_api {
                         set_user_preference('local_booking_' . $courseid . '_availabilityoverride', true, $booking->get_studentid());
                     }
 
-                    // send cancellation message
-                    $message = new notification();
-                    $result = $message->send_session_cancellation($booking, $comment);
+                    // send student cancellation message
+                    $studentmessage = new notification();
+                    $result = $studentmessage->send_session_cancellation($booking, $comment);
+
+                    // send instructor cancellation message
+                    $instructormessage = new notification();
+                    $result = $instructormessage->send_session_cancellation($booking, $comment);
 
                 }
 
@@ -708,6 +712,88 @@ class local_booking_external extends external_api {
      * @since Moodle 2.5
      */
     public static function cancel_booking_returns() {
+        return new external_single_structure(
+            array(
+                'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function is_conflicting_booking_parameters() {
+        return new external_function_parameters(
+            array(
+                'studentid'  => new external_value(PARAM_INT, 'The student id the booking is for', VALUE_DEFAULT),
+                'bookedslot'  => new external_single_structure(
+                        array(
+                            'starttime' => new external_value(PARAM_INT, 'booked slot start time', VALUE_DEFAULT, 0, NULL_NOT_ALLOWED),
+                            'endtime' => new external_value(PARAM_INT, 'booked slot end time', VALUE_DEFAULT, 0, NULL_NOT_ALLOWED),
+                            'year' => new external_value(PARAM_INT, 'booked slot year', VALUE_DEFAULT, 0, NULL_NOT_ALLOWED),
+                            'week' => new external_value(PARAM_INT, 'booked slot week', VALUE_DEFAULT, 0, NULL_NOT_ALLOWED),
+                        ), 'booking'),
+            )
+        );
+    }
+
+    /**
+     * Checks if the booking conflicts with another booking.
+     *
+     * @param {object} $bookedslot array containing booked slots.
+     * @return array array of slots created.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function is_conflicting_booking($studentid, $slottobook) {
+        global $USER;
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::save_booking_parameters(), array(
+                'studentid' => $studentid,
+                'bookedslot' => $slottobook,
+                )
+            );
+
+        $result = false;
+        $warnings = array();
+        $instructorid = $USER->id;
+
+        $conflictingbooking = booking::conflicts($instructorid, $studentid, $slottobook);
+
+        if (!empty($conflictingbooking)) {
+
+            // set the subscriber object
+            $subscriber = self::get_course_subscriber_context('/local/booking/', $conflictingbooking->courseid);
+
+            $result = true;
+            $warninginfo = [
+                'studentname'   => participant::get_fullname($conflictingbooking->studentid),
+                'coursename'    => $subscriber->get_shortname(),
+                'exercisename'  => $subscriber->get_exercise_name($conflictingbooking->exerciseid),
+                'date'          => (new \DateTime('@' . $conflictingbooking->starttime))->format('l M j \a\t H:i \z\u\l\u'),
+            ];
+            $warnings[] = [
+                'warningcode' => 'errorconflictingbooking',
+                'message' => get_string('errorconflictingbooking', 'local_booking', $warninginfo)
+            ];
+        }
+
+        return array(
+            'result' => $result,
+            'warnings' => $warnings
+        );
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function is_conflicting_booking_returns() {
         return new external_single_structure(
             array(
                 'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),

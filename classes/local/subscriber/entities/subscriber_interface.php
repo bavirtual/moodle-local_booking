@@ -37,11 +37,12 @@ interface subscriber_interface {
     public function get_id();
 
     /**
-     * Get the subscriber's course.
+     * Retrieves a Moodle course based on the courseid.
      *
-     * @return int $course
+     * @param int  $courseid  The courseid id.
+     * @return string
      */
-    public function get_course();
+    public function get_course(int $courseid);
 
     /**
      * Get the subscriber's course context.

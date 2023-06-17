@@ -54,19 +54,24 @@ class booking_mybookings_exporter extends exporter {
         $booking = $data['booking'];
         $student = new student($COURSE->subscriber, $booking->get_studentid());
         $action = new action($COURSE->subscriber, $student, 'cancel', $booking->get_exerciseid());
-        $sessiondate = new DateTime('@' . $booking->get_slot()->get_starttime());
+        $slot = $booking->get_slot();
+        $starttime = new DateTime('@' . $slot->get_starttime());
+        // TODO: end time should include the last hour
+        $endtime = new DateTime('@' . $slot->get_endtime() + ((60 * 60)));
 
         $data = [
-        'bookingid'   => $booking->get_id(),
-        'studentid'   => $booking->get_studentid(),
-        'studentname' => student::get_fullname($booking->get_studentid()),
-        'exerciseid'  => $booking->get_exerciseid(),
-        'noshows'     => count($student->get_noshow_bookings()),
-        'exercise'    => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
-        'sessiondate' => $sessiondate->format('D M j'),
-        'groundtime' => $sessiondate->format('H:i'),
-        'actionname'  => $action->get_name(),
-        'actionurl'   => $action->get_url()->out(false),
+        'bookingid'     => $booking->get_id(),
+        'studentid'     => $booking->get_studentid(),
+        'studentname'   => student::get_fullname($booking->get_studentid()),
+        'exerciseid'    => $booking->get_exerciseid(),
+        'noshows'       => count($student->get_noshow_bookings()),
+        'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid(), $booking->get_courseid()),
+        'sessiondate'   => $starttime->format('D M j'),
+        'starttime'     => $starttime->format('H:i \z\u\l\u'),
+        'endtime'       => $endtime->format('H:i \z\u\l\u'),
+        'actionname'    => $action->get_name(),
+        'actionurl'     => $action->get_url()->out(false),
+        'coursename'    => $COURSE->subscriber->get_course($booking->get_courseid())->shortname,
         ];
 
         parent::__construct($data, $related);
@@ -79,6 +84,9 @@ class booking_mybookings_exporter extends exporter {
             ],
             'studentid' => [
                 'type' => PARAM_INT,
+            ],
+            'coursename' => [
+                'type' => PARAM_RAW,
             ],
             'studentname' => [
                 'type' => PARAM_RAW,
@@ -95,7 +103,10 @@ class booking_mybookings_exporter extends exporter {
             'sessiondate' => [
                 'type' => PARAM_RAW,
             ],
-            'groundtime' => [
+            'starttime' => [
+                'type' => PARAM_RAW,
+            ],
+            'endtime' => [
                 'type' => PARAM_RAW,
             ],
             'actionname' => [

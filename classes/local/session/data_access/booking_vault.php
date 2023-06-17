@@ -138,17 +138,18 @@ class booking_vault implements booking_vault_interface {
      * @param bool   $isstudent   Whether to get student bookings
      * @param bool   $oldestfirst Sort order of the returned records.
      * @param bool   $activeonly  Retrieve active bookings only.
+     * @param bool   $allcourses  Retrieve bookings for all courses.
      * @return array {Object}
      */
-    public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true) {
+    public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true, bool $allcourses = false) {
         global $DB;
 
         $sql = 'SELECT b.id, b.userid, b.courseid, b.studentid, b.exerciseid,
                        b.slotid, b.confirmed, b.noshow, b.active, b.timemodified
                 FROM {' . static::DB_BOOKINGS. '} b
                 INNER JOIN {' . static::DB_SLOTS . '} s on s.id = b.slotid
-                WHERE b.courseid = :courseid
-                    AND ' . ($isstudent ? 'b.studentid' : 'b.userid') . ' = :userid' .
+                WHERE ' . ($allcourses ? '' : 'b.courseid = :courseid AND ' ) .
+                    ($isstudent ? 'b.studentid' : 'b.userid') . ' = :userid' .
                     ($activeonly ? ' AND b.active = 1' : '') .
                     ($oldestfirst ? ' ORDER BY s.starttime' : '');
 
@@ -341,6 +342,7 @@ class booking_vault implements booking_vault_interface {
             'studentid'  => $studentid,
             'noshow' => 1
         ];
+
         // get the last no-show date to determine period
         $noshowrecs = $DB->get_records_sql($sql, $params);
         if (count($noshowrecs)) {
@@ -365,5 +367,34 @@ class booking_vault implements booking_vault_interface {
         }
 
         return $noshowrecs;
+    }
+
+    /**
+     * Retreives the conflicting booking if exists.
+     *
+     * @param int $instructorid The instructor id making a booking
+     * @param int $studnetid    The student id the booking is for
+     * @param int $start        The start & end dates
+     * @param itn $end          The start & end dates
+     * @return {object?}
+     */
+    public static function get_booking_conflict(int $instructorid, int $studentid, int $start, int $end) {
+        global $DB;
+
+        $sql = 'SELECT b.courseid, b.studentid, b.exerciseid, s.starttime
+            FROM {' . static::DB_BOOKINGS . '} b
+            INNER JOIN {' . static::DB_SLOTS. '} s ON s.id = b.slotid
+            WHERE (b.userid = :instructorid
+                OR b.studentid = :studentid)
+                AND s.starttime <= :end
+                AND s.endtime >= :start';
+        $params = [
+            'instructorid' => $instructorid,
+            'studentid'    => $studentid,
+            'start'        => $start,
+            'end'          => $end
+        ];
+
+        return $DB->get_record_sql($sql, $params);
     }
 }

@@ -74,6 +74,17 @@ interface booking_interface {
     public function confirmed();
 
     /**
+     * Returns whether the booking conflicts with another
+     * for the same instructor.
+     *
+     * @param int   $instructorid The instructor id making the booking.
+     * @param int   $studentid    The student id the booking is for.
+     * @param array $slottobook   The booking start & end timestamps.
+     * @return {object?}
+     */
+    public static function conflicts(int $instructorid, int $studentid, array $slottobook);
+
+    /**
      * Get the booking active status.
      *
      * @return bool

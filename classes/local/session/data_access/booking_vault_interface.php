@@ -68,9 +68,10 @@ interface booking_vault_interface {
      * @param bool   $isstudent   Whether to get student bookings
      * @param bool   $oldestfirst Sort order of the returned records.
      * @param bool   $activeonly  Retrieve active bookings only.
+     * @param bool   $allcourses  Retrieve bookings for all courses.
      * @return array {Object}
      */
-    public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true);
+    public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true, bool $allcourses = false);
 
     /**
      * Get booking based on passed object.
@@ -124,4 +125,24 @@ interface booking_vault_interface {
      * @return bool
      */
     public static function set_booking_inactive(int $bookingid, bool $noshow = false);
+
+    /**
+     * Get an array of no-show bookings for a student in a course.
+     *
+     * @param int $courseid  The associated course
+     * @param int $studentid The student id conducted the session
+     * @return array
+     */
+    public static function get_noshow_bookings(int $courseid, int $studentid);
+
+    /**
+     * Retreives the conflicting booking if exists.
+     *
+     * @param int $instructorid The instructor id making a booking
+     * @param int $studnetid    The student id the booking is for
+     * @param int $start        The start & end dates
+     * @param itn $end          The start & end dates
+     * @return {object?}
+     */
+    public static function get_booking_conflict(int $instructorid, int $studentid, int $start, int $end);
 }

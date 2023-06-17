@@ -38,6 +38,7 @@ $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $userid = optional_param('userid', 0, PARAM_INT);
+$role = optional_param('role', 0, PARAM_INT);  // 0=student, 1=instructor
 
 $url = new moodle_url('/local/booking/view.php');
 $url->param('courseid', $courseid);
@@ -64,7 +65,7 @@ $PAGE->set_heading($title . ' - ' . participant::get_fullname($userid), 'local_b
 $PAGE->add_body_class('path-local-booking');
 
 // get student profile view
-$profileview = new profile_view($context, $courseid, ['subscriber'=>$COURSE->subscriber, 'userid'=>$userid]);
+$profileview = new profile_view($context, $courseid, ['subscriber'=>$COURSE->subscriber, 'userid'=>$userid, 'role'=>($role?'instructor':'student')]);
 
 // output profile page
 echo $OUTPUT->header();

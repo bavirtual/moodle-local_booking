@@ -69,12 +69,12 @@ interface participant_interface {
     /**
      * Get an participant's bookings
      *
-     * @param bool $isStudent   Whether to get student bookings
+     * @param bool $isstudent   Whether to get student bookings
      * @param bool $activeonly  Whether to get active bookings only
      * @param bool $oldestfirst Whether to sort results by oldest
      * @return booking[] An array of bookings.
      */
-    public function get_bookings(bool $isStudent = true, bool $activeonly = false, bool $oldestfirst = false);
+    public function get_bookings(bool $isstudent = true, bool $activeonly = false, bool $oldestfirst = false);
 
     /**
      * Get an a's active bookings

@@ -404,6 +404,38 @@ class participant_vault implements participant_vault_interface {
     }
 
     /**
+     * Returns the timestamp of the last
+     * graded session.
+     *
+     * @param   int The user id
+     * @param   int The course id
+     * @return  stdClass The record containing timestamp of the last grading
+     */
+    public function get_last_graded_date(int $userid, int $courseid, bool $is_student) {
+        global $DB;
+
+        // parameter for the grades being retrieved: the student graded by instructor or grader grades
+        $usertypesql = $is_student ? 'grader != -1 AND userid' : 'grader';
+        // Get the student's grades
+        $sql = 'SELECT timemodified
+                FROM {' . self::DB_ASSIGN_GRADES . '} ag
+                INNER JOIN {' . self::DB_COURSE_MODS . '} cm ON cm.instance = ag.assignment
+                WHERE cm.course = :courseid
+                AND cm.deletioninprogress = 0
+                AND ' . $usertypesql . ' = :userid
+                AND ag.timemodified > ' . (time() - self::PASTDATACUTOFFDAYS) . '
+                ORDER BY timemodified DESC
+                LIMIT 1';
+
+        $params = [
+            'courseid' => $courseid,
+            'userid'  => $userid
+        ];
+
+        return $DB->get_record_sql($sql, $params);
+    }
+
+    /**
      * Returns the list of incomplete lessons for a student
      * prior to the upcoming next exercise.
      *

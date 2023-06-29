@@ -104,6 +104,17 @@ interface participant_vault_interface {
     public static function get_participant_name(int $userid, bool $includealternate = true);
 
     /**
+     * Returns the timestamp of the last
+     * graded session.
+     *
+     * @param int $userid       The user id
+     * @param int $courseid     The course id
+     * @param bool $is_student  The participant is a student?
+     * @return  stdClass The record containing timestamp of the last grading
+     */
+    public function get_last_graded_date(int $userid, int $courseid, bool $is_student);
+
+    /**
      * Returns the list of incomplete lessons for a student
      * prior to the upcoming next exercise.
      *

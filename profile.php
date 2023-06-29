@@ -45,7 +45,7 @@ $url->param('courseid', $courseid);
 $PAGE->set_url($url);
 
 $context = context_course::instance($courseid);
-$title = get_string('profile' . (current(get_user_roles($context, $USER->id))->shortname!='student' ? 'instructor' : 'student'), 'local_booking');
+$title = get_string('profile' . (current(get_user_roles($context, $userid))->shortname!='student' ? 'instructor' : 'student'), 'local_booking');
 
 // basic access check
 require_login($course, false);

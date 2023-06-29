@@ -475,6 +475,20 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Returns the course graduation exercise as specified in the settings
+     * otherwise retrieves the last exercise.
+     *
+     * @param bool $nameonly Whether to return the name instead of the id
+     * @return int The last exericse id
+     */
+    public function get_graduation_exercise(bool $nameonly = false) {
+        $modulesIterator = (new ArrayObject($this->modules))->getIterator();
+        $modulesIterator->seek(count($this->modules)-1);
+        $gradexerciseid = $modulesIterator->current()->id;
+        return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
+    }
+
+    /**
      * Retrieves the exercise name of a specific exercise
      * based on its id statically.
      *

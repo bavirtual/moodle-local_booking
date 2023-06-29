@@ -116,7 +116,9 @@ class student extends participant {
 
     /**
      * @var array $incompletelessons the list of pending lessons.
+     * @var array $incompletelessons the list of pending lessons.
      */
+    protected $incompletelessons;
     protected $incompletelessons;
 
     /**
@@ -661,6 +663,47 @@ class student extends participant {
     }
 
     /**
+     * Get the list of pending lessons
+     *
+     * @param  bool  $byname Whether to return the name or ids of pending lessons
+     * @return array list of pending lessons
+     */
+    public function get_pending_lessons(bool $byname = false) {
+
+        if (!isset($this->incompletelessons)) {
+
+            // check if the student is not graduating
+            if (!$this->has_completed_coursework()) {
+
+                // exercise associated with completed lessons depends on whether the student passed the current exercise
+                $grade = $this->get_grade($this->get_current_exercise());
+                if (!empty($grade))
+                    // check if passed exercise or received a progressing or objective not met grade
+                    $exerciseid = $grade->is_passed() ? $this->get_next_exercise() : $this->get_current_exercise();
+                else
+                    $exerciseid = $this->get_current_exercise();
+
+                // get lessons complete
+                $this->incompletelessons = $this->vault->get_student_incomplete_lesson_ids($this->userid, $this->course->get_id(), $exerciseid);
+
+            } else {
+                $this->incompletelessons = [];
+            }
+        }
+
+        // check whether to return ids or string
+        if ($byname) {
+            foreach ($this->incompletelessons as $lessonid) {
+                $pendinglessons[] = $this->course->get_lesson_module($lessonid)->name;
+            }
+        } else  {
+            $pendinglessons = $this->incompletelessons;
+        }
+
+        return $pendinglessons;
+    }
+
+    /**
      * Get the student's skill test / check ride test final grade.
      *
      * @return string
@@ -714,6 +757,7 @@ class student extends participant {
      * @return  bool    Whether the lessones were completed or not.
      */
     public function has_completed_lessons() {
+        return empty($this->get_pending_lessons());
         return empty($this->get_pending_lessons());
     }
 

@@ -1,5 +1,13 @@
 # Change log
 
+## [2023062900] - RELEASED 2023-06-29 - hotfix
+
+### Fixed
+
+- Exams showing as an option for booking a sesison
+- Student profile displaying as instructor in the title
+- Listing the lessons that are incomplete in student notification
+
 ## [2023061702] - RELEASED 2023-06-17 - hotfix
 
 ### Fixed

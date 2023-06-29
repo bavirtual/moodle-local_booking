@@ -433,19 +433,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Get subscribing course Flight Training Managers.
-     *
-     * @return array The Flight Training Manager users.
-     */
-    public function get_flight_training_managers() {
-        $mgrs = \get_enrolled_users($this->context, 'moodle/site:approvecourse');
-        $activemgrs = array_filter($mgrs, function($v, $k) {
-            return $v->suspended == 0;
-        }, ARRAY_FILTER_USE_BOTH);
-        return $activemgrs;
-    }
-
-    /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array
@@ -482,20 +469,6 @@ class subscriber implements subscriber_interface {
     public function get_lesson_by_exerciseid(int $exerciseid) {
         $idx = array_search($this->modules[$exerciseid]->section, array_column($this->lessons, 'id'));
         return [$this->modules[$exerciseid]->section, $this->lessons[$idx]->name];
-    }
-
-    /**
-     * Returns the course graduation exercise as specified in the settings
-     * otherwise retrieves the last exercise.
-     *
-     * @param bool $nameonly Whether to return the name instead of the id
-     * @return int The last exericse id
-     */
-    public function get_graduation_exercise(bool $nameonly = false) {
-        $modulesIterator = (new ArrayObject($this->modules))->getIterator();
-        $modulesIterator->seek(count($this->modules)-1);
-        $gradexerciseid = $modulesIterator->current()->id;
-        return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
     }
 
     /**

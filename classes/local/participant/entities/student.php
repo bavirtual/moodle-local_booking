@@ -637,15 +637,6 @@ class student extends participant {
     }
 
     /**
-     * Get the student's skill test / check ride test final grade.
-     *
-     * @return string
-     */
-    public function get_finalgrade() {
-        return $this->finalgrade;
-    }
-
-    /**
      * Set the student's slot color.
      *
      * @param string $slotcolor

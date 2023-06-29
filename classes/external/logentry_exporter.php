@@ -317,7 +317,7 @@ class logentry_exporter extends exporter {
         $flightdate = !empty($this->logentry) ? $this->logentry->get_flightdate(isset($this->data['view']) && $this->data['view'] == 'summary') : $this->data['flightdate'];
         $p1id = !empty($this->logentry) ? $this->logentry->get_p1id() : $this->data['p1id'];
         $p2id = !empty($this->logentry) ? $this->logentry->get_p2id() : $this->data['p2id'];
-        $sectionname = !empty($this->logentry) ? '' : array_values($COURSE->subscriber->get_lesson($exerciseid))[1];
+        $sectionname = !empty($this->logentry) ? '' : array_values($COURSE->subscriber->get_lesson_by_exerciseid($exerciseid))[1];
         $dualops = $this->data['trainingtype'] == 'Dual';
         $haspictime = !empty($this->logentry) ? !empty($this->logentry->get_pictime()) : false;
         $flighttype = !empty($this->logentry) ? $this->logentry->get_flighttype() : 'training';

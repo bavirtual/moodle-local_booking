@@ -327,7 +327,7 @@ class week_exporter extends exporter {
                 \core\notification::ERROR(get_string('studentonhold', 'local_booking'));
             }
             if (!$this->student->has_completed_lessons()) {
-                \core\notification::WARNING(get_string('lessonsincomplete', 'local_booking'));
+                \core\notification::WARNING(get_string('lessonsincomplete', 'local_booking', \implode(', ', $this->student->get_pending_lessons(true))));
             }
         }
         $date = $this->related['type']->timestamp_to_date_array($this->calendar->time);

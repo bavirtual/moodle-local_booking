@@ -125,10 +125,7 @@ abstract class base_view {
      *
      * @param renderer_base $output     The renderer for output
      * @param subscriber    $subscriber The subscribing course
-     * @param string        $viewtype   The view type [book]|confirm
-     * @param bool          $readonly   Whether the viewer is a student
-     * @param bool          $instructor Whether the viewer is an instructor
-     * @param bool          $examiner   Whether the viewer is an examiner
+     * @param array         $options    The options for selecitng returend modules
      * @return array
      */
     public static function get_modules(renderer_base $output, subscriber $subscriber, array $options) {

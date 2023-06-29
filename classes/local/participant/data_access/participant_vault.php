@@ -498,16 +498,15 @@ class participant_vault implements participant_vault_interface {
     }
 
     /**
-     * Returns whether the student complete
-     * all sessons prior to the upcoming next
-     * exercise.
+     * Returns the list of incomplete lessons for a student
+     * prior to the upcoming next exercise.
      *
      * @param   int     The student user id
      * @param   int     The course id
      * @param   int     The next exercise id
-     * @return  bool    Whether the lessones were completed or not.
+     * @return  array   List of incomplete lesson mod ids
      */
-    public function is_student_lessons_complete(int $userid, int $courseid, int $nextexercise) {
+    public function get_student_incomplete_lesson_ids(int $userid, int $courseid, int $nextexercise) {
         global $DB;
 
         // get the section containing the next exercise
@@ -541,17 +540,19 @@ class participant_vault implements participant_vault_interface {
         ];
 
         $lessonsincompleted = $DB->get_records_sql($sql, $params);
-        $lessonscomplete = count($lessonsincompleted) == 0;
 
         // check the sequence for lessons with multiple assignments to make sure that
         // only lessons prior to the completed exercise are evaluated for completion
+        $incompletesequence = [];
         if (!empty($lessonsincompleted)) {
             $incompletesequence = explode(',', array_values($lessonsincompleted)[0]->sequence);
-            $lessonscomplete = array_search(array_values($lessonsincompleted)[0]->id, $incompletesequence) > array_search($nextexercise, $incompletesequence);
+            // remove the next exericse from the section list of modules
+            if (($key = array_search($nextexercise, $incompletesequence)) !== false) {
+                unset($incompletesequence[$key]);
+            }
         }
 
-
-        return $lessonscomplete;
+        return $incompletesequence;
     }
 
     /**

@@ -205,7 +205,7 @@ class bookings_exporter extends exporter {
         $options = [
             'isinstructor' => !empty($this->instructor),
             'isexaminer'   => !empty($this->instructor) ? $this->instructor->is_examiner() : false,
-            'viewtype'     => 'book',
+            'viewtype'     => $this->viewtype,
             'readonly'     => $this->data['action'] == 'readonly'
         ];
 

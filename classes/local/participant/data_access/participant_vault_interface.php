@@ -115,16 +115,15 @@ interface participant_vault_interface {
     public function get_last_graded_date(int $userid, int $courseid, bool $is_student);
 
     /**
-     * Returns whether the student complete
-     * all sessons prior to the upcoming next
-     * exercise.
+     * Returns the list of incomplete lessons for a student
+     * prior to the upcoming next exercise.
      *
      * @param   int     The student user id
      * @param   int     The course id
      * @param   int     The next exercise id
-     * @return  bool    Whether the lessones were completed or not.
+     * @return  array   List of incomplete lesson mod ids
      */
-    public function is_student_lessons_complete(int $userid, int $courseid, int $nextexercise);
+    public function get_student_incomplete_lesson_ids(int $userid, int $courseid, int $nextexercise);
 
     /**
      * Updates a user's profile field with a value

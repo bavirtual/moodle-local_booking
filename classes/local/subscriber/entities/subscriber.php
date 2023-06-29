@@ -437,20 +437,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Returns the course graduation exercise as specified in the settings
-     * otherwise retrieves the last exercise.
-     *
-     * @param bool $nameonly Whether to return the name instead of the id
-     * @return int The last exericse id
-     */
-    public function get_graduation_exercise(bool $nameonly = false) {
-        $modulesIterator = (new ArrayObject($this->modules))->getIterator();
-        $modulesIterator->seek(count($this->modules)-1);
-        $gradexerciseid = $modulesIterator->current()->id;
-        return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
-    }
-
-    /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array
@@ -469,14 +455,38 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Returns the subscribed course lesson by the lesson module id
+     *
+     * @param int $lessonid The lesson id
+     * @return stdClass  The lesson module
+     */
+    public function get_lesson_module(int $lessonid) {
+        return $this->lessonmods[$lessonid];
+    }
+
+    /**
      * Returns the subscribed course section id and lesson name that contains the exercise
      *
      * @param int $exerciseid The exercise id in the course inside the section
      * @return array  The section name of a course associated with the exercise
      */
-    public function get_lesson(int $exerciseid) {
+    public function get_lesson_by_exerciseid(int $exerciseid) {
         $idx = array_search($this->modules[$exerciseid]->section, array_column($this->lessons, 'id'));
         return [$this->modules[$exerciseid]->section, $this->lessons[$idx]->name];
+    }
+
+    /**
+     * Returns the course graduation exercise as specified in the settings
+     * otherwise retrieves the last exercise.
+     *
+     * @param bool $nameonly Whether to return the name instead of the id
+     * @return int The last exericse id
+     */
+    public function get_graduation_exercise(bool $nameonly = false) {
+        $modulesIterator = (new ArrayObject($this->modules))->getIterator();
+        $modulesIterator->seek(count($this->modules)-1);
+        $gradexerciseid = $modulesIterator->current()->id;
+        return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
     }
 
     /**

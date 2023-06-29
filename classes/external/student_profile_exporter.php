@@ -280,7 +280,7 @@ class student_profile_exporter extends exporter {
 
         // student current lesson
         $exerciseid = $this->student->get_current_exercise();
-        $currentlesson = array_values($this->subscriber->get_lesson($exerciseid))[1];
+        $currentlesson = array_values($this->subscriber->get_lesson_by_exerciseid($exerciseid))[1];
 
         // module completion information
         $usermods = $this->student->get_priority()->get_completions();

@@ -484,8 +484,7 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Returns the course graduation exercise as specified in the settings
-     * otherwise retrieves the last exercise.
+     * Retrieves subscribing course grading items for each module
      *
      * @param bool $nameonly Whether to return the name instead of the id
      * @return int The last exericse id

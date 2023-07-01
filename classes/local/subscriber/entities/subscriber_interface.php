@@ -170,13 +170,6 @@ interface subscriber_interface {
     public function get_graduation_exercise();
 
     /**
-     * Retrieves subscribing course grading items for each module
-     *
-     * @return array
-     */
-    public function get_grading_items();
-
-    /**
      * Retrieves the exercise name of a specific exercise
      * based on its id statically.
      *

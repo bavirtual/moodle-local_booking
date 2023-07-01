@@ -112,11 +112,6 @@ class subscriber implements subscriber_interface {
     protected $lessonmods;
 
     /**
-     * @var array $grading_items The subscribing course's modules grading items.
-     */
-    protected $grading_items = [];
-
-    /**
      * @var bool $subscribed Whether the course is subscribed to Session Booking plugin.
      */
     public $subscribed;
@@ -192,16 +187,6 @@ class subscriber implements subscriber_interface {
         $this->lessons = $this->coursemodinfo->get_section_info_all();
         $this->modules = array_filter($cms, function($property) { return ($property->modname == 'assign' || $property->modname == 'quiz');});
         $this->lessonmods = array_filter($cms, function($property) { return ($property->modname == 'lesson');});
-
-        // get grading items for all modules
-        foreach ($this->modules as $mod) {
-            $params = array('itemtype' => 'mod',
-            'itemmodule' => $mod->modname,
-            'iteminstance' => $mod->instance,
-            'courseid' => $this->courseid,
-            'itemnumber' => 0);
-            $this->grading_items[$mod->id] = \grade_item::fetch($params);
-        }
 
         // define course custom fields globally
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
@@ -375,7 +360,7 @@ class subscriber implements subscriber_interface {
         $i = 0;
         foreach ($studentrecs as $studentrec) {
             $student = new student($this, $studentrec->userid);
-            if ($student->has_role('student')) {
+            if ($student->has_role('student') || $student->is_member_of($this->get_id(), $student->get_id(), LOCAL_BOOKING_GRADUATESGROUP)) {
                 $student->populate($studentrec);
                 $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
                 $activestudents[] = $student;
@@ -487,15 +472,6 @@ class subscriber implements subscriber_interface {
         $modulesIterator->seek(count($this->modules)-1);
         $gradexerciseid = $modulesIterator->current()->id;
         return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
-    }
-
-    /**
-     * Retrieves subscribing course grading items for each module
-     *
-     * @return array
-     */
-    public function get_grading_items() {
-        return $this->grading_items;
     }
 
     /**

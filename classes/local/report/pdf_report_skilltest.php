@@ -65,9 +65,7 @@ class pdf_report_skilltest extends pdf_report {
         $path = implode('/', $patharr);
 
         try {
-
             $pdf = new FPDM($pdffilename);
-
         } catch (\Exception $e) {
             // try again and fail if still not fixed
             try {

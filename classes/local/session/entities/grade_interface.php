@@ -57,6 +57,23 @@ interface grade_interface {
     public function get_user_grade();
 
     /**
+     * Get subscribing course grading item for a module
+     *
+     * @param int   $courseid The subscribing course id
+     * @param mixed $mod      The exercise module requiring the grade item
+     * @return array
+     */
+    public static function get_grading_item(int $courseid, mixed $mod);
+
+    /**
+     * Get grade name
+     *
+     * @param int $finalgrade The final grade
+     * @return array
+     */
+    public function get_grade_name(int $finalgrade);
+
+    /**
      * Get the student's grade feedback comments.
      *
      * @return string

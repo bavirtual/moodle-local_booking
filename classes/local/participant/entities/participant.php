@@ -28,6 +28,7 @@ namespace local_booking\local\participant\entities;
 use DateTime;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\session\data_access\booking_vault;
+use local_booking\local\session\data_access\grading_vault;
 use local_booking\local\session\entities\booking;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
@@ -293,7 +294,7 @@ class participant implements participant_interface {
      * @return  \DateTime    The timestamp of the last grading
      */
     public function get_last_graded_date() {
-        $lastgraded = $this->vault->get_last_graded_date($this->userid, $this->course->get_id(), $this->is_student);
+        $lastgraded = grading_vault::get_last_graded_date($this->userid, $this->course->get_id(), $this->is_student);
 
         $lastgradeddate = !empty($lastgraded) ? new \DateTime('@' . $lastgraded->timemodified) : null;
 

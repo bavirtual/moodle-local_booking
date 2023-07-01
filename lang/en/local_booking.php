@@ -415,6 +415,7 @@ $string['vatsimid'] = 'VATSIM PID';
 $string['vatsimidmissing'] = 'VATSIM PID missing!';
 $string['aircrafttype'] = "Aircraft Type";
 $string['ato'] = "ATO";
+$string['attempts'] = "Attempts";
 $string['attempt'] = "Attempt";
 $string['fail'] = "Fail";
 $string['pass'] = "Pass";

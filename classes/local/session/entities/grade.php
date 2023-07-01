@@ -30,8 +30,8 @@ require_once($CFG->libdir . '/grade/grade_grade.php');
 require_once($CFG->dirroot . '/grade/grading/lib.php');
 
 use assign;
+use local_booking\local\session\data_access\grading_vault;
 use local_booking\local\participant\entities\participant;
-use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -143,10 +143,41 @@ class grade extends \grade_grade {
      */
     public function get_user_grade() {
         if (!isset($this->usergrade)) {
-            $this->usergrade = $this->get_assignment()->get_user_grade($this->userid, false, 0);
+            $attempt = !empty($this->attempts) ? ((count($this->attempts)-1) ?: 0) : 0;
+            $this->usergrade = $this->get_assignment()->get_user_grade($this->userid, false, $attempt);
         }
 
         return $this->usergrade;
+    }
+
+    /**
+     * Get subscribing course grading item for a module
+     *
+     * @param int   $courseid The subscribing course id
+     * @param mixed $mod      The exercise module requiring the grade item
+     * @return array
+     */
+    public static function get_grading_item(int $courseid, mixed $mod) {
+        // get grading items for all modules
+        $params = array('itemtype' => 'mod',
+            'itemmodule' => $mod->modname,
+            'iteminstance' => $mod->instance,
+            'courseid' => $courseid,
+            'itemnumber' => 0);
+
+        return \grade_item::fetch($params);
+    }
+
+    /**
+     * Get grade name
+     *
+     * @param int $finalgrade The final grade
+     * @return array
+     */
+    public function get_grade_name(int $finalgrade) {
+        // get grading items for all modules
+        $scale = grading_vault::get_exercise_gradeitem_scale($this->grade_item->scaleid);
+        return trim($scale[$finalgrade-1]);
     }
 
     /**
@@ -179,17 +210,17 @@ class grade extends \grade_grade {
 
             // get grade feedback files from storage
             $files = $fs->get_area_files($this->get_context()->id, $component, $filearea, $itemid);
-            $feedbackfile = new \stored_file($fs, new stdClass());
 
             // get the right stored file record
             if (!empty($files)) {
-                array_walk($files, function($item) use (&$feedbackfile) {
-                    if (get_class($item) == 'stored_file' && $item->get_filename() != '.')
-                        return $feedbackfile = $item;
-                });
+                foreach ($files as $file) {
+                    if (get_class($file) == 'stored_file' && $file->get_filename() != '.') {
+                        $this->feedbackfile = $file;
+                        break;
+                    }
+                };
 
                 // get the path
-                $this->feedbackfile = $feedbackfile;
                 $path = $fs->get_file_system()->get_local_path_from_storedfile($this->feedbackfile);
             }
         }

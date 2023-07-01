@@ -108,15 +108,6 @@ interface booking_vault_interface {
     public static function get_user_total_booked_sessions(int $courseid, int $userid);
 
     /**
-     * Get an array of graded session count for each exercise for the user.
-     *
-     * @param int $isinstructor
-     * @param int $userid
-     * @return int
-     */
-    public static function get_user_total_graded_sessions(int $courseid, int $userid);
-
-    /**
      * Set active flag to false to deactive the booking
      * and set no-show status of the booking accordingly
      *

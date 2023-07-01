@@ -170,21 +170,25 @@ class bookings_exporter extends exporter {
             'avgwait' => [
                 'type' => PARAM_INT,
             ],
+            'showaction' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
             'showactive' => [
                 'type' => PARAM_RAW,
-                'default' => true,
+                'default' => '',
             ],
             'showonhold' => [
                 'type' => PARAM_RAW,
-                'default' => false,
+                'default' => '',
             ],
             'showgraduates' => [
                 'type' => PARAM_RAW,
-                'default' => false,
+                'default' => '',
             ],
             'showsuspended' => [
                 'type' => PARAM_RAW,
-                'default' => false,
+                'default' => '',
             ],
             'showallcourses' => [
                 'type' => \PARAM_BOOL,
@@ -214,11 +218,12 @@ class bookings_exporter extends exporter {
             'activestudents' => $this->get_students($output),
             'activebookings' => $this->get_bookings($output),
             'avgwait' => $this->averagewait,
+            'showaction' => $this->filter == 'active',
             'showactive' => $this->filter == 'active' || empty($this->filter) ? 'checked' : '',
             'showonhold' => $this->filter == 'onhold' ? 'checked' : '',
             'showgraduates' => $this->filter == 'graduates' ? 'checked' : '',
             'showsuspended' => $this->filter == 'suspended' ? 'checked' : '',
-            'showallcourses'=> \get_user_preferences('local_booking_1_xcoursebookings', false, !empty($this->instructor) ? $this->instructor->get_id() : 0),
+            'showallcourses'=> !empty(\get_user_preferences('local_booking_1_xcoursebookings', false, !empty($this->instructor) ? $this->instructor->get_id() : 0)),
         ];
 
         return $return;

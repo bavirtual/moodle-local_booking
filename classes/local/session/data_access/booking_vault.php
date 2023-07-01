@@ -244,30 +244,6 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
-     * Get an array of graded session count for each exercise for the user.
-     *
-     * @param int $isinstructor
-     * @param int $userid
-     * @return int
-     */
-    public static function get_user_total_graded_sessions(int $courseid, int $userid) {
-        global $DB;
-
-        $sql = 'SELECT cm.id AS exerciseid, count(cm.id) AS sessions FROM {' . static::DB_COURSE_MODS . '} cm
-        INNER JOIN {' . static::DB_ASSIGN_GRADES . '} ai ON ai.assignment = cm.instance
-        WHERE cm.course = :courseid
-            AND ai.grader = :userid
-        GROUP BY ai.grader, cm.instance, cm.id';
-
-        $params = [
-            'courseid'  => $courseid,
-            'userid'    => $userid
-        ];
-
-        return $DB->get_records_sql($sql, $params);
-    }
-
-    /**
      * Get the date of the last booked session
      *
      * @param int $isinstructor

@@ -840,7 +840,7 @@ class local_booking_external extends external_api {
 
         $msgdata = ['preference' => $preference, 'value' => $value];
         $warnings = array();
-        $result = set_user_preference('local_booking_' . $courseid . '_' . $preference, $value, $userid);
+        $result = set_user_preference('local_booking_' . $courseid . '_' . $preference, (gettype($value) == 'boolean' ? intval($value) : $value), $userid);
 
         if (!$result) {
             \core\notification::WARNING(get_string('bookingsetpreferencesunable', 'local_booking', $msgdata));

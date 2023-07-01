@@ -71,9 +71,11 @@
                 <th class="header booking-header booking-med text-xs-center">
                     <span class="media-body" aria-hidden="true">{{#str}} fleet, local_booking {{/str}}</span>
                 </th>
+                {{#showactive}}
                 <th class="header booking-header booking-big text-xs-center">
                     <span class="media-body" aria-hidden="true">{{#str}} sessionaction, local_booking {{/str}}</span>
                 </th>
+                {{/showactive}}
                 {{#coursemodules}}
                 <th class="header booking-header booking-xbig text-xs-center"
                     data-toggle="tooltip"
@@ -110,6 +112,7 @@
                 <td class="day text-sm-center" style="white-space: nowrap; padding: 0 5px 0 5px;">
                     <span class="media-body small" aria-hidden="true">{{fleet}}</span>
                 </td>
+                {{#showactive}}
                 <td class="day"
                     data-toggle="tooltip"
                     data-html="true"
@@ -125,6 +128,7 @@
                         </a>
                     </div>
                 </td>
+                {{/showactive}}
                 {{#sessions}}
                 <td class="text-sm-center" style="max-width: 20px;"
                     {{#graded}}data-action="view-logentry"{{/graded}}

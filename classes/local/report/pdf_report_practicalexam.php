@@ -60,7 +60,8 @@ class pdf_report_practicalexam extends pdf_report {
 
         // get the exercise id (assignment id) for the practical exam assignment and its grade
         $exerciseid = $this->course->get_graduation_exercise();
-        $grade = $this->student->get_grade($exerciseid);
+        $grade = $this->student->get_grade($exerciseid, true);
+        $attemptcount = count($grade->attempts);
 
         // write course name
         $this->SetFont($this->fontfamily, 'B', 18);
@@ -74,26 +75,40 @@ class pdf_report_practicalexam extends pdf_report {
         $vatsimid = $this->student->get_profile_field('VATSIMID');
         $html = '<h3>' . $this->student->get_name() . '</h3>';
         $html .= '<span style="font-size: small;">' . get_string('vatsimid', 'local_booking') . ': ';
-        $html .= (!empty($vatsimid) ? $vatsimid : get_string('vatsimidmissing', 'local_booking')) . '</span>';
+        $html .= (!empty($vatsimid) ? $vatsimid : get_string('vatsimidmissing', 'local_booking')) . '</span><br />';
+        $html .= '<span style="font-size: small;">' . get_string('attempts', 'local_booking') . ': ';
+        $html .= $attemptcount . '</span><br /><hr />';
         $this->writeHTML($html, true, false, true);
 
-        // examiner information
-        $examiner = participant::get_fullname($grade->usermodified);
-        $html = '<p><br /><span style="font-weight: bold;">' . get_string('instructor', 'local_booking') . ': ' . $examiner . '</span><br />';
-        $html .= '<span style="font-weight: bold;">' . get_string('logbookdate', 'local_booking') . ':</span>&nbsp;';
-        $html .= '<span style="font-weight: normal;">' . (new \DateTime('@'.$grade->get_dategraded()))->format('M d\, Y') . '</span></p>';
-        $this->SetFont($this->fontfamily, 'B', 12);
-        $this->SetTextColor(0, 0, 0);
-        $this->writeHTML($html, true, false, true);
+        // write each attempt
+        $attmptcntr = 0;
+        foreach ($grade->attempts as $attempt) {
+            // examiner information
+            $attmptcntr++;
+            $examiner = participant::get_fullname($attempt->grader);
+            $html = '';
+            if ($attemptcount > 1) {
+                $html .= '<p><span style="font-size: small;">' . get_string('attempt', 'local_booking') . ': ' . ($attempt->attemptnumber + 1) . '</span><p/><br />';
+            }
+            $html .= '<p><span style="font-weight: bold;">' . get_string('instructor', 'local_booking') . ': ' . $examiner . '</span><br />';
+            $html .= '<span style="font-weight: bold;">' . get_string('logbookdate', 'local_booking') . ':</span>&nbsp;';
+            $html .= '<span style="font-weight: normal;">' . (new \DateTime('@'.$attempt->timemodified))->format('M d\, Y') . '</span></p>';
+            $this->SetFont($this->fontfamily, 'B', 12);
+            $this->SetTextColor(0, 0, 0);
+            $this->writeHTML($html, true, false, true);
 
-        // write logbook entry header for the exercise
-        $this->write_entry_info($exerciseid, true);
+            // write logbook entry header for the exercise
+            $this->write_logentry_info($exerciseid, true);
 
-        // write grade and feedback information
-        $html = $this->get_grade_info($grade);
-        $html .= $this->get_feedback_text($grade);
-        $this->SetTextColor(0, 0, 0);
-        $this->Ln(140);
-        $this->writeHTML($html, true, false, true);
+            // write grade and feedback information
+            $html = $this->get_grade_info($grade, $attempt->attemptnumber);
+            $html .= $this->get_feedback_text($grade, $attempt->attemptnumber);
+            $this->SetTextColor(0, 0, 0);
+            $this->Ln(140);
+            $this->writeHTML($html, true, false, true);
+            if ($attemptcount > 1 && $attmptcntr < $attemptcount) {
+                $this->AddPage();
+            }
+        }
     }
 }

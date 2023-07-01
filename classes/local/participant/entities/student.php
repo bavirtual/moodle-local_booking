@@ -30,6 +30,7 @@ require_once($CFG->dirroot . '/mod/assign/externallib.php');
 use ArrayObject;
 use DateTime;
 use local_booking\local\session\data_access\booking_vault;
+use local_booking\local\session\data_access\grading_vault;
 use local_booking\local\session\entities\priority;
 use local_booking\local\session\entities\booking;
 use local_booking\local\session\entities\grade;
@@ -264,10 +265,11 @@ class student extends participant {
     /**
      * Get student grade for a specific exercise.
      *
-     * @param int  $coursemodid  The exercise id associated with the grade
+     * @param int  $coursemodid  The quiz/exercise id associated with the grade
+     * @param bool $getattempts  Wether to retrieve all attempts or not.
      * @return grade The student exercise grade.
      */
-    public function get_grade(int $coursemodid) {
+    public function get_grade(int $coursemodid, bool $getattempts = false) {
 
         // get the grade if already exists otherwise create a new one making sure it's not empty
         if (isset($this->grades[$coursemodid])) {
@@ -277,7 +279,13 @@ class student extends participant {
         } else {
 
             // fetch grade_grade then ensure it is graded!
-            $grade = new grade($this->course->get_grading_items()[$coursemodid]->id, $this->userid, $coursemodid);
+            $gradeitem = grade::get_grading_item($this->course->get_id(), $this->course->get_modules()[$coursemodid]);
+            $grade = new grade($gradeitem->id, $this->userid, $coursemodid);
+
+            // get attempts if requested
+            if ($getattempts) {
+                $grade->attempts = grading_vault::get_student_exercise_attempts($this->course->get_id(), $this->userid, $coursemodid);
+            }
 
             // discard the grade if the final grade is missing or it's over before cutoff period for processing past data
             if (empty($grade->finalgrade) || (strtotime(LOCAL_BOOKING_PASTDATACUTOFF . ' day', $grade->timemodified) < time())) {
@@ -286,6 +294,15 @@ class student extends participant {
         }
 
         return $grade;
+    }
+
+    /**
+     * Get student grade for the current exercise.
+     *
+     * @return grade The student exercise grade.
+     */
+    public function get_current_grade() {
+        return $this->get_grade($this->get_current_exercise());;
     }
 
     /**
@@ -308,15 +325,6 @@ class student extends participant {
         }
 
         return $grades;
-    }
-
-    /**
-     * Get student grade for the current exercise.
-     *
-     * @return grade The student exercise grade.
-     */
-    public function get_current_grade() {
-        return $this->get_grade($this->get_current_exercise());;
     }
 
     /**
@@ -672,7 +680,7 @@ class student extends participant {
 
         if ($hassubmission = !empty($exerciseid)) {
             // get the assignment associated with the exercise comments
-            $gradeitem = $this->course->get_grading_items()[$exerciseid];
+            $gradeitem = grade::get_grading_item($this->course->get_id(), $this->course->get_modules()[$exerciseid]);
 
             if (!empty($gradeitem)) {
                 $grade = new grade($gradeitem->id, $this->userid, $exerciseid, true);
@@ -783,7 +791,7 @@ class student extends participant {
         // the student is considered evaluated if the student has a skill test exam feedback evaluation file
         if (!isset($this->evaluated)) {
 
-            $finalgrade = $this->get_grade($this->course->get_graduation_exercise());
+            $finalgrade = $this->get_grade($this->course->get_graduation_exercise(), true);
             if (!empty($finalgrade)) {
                 $this->evaluated = !empty($finalgrade->get_feedback_file('assignfeedback_file', 'feedback_files'));
             } else {

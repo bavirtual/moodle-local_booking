@@ -53,16 +53,6 @@ class participant_vault implements participant_vault_interface {
     const DB_ROLE_ASSIGN = 'role_assignments';
 
     /**
-     * Process user info data table name for the simulator.
-     */
-    const DB_USER_DATA = 'user_info_data';
-
-    /**
-     * Process user info data table name for the simulator.
-     */
-    const DB_USER_FIELD = 'user_info_field';
-
-    /**
      * Process user enrollments table name.
      */
     const DB_USER_ENROL = 'user_enrolments';
@@ -93,11 +83,6 @@ class participant_vault implements participant_vault_interface {
     const DB_COURSE_SECTIONS = 'course_sections';
 
     /**
-     * Process course completion table name.
-     */
-    const DB_COURSE_COMPLETIONS = 'course_completions';
-
-    /**
      * Process user assignments table name.
      */
     const DB_ASSIGN = 'assign';
@@ -108,49 +93,9 @@ class participant_vault implements participant_vault_interface {
     const DB_ASSIGN_GRADES = 'assign_grades';
 
     /**
-     * Process all user grades table name.
-     */
-    const DB_GRADES = 'grade_grades';
-
-    /**
-     * Process grade items table name.
-     */
-    const DB_GRADE_ITEMS = 'grade_items';
-
-    /**
-     * Process grading instances table name.
-     */
-    const DB_GRADING_INS = 'grading_instances';
-
-    /**
-     * Process grading form rubric fillings table name.
-     */
-    const DB_GRADING_FIL = 'gradingform_rubric_fillings';
-
-    /**
-     * Process grading form rubric levels table name.
-     */
-    const DB_GRADING_LEVELS = 'gradingform_rubric_levels';
-
-    /**
-     * Process grading form rubric criteria table name.
-     */
-    const DB_GRADING_CRITERIA = 'gradingform_rubric_criteria';
-
-    /**
-     * Process quiz table name.
-     */
-    const DB_SCALE = 'scale';
-
-    /**
      * Process quiz table name.
      */
     const DB_QUIZ = 'quiz';
-
-    /**
-     * Process quiz attempts table name.
-     */
-    const DB_QUIZ_ATTEMPTS = 'quiz_attempts';
 
     /**
      * Process lesson completion in timer table.
@@ -161,11 +106,6 @@ class participant_vault implements participant_vault_interface {
      * Past cutoff date (timestamp) for data retrieval.
      */
     const PASTDATACUTOFFDAYS = LOCAL_BOOKING_PASTDATACUTOFF * 60 * 60 * 24;
-
-    /**
-     * Process course sections table name.
-     */
-    const DB_FILES = 'files';
 
     /**
      * Get all active participant from the database.
@@ -211,19 +151,17 @@ class participant_vault implements participant_vault_interface {
                     ue.timecreated AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
-                INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
                 INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
                 INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
                 WHERE en.courseid = :courseid
                     AND u.id = :userid
                     AND ra.contextid = :contextid
-                    AND r.shortname = :role';
+                LIMIT 1';
 
         $params = [
             'courseid'  => $courseid,
             'userid' => $userid,
             'contextid' => \context_course::instance($courseid)->id,
-            'role'      => 'student'
         ];
 
         return $DB->get_record_sql($sql, $params);
@@ -463,38 +401,6 @@ class participant_vault implements participant_vault_interface {
         }
 
         return $fullusername;
-    }
-
-    /**
-     * Returns the timestamp of the last
-     * graded session.
-     *
-     * @param   int The user id
-     * @param   int The course id
-     * @return  stdClass The record containing timestamp of the last grading
-     */
-    public function get_last_graded_date(int $userid, int $courseid, bool $is_student) {
-        global $DB;
-
-        // parameter for the grades being retrieved: the student graded by instructor or grader grades
-        $usertypesql = $is_student ? 'grader != -1 AND userid' : 'grader';
-        // Get the student's grades
-        $sql = 'SELECT timemodified
-                FROM {' . self::DB_ASSIGN_GRADES . '} ag
-                INNER JOIN {' . self::DB_COURSE_MODS . '} cm ON cm.instance = ag.assignment
-                WHERE cm.course = :courseid
-                AND cm.deletioninprogress = 0
-                AND ' . $usertypesql . ' = :userid
-                AND ag.timemodified > ' . (time() - self::PASTDATACUTOFFDAYS) . '
-                ORDER BY timemodified DESC
-                LIMIT 1';
-
-        $params = [
-            'courseid' => $courseid,
-            'userid'  => $userid
-        ];
-
-        return $DB->get_record_sql($sql, $params);
     }
 
     /**

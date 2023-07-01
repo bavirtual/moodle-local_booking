@@ -29,6 +29,7 @@ require_once($CFG->dirroot . '/group/lib.php');
 
 use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\session\data_access\booking_vault;
+use local_booking\local\session\data_access\grading_vault;
 
 class instructor extends participant {
 
@@ -86,7 +87,7 @@ class instructor extends participant {
      * @return {Object}[]   Array of sessions conducted count per module.
      */
     public function get_graded_sessions_count() {
-        return booking_vault::get_user_total_graded_sessions($this->course->get_id(), $this->userid);
+        return grading_vault::get_user_total_graded_sessions($this->course->get_id(), $this->userid);
     }
 
     /**

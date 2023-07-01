@@ -192,7 +192,7 @@ class pdf_report extends \pdf {
      * @param  bool $examentry   Whether the entry is associated with an exam.
      * @return string
      */
-    protected function write_entry_info(int $exerciseid, bool $examentry = false) {
+    protected function write_logentry_info(int $exerciseid, bool $examentry = false) {
 
         // load the logbook if needed
         if (!isset($this->logbook)) {
@@ -251,7 +251,8 @@ class pdf_report extends \pdf {
         $this->SetFont($this->fontfamily, '', 12);
         $this->SetTextColor(72, 79, 87);
         // place the logbook entry table differently from 1st page
-        $this->writeHTMLCell(0, 0, 50, ($this->PageNo() == 1 ? 310 : 210), $html, array('LRTB' => array(
+        $pgYpos = $this->PageNo() == 1 ? ($examentry ? 370 : 320) : ($examentry ? 150 : 220);
+        $this->writeHTMLCell(0, 0, 50, $pgYpos, $html, array('LRTB' => array(
             'width' => 1,
             'dash'  => 1,
             'color' => array(144, 145, 145)
@@ -261,13 +262,20 @@ class pdf_report extends \pdf {
     /**
      * Get the grade information.
      *
-     * @param  grade $grade  The assignment grade.
+     * @param  grade $grade   The assignment grade.
+     * @param  int   $attempt The grade attempt.
      * @return string
      */
-    protected function get_grade_info(grade $grade) {
+    protected function get_grade_info(grade $grade, int $attempt = 0) {
 
         $html = '<strong>' . get_string('gradescore', 'local_booking') . ':</strong>&nbsp;&nbsp;';
-        $html .= $grade->gradeinfo->grades[$this->student->get_id()]->str_long_grade . '<br />';
+
+        // check for attempts grade
+        if (!empty($grade->attempts) && count($grade->attempts) > 1) {
+            $html .= $grade->get_grade_name($grade->attempts[$attempt]->grade) . '<br />';
+        } else {
+            $html .= $grade->gradeinfo->grades[$this->student->get_id()]->str_long_grade . '<br />';
+        }
 
         // get rubric grading if available
         if ($grade->has_rubric()) {
@@ -292,13 +300,20 @@ class pdf_report extends \pdf {
     /**
      * Clean feedback text
      *
-     * @param  grade $grade  The grade containing the feedback text comment
+     * @param  grade $grade   The grade containing the feedback text comment
+     * @param  int   $attempt The grade attempt.
      * @return string
      */
-    protected function get_feedback_text(grade $grade) {
+    protected function get_feedback_text(grade $grade, int $attempt = 0) {
 
         $html = '<br /><strong>' . get_string('feedback', 'local_booking') . ':</strong>';
-        $feedbackcomments = $grade->get_feedback_comments();
+
+        // check for attempts grade
+        if (!empty($grade->attempts) && count($grade->attempts) > 1) {
+            $feedbackcomments = $grade->attempts[$attempt]->commenttext;
+        } else {
+            $feedbackcomments = $grade->get_feedback_comments();
+        }
 
         // process inline attachements or image tags, if exist
         if (strpos($feedbackcomments, 'pluginfile.php')) {

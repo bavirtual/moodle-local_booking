@@ -1,5 +1,26 @@
 # Change log
 
+## [2023080600] - RELEASED 2023-08-06
+
+### Fixed
+
+- externalapi AJAX exceptions related to 4.2.1+ Moodle release
+
+## [2023070100] - RELEASED 2023-07-01
+
+### Fixed
+
+- students that became instructors to show in the graduated students list
+
+### Added
+
+- attempts in the practical skill test report
+
+### Changed
+
+- first feedback attachment of the skill test to be the examiner evaluation report
+- Action hidden in the Instructor Dashboard for On-hold, Graduated, and Suspended users
+
 ## [2023062900] - RELEASED 2023-06-29 - hotfix
 
 ### Fixed

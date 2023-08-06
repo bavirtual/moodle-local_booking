@@ -1,5 +1,11 @@
 # Change log
 
+## [2023080601] - RELEASED 2023-08-06
+
+### Fixed
+
+- external_multiple_structure exception related to 4.2.1+ Moodle release
+
 ## [2023080600] - RELEASED 2023-08-06
 
 ### Fixed

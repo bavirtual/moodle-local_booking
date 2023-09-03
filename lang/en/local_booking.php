@@ -15,8 +15,8 @@ $string['actiondisabledincompletelessonstooltip'] = 'The student has not complet
 $string['actiondisabledexaminersonlytooltip'] = 'Examiners only';
 $string['actiondisabledsubmissionmissingtooltip'] = 'Exercise submission missing.<br/>Request the student to submit the PLog to enable grading.';
 $string['actiondisabledwrongexaminerstooltip'] = 'Action reserved for examiner \'{$a}\'';
+$string['actiondisablednologentrytooltip'] = 'Please record logbook entry to enable student certification';
 $string['actiondisabledexercisescompletedtooltip'] = 'All exercises completed';
-$string['actionevaluatetooltip'] = 'Evaluate \'{$a->studentname}\' on the {$a->examname}';
 $string['actiongradesession'] = 'Grade session';
 $string['actiongraduatetooltip'] = 'Graduate \'{$a->studentname}\' from the course';
 $string['activestudents'] = 'Active students progression';
@@ -64,12 +64,13 @@ $string['coursecompletion'] = 'course completion';
 $string['customfielddual'] = 'Dual';
 $string['customfieldmulticrew'] = 'Multicrew';
 $string['elapseddays'] = 'Elapsed Days';
+$string['evalformbuttonlabel'] = 'View form';
+$string['evalformbuttontooltip'] = 'Examiner evaluation form';
 $string['enroldate'] = 'Enrol Date';
-$string['evaluate'] = 'Eval.';
 $string['exercise'] = 'Exercise';
 $string['fleet'] = 'Fleet';
 $string['grade'] = 'Grade';
-$string['graduate'] = 'Grad.';
+$string['graduate'] = 'Cert.';
 $string['instructors'] = 'Instructors';
 $string['lastgradeddate'] = 'Last session graded';
 $string['lastsessiondate'] = 'Last session booked';
@@ -312,12 +313,17 @@ $string['daysback'] = 'days back';
 $string['graduated'] = 'Graduated';
 $string['endorsement'] = 'Skill Test Recommendation';
 $string['endorsementmgs'] = 'Recommended by {$a->endorser} on {$a->endorsedate}';
+$string['evalutionreport'] = 'Examiner evaluation form';
+$string['evalutionreportsubject'] = 'Examiner evaluation form subject';
 $string['examinersince'] = 'Examiner since';
-$string['graduation'] = 'Graduation';
-$string['graduationconfirmation'] = '<p><strong>Process completed successfully...</strong></p><p>&nbsp;\'{$a->fullname}\' graduation is complete and the following actions were performed:</p><ul>
+$string['graduation'] = 'Certification';
+$string['graduationemailconfirmation'] = '<strong>DONE!</strong><p>The form was emailed successfully to ({$a->certbodyemail}) and a copy was sent to your email address ({$a->examineremail}).</p><p>Do not forget to promote {$a->studentname} in <a href="{$a->vatsimpramsurl}" target="_blank">VATSIM PRAMS</a>.';
+$string['graduationformregeneration'] = '<p>The form was generated successfully.</p>';
+$string['graduationconfirmation'] = '<p><strong>Process completed successfully...</strong></p><p>&nbsp;\'{$a->fullname}\' certification is complete and the following actions were performed:</p><ul>
     <li style="padding-bottom: 20px;"><strong>Badges</strong> for {$a->courseshortname} completion were generate and sent via email to {$a->firstname}.&nbsp; A copy of the badge generation was sent to you as well.</li>
     <li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to all course active members, both students and instructors.</li>
-    <li style="padding-bottom: 20px;">{$a->firstname} has been added to the <strong>Graduates group</strong>.</li></ul>';
+    <li style="padding-bottom: 20px;">{$a->firstname} has been added to the <strong>Graduates group</strong>.</li>
+    <li style="padding-bottom: 20px;"><strong>Examiner Evaluation Form</strong> was generated. Click the button below to view the form.</li></ul>';
 $string['feedbackreport'] = 'Feedback report';
 $string['instructorsince'] = 'Instructor since';
 $string['keepactive'] = 'Keep active';
@@ -352,9 +358,10 @@ $string['skilltestendorse']='Recommend for skill test';
 $string['slots'] = 'Slots';
 $string['slotsactive'] = 'Posted slots';
 $string['theoryexamreport']='Theory examination report';
+$string['totalatohours']='Total {$a} hours';
 $string['totalexamhours']='Total exam hours';
 $string['totalexamsessions']='Total exam sessions';
-$string['totalsessionhours']='Total session hours';
+$string['totalsessionhours']='Total training hours';
 $string['totalsessionsbooked']='Total booked sessions';
 $string['totalsessionsgraded']='Total graded sessions';
 $string['xcoursebookings']='Show bookings from all courses';
@@ -379,13 +386,21 @@ $string['dualflight'] = 'Dual flight instruction';
 $string['duration'] = 'Duration';
 $string['examiner'] = 'Examiner';
 $string['examinerdetails'] = 'Examiner\'s Details';
-$string['examinerreport'] = 'Examiner\'s Evaluation Form';
-$string['examinerreportfor'] = 'Examiner Form for';
-$string['examinerreportsubject'] = 'This is {$a->ato} ATO Examiner form for the skills test of the {$a->coursename} course.';
+$string['evalformreport'] = 'Examiner\'s Evaluation Form';
+$string['evalformreportfor'] = 'Examiner Form for';
+$string['evalformreportsubject'] = 'This is {$a->ato} ATO Examiner form for the skills test of the {$a->coursename} course.';
 $string['examreportcopies'] = 'Copies of the report shall be submitted to (1) The candidate (2) BAVirtual Flight Training (3) The Examiner.';
 $string['examdate'] = 'Exam date';
 $string['examend'] = 'Exam end time';
 $string['examstart'] = 'Exam start time';
+$string['evalformeditbuttonlabel'] = 'Edit form data';
+$string['evalformeditbuttontooltip'] = 'Edit the skill test data to update form data';
+$string['evalformemailbuttonlabel'] = 'Send to VATSIM';
+$string['evalformemailbuttontooltip'] = 'Sends an email to ({$a}) with this form attached';
+$string['evalformgeneratebuttonlabel'] = 'Regenerate form';
+$string['evalformgeneratebuttontooltip'] = 'Regenerate the examiner evaluation form';
+$string['evalformmsg'] = '<p>If the form does not display properly, you can access it from the student\'s skill test grading page <a href="{$a}">here</a>.</p>';
+$string['evalformeditmmsg'] = '<br/>To edit form data, you will have to update the skill test grade from the [Edit form data] button below.';
 $string['gradescore'] = 'Grade';
 $string['recommendationreport'] = 'Recommendation For Skill Test';
 $string['recommendationreportsubject'] = 'This is {$a->ato} ATO Recommendation for Skill Test letter compiled by the instructor recommending a student for a Skill Test.';
@@ -408,9 +423,6 @@ $string['theoryexamreportsubject'] = 'This is {$a->ato} ATO Theory Examination r
 $string['tobecompletedbyexaminer'] = 'to be completed by the examiner';
 $string['trainingaudit'] = 'Flight Training Audit';
 $string['trainingcontent'] = 'Training Content';
-$string['uploadreport'] = 'Submit evaluation form';
-$string['uploadreportmsg1'] = '<span class"mt-4" style="color: darkred;">Upon completion of the form below, please save it to your local drive using the download button from the PDF menu.';
-$string['uploadreportmsg2'] = '<br />Afterwards submit the saved file to the <strong>Feedback files</strong> section of the Skill Test exercise accessible from the button below.</span>';
 $string['vatsimid'] = 'VATSIM PID';
 $string['vatsimidmissing'] = 'VATSIM PID missing!';
 $string['aircrafttype'] = "Aircraft Type";
@@ -685,8 +697,25 @@ $string['emailrecommendationnotifyhtml'] = '<font face="sans-serif"><p><a href=\
     <p>{$a->firstname} has been recommended for the {$a->skilltest} examination by {$a->instructorname}.</p>
     <p>&nbsp;</p><p><i>Note to examiners: please coordinate with the {$a->coursename} training manager to arrange for {$a->firstname}\'s {$a->skilltest} examination.</i></p><hr />';
 
+// email to certification body and copy examiner: Evaluation form
+$string['emailevaluationformCCtext'] = 'You are copied on the following message:
+    ';
+$string['emailevaluationformCChtml'] = '<font face="sans-serif"><p>You are copied on the following message:<p/>';
+$string['emailevaluationformsubject'] = '{$a->ato} student {$a->rating} evaluation form';
+$string['emailevaluationformtext'] = 'Greeting,
+    Please find attached the {$a->rating} examiner evaluation form for {$a->studentname}, a {$a->ato} student.
+    {$a->studentname} completed the {$a->coursename} and passed the skill test successfully as indicated in the attached form.
+
+    Kindly process {$a->studentname} for the {$a->rating} accordingly.
+
+    Best regards,
+    {$a->examinername}
+    {$a->ato} Training Staff';
+$string['emailevaluationformhtml'] = '<font face="sans-serif"><p><hr /><p>Greetings,<p/><p>Please find attached the {$a->rating} examiner evaluation form for {$a->studentname}, a {$a->ato} student.
+{$a->studentname} completed the <strong>{$a->coursename}</strong> course and passed the skill test successfully as indicated in the attached form.</p><p>Kindly process {$a->studentname} for the {$a->rating} accordingly.<p/>
+<p>Best regards,<br/>{$a->examinername}<br/>{$a->ato} Training Staff</p><hr />';
+
 // email to all: congratulations to new graduate
-$string['emailgraduation'] = 'Graduation congratulatory notification';
 $string['emailgraduationnotify'] = '{$a->fullname} newly graduated';
 $string['emailgraduationnotifymsg1'] = 'Congratulations {$a->firstname} !!!
 
@@ -776,8 +805,8 @@ $string['postingwait'] = 'Posting wait restriction';
 $string['postingwaitdesc'] = 'A restriction period in days between the last conducted session and the next time a student can post availability (0 = disable restriction)';
 $string['trainingaircraft'] = 'Training aircraft ICAO';
 $string['trainingaircraftdesc'] = '(one per line)';
-$string['examinerformurl']='Examiner form URL';
-$string['examinerformurldesc']='Examiner evaluation VATSIM form URL (PDF only), required for graduation purposes (optional)';
+$string['vatsimintegration']= 'Enable VATSIM integration';
+$string['vatsimintegrationdesc'] ='Enables student endorsement for the skill test / check ride and generation of the VATSIM Examiner Evaluation Form. (requires pdf template and json config file to be attached to the course).';
 $string['suspensionperiod'] = 'Suspension restriction';
 $string['suspensionperioddesc'] = 'A restriction period in days after which inactive students will be automatically suspended from the course (0 = disable restriction)';
 $string['vatsimrating'] = 'Course outcome';
@@ -792,9 +821,13 @@ $string['groupexaminersdesc'] = 'Group to identify examiner instructors.';
 
 // Plugin errors
 $string['errorcertifiernotexaminer'] = 'Permission denied. Only the examiner can certify a graduating student.';
+$string['errorcertificationemail'] = 'Unable to send Examiner Evaluation Form email!';
 $string['errorconflictingbooking'] = 'Conflicts with existing booking with {$a->studentname} for {$a->coursename} \'{$a->exercisename}\' on {$a->date}.';
 $string['errorcoresubscriber'] = 'The site can not be a Session Booking plugin subscriber';
 $string['errordelete'] = 'Failed to delete logentry';
+$string['errorexaminerevalformunable'] = 'Unable to generate examiner evaluation form.';
+$string['errorexaminerevalmapping'] = 'Incorrect VATSIM form fields mapping format. The number of rubric grade items does not match the number of form field mappings.';
+$string['errorexaminerevalmissinglogentry'] = 'Skill test log entry missing! Please enter a log entry for the skill test.';
 $string['errorexercisemissing'] = 'Exercise not found!';
 $string['errorinvaliddate'] = 'Flight date cannot be before booked session date';
 $string['errorinvalidarrtime'] = 'Arrival date/time must be greater than departure date/time';

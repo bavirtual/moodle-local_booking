@@ -344,7 +344,7 @@ class student_profile_exporter extends exporter {
 
         } elseif ($this->student->tested()) {
 
-            $graduationstatus = get_string('checkpassed', 'local_booking') . ' ' .  $this->subscriber->get_graduation_exercise(true);
+            $graduationstatus = get_string(($this->student->get_finalgrade() == "Pass" ? 'checkpassed' : 'checkfailed'), 'local_booking') . ' ' .  $this->subscriber->get_graduation_exercise(true);
 
         } else {
             $graduationstatus = ($qualified ? get_string('qualified', 'local_booking') . ' ' .
@@ -410,7 +410,7 @@ class student_profile_exporter extends exporter {
         $examinerurl = new moodle_url('/local/booking/report.php', [
             'courseid' => $this->courseid,
             'userid' => $studentid,
-            'report' => 'examiner',
+            'report' => 'evalform',
         ]);
 
         $return = [

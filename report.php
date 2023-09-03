@@ -19,7 +19,7 @@
  *  Mentor report
  *  Theory examination report
  *  Practical Examination report,
- *  Skills test ride form.
+ *  Skills test examiner evaluation form.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -41,6 +41,7 @@ $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $userid = optional_param('userid', 0, PARAM_INT);
 $reporttype = optional_param('report', 'mentor', PARAM_RAW);
+$action = optional_param('action', '', PARAM_RAW);
 $title = get_string($reporttype . 'report', 'local_booking');
 
 $url = new moodle_url('/local/booking/view.php');
@@ -55,6 +56,8 @@ $context = context_course::instance($courseid);
 require_login($course, false);
 require_capability('local/booking:view', $context);
 
+$COURSE->subscriber = new subscriber($courseid);
+
 $navbartext = participant::get_fullname($userid);
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('admin');
@@ -68,32 +71,37 @@ $renderer = $PAGE->get_renderer('local_booking');
 echo $OUTPUT->header();
 echo $renderer->start_layout();
 
-$COURSE->subscriber = new subscriber($courseid);
-$student = new student($COURSE->subscriber, $userid);
-$tertiarynavadditional = ['userid'=>$userid];
-
 // check for exam processing action
-if ($reporttype == 'examiner' && !$student->evaluated()) {
-    $tertiarynavadditionalrow1['examaction']  = true;
-    $tertiarynavadditionalrow1['firstrow']  = true;
-    $tertiarynavadditionalrow1['evalmsg'] = '<br/>' . get_string('uploadreportmsg1', 'local_booking');
-    $tertiarynavadditionalrow1['evalmsg'] .= '&nbsp;&nbsp;<i class="icon fa fa-download fa-fw " aria-hidden="true"></i>';
-    $tertiarynavadditionalrow1['evalmsg'] .= get_string('uploadreportmsg2', 'local_booking');
-    $tertiarynavadditionalrow2['examaction']  = true;
-    $tertiarynavadditionalrow2['firstrow']  = false;
-    $tertiarynavadditionalrow2['actionlabel'] = get_string('uploadreport', 'local_booking');
-    $tertiarynavadditionalrow2['actionurl']   = new moodle_url('/mod/assign/view.php', [
-        'id'     => $COURSE->subscriber->get_graduation_exercise(),
-        'rownum' => 0,
-        'userid' => $userid,
-        'action' => 'grader'
-    ]);
+if ($reporttype == 'evalform') {
+    $tertiarynavadditional = [];
 
-    // output action bar
-    $actionbartop = new manage_action_bar($PAGE, 'report', $tertiarynavadditionalrow1);
-    $actionbarbottom = new manage_action_bar($PAGE, 'report', $tertiarynavadditionalrow2);
-    echo $renderer->render_tertiary_navigation($actionbartop);
-    echo $renderer->render_tertiary_navigation($actionbarbottom);
+    // show evaluation form message
+    $student = new student($COURSE->subscriber, $userid);
+    $examinerid = $student->get_grade($COURSE->subscriber->get_graduation_exercise())->usermodified;
+    $exerciseid = $COURSE->subscriber->get_graduation_exercise();
+    $fname = mb_substr($student->get_name(false, 'first'), 0, 1);
+    $lname = mb_substr($student->get_name(false, 'last'), 0, 1);
+    $tertiarynavadditional['skilltestgradeurl'] = $CFG->httpswwwroot . "/mod/assign/view.php?action=grading&id=$exerciseid&tifirst=$fname&tilast=$lname";
+    $tertiarynavadditional['isexaminer'] = $examinerid == $USER->id;
+    $tertiarynavadditional['regenerate'] = $action == 'generate';
+    $evalformmsgbar = new manage_action_bar($PAGE, 'evalform', $tertiarynavadditional);
+    echo $renderer->render_tertiary_navigation($evalformmsgbar);
+
+    // show evaluation form edit button menu for the examiner only
+    if ($examinerid == $USER->id) {
+        // prepare the tertiary navigation menu section
+        $tertiarynavadditional['courseid'] = $courseid;
+        $tertiarynavadditional['userid'] = $userid;
+        $tertiarynavadditional['exeid'] = $COURSE->subscriber->get_graduation_exercise();
+        $tertiarynavadditional['vatsimemail'] = $COURSE->subscriber->get_booking_config('vatsimcertemail');
+        $tertiarynavadditional['skilltesturl'] = '/local/booking/assign.php';
+        $tertiarynavadditional['generateformurl'] = '/local/booking/certify.php';
+        $tertiarynavadditional['sendformurl'] = '/local/booking/certify.php';
+
+        // output evaluation form examiner action bar
+        $examineractionbar = new manage_action_bar($PAGE, 'examiner', $tertiarynavadditional);
+        echo $renderer->render_tertiary_navigation($examineractionbar);
+    }
 }
 
 // report section
@@ -118,22 +126,12 @@ echo html_writer::end_tag('i');
 echo html_writer::end_tag('div');
 
 // embed the pdf report
-if ($reporttype != 'examiner' || $student->evaluated()) {
+$reporturl = new moodle_url('/local/booking/pdfwriter.php');
+$reporturl->param('courseid', $courseid);
+$reporturl->param('userid', $userid);
+$reporturl->param('report', $reporttype);
 
-    // open custom reports
-    $reporturl = new moodle_url('/local/booking/pdfwriter.php');
-    $reporturl->param('courseid', $courseid);
-    $reporturl->param('userid', $userid);
-    $reporturl->param('report', $reporttype);
-
-} else {
-
-    // open external examiner evaluation form
-    $reporturl = new moodle_url($COURSE->subscriber->examinerformurl);
-
-}
-
-echo html_writer::tag('embed', '', array('id'=>'report', 'src'=>$reporturl->out(false), 'quality'=>'low', 'height'=>'1200', 'width'=>'100%'));
+echo html_writer::tag('embed', '', array('id'=>'report', 'src'=>$reporturl->out(false), 'type'=>'application/pdf', 'height'=>'1200', 'width'=>'100%'));
 
 echo html_writer::end_tag('div');
 echo $renderer->complete_layout();

@@ -38,6 +38,7 @@ $categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $userid = optional_param('userid', 0, PARAM_INT);
+$role = optional_param('role', 0, PARAM_INT);
 
 $url = new moodle_url('/local/booking/view.php');
 $url->param('courseid', $courseid);
@@ -45,7 +46,7 @@ $url->param('courseid', $courseid);
 $PAGE->set_url($url);
 
 $context = context_course::instance($courseid);
-$title = get_string('profile' . (current(get_user_roles($context, $userid))->shortname!='student' ? 'instructor' : 'student'), 'local_booking');
+$title = get_string('profile' . ($role?'instructor':'student'), 'local_booking');
 
 // basic access check
 require_login($course, false);

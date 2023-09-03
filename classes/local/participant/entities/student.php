@@ -116,14 +116,19 @@ class student extends participant {
     protected $qualified;
 
     /**
-     * @var bool $tested Whether the student passed skills test exam.
+     * @var bool $tested Whether the student was tested for the skills test exam.
      */
     protected $tested;
 
     /**
-     * @var bool $evaluated Whether the student was evaluated for the final skill test examination for the course.
+     * @var bool $passed Whether the student passed skills test exam.
      */
-    protected $evaluated;
+    protected $passed;
+
+    /**
+     * @var string $finalgrade The skill test / check ride test final grade.
+     */
+    protected $finalgrade;
 
     /**
      * @var array $noshowbookings A array of no-show bookings
@@ -632,6 +637,15 @@ class student extends participant {
     }
 
     /**
+     * Get the student's skill test / check ride test final grade.
+     *
+     * @return string
+     */
+    public function get_finalgrade() {
+        return $this->finalgrade;
+    }
+
+    /**
      * Set the student's slot color.
      *
      * @param string $slotcolor
@@ -667,7 +681,7 @@ class student extends participant {
      * @return  bool    Whether the course work has been completed.
      */
     public function has_completed_coursework() {
-        return $this->tested();
+        return $this->tested() && $this->passed;
     }
 
     /**
@@ -755,7 +769,7 @@ class student extends participant {
      * Returns whether the student has been passed
      * skills test or final exam.
      *
-     * @return  bool    Whether the student has been evaluated.
+     * @return  string    The grade of the test.
      */
     public function tested() {
 
@@ -766,40 +780,13 @@ class student extends participant {
 
             // check grade for the qualifying exercise
             $grade = $this->get_grade($this->course->get_graduation_exercise());
-            if (!empty($grade)) {
-                $this->tested = $grade->is_passed();
+            if ($this->tested = !empty($grade)) {
+                $this->finalgrade = $grade->gradeinfo->grades[$this->userid]->str_grade;
+                $this->passed = $grade->is_passed();
             }
         }
 
         return $this->tested;
-    }
-
-    /**
-     * Returns whether the student has been evaluated
-     * where by the evaluation form is uploaded to
-     * the feedback file submission of the skill test exercise.
-     *
-     * @return  bool    Whether the student has been evaluated.
-     */
-    public function evaluated() {
-
-        // check if the course requires evaluation first
-        if (!$this->course->requires_skills_evaluation()) {
-            return false;
-        }
-
-        // the student is considered evaluated if the student has a skill test exam feedback evaluation file
-        if (!isset($this->evaluated)) {
-
-            $finalgrade = $this->get_grade($this->course->get_graduation_exercise(), true);
-            if (!empty($finalgrade)) {
-                $this->evaluated = !empty($finalgrade->get_feedback_file('assignfeedback_file', 'feedback_files'));
-            } else {
-                $this->evaluated = false;
-            }
-        }
-
-        return $this->evaluated;
     }
 
     /**

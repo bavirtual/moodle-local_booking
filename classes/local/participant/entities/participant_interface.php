@@ -51,11 +51,13 @@ interface participant_interface {
     public function get_roles();
 
     /**
-     * Get fullname.
+     * Get participant name.
      *
-     * @return string $fullname;
+     * @param bool   $alternate returns either the fullname w/ alternate or just first/last name
+     * @param string $namepart  returns name part (either first or last)
+     * @return string $fullname/$name;
      */
-    public function get_name();
+    public function get_name(bool $alternate = true, $namepart = '');
 
     /**
      * Returns full username
@@ -128,6 +130,14 @@ interface participant_interface {
      * @return string   The participant callsign
      */
     public function get_callsign();
+
+    /**
+     * Returns participant's ATO recorded hours
+     * using integration db.
+     *
+     * @return string   The participant callsign
+     */
+    public function get_ato_hours();
 
     /**
      * Returns pilot's fleet association

@@ -1075,6 +1075,7 @@ class logentry implements logentry_interface {
         // evaluate results for different types of properties.
         foreach ($record as $key => $value) {
             switch ($key) {
+                // TODO: PHP9 deprecates dynamic properties
                 case 'linkedpirep':
                     $this->$key = $value ?: '';
                     break;

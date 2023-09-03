@@ -593,6 +593,55 @@ class notification extends \core\message\message {
     }
 
     /**
+     * Sends an email with the examiner evaluation form to
+     * the certification body and copy the examiner.
+     *
+     * @param array     $data data tags.
+     * @return bool     The notification message id.
+     */
+    public static function send_evaluationform_notification(array $data) {
+
+        // $result = true;
+
+        $msgdata = (object) array(
+            'ato'         => get_config('local_booking', 'atoname'),
+            'rating'      => $data['vatsimrating'],
+            'studentname' => $data['studentname'],
+            'coursename'  => $data['coursename'],
+            'examinername'=> $data['examinername']
+        );
+
+        $examiner = \core_user::get_user($data['examinerid']);
+        $result = email_to_user(
+            \core_user::get_user_by_email($data['vatsimcertuid']),
+            $examiner,
+            get_string('emailevaluationformsubject', 'local_booking', $msgdata),
+            get_string('emailevaluationformtext', 'local_booking', $msgdata),
+            get_string('emailevaluationformhtml', 'local_booking', $msgdata),
+            $data['evaluationformfile'], basename($data['evaluationformfilename']));
+
+        // send email CC to the examiner
+        $result = $result && email_to_user(
+            $examiner,
+            '',
+            'CC: ' . get_string('emailevaluationformsubject', 'local_booking', $msgdata),
+            get_string('emailevaluationformCCtext', 'local_booking') . get_string('emailevaluationformtext', 'local_booking', $msgdata),
+            get_string('emailevaluationformCChtml', 'local_booking') . get_string('emailevaluationformhtml', 'local_booking', $msgdata),
+            $data['evaluationformfile'], basename($data['evaluationformfilename']));
+
+        // send email CC to the flight training manager
+        $result = $result && email_to_user(
+            \core_user::get_user($data['trainingmanagerid']),
+            $examiner,
+            'CC: ' . get_string('emailevaluationformsubject', 'local_booking', $msgdata),
+            get_string('emailevaluationformCCtext', 'local_booking') . get_string('emailevaluationformtext', 'local_booking', $msgdata),
+            get_string('emailevaluationformCChtml', 'local_booking') . get_string('emailevaluationformhtml', 'local_booking', $msgdata),
+            $data['evaluationformfile'], basename($data['evaluationformfilename']));
+
+        return $result;
+    }
+
+    /**
      * Sends an email notifying the students and instructors
      * of a newly graduating student.
      *

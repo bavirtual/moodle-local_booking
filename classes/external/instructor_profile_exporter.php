@@ -76,6 +76,7 @@ class instructor_profile_exporter extends exporter {
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
         $data['userid'] = $data['userid'];
+        $data['ato'] = get_config('local_booking', 'atoname');
         $this->courseid = $data['courseid'];
         $this->subscriber = $data['subscriber'];
         $this->instructor = $this->subscriber->get_instructor($data['userid'], true);
@@ -98,6 +99,10 @@ class instructor_profile_exporter extends exporter {
             'userid' => [
                 'type' => PARAM_INT,
             ],
+            'ato' => [
+                'type' => PARAM_RAW,
+                'optional' => true
+            ]
         ];
     }
 
@@ -176,6 +181,10 @@ class instructor_profile_exporter extends exporter {
                 'optional' => true
             ],
             'totalhours' => [
+                'type' => PARAM_RAW,
+                'optional' => true
+            ],
+            'totalatohours' => [
                 'type' => PARAM_RAW,
                 'optional' => true
             ],
@@ -309,6 +318,7 @@ class instructor_profile_exporter extends exporter {
             'totalgroundhours' => logbook::convert_time($summary->totalgroundtime),
             'totalflighthours' => logbook::convert_time($summary->totalflighttime),
             'totalhours'       => logbook::convert_time($summary->totalgroundtime+$summary->totalflighttime),
+            'totalatohours'    => logbook::convert_time($this->instructor->get_ato_hours()),
             'totalbookedsessions'=> $totalbookedsessions,
             'totalexamhours'   => logbook::convert_time($summary->totalexaminertime),
             'totalexams'       => $totalexams,

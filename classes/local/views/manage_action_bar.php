@@ -83,11 +83,16 @@ class manage_action_bar extends base_action_bar {
                 $elements = $this->generate_profile_navigation();
                 break;
 
-            case 'report':
-                $elements = $this->generate_report_navigation();
+            case 'certify':
+                $elements = $this->generate_certify_navigation();
                 break;
 
-            case 'certify':
+            case 'evalform':
+                $elements = $this->generate_evalform_navigation();
+                break;
+
+            case 'examiner':
+                $elements = $this->generate_examiner_navigation();
                 break;
         }
 
@@ -110,9 +115,7 @@ class manage_action_bar extends base_action_bar {
         // availability posting actions for students
         if ($access == 'instructor' && !$groupview) {
 
-            // TODO: Replace boolean button primary with single_button::BUTTON_PRIMARY (v4.2+)
-            // $elements['button'] = new single_button(new moodle_url('/local/booking/availability'), get_string('booksave', 'local_booking'), 'submit', single_button::BUTTON_PRIMARY, $attributes);
-            $elements['button'] = new single_button(new moodle_url('/local/booking/availability'), get_string('booksave', 'local_booking'), 'submit', true, $attributes);
+            $elements['button'] = new single_button(new moodle_url('/local/booking/availability'), get_string('booksave', 'local_booking'), 'submit', single_button::BUTTON_PRIMARY, $attributes);
 
         } else if ($access == 'student') {
 
@@ -137,9 +140,7 @@ class manage_action_bar extends base_action_bar {
         $buttons[] = $this->get_back_button('dashboard');
         $attributes = ['data-region'=>'back-button', 'id'=>'continue_button'];
 
-        // TODO: Replace boolean button primary with single_button::BUTTON_PRIMARY (v4.2+)
-        // $buttons[] = new single_button(new moodle_url('/local/booking/availability.php', $attributes), get_string('continue'), 'post', single_button::BUTTON_PRIMARY, $attributes);
-        $buttons[] = new single_button(new moodle_url('/local/booking/availability.php', $attributes), get_string('continue'), 'post', true, $attributes);
+        $buttons[] = new single_button(new moodle_url('/local/booking/availability.php', $attributes), get_string('continue'), 'post', single_button::BUTTON_PRIMARY, $attributes);
 
         return $buttons;
     }
@@ -157,17 +158,13 @@ class manage_action_bar extends base_action_bar {
 
         $easabuttonlabel     = get_string('logbookformateasa', 'local_booking') . ' ' . get_string('logbook', 'local_booking');
 
-        // TODO: Replace boolean button primary with single_button::BUTTON_PRIMARY (v4.2+)
-        // $easabutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'easa']), $easabuttonlabel, 'post', single_button::BUTTON_PRIMARY);
-        $easabutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'easa']), $easabuttonlabel, 'post', true);
+        $easabutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'easa']), $easabuttonlabel, 'post', single_button::BUTTON_PRIMARY);
         $easabutton->tooltip = get_string('logbookformateasatip', 'local_booking');
         $buttons[]           = $easabutton;
 
         $stdbuttonlabel     = $COURSE->shortname . ' ' . get_string('logbook', 'local_booking');
 
-        // TODO: Replace boolean button primary with single_button::BUTTON_PRIMARY (v4.2+)
-        // $stdbutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'std']), $stdbuttonlabel, 'post', single_button::BUTTON_PRIMARY);
-        $stdbutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'std']), $stdbuttonlabel, 'post', true);
+        $stdbutton          = new single_button(new moodle_url($this->page->url->out(), ['format'=>'std']), $stdbuttonlabel, 'post', single_button::BUTTON_PRIMARY);
         $stdbutton->tooltip = get_string('logbookformatcourse', 'local_booking');
         $buttons[]          = $stdbutton;
 
@@ -185,26 +182,84 @@ class manage_action_bar extends base_action_bar {
     }
 
     /**
-     * Get actions for the report page navigation elements
+     * Get actions for the certification page navigation elements
      * to be displayed in the tertiary navigation.
      *
      * @return array
      */
-    protected function generate_report_navigation(): array {
+    protected function generate_certify_navigation(): array {
+        $evalformurl = new moodle_url($this->additional['url'], ['courseid'=>$this->additional['courseid'], 'userid'=>$this->additional['userid'], 'report'=>'evalform']);
+        $evalformbuttonlabel     = get_string('evalformbuttonlabel', 'local_booking');
+        $evalformbutton          = new single_button($evalformurl, $evalformbuttonlabel, 'post', single_button::BUTTON_PRIMARY);
+        $evalformbutton->tooltip = get_string('evalformbuttontooltip', 'local_booking');
+
+        return [$evalformbutton];
+    }
+
+    /**
+     * Get text message for the evaluation form page navigation
+     * to be displayed in the tertiary navigation.
+     *
+     * @return array
+     */
+    protected function generate_evalform_navigation(): array {
+        $text = get_string('evalformmsg', 'local_booking', $this->additional['skilltestgradeurl']);
+        // check if standard examiner text message or form regeneration
+        if ($this->additional['isexaminer'])
+            $text = !empty($this->additional['regenerate']) ? get_string('graduationformregeneration', 'local_booking') : get_string('evalformeditmmsg', 'local_booking');
+        return [new text_label($text)];
+    }
+
+    /**
+     * Get actions for the examiner evaluation form page navigation elements
+     * to be displayed in the tertiary navigation.
+     *
+     * @return array
+     */
+    protected function generate_examiner_navigation(): array {
+
         $elements = [];
+        // edit form button
+        $editformbuttonurl = new moodle_url($this->additional['skilltesturl'], [
+            'courseid'=> $this->additional['courseid'],
+            'exeid'  => $this->additional['exeid'],
+            'userid' => $this->additional['userid']]);
+        $editformbutton = new single_button(
+            $editformbuttonurl,
+            get_string('evalformeditbuttonlabel', 'local_booking'),
+            'post',
+            single_button::BUTTON_SECONDARY);
+        $editformbutton->tooltip = get_string('evalformeditbuttontooltip', 'local_booking');
 
-        // check for exam evaluation
-        if (!empty($this->additional['examaction'])) {
+        // regenerate form button
+        $regenerateformbuttonurl = new moodle_url($this->additional['generateformurl'], [
+            'courseid' => $this->additional['courseid'],
+            'userid' => $this->additional['userid'],
+            'action' => 'generate'
+        ]);
+        $regenerateformbutton = new single_button(
+            $regenerateformbuttonurl,
+            get_string('evalformgeneratebuttonlabel', 'local_booking'),
+            'get',
+            single_button::BUTTON_SECONDARY);
+        $regenerateformbutton->tooltip = get_string('evalformgeneratebuttontooltip', 'local_booking');
 
-            // evaluate the row to be placed on
-            if ($this->additional['firstrow']) {
-                $elements[] = new text_label ($this->additional['evalmsg']);
-            } else {
-                // TODO: Replace boolean button primary with single_button::BUTTON_PRIMARY (v4.2+)
-                // $elements[] = new single_button($this->additional['actionurl'], $this->additional['actionlabel'], 'post', single_button::BUTTON_PRIMARY);
-                $elements[] = new single_button($this->additional['actionurl'], $this->additional['actionlabel'], 'post', true);
-            }
-        }
+        // email form button
+        $emailformbuttonurl = new moodle_url($this->additional['sendformurl'], [
+            'courseid' => $this->additional['courseid'],
+            'userid' => $this->additional['userid'],
+            'action' => 'send'
+        ]);
+        $emailformbutton = new single_button(
+            $emailformbuttonurl,
+            get_string('evalformemailbuttonlabel', 'local_booking', $this->additional['vatsimemail']),
+            'post',
+            single_button::BUTTON_PRIMARY);
+        $emailformbutton->tooltip = get_string('evalformemailbuttontooltip', 'local_booking', $this->additional['vatsimemail']);
+
+        $elements[] = $editformbutton;
+        $elements[] = $regenerateformbutton;
+        $elements[] = $emailformbutton;
 
         return $elements;
     }
@@ -234,9 +289,7 @@ class manage_action_bar extends base_action_bar {
         }
         $attributes = ['data-region'=>'back-button', 'id'=>'back_button'];
 
-        // TODO: Replace boolean button primary with single_button::BUTTON_PRIMARY (v4.2+)
-        // $backbutton = new single_button(new moodle_url($pagefile, $params), get_string('back'), 'get', single_button::BUTTON_PRIMARY, $attributes);
-        $backbutton = new single_button(new moodle_url($pagefile, $params), get_string('back'), 'get', true, $attributes);
+        $backbutton = new single_button(new moodle_url($pagefile, $params), get_string('back'), 'get', single_button::BUTTON_PRIMARY, $attributes);
 
         return $backbutton;
     }

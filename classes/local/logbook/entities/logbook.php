@@ -193,6 +193,7 @@ class logbook implements logbook_interface {
         if ($tostring) {
             foreach ($totals as $key => $total) {
                 if ($key != 'totallandingsday' && $key != 'totallandingsnight') {
+                    // TODO: PHP9 deprecates dynamic properties
                     $totals->$key = self::convert_time($total, 'MINS_TO_TEXT') ?: '';
                 }
             }
@@ -211,8 +212,10 @@ class logbook implements logbook_interface {
         $totals = logbook_vault::get_logbook_summary_to_exercise($this->courseid, $this->userid, $exerciseid);
         if ($tostring) {
             foreach ($totals as $key => $total) {
-                if ($key != 'totallandingsday' && $key != 'totallandingsnight')
+                if ($key != 'totallandingsday' && $key != 'totallandingsnight') {
+                    // TODO: PHP9 deprecates dynamic properties
                     $totals->$key = self::convert_time($total, 'MINS_TO_TEXT') ?: '';
+                }
             }
         }
         return $totals;

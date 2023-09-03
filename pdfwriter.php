@@ -50,12 +50,12 @@ $url->param('courseid', $courseid);
 $url->param('userid', $userid);
 $url->param('report', $reporttype);
 
-$PAGE->set_url($url);
-
 $context = context_course::instance($courseid);
 
 require_login($course, false);
 require_capability('local/booking:view', $context);
+
+$PAGE->set_url($url);
 
 // header page information
 if (empty($COURSE->subscriber))
@@ -77,7 +77,7 @@ switch ($reporttype) {
         $practicalreport = new pdf_report_practicalexam($COURSE->subscriber, $student);
         $practicalreport->Generate();
         break;
-    case 'examiner':
+    case 'evalform':
         $examinerreport = new pdf_report_skilltest($COURSE->subscriber, $student);
         $examinerreport->Generate();
         break;

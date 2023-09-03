@@ -1,5 +1,128 @@
 # Change log
 
+## [2023090301] - RELEASED 2023-09-03
+
+### Fixed
+
+- ato total hourse formatting
+
+## [2023090300] - RELEASED 2023-09-03
+
+### Added
+
+- enable VATSIM integration for exam evaluation custom field
+- instructor total ato hours
+
+## [2023082700] - UNRELEASED 2023-08-27
+
+### Added
+
+- automated filling of the examiner evaluation form and sending to VATSIM Certification
+
+## [2023080601] - RELEASED 2023-08-06
+
+### Fixed
+
+- external_multiple_structure exception related to 4.2.1+ Moodle release
+
+## [2023080600] - RELEASED 2023-08-06
+
+### Fixed
+
+- externalapi AJAX exceptions related to 4.2.1+ Moodle release
+
+## [2023070100] - RELEASED 2023-07-01
+
+### Fixed
+
+- students that became instructors to show in the graduated students list
+
+### Added
+
+- attempts in the practical skill test report
+
+### Changed
+
+- first feedback attachment of the skill test to be the examiner evaluation report
+- Action hidden in the Instructor Dashboard for On-hold, Graduated, and Suspended users
+
+## [2023062900] - RELEASED 2023-06-29 - hotfix
+
+### Fixed
+
+- Exams showing as an option for booking a sesison
+- Student profile displaying as instructor in the title
+- Listing the lessons that are incomplete in student notification
+
+## [2023061702] - RELEASED 2023-06-17 - hotfix
+
+### Fixed
+
+- keep student active when taken off-hold
+- instructor profile 'Sessions Conducted' based on assignment grades and grader id
+
+## [2023061700] - RELEASED 2023-06-17
+
+### Fixed
+
+- instructor profile view based user role
+
+### Added
+
+- conflicting session booking validation for instructor and student
+- course column in ‘My bookings’ list based on instructor preferences
+
+### Changed
+
+- session cancellation to delete Moodle calendar event
+- session canceled confirmation to the instructor same as student
+
+## [2023061100] - RELEASED 2023-06-11
+
+### Changed
+
+- revereted 4.2+ compatibility
+
+## [2023051500] - RELEASED 2023-05-15
+
+### Fixed
+
+- instructor page title
+
+### Changed
+
+- default value of days in processing past data (i.e. past grades) to 3 years
+
+## [2023051301] - UNRELEASED 2023-05-13
+
+### Fixed
+
+- external webservice class loading (pending 4.2 PR upgrade)
+
+### Changed
+
+- instructor profile conducted sessions based on grading vs plugin booking
+
+## [2023051200] - UNRELEASED 2023-05-12
+
+### Added
+
+- no show history in student profile
+- notification to booked student attempting to post availability
+- instructor profile
+
+### Fixed
+
+- active students sort
+- cron task on-hold notifications for booked students
+- logbook page title
+- error handling for pdf output
+
+### Changed
+
+- moodle 4.2 compatibility (i.e. single_button::BUTTON_PRIMARY type)
+- show graduates regardless of how far back
+
 ## [2023042802] - RELEASED 2023-04-28 - hotfix
 
 ### Fixed

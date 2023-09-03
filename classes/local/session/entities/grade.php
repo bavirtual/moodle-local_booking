@@ -34,6 +34,7 @@ use local_booking\local\session\data_access\grading_vault;
 use local_booking\local\participant\entities\participant;
 
 defined('MOODLE_INTERNAL') || die();
+define('MOODLE_REPOSITORY_ID', 4);
 
 /**
  * Class representing a grade for course exercise session.
@@ -64,7 +65,7 @@ class grade extends \grade_grade {
     protected $assign;
 
     /**
-     * @var stdClass $usergrade The user grade item associated with this grade.
+     * @var \stdClass $usergrade The user grade item associated with this grade.
      */
     protected $usergrade;
 
@@ -128,6 +129,15 @@ class grade extends \grade_grade {
     }
 
     /**
+     * Get the studnet grade exercise id of the grade.
+     *
+     * @return int
+     */
+    public function get_exerciseid() {
+        return $this->exerciseid;
+    }
+
+    /**
      * Get the studnet user id of the grade.
      *
      * @return int
@@ -137,13 +147,14 @@ class grade extends \grade_grade {
     }
 
     /**
-     * Get the user grade item for the grade.
+     * Get the user grade item for the grade based on the last attempt.
      *
      * @return stdClass
      */
     public function get_user_grade() {
         if (!isset($this->usergrade)) {
-            $attempt = !empty($this->attempts) ? ((count($this->attempts)-1) ?: 0) : 0;
+            // find the attempt last successful attempt otherwise return the latest grade submission attempt
+            $attempt = !empty($this->attempts) && !$this->is_passed() ? ((count($this->attempts)-1) ?: 0) : -1;
             $this->usergrade = $this->get_assignment()->get_user_grade($this->userid, false, $attempt);
         }
 
@@ -195,11 +206,12 @@ class grade extends \grade_grade {
      * @param string $component The assignment component
      * @param string $filearea  The assignment file area
      * @param string $itemid    The assignment grade item
+     * @param bool   $path      Whether to return the path or the Stored_file
      * @return string
      */
-    public function get_feedback_file(string $component, string $filearea, string $itemid = '') {
+    public function get_feedback_file(string $component, string $filearea, string $itemid = '', $path = true) {
 
-        $path = '';
+        $retval = null;
         if (!isset($this->feedbackfile)) {
 
             // get the grade item id
@@ -219,14 +231,57 @@ class grade extends \grade_grade {
                         break;
                     }
                 };
+                unset($files);
 
-                // get the path
-                $path = $fs->get_file_system()->get_local_path_from_storedfile($this->feedbackfile);
+                // get the path or the stored file
+                if ($this->feedbackfile)
+                    $retval = $path ? $fs->get_file_system()->get_local_path_from_storedfile($this->feedbackfile) : $this->feedbackfile;
             }
         }
 
-        return $path;
+        return $retval;
 
+    }
+
+    /**
+     * Get the grade feedback file.
+     *
+     * @param string $feedbackfile The feedback file path & name to be uploaded
+     * @param bool   $path      Whether to return the path or the Stored_file
+     * @return string|\stored_file
+     */
+    public function save_feedback_file(string $feedbackfile, $path = true) {
+        global $USER;
+
+        $fs = get_file_storage();
+        $context = \context_user::instance($USER->id);
+        $draftitemid = file_get_unused_draft_itemid();
+        file_prepare_draft_area($draftitemid, $context->id, 'assignfeedback_file', 'feedback_files', 1);
+
+        $stagedfile = array(
+            'contextid' => $context->id,
+            'component' => 'user',
+            'filearea' => 'draft',
+            'itemid' => $draftitemid,
+            'filepath' => '/',
+            'filename' => basename($feedbackfile)
+        );
+
+        // upload the file
+        $file = $fs->create_file_from_pathname($stagedfile, $feedbackfile);
+
+        // Create formdata.
+        $data = new \stdClass();
+        $data->{'files_' . $this->userid . '_filemanager'} = $draftitemid;
+
+        // This is the first time that we are submitting feedback, so it is modified.
+        $plugin = $this->get_assignment()->get_feedback_plugin_by_type('file');
+        $plugin->is_feedback_modified($this->get_user_grade(), $data);
+        // Save the feedback.
+        $plugin->save($this->get_user_grade(), $data);
+        $this->get_feedback_file('assignfeedback_file', 'feedback_files', '', $path);
+
+        return $path ? $fs->get_file_system()->get_local_path_from_storedfile($this->feedbackfile) : $this->feedbackfile;
     }
 
     /**

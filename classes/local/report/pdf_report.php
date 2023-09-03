@@ -27,6 +27,7 @@ namespace local_booking\local\report;
 
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once($CFG->dirroot . '/mod/assign/lib.php');
+require_once($CFG->libdir . '/pdflib.php');
 
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
@@ -283,7 +284,7 @@ class pdf_report extends \pdf {
             $html .= '<table width="500px" cellspacing="2" cellpadding="2">';
             $html .= '<tr style="border: 1px solid black; border-style: solid;">';
             $html .= '<td style="font-weight: bold; text-decoration: underline; font-size: 10px; width: 225px">' . get_string('skill', 'local_booking') . '</td>';
-            $html .= '<td style="font-weight: bold; text-decoration: underline; font-size: 10px; width: 50px">' . get_string('grade', 'local_booking') . '</td>';
+            $html .= '<td style="font-weight: bold; text-decoration: underline; font-size: 10px; width: 80px">' . get_string('grade', 'local_booking') . '</td>';
             $html .= '<td style="font-weight: bold; text-decoration: underline; font-size: 10px; width: 225px">' . get_string('feedback', 'local_booking') . '</td></tr>';
 
             foreach ($rubricinfo as $rubric) {

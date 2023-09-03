@@ -161,10 +161,9 @@ class action implements action_interface {
                 }
                 break;
 
-            case 'evaluate':
             case 'graduate':
 
-                // evaluate or graduate the student's next grading action, which will be 'grade' for exercises
+                // graduate the student's next grading action, which will be 'grade' for exercises
                 // set url to the student's skill test form
                 $exerciseid = 0;
                 $actionurl = '/local/booking/certify.php';
@@ -175,11 +174,15 @@ class action implements action_interface {
                     global $USER;
                     $examinerid = $student->get_grade($gradexercise)->usermodified;
                     $instructor = new instructor($course, $USER->id);
-                    $enabled =  $examinerid == $USER->id;
+                    $logbook = $student->get_logbook(true);
+                    $hasexamlogentry = $logbook->get_logentry_by_exericseid($course->get_graduation_exercise());
+                    $enabled =  $examinerid == $USER->id && $hasexamlogentry;
                     if (!$instructor->is_examiner())
                         $tooltip = get_string('actiondisabledexaminersonlytooltip', 'local_booking');
-                    elseif (!$enabled)
+                    elseif ($examinerid != $USER->id)
                         $tooltip = get_string('actiondisabledwrongexaminerstooltip', 'local_booking', participant::get_fullname($examinerid));
+                    elseif (!$hasexamlogentry)
+                        $tooltip = get_string('actiondisablednologentrytooltip', 'local_booking', participant::get_fullname($examinerid));
                     else
                         $tooltip = get_string('action' . $actiontype . 'tooltip', 'local_booking', ['studentname'=>$student->get_name(false), 'examname'=>$course->get_graduation_exercise(true)]);
 

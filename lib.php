@@ -117,6 +117,18 @@ define('LOCAL_BOOKING_SENIORINSTRUCTORROLE', 'seniorinstructor');
  */
 define('LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE', 'flighttrainingmanager');
 /**
+ * LOCAL_BOOKING_EVALUATIONFORM - constant for Examiner Evaluation Form file resource
+ */
+define('LOCAL_BOOKING_EVALUATIONFORM', 'Examiner Evaluation Form');
+/**
+ * LOCAL_BOOKING_EVALUATIONFORMCONFIG - constant for Examiner Evaluation Form file resource
+ */
+define('LOCAL_BOOKING_EVALUATIONFORMCONFIG', 'Examiner Evaluation Form Fields Mapping');
+/**
+ * LOCAL_BOOKING_FAILINGPERCENTAGE - constant for the percentage of failing grade for rubric assessments
+ */
+define('LOCAL_BOOKING_FAILINGPERCENTAGE', .33);
+/**
  * LOCAL_BOOKING_SLOTCOLORS - constant array for slot colors for students availability grid
  */
 define('LOCAL_BOOKING_SLOTCOLORS', [
@@ -328,7 +340,6 @@ function local_booking_get_fontawesome_icon_map() {
         'local_booking:check'           => 'fa-check',
         'local_booking:copy'            => 'fa-copy',
         'local_booking:download'        => 'fa-download',
-        'local_booking:evaluate'        => 'fa-pencil-square',
         'local_booking:grade'           => 'fa-pencil-square',
         'local_booking:graduate'        => 'fa-graduation-cap',
         'local_booking:info-circle'     => 'fa-info-circle',

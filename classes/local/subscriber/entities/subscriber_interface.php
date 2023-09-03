@@ -132,6 +132,13 @@ interface subscriber_interface {
     public function get_senior_instructors();
 
     /**
+     * Get subscribing course Flight Training Manager user.
+     *
+     * @return \core_user The Flight Training Manager user object.
+     */
+    public function get_flight_training_manager_user();
+
+    /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array
@@ -170,13 +177,6 @@ interface subscriber_interface {
     public function get_graduation_exercise();
 
     /**
-     * Retrieves subscribing course grading items for each module
-     *
-     * @return array
-     */
-    public function get_grading_items();
-
-    /**
      * Retrieves the exercise name of a specific exercise
      * based on its id statically.
      *
@@ -184,6 +184,24 @@ interface subscriber_interface {
      * @return string
      */
     public function get_exercise_name(int $exerciseid);
+
+    /**
+     * Retrieves an array with the moodle file path and file name of a course file resource.
+     *
+     * @param  string The resource module name
+     * @return array
+     */
+    public function get_examinerformfile(string $resourcename);
+
+    /**
+     * Returns the settings from config.xml
+     *
+     * @param  string $key      The key to look up the value for
+     * @param  bool   $toarray  Whether to converted json file to class or an array
+     * @param  string $filename The filename and path of the JSON config file
+     * @return mixed  $config   The requested setting value.
+     */
+    public static function get_booking_config(string $key, bool $toarray = false, string $filename = '/local/booking/config.json');
 
     /**
      * Returns an array of records from integrated database

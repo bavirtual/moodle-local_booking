@@ -133,6 +133,7 @@ abstract class base_view {
         $modsexport = [];
 
         $exercisetitles = 'exercisetitles';
+        // TODO: PHP9 deprecates dynamic properties
         $titlevalues = array_values($subscriber->$exercisetitles);
         $modules = $subscriber->get_modules();
 

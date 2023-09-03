@@ -472,7 +472,7 @@ class create extends \moodleform {
 
             case 'fstd':
                 // FSTD advanced element
-                $mform->addElement('text', 'fstd', get_string('fstd', 'local_booking'), 'style="text-transform:uppercase" ');
+                $mform->addElement('text', 'fstd', get_string('fstd', 'local_booking'));
                 $mform->setType('fstd', PARAM_TEXT);
                 $mform->addHelpButton('fstd', 'fstd', 'local_booking');
                 $mform->setDefault('fstd', $options[0]);

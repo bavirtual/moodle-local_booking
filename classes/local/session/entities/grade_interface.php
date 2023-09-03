@@ -43,6 +43,13 @@ interface grade_interface {
     public function get_assignment();
 
     /**
+     * Get the studnet grade exercise id of the grade.
+     *
+     * @return int
+     */
+    public function get_exerciseid();
+
+    /**
      * Get the studnet user id of the grade.
      *
      * @return int
@@ -85,9 +92,20 @@ interface grade_interface {
      *
      * @param string $component The assignment component
      * @param string $filearea  The assignment file area
+     * @param string $itemid    The assignment grade item
+     * @param bool   $path      Whether to return the path or the Stored_file
      * @return string
      */
-    public function get_feedback_file(string $component, string $filearea);
+    public function get_feedback_file(string $component, string $filearea, string $itemid = '', $path = true);
+
+    /**
+     * Get the grade feedback file.
+     *
+     * @param string $feedbackfile The feedback file path & name to be uploaded
+     * @param bool   $path      Whether to return the path or the Stored_file
+     * @return string|\stored_file
+     */
+    public function save_feedback_file(string $feedbackfile, $path = true);
 
     /**
      * Get the student's rubric grade info.

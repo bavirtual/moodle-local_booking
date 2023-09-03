@@ -49,14 +49,44 @@
                 "pilotinfo": {
                     "table": "pilots",
                     "fields": {
+                        "pilotid": "id",
                         "alternatename": "baw_id"
                     },
                     "primarykey": "id"
                 }
             }
+        },
+        "pilotid": {
+            "enabled": 1,
+            "host": "localhost",
+            "db": "bav_management",
+            "data": {
+                "pilotinfo": {
+                    "table": "pilots",
+                    "fields": {
+                        "pilotid": "id"
+                    },
+                    "primarykey": "baw_id"
+                }
+            }
+        },
+        "pilotstats": {
+            "enabled": 1,
+            "host": "localhost",
+            "db": "bav_management",
+            "data": {
+                "stats": {
+                    "table": "pilot_stats",
+                    "fields": {
+                        "totalatohours": "total_time"
+                    },
+                    "primarykey": "pilot_id"
+                }
+            }
         }
     },
-    "pdftkpath": "/usr/local/bin/pdftk",
+    "vatsimcertemail": "certification.standards@vatsim.net",
+    "vatsimpramsurl": "https://prams.vatsim.net/",
     "datatables": {
         "js": {
             "jquery": "https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js",

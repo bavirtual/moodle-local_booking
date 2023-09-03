@@ -42,18 +42,6 @@ class booking_vault implements booking_vault_interface {
     /** Availability Slots table name for the persistent. */
     const DB_ASSIGN_GRADES = 'assign_grades';
 
-    /** Course modules for graded sessions */
-    const DB_COURSE_MODS = 'course_modules';
-
-    /** Availability Slots table name for the persistent. */
-    const DB_ASSIGN_GRADES = 'assign_grades';
-
-    /** Course modules for graded sessions */
-    const DB_COURSE_MODS = 'course_modules';
-
-    /** Availability Slots table name for the persistent. */
-    const DB_ASSIGN_GRADES = 'assign_grades';
-
     /**
      * remove all bookings for a user for a
      *

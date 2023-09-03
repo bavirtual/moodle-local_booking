@@ -128,7 +128,7 @@
     display: inline-flex;
     align-items: center;
     height: 26px;
-    width: 70px;
+    width: 80px;
     color: white;
     font-size: small;
     font-weight: bold;
@@ -170,12 +170,6 @@
 }
 .session-button-cancel:hover {
     background-color: #0d47a1;
-}
-.session-button-evaluate {
-    background-color: darkred;
-}
-.session-button-evaluate:hover {
-    background-color: rgb(110, 3, 3);
 }
 .session-button-graduate {
     background-color: black;

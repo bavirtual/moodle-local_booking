@@ -208,19 +208,33 @@ class participant implements participant_interface {
     }
 
     /**
-     * Get fullname.
+     * Get participant name.
      *
-     * @param bool $alternate returns either the fullname w/ alternate or just first/last name
+     * @param bool   $alternate returns either the fullname w/ alternate or just first/last name
+     * @param string $namepart  returns name part (either first or last), $alternate must be false
      * @return string $fullname/$name;
      */
-    public function get_name(bool $alternate = true) {
+    public function get_name(bool $alternate = true, $namepart = '') {
         // get profile user name information
+        $u = \core_user::get_user($this->userid);
         if (empty($this->name)) {
-            $u = \core_user::get_user($this->userid);
             $this->name = $u->firstname . ' ' . $u->lastname;
             $this->fullname = $this->name . ' ' . $u->alternatename;
         }
-        return $alternate ? $this->fullname : $this->name;
+
+        // check for name part
+        switch ($namepart) {
+            case 'first':
+                $name = $u->firstname;
+                break;
+            case 'last':
+                $name = $u->lastname;
+                break;
+            default:
+                $name = $this->name;
+        }
+
+        return $alternate ? $this->fullname : $name;
     }
 
     /**
@@ -256,7 +270,7 @@ class participant implements participant_interface {
      * @return logbook   An array of bookings.
      */
     public function get_logbook(bool $loadentries = false, bool $allentries = false) {
-        if (empty($this->logbook)) {
+        if (empty($this->logbook) || $loadentries) {
             $logbook = new logbook($this->course->get_id(), $this->userid);
             if ($loadentries)
                 $logbook->load($allentries);
@@ -334,6 +348,26 @@ class participant implements participant_interface {
     }
 
     /**
+     * Returns participant's ATO recorded hours
+     * using integration db.
+     *
+     * @return string   The participant callsign
+     */
+    public function get_ato_hours() {
+        $totalatohours = '';
+        // get pilot stats integrated info
+        if (subscriber::has_integration('pilotstats')) {
+            // TODO: PHP9 deprecates dynamic properties
+            // get pilot id from integration
+            $u = \core_user::get_user($this->userid);
+            $pilotrec = $this->course->get_integrated_data('pilotid', 'pilotinfo', $u->alternatename);
+            $pilotid = $pilotrec['pilotid'];
+            $pilotstatsrec = $this->course->get_integrated_data('pilotstats', 'stats', $pilotid);
+        }
+        return $pilotstatsrec['totalatohours'];
+    }
+
+    /**
      * Returns pilot's fleet association
      *
      * @return string   The participant's fleet
@@ -356,6 +390,7 @@ class participant implements participant_interface {
             profile_load_data($u);
             $fld = 'profile_field_' . $field;
         }
+        // TODO: PHP9 deprecates dynamic properties
         return $corefield ? $u->$field : $u->$fld;
     }
 

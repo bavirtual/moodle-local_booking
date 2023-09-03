@@ -102,6 +102,11 @@ class subscriber implements subscriber_interface {
     protected $lessons;
 
     /**
+     * @var array $resources The subscribing course's content resources.
+     */
+    public $resources;
+
+    /**
      * @var array $modules The subscribing course's modules (exercises & quizes).
      */
     protected $modules;
@@ -137,9 +142,9 @@ class subscriber implements subscriber_interface {
     public $aircrafticao = [];
 
     /**
-     * @var string $examinerformurl The subscribing course's home url.
+     * @var bool $vatsimintegration Whether the subscribing course has VATSIM integration for examiner evaluation.
      */
-    public $examinerformurl;
+    public $vatsimintegration;
 
     /**
      * @var int $postingwait The period the student needs to wait prior to posting slots again.
@@ -187,6 +192,7 @@ class subscriber implements subscriber_interface {
         $this->lessons = $this->coursemodinfo->get_section_info_all();
         $this->modules = array_filter($cms, function($property) { return ($property->modname == 'assign' || $property->modname == 'quiz');});
         $this->lessonmods = array_filter($cms, function($property) { return ($property->modname == 'lesson');});
+        $this->resources = array_filter($cms, function($property) { return ($property->modname == 'resource');});
 
         // define course custom fields globally
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
@@ -422,6 +428,23 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Get subscribing course Flight Training Manager user.
+     *
+     * @return \core_user The Flight Training Manager user object.
+     */
+    public function get_flight_training_manager_user() {
+        $manager = null;
+        $trainingstaff = $this->get_instructors(true);
+        foreach ($trainingstaff as $staff) {
+            if ($staff->has_role(LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE)) {
+                $manager = $staff;
+                break;
+            }
+        }
+        return $manager;
+    }
+
+    /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array
@@ -475,34 +498,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Returns the course graduation exercise as specified in the settings
-     * otherwise retrieves the last exercise.
-     *
-     * @param bool $nameonly Whether to return the name instead of the id
-     * @return int The last exericse id
-     */
-    public function get_graduation_exercise(bool $nameonly = false) {
-        $modulesIterator = (new ArrayObject($this->modules))->getIterator();
-        $modulesIterator->seek(count($this->modules)-1);
-        $gradexerciseid = $modulesIterator->current()->id;
-        return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
-    }
-
-    /**
-     * Returns the course graduation exercise as specified in the settings
-     * otherwise retrieves the last exercise.
-     *
-     * @param bool $nameonly Whether to return the name instead of the id
-     * @return int The last exericse id
-     */
-    public function get_graduation_exercise(bool $nameonly = false) {
-        $modulesIterator = (new ArrayObject($this->modules))->getIterator();
-        $modulesIterator->seek(count($this->modules)-1);
-        $gradexerciseid = $modulesIterator->current()->id;
-        return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
-    }
-
-    /**
      * Retrieves the exercise name of a specific exercise
      * based on its id statically.
      *
@@ -529,16 +524,46 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Retrieves an array with the moodle file path and file name of a course file resource.
+     *
+     * @param  string The resource module name
+     * @return array
+     */
+    public function get_examinerformfile(string $resourcename) {
+        global $DB;
+
+        // get evaluation form resource file
+        $resourceidx = array_search($resourcename, array_column($this->resources,'name'));
+        $cm = array_values($this->resources)[$resourceidx];
+        $context = \context_module::instance($cm->id);
+        $resource = $DB->get_record('resource', array('id'=>$cm->instance), '*', MUST_EXIST);
+
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'mod_resource', 'content', 0, 'sortorder DESC, id ASC', false);
+        if (count($files) < 1) {
+            resource_print_filenotfound($resource, $cm, $this->course);
+            die;
+        } else {
+            $file = reset($files);
+            $filename = $fs->get_file_system()->get_local_path_from_storedfile($file);
+            unset($files);
+        }
+
+        return ["filename"=>$file->get_filename(), "moodlefile"=>$filename];
+    }
+
+    /**
      * Returns the settings from config.xml
      *
      * @param  string $key      The key to look up the value for
      * @param  bool   $toarray  Whether to converted json file to class or an array
+     * @param  string $filename The filename and path of the JSON config file
      * @return mixed  $config   The requested setting value.
      */
-    public static function get_booking_config(string $key, bool $toarray = false) {
+    public static function get_booking_config(string $key, bool $toarray = false, string $filename = null) {
         global $CFG;
 
-        $configfile = $CFG->dirroot . '/local/booking/config.json';
+        $configfile = $filename ?: $CFG->dirroot . '/local/booking/config.json';
         $config = null;
 
         if (file_exists($configfile)) {
@@ -573,6 +598,7 @@ class subscriber implements subscriber_interface {
         $integrations = self::get_booking_config('integrations');
 
         // Moodle user/password must have read access to the target host, database, and tables
+        // TODO: PHP9 deprecates dynamic properties
         $conn = new \mysqli($integrations->$key->host, $CFG->dbuser, $CFG->dbpass, $integrations->$key->db);
 
         $target = $integrations->$key->data;
@@ -607,6 +633,7 @@ class subscriber implements subscriber_interface {
      */
     public static function has_integration($key) {
         $integrations = self::get_booking_config('integrations');
+        // TODO: PHP9 deprecates dynamic properties
         return !empty($integrations->$key->enabled);
     }
 
@@ -652,7 +679,7 @@ class subscriber implements subscriber_interface {
      * @return bool
      */
     public function requires_skills_evaluation() {
-        return !empty($this->examinerformurl);
+        return $this->vatsimintegration;
     }
 
     /**

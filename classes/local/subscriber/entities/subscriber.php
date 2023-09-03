@@ -107,6 +107,11 @@ class subscriber implements subscriber_interface {
     public $resources;
 
     /**
+     * @var array $resources The subscribing course's content resources.
+     */
+    public $resources;
+
+    /**
      * @var array $modules The subscribing course's modules (exercises & quizes).
      */
     protected $modules;
@@ -433,6 +438,23 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Get subscribing course Flight Training Manager user.
+     *
+     * @return \core_user The Flight Training Manager user object.
+     */
+    public function get_flight_training_manager_user() {
+        $manager = null;
+        $trainingstaff = $this->get_instructors(true);
+        foreach ($trainingstaff as $staff) {
+            if ($staff->has_role(LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE)) {
+                $manager = $staff;
+                break;
+            }
+        }
+        return $manager;
+    }
+
+    /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array
@@ -472,7 +494,8 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Retrieves subscribing course grading items for each module
+     * Returns the course graduation exercise as specified in the settings
+     * otherwise retrieves the last exercise.
      *
      * @param bool $nameonly Whether to return the name instead of the id
      * @return int The last exericse id

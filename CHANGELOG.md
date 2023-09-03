@@ -1,5 +1,24 @@
 # Change log
 
+## [2023090301] - RELEASED 2023-09-03
+
+### Fixed
+
+- ato total hourse formatting
+
+## [2023090300] - RELEASED 2023-09-03
+
+### Added
+
+- enable VATSIM integration for exam evaluation custom field
+- instructor total ato hours
+
+## [2023082700] - UNRELEASED 2023-08-27
+
+### Added
+
+- automated filling of the examiner evaluation form and sending to VATSIM Certification
+
 ## [2023080601] - RELEASED 2023-08-06
 
 ### Fixed

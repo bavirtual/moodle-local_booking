@@ -132,6 +132,13 @@ interface subscriber_interface {
     public function get_senior_instructors();
 
     /**
+     * Get subscribing course Flight Training Manager user.
+     *
+     * @return \core_user The Flight Training Manager user object.
+     */
+    public function get_flight_training_manager_user();
+
+    /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array

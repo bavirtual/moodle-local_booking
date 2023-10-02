@@ -117,6 +117,11 @@ class subscriber implements subscriber_interface {
     public $subscribed;
 
     /**
+     * @var array $exercisetitles An array holding subscribing course exercise titles for grid UI.
+     */
+    public $exercisetitles;
+
+    /**
      * @var string $vatsimrating The type of VATSIM rating for the subscribing course.
      */
     public $vatsimrating;
@@ -423,20 +428,16 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Get subscribing course Flight Training Manager user.
+     * Get subscribing course Flight Training Managers.
      *
-     * @return \core_user The Flight Training Manager user object.
+     * @return array The Flight Training Manager users.
      */
-    public function get_flight_training_manager_user() {
-        $manager = null;
-        $trainingstaff = $this->get_instructors(true);
-        foreach ($trainingstaff as $staff) {
-            if ($staff->has_role(LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE)) {
-                $manager = $staff;
-                break;
-            }
-        }
-        return $manager;
+    public function get_flight_training_managers() {
+        $mgrs = \get_enrolled_users($this->context, 'moodle/site:approvecourse');
+        $activemgrs = array_filter($mgrs, function($v, $k) {
+            return $v->suspended == 0;
+        }, ARRAY_FILTER_USE_BOTH);
+        return $activemgrs;
     }
 
     /**

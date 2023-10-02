@@ -62,12 +62,14 @@ class pdf_report_mentor extends pdf_report {
         // get student exercise grades
         $exercisegrades = $this->student->get_exercise_grades();
         $totalexercisegrades = count($exercisegrades);
+        $examexercise = $this->course->get_graduation_exercise();
         $counter = 0;
+        $student = (object) ['vatsimid'=>$this->student->get_profile_field('VATSIMID'), 'name'=>$this->student->get_name()];
 
         // go through student's exercise grades
         foreach ($exercisegrades as $exerciseid => $grade) {
             // write exercise contents
-            $this->WriteExerciseContent($exerciseid, $grade);
+            $this->WriteExerciseContent($exerciseid, $grade, $exerciseid == $examexercise, $student);
 
             // counter to track page counts
             $counter++;
@@ -84,7 +86,7 @@ class pdf_report_mentor extends pdf_report {
      * @param int @exerciseid The exercise id for the grade to be written.
      * @param grade @grade    The exercise grade to be written.
      */
-    protected function WriteExerciseContent(int $exerciseid, grade $grade) {
+    protected function WriteExerciseContent(int $exerciseid, grade $grade, bool $isexam, \stdClass $student) {
 
         // write course name
         $this->SetFont($this->fontfamily, 'B', 18);
@@ -95,10 +97,9 @@ class pdf_report_mentor extends pdf_report {
         $this->SetTextColor(0,0,0);
         $this->SetFont($this->fontfamily, '', 12);
         $this->Ln(10);
-        $vatsimid = $this->student->get_profile_field('VATSIMID');
-        $html = '<h3>' . $this->student->get_name() . '</h3>';
+        $html = '<h3>' . $student->name . '</h3>';
         $html .= '<span style="font-size: small;">' . get_string('vatsimid', 'local_booking') . ': ';
-        $html .= (!empty($vatsimid) ? $vatsimid : get_string('vatsimidmissing', 'local_booking')) . '</span>';
+        $html .= (!empty($student->vatsimid) ? $student->vatsimid : get_string('vatsimidmissing', 'local_booking')) . '</span>';
         $this->writeHTML($html, true, false, true);
 
         // examiner information
@@ -111,14 +112,13 @@ class pdf_report_mentor extends pdf_report {
         $this->writeHTML($html, true, false, true);
 
         // write logbook entry header for the exercise
-        $examexercise = $exerciseid == $this->course->get_graduation_exercise();
-        $this->write_logentry_info($exerciseid, $examexercise);
+        $this->write_logentry_info($exerciseid, $isexam);
 
         // get grade and feedback information
         $html = $this->get_grade_info($grade);
         $html .= $this->get_feedback_text($grade);
         $this->SetTextColor(0, 0, 0);
-        $this->Ln($examexercise ? 140 : 200);
+        $this->Ln($isexam ? 140 : 200);
         $this->writeHTML($html, true, false, true);
     }
 }

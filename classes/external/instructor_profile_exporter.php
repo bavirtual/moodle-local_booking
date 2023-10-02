@@ -263,6 +263,7 @@ class instructor_profile_exporter extends exporter {
         ];
         $exercisenames = base_view::get_modules($output, $this->subscriber, $options);
         $sessions = $exercisenames;
+
         // add graded sessions count
         foreach ($sessions as $session) {
             if (array_key_exists($session->exerciseid, $gradedsessions)) {
@@ -271,7 +272,7 @@ class instructor_profile_exporter extends exporter {
                 $session->gradedcount = 0;
             }
         }
-        $totalgradedsessions = array_sum(array_column($sessions, 'gradedcount'));
+        $totalgradedsessions = array_sum(array_column($gradedsessions, 'sessions'));
 
         // moodle profile url
         $moodleprofile = new moodle_url('/user/view.php', [

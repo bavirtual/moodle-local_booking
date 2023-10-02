@@ -64,7 +64,8 @@ class booking_session_exporter extends exporter {
     public function __construct($data, $related) {
         $this->student = $data['student'];
 
-        if (!empty($this->session = $this->get_session($data)))
+        // process sessions
+        if (!empty($this->session = $this->get_session($data))) {
             $data = [
                 'courseid'      => $this->student->get_courseid(),
                 'studentid'     => $this->student->get_id(),
@@ -76,6 +77,7 @@ class booking_session_exporter extends exporter {
                 'sessiontooltip'=> $this->session->get_info(),
                 'logentryid'    => !empty($this->session->get_logentry()) ? $this->session->get_logentry()->get_id() : 0,
             ];
+        }
         parent::__construct($data, $related);
     }
 
@@ -179,9 +181,14 @@ class booking_session_exporter extends exporter {
     protected function get_other_values(\renderer_base $output) {
         $return = [];
 
-        // get student posts
-        $nextexercise = $this->student->get_next_exercise();
-        $noposts = ($nextexercise == $this->data['exerciseid'] && $this->student->get_total_posts() == 0) ? get_string('bookingnoposts', 'local_booking') : '';
+        $marknoposts = false;
+        $noposts = '';
+
+        if ($this->related['filter'] == 'active' || $this->related['filter'] == 'onhold') {
+            // get student posts for active and onhold students
+            $nextexercise = $this->student->get_next_exercise();
+            $noposts = ($nextexercise == $this->data['exerciseid'] && $this->student->get_total_posts() == 0) ? get_string('bookingnoposts', 'local_booking') : '';
+        }
 
         if (!empty($this->session)) {
             $graded = $this->session->hasgrade();
@@ -206,8 +213,10 @@ class booking_session_exporter extends exporter {
             ];
         }
 
+        $marknoposts = !empty($noposts) && (empty($this->session) || ($this->session->isnoshow() && !$graded));
+
         $return += [
-            'marknoposts'   => !empty($noposts) && (empty($this->session) || ($this->session->isnoshow() && !$graded)),
+            'marknoposts'   => $marknoposts,
             'noposts'       => $noposts
         ];
 
@@ -221,7 +230,10 @@ class booking_session_exporter extends exporter {
      */
     protected static function define_related() {
         return array(
-            'context' => 'context',
+            'context'=>'context',
+            'coursemodules'=>'cm_info[]?',
+            'course'=>'local_booking\local\subscriber\entities\subscriber',
+            'filter'=>'string',
         );
     }
 

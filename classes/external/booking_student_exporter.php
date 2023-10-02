@@ -31,9 +31,9 @@ defined('MOODLE_INTERNAL') || die();
 
 use renderer_base;
 use core\external\exporter;
+use DateTime;
 use local_booking\local\session\entities\action;
 use local_booking\local\participant\entities\student;
-use local_booking\local\subscriber\entities\subscriber;
 
 /**
  * Class for displaying each student row in progression view.
@@ -44,11 +44,6 @@ use local_booking\local\subscriber\entities\subscriber;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class booking_student_exporter extends exporter {
-
-    /**
-     * @var subscriber $course The subscribing course.
-     */
-    protected $course;
 
     /**
      * @var student $student The student.
@@ -64,15 +59,27 @@ class booking_student_exporter extends exporter {
     public function __construct($data, $related) {
         global $CFG;
 
-        $this->course = $data['course'];
         $this->student = $data['student'];
         $data['studentid'] = $this->student->get_id();
         $data['studentname'] = $this->student->get_name();
-        $data['dayssincelast'] = $this->student->get_priority()->get_recency_days();
-        $data['recencytooltip'] = $data['filter'] != 'suspended' ? $this->student->get_priority()->get_recency_info() : 'N/A';
         $data['fleet'] = $this->student->get_fleet();
         $data['simulator'] = $this->student->get_simulator();
-        $data['profileurl'] = $CFG->wwwroot . '/local/booking/profile.php?courseid=' . $this->course->get_id() . '&userid=' . $this->student->get_id();
+        $data['profileurl'] = $CFG->wwwroot . '/local/booking/profile.php?courseid=' . $related['course']->get_id() . '&userid=' . $this->student->get_id();
+
+        // get recency or relavent information dates depending on the filter view
+        switch ($related['filter']) {
+            case 'active':
+            case 'onhold':
+                $data['dayssincelast'] = $this->student->get_priority()->get_recency_days();
+                $data['recencytooltip'] = $this->student->get_priority()->get_recency_info();
+                break;
+            case 'graduates':
+                $data['dateinfo'] = (new \DateTime('@'.$this->student->timeadded))->format('M d, y');
+                break;
+            case 'suspended':
+                $data['dateinfo'] = $this->student->get_suspension_date()->format('M d, y');
+                break;
+            }
 
         parent::__construct($data, $related);
     }
@@ -105,9 +112,18 @@ class booking_student_exporter extends exporter {
             ],
             'dayssincelast' => [
                 'type' => PARAM_INT,
+                'optional' => true,
+                'default' => 0,
+            ],
+            'dateinfo' => [
+                'type' => \PARAM_RAW,
+                'optional' => true,
+                'default' => '',
             ],
             'recencytooltip' => [
                 'type' => PARAM_RAW,
+                'optional' => true,
+                'default' => '',
             ],
             'overduewarning' => [
                 'type' => PARAM_BOOL,
@@ -139,43 +155,54 @@ class booking_student_exporter extends exporter {
                 'multiple' => true,
             ],
             'actionurl' => [
-                'type' => PARAM_URL,
-                'default' => NULL,
+                'type' => \PARAM_RAW,
+                'optional' => true,
+                'default' => '',
             ],
             'actiontype' => [
                 'type' => PARAM_RAW,
-                'default' => NULL,
+                'optional' => true,
+                'default' => '',
             ],
             'actionname' => [
                 'type' => PARAM_RAW,
-                'default' => NULL,
+                'optional' => true,
+                'default' => '',
             ],
             'actionbook' => [
                 'type' => PARAM_BOOL,
+                'optional' => true,
                 'default' => false,
             ],
             'actionenabled' => [
                 'type' => PARAM_BOOL,
+                'optional' => true,
                 'default' => false,
             ],
             'actiontooltip' => [
                 'type' => PARAM_RAW,
+                'optional' => true,
                 'default' => '',
             ],
             'sessionoptions' => [
                 'type' => PARAM_BOOL,
+                'optional' => true,
                 'multiple' => true,
             ],
             'posts' => [
                 'type' => PARAM_INT,
+                'optional' => true,
                 'default' => 0,
             ],
             'week' => [
                 'type' => PARAM_INT,
+                'optional' => true,
                 'default' => 0,
             ],
             'formaction' => [
                 'type' => PARAM_RAW,
+                'optional' => true,
+                'default' => '',
             ],
         ];
     }
@@ -188,33 +215,41 @@ class booking_student_exporter extends exporter {
      */
     protected function get_other_values(renderer_base $output) {
         global $CFG;
-        $sessions = $this->get_sessions($output);
 
-        // action is grading if the student has any active booking, completed coursework
-        // awaiting certification, or graduated already; otherwise it is a booking action
-        if (!empty($this->student->get_active_booking()))
-            $actiontype = 'grade';
-        else if ($this->student->has_completed_coursework() && !$this->student->graduated())
-            $actiontype = 'graduate';
-        else
-            $actiontype = 'book';
-
-        $action = new action($this->course, $this->student, $actiontype);
-        $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;
-
-        return [
-            'sessions'          => $sessions,
-            'actionurl'         => $action->get_url()->out(false),
-            'actiontype'        => $action->get_type(),
-            'actionname'        => $action->get_name(),
-            'actionbook'        => $action->get_name() == 'Book',
-            'actionenabled'     => $action->is_enabled(),
-            'actiontooltip'     => $action->get_tooltip(),
-            'sessionoptions'    => $this->get_session_options($action),
-            'posts'             => $posts,
-            'week'              => $this->get_booking_week(),
-            'formaction'        => $CFG->httpswwwroot . '/local/booking/availability.php',
+        $sessions = $this->get_sessions($output, $this->student, $this->related);
+        $return = [
+            'sessions'       => $sessions,
         ];
+
+        if ($this->related['filter'] == 'active') {
+
+            // action is grading if the student has any active booking, completed coursework
+            // awaiting certification, or graduated already; otherwise it is a booking action
+            if (!empty($this->student->get_active_booking()))
+                $actiontype = 'grade';
+            else if ($this->student->has_completed_coursework() && !$this->student->graduated())
+                $actiontype = 'graduate';
+            else
+                $actiontype = 'book';
+
+            $action = new action($this->related['course'], $this->student, $actiontype);
+            $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;
+
+            $return = array_merge(array(
+                'actionurl'         => $action->get_url()->out(false),
+                'actiontype'        => $action->get_type(),
+                'actionname'        => $action->get_name(),
+                'actionbook'        => $action->get_name() == 'Book',
+                'actionenabled'     => $action->is_enabled(),
+                'actiontooltip'     => $action->get_tooltip(),
+                'sessionoptions'    => $this->get_session_options($action),
+                'posts'             => $posts,
+                'week'              => $this->get_booking_week(),
+                'formaction'        => $CFG->httpswwwroot . '/local/booking/availability.php',
+            ), $return);
+        }
+
+        return $return;
     }
 
     /**
@@ -226,6 +261,8 @@ class booking_student_exporter extends exporter {
         return array(
             'context'=>'context',
             'coursemodules'=>'cm_info[]?',
+            'course'=>'local_booking\local\subscriber\entities\subscriber',
+            'filter'=>'string',
         );
     }
 
@@ -235,27 +272,31 @@ class booking_student_exporter extends exporter {
      * @param   $output  The output to be rendered
      * @return  $sessions[]
      */
-    protected function get_sessions($output) {
+    public static function get_sessions($output, student $student, $related) {
         $sessions = [];
-        $grades = $this->student->get_grades();
-        $bookings = $this->student->get_bookings();
-        $logbook = $this->student->get_logbook();
-        $gradexercise = $this->course->get_graduation_exercise();
+
+        // get details for active and on-hold students only
+        $grades = $student->get_grades();
+        $bookings = $student->get_bookings();
+        $logbook = $student->get_logbook();
+
+        $studentname = $student->get_name();
+        $gradexercise = $related['course']->get_graduation_exercise();
 
         // export all exercise sessions, quizes, and exams
-        $coursemods = $this->related['coursemodules'];
+        $coursemods = $related['coursemodules'];
         foreach ($coursemods as $coursemod) {
             $studentinfo = [];
             $studentinfo = [
-                'student'     => $this->student,
-                'studentname' => $this->data['studentname'],
+                'student'     => $student,
+                'studentname' => $studentname,
                 'exerciseid'  => $coursemod->id,
                 'flighttype'  => $gradexercise != $coursemod->id ? 'training' : 'check',
                 'grades'      => $grades,
                 'bookings'    => $bookings,
-                'logbook'     => $logbook
+                'logbook'     => $logbook,
             ];
-            $coursemodsession = new booking_session_exporter($studentinfo, $this->related);
+            $coursemodsession = new booking_session_exporter($studentinfo, $related);
             $sessions[] = $coursemodsession->export($output);
         }
 

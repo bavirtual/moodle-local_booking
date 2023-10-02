@@ -71,7 +71,12 @@ class participant implements participant_interface {
     /**
      * @var int $enroldate The participant enrolment date timestamp.
      */
-    protected $enroldate;
+    protected $enroldate = 0;
+
+    /**
+     * @var int $suspenddate The participant enrolment suspension date timestamp.
+     */
+    protected $suspenddate = 0;
 
     /**
      * @var int $lastlogin The participant last login date timestamp.
@@ -285,11 +290,26 @@ class participant implements participant_interface {
      * @return \DateTime $enroldate  The enrolment date of the participant.
      */
     public function get_enrol_date() {
-        // TODO: PHP9 deprecates dynamic properties
-        $timecreatedtag = 'timecreated';
-        $enrol = $this->enroldate ?: ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->$timecreatedtag;
-        $enrolmentdate = new \DateTime('@' . $enrol);
-        return $enrolmentdate;
+        if (empty($this->enroldate)) {
+            // TODO: PHP9 deprecates dynamic properties
+            $enroldate = 'enroldate';
+            $this->enroldate = ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->$enroldate;
+        }
+        return new \DateTime('@' . $this->enroldate);
+    }
+
+    /**
+     * Get participant's enrolment suspension date.
+     *
+     * @return \DateTime $enroldate  The enrolment suspension date of the participant.
+     */
+    public function get_suspension_date() {
+        if (empty($this->suspenddate)) {
+            // TODO: PHP9 deprecates dynamic properties
+            $suspenddate = 'suspenddate';
+            $this->suspenddate = ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->$suspenddate;
+        }
+        return new \DateTime('@' . $this->suspenddate);
     }
 
     /**
@@ -430,10 +450,11 @@ class participant implements participant_interface {
      */
     public function populate($record) {
         if (!empty($record)) {
-            $this->fullname = $record->fullname;
-            $this->enroldate = $record->enroldate;
-            $this->lastlogin = $record->lastlogin;
-            $this->simulator = $this->get_simulator();
+            $this->fullname    = $record->fullname;
+            $this->enroldate   = $record->enroldate;
+            $this->suspenddate = $record->suspenddate;
+            $this->lastlogin   = $record->lastlogin;
+            $this->simulator   = $this->get_simulator();
         }
     }
 

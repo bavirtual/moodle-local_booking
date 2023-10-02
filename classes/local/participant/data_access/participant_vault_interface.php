@@ -30,12 +30,12 @@ defined('MOODLE_INTERNAL') || die();
 interface participant_vault_interface {
 
     /**
-     * Get all active participant from the database.
+     * Get a participant from the database.
      *
-     * @param int $courseid The course id.
-     * @param int $userid   A specific user.
-     * @param bool $active  Whether the user is actively enrolled.
-     * @return {Object}         Array of database records.
+     * @param int  $courseid The course id.
+     * @param int  $userid   A specific user.
+     * @param bool $active   Whether the user is actively enrolled.
+     * @return {Object}      Array of database records.
      */
     public static function get_participant(int $courseid, int $userid = 0, bool $active = true);
 

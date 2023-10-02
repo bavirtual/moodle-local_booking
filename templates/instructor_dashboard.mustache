@@ -62,8 +62,8 @@
                 <th class="header booking-header text-xs-center">
                     <span class="media-body" aria-hidden="true">{{#str}} students, local_booking {{/str}}</span>
                 </th>
-                <th class="header booking-header booking-small text-xs-center">
-                    <span class="media-body" aria-hidden="true">{{#str}} wait, local_booking {{/str}}</span>
+                <th class="header booking-header booking-xsmall text-xs-center">
+                    <span class="media-body" aria-hidden="true">{{studentinfo}}</span>
                 </th>
                 <th class="header booking-header booking-med text-xs-center">
                     <span class="media-body" aria-hidden="true">{{#str}} simulator, local_booking {{/str}}</span>
@@ -103,8 +103,14 @@
                     data-toggle="tooltip"
                     title="{{{recencytooltip}}}"
                     data-html="true">
-                    <span class="media-body small{{#overduewarning}} session-overdue{{/overduewarning}}{{#latewarning}} session-late{{/latewarning}}"
-                    aria-hidden="true">{{dayssincelast}}</span>
+                    <span class="media-body text-nowrap small{{#overduewarning}} session-overdue{{/overduewarning}}{{#latewarning}} session-late{{/latewarning}}"
+                    aria-hidden="true">{{!
+                        }}{{#showactive}} {{dayssincelast}} {{/showactive}}{{!
+                        }}{{#showonhold}} {{dayssincelast}} {{/showonhold}}{{!
+                        }}{{#showgraduates}} {{dateinfo}} {{/showgraduates}}{{!
+                        }}{{#showsuspended}} {{dateinfo}} {{/showsuspended}}{{!
+                        }}
+                    </span>
                 </td>
                 <td class="day text-sm-center">
                     <span class="media-body small" aria-hidden="true">{{simulator}}</span>

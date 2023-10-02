@@ -170,9 +170,10 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
             $data = [
                 'vatsimcertuid' => $COURSE->subscriber->get_booking_config('vatsimcertemail'),
                 'examinerid'    => $examiner->get_id(),
-                'trainingmanagerid'=> $COURSE->subscriber->get_flight_training_manager_user()->get_id(),
+                'trainingmanagers'=> $COURSE->subscriber->get_flight_training_managers(),
                 'vatsimrating'  => $COURSE->subscriber->vatsimrating,
                 'studentname'   => $student->get_name(false),
+                'studentvatsimid' => $student->get_profile_field('VATSIMID'),
                 'coursename'    => $COURSE->subscriber->get_fullname(),
                 'examinername'  => $examiner->get_name(false),
                 'evaluationformfile' => $fs->get_file_system()->get_local_path_from_storedfile($feedbackfile),

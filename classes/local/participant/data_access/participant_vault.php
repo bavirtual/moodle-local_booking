@@ -58,9 +58,14 @@ class participant_vault implements participant_vault_interface {
     const DB_USER_ENROL = 'user_enrolments';
 
     /**
-     * Process  enrollments table name.
+     * Process enrollments table name.
      */
     const DB_ENROL = 'enrol';
+
+    /**
+     * Process context table name.
+     */
+    const DB_CONTEXT = 'context';
 
     /**
      * Process groups table name for on-hold group.
@@ -108,12 +113,12 @@ class participant_vault implements participant_vault_interface {
     const PASTDATACUTOFFDAYS = LOCAL_BOOKING_PASTDATACUTOFF * 60 * 60 * 24;
 
     /**
-     * Get all active participant from the database.
+     * Get a participant from the database.
      *
-     * @param int $courseid The course id.
-     * @param int $userid   A specific user.
-     * @param bool $active  Whether the user is actively enrolled.
-     * @return {Object}     Array of database records.
+     * @param int  $courseid The course id.
+     * @param int  $userid   A specific user.
+     * @param bool $active   Whether the user is actively enrolled.
+     * @return {Object}      Array of database records.
      */
     public static function get_participant(int $courseid, int $userid = 0, bool $active = true) {
         global $DB;
@@ -121,7 +126,8 @@ class participant_vault implements participant_vault_interface {
         $activeclause = $active ? ' AND ue.status = 0' : '';
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ue.timecreated AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
+                    ue.timecreated AS enroldate, ue.timemodified AS suspenddate,
+                    en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_USER_ENROL . '} ue on u.id = ue.userid
                 INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
@@ -148,7 +154,8 @@ class participant_vault implements participant_vault_interface {
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ue.timecreated AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
+                    ue.timecreated AS enroldate, ue.timemodified AS suspenddate,
+                    en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                 INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
@@ -179,10 +186,11 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // return $DB->get_records_sql($sql, $params);
+        $orderby = '';
         switch ($filter) {
             case 'active':
                 $onholdclause = $includeonhold ? '' : ' OR g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
-                $filterclause = 'AND ue.status = 0
+                $filterclause = ' AND ue.status = 0
                     AND u.id NOT IN (
                         SELECT userid
                         FROM {' . self::DB_GROUPS_MEM . '} gm
@@ -191,7 +199,7 @@ class participant_vault implements participant_vault_interface {
                         ' . $onholdclause . '))';
                 break;
             case 'onhold':
-                $filterclause = 'AND ue.status = 0
+                $filterclause = ' AND ue.status = 0
                     AND u.id IN (
                         SELECT userid
                         FROM {' . self::DB_GROUPS_MEM . '} gm
@@ -199,10 +207,11 @@ class participant_vault implements participant_vault_interface {
                         WHERE g.courseid = :gcourseid AND g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '")';
                 break;
             case 'suspended':
-                $filterclause = 'AND ue.status = 1 ORDER BY fullname';
+                $filterclause = ' AND ue.status = 1';
+                $orderby = ' ORDER BY ue.timemodified DESC';
                 break;
             case 'graduates':
-                $filterclause = 'AND ue.status = 0
+                $filterclause = ' AND ue.status = 0
                     AND u.id IN (
                         SELECT userid
                         FROM {' . self::DB_GROUPS_MEM . '} gm
@@ -213,13 +222,14 @@ class participant_vault implements participant_vault_interface {
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                         'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                        ue.timecreated AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
+                        ue.timecreated AS enroldate, ue.timemodified AS suspenddate,
+                        en.courseid AS courseid, u.lastlogin AS lastlogin
                     FROM {' . self::DB_USER . '} u
                     INNER JOIN {' . self::DB_USER_ENROL . '} ue on u.id = ue.userid
                     INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
                     WHERE en.courseid = :courseid
                         AND u.deleted != 1
-                        AND u.suspended = 0 ' . $filterclause;
+                        AND u.suspended = 0' . $filterclause . $orderby;
 
         $params = [
             'courseid'  => $courseid,
@@ -247,7 +257,8 @@ class participant_vault implements participant_vault_interface {
 
         $sql = 'SELECT DISTINCT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ue.timemodified AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
+                    ue.timemodified AS enroldate, ue.timemodified AS suspenddate,
+                    en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                 INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
@@ -286,7 +297,8 @@ class participant_vault implements participant_vault_interface {
         global $DB;
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ue.timemodified AS enroldate, en.courseid AS courseid, u.lastlogin AS lastlogin
+                    ue.timemodified AS enroldate, ue.timemodified AS suspenddate,
+                    en.courseid AS courseid, u.lastlogin AS lastlogin
                 FROM {' . self::DB_USER . '} u
                 INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
                 INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
@@ -332,7 +344,7 @@ class participant_vault implements participant_vault_interface {
     public function get_enrol_date(int $courseid, int $userid) {
         global $DB;
 
-        $sql = 'SELECT ue.timecreated
+        $sql = 'SELECT ue.timecreated AS enroldate, ue.timemodified AS suspenddate
                 FROM {' . self::DB_USER_ENROL . '} ue
                 INNER JOIN {' . self::DB_ENROL . '} e ON e.id = ue.enrolid
                 WHERE e.courseid = :courseid
@@ -355,11 +367,11 @@ class participant_vault implements participant_vault_interface {
      * @return bool             The result of the suspension action.
      */
     public function suspend(int $courseid, int $userid, int $status) {
-        global $DB;
+        global $DB, $USER;
 
         $sql = 'UPDATE {' . static::DB_USER_ENROL . '} ue
                 INNER JOIN {' . static::DB_ENROL . '} e ON e.id = ue.enrolid
-                SET ue.status = :status
+                SET ue.status = :status, ue.timemodified = UNIX_TIMESTAMP(), ue.modifierid = ' . $USER->id . '
                 WHERE e.courseid = :courseid
                     AND ue.userid = :userid';
 

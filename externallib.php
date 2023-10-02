@@ -680,13 +680,9 @@ class local_booking_external extends external_api {
                         set_user_preference('local_booking_' . $courseid . '_availabilityoverride', true, $booking->get_studentid());
                     }
 
-                    // send student cancellation message
-                    $studentmessage = new notification();
-                    $result = $studentmessage->send_session_cancellation($booking, $comment);
-
-                    // send instructor cancellation message
-                    $instructormessage = new notification();
-                    $result = $instructormessage->send_session_cancellation($booking, $comment);
+                    // send cancellation message to both instructor and student
+                    $cancellationmessage = new notification();
+                    $result = $cancellationmessage->send_session_cancellation($booking, $comment);
 
                 }
 
@@ -1350,7 +1346,7 @@ class local_booking_external extends external_api {
                 $studentlogentry = $studentlogbook->create_logentry();
                 $studentlogentry->populate($validateddata);
 
-                if (property_exists($validateddata, 'flighttype') && $validateddata->flighttype != 'solo') {
+                if (property_exists($validateddata, 'flighttypehidden') && $validateddata->flighttypehidden != 'solo') {
                     // add instructor logentry, the user creating the entry is always the instructor
                     $instructorlogbook = new logbook($courseid, $USER->id);
                     $instructorlogentry = $instructorlogbook->create_logentry();

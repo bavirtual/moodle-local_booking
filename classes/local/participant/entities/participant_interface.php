@@ -95,6 +95,13 @@ interface participant_interface {
     public function get_enrol_date();
 
     /**
+     * Get participant's enrolment suspension date.
+     *
+     * @return \DateTime $enroldate  The enrolment suspension date of the participant.
+     */
+    public function get_suspension_date();
+
+    /**
      * Get student's last login date.
      *
      * @return DateTime $lastlogindate  The participant's last login date.

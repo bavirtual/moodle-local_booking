@@ -32,6 +32,7 @@ use core\external\exporter;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\output\views\base_view;
 use renderer_base;
 use moodle_url;
 
@@ -258,6 +259,14 @@ class student_profile_exporter extends exporter {
             'examinerreporturl' => [
                 'type' => PARAM_URL,
             ],
+            'coursemodules' => [
+                'type' => exercise_name_exporter::read_properties_definition(),
+                'multiple' => true,
+            ],
+            'sessions' => [
+                'type' => booking_session_exporter::read_properties_definition(),
+                'multiple' => true,
+            ],
             'comment' => [
                 'type' => PARAM_TEXT,
                 'defaul' => '',
@@ -413,6 +422,20 @@ class student_profile_exporter extends exporter {
             'report' => 'evalform',
         ]);
 
+        // session progression options and related exporter data
+        $options = [
+            'isinstructor' => true,
+            'isexaminer'   => true,
+            'viewtype'     => 'sessions',
+            'readonly'     => true
+        ];
+        $related = [
+            'context'       => \context_system::instance(),
+            'coursemodules' => $this->subscriber->get_modules(),
+            'course'        => $this->subscriber,
+            'filter'        => 'active'
+        ];
+
         $return = [
             'fullname'                 => $this->student->get_name(),
             'timezone'                 => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone,
@@ -458,6 +481,8 @@ class student_profile_exporter extends exporter {
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
             'examinerreporturl'        => $examinerurl->out(false),
             'tested'                   => $this->student->tested(),
+            'coursemodules'            => base_view::get_modules($output, $this->subscriber, $options),
+            'sessions'                 => booking_student_exporter::get_sessions($output, $this->student, $related),
             'comment'                  => $this->student->get_comment(),
         ];
 

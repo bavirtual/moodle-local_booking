@@ -282,6 +282,14 @@ class student_profile_exporter extends exporter {
                 'type' => booking_session_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
+            'coursemodules' => [
+                'type' => exercise_name_exporter::read_properties_definition(),
+                'multiple' => true,
+            ],
+            'sessions' => [
+                'type' => booking_session_exporter::read_properties_definition(),
+                'multiple' => true,
+            ],
             'comment' => [
                 'type' => PARAM_TEXT,
                 'defaul' => '',
@@ -455,6 +463,20 @@ class student_profile_exporter extends exporter {
                 }
             }
         }
+
+        // session progression options and related exporter data
+        $options = [
+            'isinstructor' => true,
+            'isexaminer'   => true,
+            'viewtype'     => 'sessions',
+            'readonly'     => true
+        ];
+        $related = [
+            'context'       => \context_system::instance(),
+            'coursemodules' => $this->subscriber->get_modules(),
+            'course'        => $this->subscriber,
+            'filter'        => 'active'
+        ];
 
         // session progression options and related exporter data
         $options = [

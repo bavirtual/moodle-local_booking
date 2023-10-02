@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\participant\entities\instructor;
 use local_booking\output\views\base_view;
 use renderer_base;
@@ -47,17 +48,21 @@ class bookings_exporter extends exporter {
 
     /**
      * Warning flag of an overdue session (orange)
+     * Warning flag of an overdue session (orange)
      */
     const OVERDUEWARNING = 1;
 
     /**
+     * Warning flag of a late session past overdue (red)
      * Warning flag of a late session past overdue (red)
      */
     const LATEWARNING = 2;
 
     /**
      * @var subscriber $subscriber The subscribing course.
+     * @var subscriber $subscriber The subscribing course.
      */
+    protected $course;
     protected $course;
 
     /**
@@ -113,6 +118,10 @@ class bookings_exporter extends exporter {
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
         $this->viewtype = $data['view'];
+        $this->course = $COURSE->subscriber;
+        $this->modules = $this->course->get_modules();
+        $data['trainingtype'] = $this->course->trainingtype;
+        $data['findpirepenabled'] = $this->course->has_integration('pireps');
         $this->course = $COURSE->subscriber;
         $this->modules = $this->course->get_modules();
         $data['trainingtype'] = $this->course->trainingtype;
@@ -200,6 +209,10 @@ class bookings_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'default' => '',
             ],
+            'studentinfo' => [
+                'type' => PARAM_RAW,
+                'default' => '',
+            ],
         ];
     }
 
@@ -220,6 +233,7 @@ class bookings_exporter extends exporter {
 
         $return = [
             'coursemodules'  => base_view::get_modules($output, $this->course, $options),
+            'coursemodules'  => base_view::get_modules($output, $this->course, $options),
             'activestudents' => $this->get_students($output),
             'activebookings' => $this->get_bookings($output),
             'avgwait' => $this->averagewait,
@@ -229,6 +243,7 @@ class bookings_exporter extends exporter {
             'showgraduates' => $this->filter == 'graduates' ? 'checked' : '',
             'showsuspended' => $this->filter == 'suspended' ? 'checked' : '',
             'showallcourses'=> !empty(\get_user_preferences('local_booking_1_xcoursebookings', false, !empty($this->instructor) ? $this->instructor->get_id() : 0)),
+            'studentinfo'=> get_string('studentinfo' . $this->filter, 'local_booking'),
             'studentinfo'=> get_string('studentinfo' . $this->filter, 'local_booking'),
         ];
 
@@ -273,18 +288,24 @@ class bookings_exporter extends exporter {
             // get the students list based on the requested filter for active or on-hold
             $studentslist = $this->course->get_students($filter);
             $this->activestudents = $this->filter != 'suspended' ? $this->sort_students($studentslist, $sorttype) : $studentslist;
+            // get the students list based on the requested filter for active or on-hold
+            $studentslist = $this->course->get_students($filter);
+            $this->activestudents = $this->filter != 'suspended' ? $this->sort_students($studentslist, $sorttype) : $studentslist;
 
         } elseif ($this->viewtype == 'confirm') {
+            $this->activestudents[] = $this->course->get_student($this->bookingstudentid);
             $this->activestudents[] = $this->course->get_student($this->bookingstudentid);
         }
 
         $i = 0;
         $totaldays = 0;
         $context = \context_system::instance();
+        $context = \context_system::instance();
         foreach ($this->activestudents as $student) {
             $i++;
 
             // data for the student's exporter
+            $waringflag = $this->get_warning($this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_priority()->get_recency_days() : -1);
             $waringflag = $this->get_warning($this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_priority()->get_recency_days() : -1);
             $data = [
                 'sequence'        => $i,
@@ -306,6 +327,11 @@ class bookings_exporter extends exporter {
                         'slots'     => $student->get_priority()->get_slot_count(),
                         'activity'  => $student->get_priority()->get_activity_count(false),
                         'completion'=> $student->get_priority()->get_completions(),
+                        'score'     => $student->get_priority()->get_score(),
+                        'recency'   => $student->get_priority()->get_recency_days(),
+                        'slots'     => $student->get_priority()->get_slot_count(),
+                        'activity'  => $student->get_priority()->get_activity_count(false),
+                        'completion'=> $student->get_priority()->get_completions(),
                     ];
                 }
                 $data['tag'] = $student->get_status();
@@ -314,11 +340,15 @@ class bookings_exporter extends exporter {
 
             $studentexporter = new booking_student_exporter($data, [
                 'context'       => $context,
+                'context'       => $context,
                 'coursemodules' => $this->modules,
+                'course'        => $this->course,
+                'filter'        => $this->filter,
                 'course'        => $this->course,
                 'filter'        => $this->filter,
             ]);
             $activestudentsexports[] = $studentexporter->export($output);
+            $totaldays += $this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_priority()->get_recency_days() : 0;
             $totaldays += $this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_priority()->get_recency_days() : 0;
         }
         $this->averagewait = !empty($totaldays) ? ceil($totaldays / $i) : 0;
@@ -353,13 +383,13 @@ class bookings_exporter extends exporter {
             // get the graduation dates
             foreach ($activestudents as $student) {
                 if (\array_key_exists($student->get_id(), $graduates)) {
-                    $student->set_graduated_date($graduates[$student->get_id()]->timeadded);
+                    $student->timeadded = $graduates[$student->get_id()]->timeadded;
                 }
             }
 
             // sort all graduates by their graduation date descending
-            uasort($activestudents, function($st1, $st2) {
-                return $st2->get_graduated_date(true) <=> $st1->get_graduated_date(true);
+            usort($activestudents, function($st1, $st2) {
+                return $st2->timeadded <=> $st1->timeadded;
             });
 
             $finallist = $activestudents;
@@ -432,6 +462,7 @@ class bookings_exporter extends exporter {
         // get active bookings if the view is session booking
         if ($this->viewtype == 'sessions') {
             $instructor = $this->course->get_instructor($USER->id);
+            $instructor = $this->course->get_instructor($USER->id);
             $bookings = $instructor->get_bookings(false, true, true);
             foreach ($bookings as $booking) {
                 $bookingexport = new booking_mybookings_exporter(['booking'=>$booking], $this->related);
@@ -454,6 +485,8 @@ class bookings_exporter extends exporter {
     protected function get_warning($dayssincelast) {
         global $COURSE;
         $warning = 0;
+        $waitdays = intval($this->course->postingwait);
+        $onholdperiod = intval($this->course->onholdperiod);
         $waitdays = intval($this->course->postingwait);
         $onholdperiod = intval($this->course->onholdperiod);
 

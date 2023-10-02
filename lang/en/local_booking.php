@@ -321,7 +321,7 @@ $string['evalutionreport'] = 'Examiner evaluation form';
 $string['evalutionreportsubject'] = 'Examiner evaluation form subject';
 $string['examinersince'] = 'Examiner since';
 $string['graduation'] = 'Certification';
-$string['graduationemailconfirmation'] = '<strong>DONE!</strong><p>The form was emailed successfully to ({$a->certbodyemail}) and a copy was sent to your email address ({$a->examineremail}).</p><p>Do not forget to promote {$a->studentname} in <a href="{$a->vatsimpramsurl}" target="_blank">VATSIM PRAMS</a>.';
+$string['graduationemailconfirmation'] = '<strong>DONE!</strong><p>The form was emailed successfully to ({$a->certbodyemail}) and a copy was sent to the flight training managers and your email address ({$a->examineremail}).</p><p>Do not forget to promote {$a->studentname} in <a href="{$a->vatsimpramsurl}" target="_blank">VATSIM PRAMS</a>.';
 $string['graduationformregeneration'] = '<p>The form was generated successfully.</p>';
 $string['graduationconfirmation'] = '<p><strong>Process completed successfully...</strong></p><p>&nbsp;\'{$a->fullname}\' certification is complete and the following actions were performed:</p><ul>
     <li style="padding-bottom: 20px;"><strong>Badges</strong> for {$a->courseshortname} completion were generate and sent via email to {$a->firstname}.&nbsp; A copy of the badge generation was sent to you as well.</li>
@@ -346,6 +346,7 @@ $string['pageviews'] = 'page views';
 $string['practicalexamreport']='Practical examination report';
 $string['profilestudent'] = 'Student profile';
 $string['profileinstructor'] = 'Instructor profile';
+$string['progression'] = 'Session progression';
 $string['qualified'] = 'Qualified for';
 $string['recency'] = 'Recency';
 $string['recommendationletterlink'] = 'Recommendation letter';
@@ -707,7 +708,7 @@ $string['emailevaluationformCCtext'] = 'You are copied on the following message:
 $string['emailevaluationformCChtml'] = '<font face="sans-serif"><p>You are copied on the following message:<p/>';
 $string['emailevaluationformsubject'] = '{$a->ato} student {$a->rating} evaluation form';
 $string['emailevaluationformtext'] = 'Greeting,
-    Please find attached the {$a->rating} examiner evaluation form for {$a->studentname}, a {$a->ato} student.
+    Please find attached the {$a->rating} examiner evaluation form for {$a->studentname} (VATSIM CID: {$a->studentvatsimid}), a {$a->ato} student.
     {$a->studentname} completed the {$a->coursename} and passed the skill test successfully as indicated in the attached form.
 
     Kindly process {$a->studentname} for the {$a->rating} accordingly.
@@ -715,7 +716,7 @@ $string['emailevaluationformtext'] = 'Greeting,
     Best regards,
     {$a->examinername}
     {$a->ato} Training Staff';
-$string['emailevaluationformhtml'] = '<font face="sans-serif"><p><hr /><p>Greetings,<p/><p>Please find attached the {$a->rating} examiner evaluation form for {$a->studentname}, a {$a->ato} student.
+$string['emailevaluationformhtml'] = '<font face="sans-serif"><p><hr /><p>Greetings,<p/><p>Please find attached the {$a->rating} examiner evaluation form for {$a->studentname} (VATSIM CID: {$a->studentvatsimid}), a {$a->ato} student.
 {$a->studentname} completed the <strong>{$a->coursename}</strong> course and passed the skill test successfully as indicated in the attached form.</p><p>Kindly process {$a->studentname} for the {$a->rating} accordingly.<p/>
 <p>Best regards,<br/>{$a->examinername}<br/>{$a->ato} Training Staff</p><hr />';
 

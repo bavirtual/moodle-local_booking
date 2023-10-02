@@ -607,6 +607,7 @@ class notification extends \core\message\message {
             'ato'         => get_config('local_booking', 'atoname'),
             'rating'      => $data['vatsimrating'],
             'studentname' => $data['studentname'],
+            'studentvatsimid' => $data['studentvatsimid'],
             'coursename'  => $data['coursename'],
             'examinername'=> $data['examinername']
         );
@@ -630,13 +631,16 @@ class notification extends \core\message\message {
             $data['evaluationformfile'], basename($data['evaluationformfilename']));
 
         // send email CC to the flight training manager
-        $result = $result && email_to_user(
-            \core_user::get_user($data['trainingmanagerid']),
-            $examiner,
-            'CC: ' . get_string('emailevaluationformsubject', 'local_booking', $msgdata),
-            get_string('emailevaluationformCCtext', 'local_booking') . get_string('emailevaluationformtext', 'local_booking', $msgdata),
-            get_string('emailevaluationformCChtml', 'local_booking') . get_string('emailevaluationformhtml', 'local_booking', $msgdata),
-            $data['evaluationformfile'], basename($data['evaluationformfilename']));
+        $mgrs = $data['trainingmanagers'];
+        foreach ($mgrs as $mgr) {
+            $result = $result && email_to_user(
+                $mgr,
+                $examiner,
+                'CC: ' . get_string('emailevaluationformsubject', 'local_booking', $msgdata),
+                get_string('emailevaluationformCCtext', 'local_booking') . get_string('emailevaluationformtext', 'local_booking', $msgdata),
+                get_string('emailevaluationformCChtml', 'local_booking') . get_string('emailevaluationformhtml', 'local_booking', $msgdata),
+                $data['evaluationformfile'], basename($data['evaluationformfilename']));
+            }
 
         return $result;
     }

@@ -1,5 +1,26 @@
 # Change log
 
+## [2023100200] - RELEASED 2023-10-02
+
+### Fixed
+
+- sending VATSIM p1-examiner-evluation exception for missing flight training manager user
+- duplicate notifications when cancelling a booking
+- number of sessions conducted and graded sessions totals in the Instructor Profile
+- examiner time not being recorded when recording a skill test logbook entry
+
+### Added
+
+- progression grid in the student profile
+- VATSIM CID in the skill test recommendation notification by examiners
+- chronological order of graduated and suspended students
+
+### Changed
+
+- eliminated action and posts processing for Graduated and Suspended students to improve performance
+- minor performance improvement to the mentor reporting loading times
+- removed dynamic property for exercise titles in anticipation of future deprecation in PHP9
+
 ## [2023090301] - RELEASED 2023-09-03
 
 ### Fixed

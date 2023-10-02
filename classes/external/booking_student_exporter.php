@@ -223,14 +223,14 @@ class booking_student_exporter extends exporter {
 
         if ($this->related['filter'] == 'active') {
 
-        // action is grading if the student has any active booking, completed coursework
-        // awaiting certification, or graduated already; otherwise it is a booking action
-        if (!empty($this->student->get_active_booking()))
-            $actiontype = 'grade';
-        else if ($this->student->has_completed_coursework() && !$this->student->graduated())
-            $actiontype = 'graduate';
-        else
-            $actiontype = 'book';
+            // action is grading if the student has any active booking, completed coursework
+            // awaiting certification, or graduated already; otherwise it is a booking action
+            if (!empty($this->student->get_active_booking()))
+                $actiontype = 'grade';
+            else if ($this->student->has_completed_coursework() && !$this->student->graduated())
+                $actiontype = 'graduate';
+            else
+                $actiontype = 'book';
 
             $action = new action($this->related['course'], $this->student, $actiontype);
             $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;

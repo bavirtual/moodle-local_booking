@@ -157,7 +157,7 @@ class grade extends \grade_grade {
     }
 
     /**
-     * Get the user grade item for the grade based on the last attempt.
+     * Get the user grade item for the grade.
      *
      * @param int $attempt The assignment grade attempt to be evaluate.
      * @return stdClass

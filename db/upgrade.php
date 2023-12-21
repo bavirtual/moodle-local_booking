@@ -41,9 +41,9 @@ function xmldb_local_booking_upgrade($oldversion) {
     // Automatically generated Moodle v3.11.0 release upgrade line.
     // Put any upgrade step following this.
 
-    // add sessionid column in logbooks to link log entries to sessions
+    // change the PIREP field from the old char(50) to int(10)
     if ($oldversion < 2023121900) {
-        // get table and field info.
+        // Changing type of field attachment on table block_quickmail_log to text.
         $table = new xmldb_table('local_booking_logbooks');
         $field = new xmldb_field('sessionid', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'userid');
 

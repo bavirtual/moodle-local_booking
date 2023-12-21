@@ -282,14 +282,6 @@ class student_profile_exporter extends exporter {
                 'type' => booking_session_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
-            'coursemodules' => [
-                'type' => exercise_name_exporter::read_properties_definition(),
-                'multiple' => true,
-            ],
-            'sessions' => [
-                'type' => booking_session_exporter::read_properties_definition(),
-                'multiple' => true,
-            ],
             'comment' => [
                 'type' => PARAM_TEXT,
                 'defaul' => '',
@@ -441,42 +433,26 @@ class student_profile_exporter extends exporter {
         // student skill test form for each exam attempt
         $attempts = [];
         if ($hasexams && $requiresevaluation) {
+            $examgrade = $this->student->get_grade($this->subscriber->get_graduation_exercise(), true);
+            $gradeattempts = $examgrade->attempts;
 
-            if ($examgrade = $this->student->get_grade($this->subscriber->get_graduation_exercise(), true)) {
-
-                $gradeattempts = $examgrade->attempts;
-                // get the url and attempt number for each attempt
-                foreach ($gradeattempts as $gradeattempt) {
-                    $gradeattempt->attemptnumber = intval($gradeattempt->attemptnumber)+1;
-                    $reporturl = new moodle_url('/local/booking/report.php', [
-                    'courseid' => $this->courseid,
-                    'userid'   => $studentid,
-                    'report'   => 'evalform',
-                    'attempt'  => $gradeattempt->attemptnumber,
-                    ]);
-                    $attempts[] = (object)[
-                            'examinerurl'=>$reporturl->out(false),
-                            'attemptdate'=>(new \DateTime('@'.$gradeattempt->timemodified))->format('M j\, Y'),
-                            'attemptnumber'=>$gradeattempt->attemptnumber,
-                            'gradename'=>$gradeattempt->gradename
-                        ];
-                }
+            // get the url and attempt number for each attempt
+            foreach ($gradeattempts as $gradeattempt) {
+                $gradeattempt->attemptnumber = intval($gradeattempt->attemptnumber)+1;
+                $reporturl = new moodle_url('/local/booking/report.php', [
+                'courseid' => $this->courseid,
+                'userid'   => $studentid,
+                'report'   => 'evalform',
+                'attempt'  => $gradeattempt->attemptnumber,
+                ]);
+                $attempts[] = (object)[
+                        'examinerurl'=>$reporturl->out(false),
+                        'attemptdate'=>(new \DateTime('@'.$gradeattempt->timemodified))->format('M j\, Y'),
+                        'attemptnumber'=>$gradeattempt->attemptnumber,
+                        'gradename'=>$gradeattempt->gradename
+                    ];
             }
         }
-
-        // session progression options and related exporter data
-        $options = [
-            'isinstructor' => true,
-            'isexaminer'   => true,
-            'viewtype'     => 'sessions',
-            'readonly'     => true
-        ];
-        $related = [
-            'context'       => \context_system::instance(),
-            'coursemodules' => $this->subscriber->get_modules(),
-            'course'        => $this->subscriber,
-            'filter'        => 'active'
-        ];
 
         // session progression options and related exporter data
         $options = [
@@ -535,6 +511,7 @@ class student_profile_exporter extends exporter {
             'mentorreporturl'          => $mentorreporturl->out(false),
             'theoryexamreporturl'      => $theoryexamreporturl->out(false),
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
+            'attempts'                 => $attempts,
             'attempts'                 => $attempts,
             'tested'                   => $this->student->tested(),
             'coursemodules'            => base_view::get_modules($output, $this->subscriber, $options),

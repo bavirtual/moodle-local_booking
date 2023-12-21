@@ -383,13 +383,13 @@ class bookings_exporter extends exporter {
             // get the graduation dates
             foreach ($activestudents as $student) {
                 if (\array_key_exists($student->get_id(), $graduates)) {
-                    $student->timeadded = $graduates[$student->get_id()]->timeadded;
+                    $student->set_graduated_date($graduates[$student->get_id()]->timeadded);
                 }
             }
 
             // sort all graduates by their graduation date descending
-            usort($activestudents, function($st1, $st2) {
-                return $st2->timeadded <=> $st1->timeadded;
+            uasort($activestudents, function($st1, $st2) {
+                return $st2->get_graduated_date(true) <=> $st1->get_graduated_date(true);
             });
 
             $finallist = $activestudents;

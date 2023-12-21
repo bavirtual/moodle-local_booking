@@ -280,7 +280,7 @@ class pdf_report extends \pdf {
 
         // get rubric grading if available
         if ($grade->has_rubric()) {
-            $rubricinfo = $grade->get_graderubric();
+            $rubricinfo = $grade->get_graderubric($attempt);
             $html .= '<table width="500px" cellspacing="2" cellpadding="2">';
             $html .= '<tr style="border: 1px solid black; border-style: solid;">';
             $html .= '<td style="font-weight: bold; text-decoration: underline; font-size: 10px; width: 225px">' . get_string('skill', 'local_booking') . '</td>';
@@ -339,7 +339,7 @@ class pdf_report extends \pdf {
                     $component = $urlparts[array_search('pluginfile.php', $urlparts) + 2];
                     $area = $urlparts[array_search('pluginfile.php', $urlparts) + 3];
                     $itemid = $urlparts[array_search('pluginfile.php', $urlparts) + 4];
-                    $imgurlnew = $grade->get_feedback_file($component, $area, $itemid);
+                    $imgurlnew = $grade->get_feedback_file($component, $area, $itemid, $attempt);
                     if (file_exists($imgurlnew))
                         $tags[$key] = str_replace($imgurl, $imgurlnew, $tag);
                     else

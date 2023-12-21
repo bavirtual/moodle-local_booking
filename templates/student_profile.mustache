@@ -90,12 +90,17 @@
                                 {{> core/overlay_loading}}
                             </div>
                             <div id="endorsement-letter" class="{{^endorsed}}hidden {{/endorsed}}mt-2">
-                                <span><a href="{{recommendationletterlink}}">{{#str}} recommendationletterlink , local_booking {{/str}}</a></span>
+                                <span style="margin-left: 43px;"><a href="{{recommendationletterlink}}">{{#str}} recommendationletterlink , local_booking {{/str}}</a></span>
                             </div>
                             {{/qualified}}
                             {{^qualified}}{{#str}} notqualified , local_booking {{/str}}{{/qualified}}
+                        </dd>
+                        <dt>{{#str}} evalformreport , local_booking {{/str}}</dt>
+                        <dd>
                             {{#tested}}
-                            <dd><span><a href="{{examinerreporturl}}">{{#str}} evalformreport , local_booking {{/str}}</a></span></dd>
+                            {{#attempts}}
+                            <dd><span><a href="{{examinerurl}}">{{#str}} attempt , quiz {{/str}} {{attemptnumber}} - {{attemptdate}}</br><strong>{{gradename}}</strong></a></span></dd>
+                            {{/attempts}}
                             {{/tested}}
                             {{^tested}}
                             <dd><span>{{#str}} evalformreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>

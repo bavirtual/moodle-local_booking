@@ -121,7 +121,7 @@ class grading_vault implements grading_vault_interface {
     public static function get_student_exercise_attempts(int $courseid, int $userid, int $exerciseid) {
         global $DB;
 
-        $sql = 'SELECT ag.attemptnumber, ag.grader, ag.timemodified, ag.grade, ac.commenttext
+        $sql = 'SELECT ag.attemptnumber, ag.grader, ag.timemodified, ag.grade, ac.grade AS itemid, ac.commenttext
                 FROM {' . self::DB_ASSIGN_GRADES . '} ag
                 INNER JOIN {' . self::DB_ASSIGN_FEEDBACK . '} ac ON ac.grade = ag.id
                 INNER JOIN {' . self::DB_COURSE_MODS . '} cm ON cm.instance = ac.assignment

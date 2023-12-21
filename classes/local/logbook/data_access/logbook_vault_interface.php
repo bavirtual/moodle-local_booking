@@ -27,6 +27,7 @@ namespace local_booking\local\logbook\data_access;
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_booking\local\logbook\entities\logbook;
 use local_booking\local\logbook\entities\logentry;
 
 interface logbook_vault_interface {
@@ -40,7 +41,7 @@ interface logbook_vault_interface {
      * @param bool      $allentries Whether to get entries for all courses
      * @return logentries[]     Array of logentry_interfaces.
      */
-    public static function get_logbook(int $courseid, int $userid, $logbook, $allentries);
+    public static function get_logbook(int $courseid, int $userid, logbook $logbook, $allentries);
 
     /**
      * Get a specific logbook entry.
@@ -50,9 +51,10 @@ interface logbook_vault_interface {
      * @param logbook $logbook  The logbook_interface of for all entries.
      * @param int $logentryid   The logentry id.
      * @param int $exerciseid   The logentry with exericse id.
+     * @param int $sessionid    The logentry with session id.
      * @return logentry         A logentry_insterface.
      */
-    public static function get_logentry(int $userid, int $courseid, $logbook, int $logentryid = 0, int $exerciseid = 0);
+    public static function get_logentry(int $userid, int $courseid, $logbook, int $logentryid = 0, int $exerciseid = 0, int $sessionid = 0);
 
     /**
      * Get summary of logentries of the entire logbook.

@@ -515,6 +515,10 @@ class create extends \moodleform {
         $mform->setType('exerciseid', PARAM_INT);
         $mform->setDefault('exerciseid', 0);
 
+        $mform->addElement('hidden', 'sessionid');
+        $mform->setType('sessionid', PARAM_INT);
+        $mform->setDefault('sessionid', 0);
+
         $mform->addElement('hidden', 'courseid');
         $mform->setType('courseid', PARAM_INT);
         $mform->setDefault('courseid', 0);

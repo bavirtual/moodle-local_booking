@@ -100,7 +100,7 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
         // Show the logentry form modal form when the user clicks on a session
         // in the 'Instructor dashboard' page to add or edit a logentry
         LogentryFormPromise.then(function(modal) {
-            var logegntrySession, flightDate, exerciseId, flightType, findpirepenabled;
+            var logegntrySession, flightDate, exerciseId, sessionId, flightType, findpirepenabled;
 
             // Sel elements not meant for new or additional logentries
             if (isNew) {
@@ -108,6 +108,7 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
                 logegntrySession = target.closest(Selectors.actions.viewLogEntry);
                 flightDate = logegntrySession.dataset.flightDate;
                 exerciseId = logegntrySession.dataset.exerciseId;
+                sessionId = logegntrySession.dataset.sessionId;
                 flightType = logegntrySession.dataset.flightType;
                 findpirepenabled = $(Selectors.bookingwrapper).data('findpirep');
             } else {
@@ -116,12 +117,14 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
                     let logegntrySession = target.closest(Selectors.containers.summaryForm);
                     flightDate = logegntrySession.dataset.flightDate;
                     exerciseId = logegntrySession.dataset.exerciseId;
+                    sessionId = logegntrySession.dataset.sessionId;
                     flightType = logegntrySession.dataset.flightType;
                 } else {
                     // From logentry_view
                     logegntrySession = root.find(Selectors.containers.summaryForm);
                     flightDate = logegntrySession.data('flight-date');
                     exerciseId = logegntrySession.data('exercise-id');
+                    sessionId = logegntrySession.data('session-id');
                     flightType = logegntrySession.data('flight-type');
                     findpirepenabled = logegntrySession.data('find-pirep');
                 }
@@ -133,6 +136,7 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
             modal.setUserId(userId);
             modal.setLogentryId(logentryId);
             modal.setExerciseId(exerciseId);
+            modal.setSessionId(sessionId);
             modal.setFlightDate(flightDate);
             modal.setFlightType(flightType);
             modal.hasFindPIREP(findpirepenabled);

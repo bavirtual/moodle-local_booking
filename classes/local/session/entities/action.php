@@ -117,8 +117,8 @@ class action implements action_interface {
                 } else if ($student->get_next_exercise() == $gradexercise) {
                     global $USER;
 
-                    $instructor = new instructor($course, $USER->id);
-                    $enabled = ($instructor->is_examiner() || !$lastgrade->is_passed())&& $student->is_active();
+                    $participant = new participant($course, $USER->id);
+                    $enabled = ($participant->is_examiner() || !$lastgrade->is_passed())&& $student->is_active();
                     $tooltip = get_string((!$this->enabled ? 'actiondisabledexaminersonlytooltip' : 'actiondisabledexaminersonlytooltip'), 'local_booking');
 
                 }
@@ -175,7 +175,7 @@ class action implements action_interface {
                     $examinerid = $student->get_grade($gradexercise)->usermodified;
                     $instructor = new instructor($course, $USER->id);
                     $logbook = $student->get_logbook(true);
-                    $hasexamlogentry = $logbook->get_logentry_by_exericseid($course->get_graduation_exercise());
+                    $hasexamlogentry = !empty($logbook->get_logentry_by_sessionid($refid));
                     $enabled =  $examinerid == $USER->id && $hasexamlogentry;
                     if (!$instructor->is_examiner())
                         $tooltip = get_string('actiondisabledexaminersonlytooltip', 'local_booking');

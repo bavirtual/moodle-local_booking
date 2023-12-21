@@ -70,6 +70,7 @@ class booking_session_exporter extends exporter {
                 'courseid'      => $this->student->get_courseid(),
                 'studentid'     => $this->student->get_id(),
                 'exerciseid'    => $data['exerciseid'],
+                'sessionid'     => $this->session->get_id(),
                 'flighttype'    => $data['flighttype'],
                 'sessionstatus' => $this->session->get_status(),
                 'sessiondatets' => !empty($this->session->get_sessiondate()) ? ($this->session->get_sessiondate())->getTimestamp() : '',
@@ -93,6 +94,10 @@ class booking_session_exporter extends exporter {
                 'default' => 0,
             ],
             'exerciseid' => [
+                'type' => PARAM_INT,
+                'default' => 0,
+            ],
+            'sessionid' => [
                 'type' => PARAM_INT,
                 'default' => 0,
             ],
@@ -192,7 +197,7 @@ class booking_session_exporter extends exporter {
 
         if (!empty($this->session)) {
             $graded = $this->session->hasgrade();
-            $logentrymissing = empty($this->data['logentryid']) && $this->session->hasgrade() && $this->session->get_grade()->grade_item->itemmodule != 'quiz';
+            $logentrymissing = $this->is_logentry_missing();
             $lastbookingdate = $logentrymissing ?
                 slot::get_last_booking_date($this->data['courseid'], $this->student->get_id()) :
                 $this->session->get_sessiondate()->getTimestamp();
@@ -247,7 +252,7 @@ class booking_session_exporter extends exporter {
 
         $grade = isset($data['grades'][$data['exerciseid']]) ? $data['grades'][$data['exerciseid']] : null;
         $booking = $this->find_booking($data['bookings'], $data['exerciseid']);
-        $logentry = !empty($grade) ? $data['logbook']->get_logentry(0, $data['exerciseid']) : null;
+        $logentry = !empty($grade) && !empty($booking) ? $data['logbook']->get_logentry(0, 0, $booking->get_id()) : null;
 
         // collect session information
         $session = null;
@@ -327,5 +332,18 @@ class booking_session_exporter extends exporter {
             }
         }
         return $booking;
+    }
+    /**
+     * Whether the session is missing a log entry.
+     *
+     * @return bool
+     */
+    protected function is_logentry_missing() {
+        $has_logentry = $this->session->haslogentry();
+        $has_grade = $this->session->hasgrade();
+        $is_quiz = $has_grade ? $this->session->get_grade()->grade_item->itemmodule == 'quiz' : false;
+        $is_solo = !empty($this->session->get_logentry()) ? $this->session->get_logentry()->get_flighttype() == 'solo' : false;
+
+        return !$has_logentry && !$is_solo && $has_grade && !$is_quiz;
     }
 }

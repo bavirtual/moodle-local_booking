@@ -91,8 +91,9 @@ class grade extends \grade_grade {
      * @param int       $userid         The user id of the student of the grade.
      * @param int       $exerciseid     The exercise id of the grade.
      * @param bool      $force          Whether to force loading the grade object even before a final grade is assigned.
+     * @param bool      $getattempts    Whether to retrieve students attempts for the exercise.
      */
-    public function __construct(int $gradeitemid, int $userid, int $exerciseid, bool $force = false) {
+    public function __construct(int $gradeitemid, int $userid, int $exerciseid, bool $force = false, bool $getattempts = false) {
         parent::__construct(array('userid'=>$userid, 'itemid'=>$gradeitemid));
 
         if (!empty($this->finalgrade) || $force) {
@@ -108,6 +109,15 @@ class grade extends \grade_grade {
 
             if ($this->grade_item->itemmodule == 'quiz') {
                 $this->attempts = quiz_get_user_attempts($this->grade_item->iteminstance, $userid);
+            }
+
+            // get attempts if requested
+            if ($getattempts) {
+                $this->attempts = grading_vault::get_student_exercise_attempts($this->grade_item->courseid, $userid, $exerciseid);
+                // get the grade nmae for each attempt
+                foreach ($this->attempts as $attempt) {
+                    $attempt->gradename = $this->get_grade_name($attempt->grade);
+                }
             }
         }
     }
@@ -147,14 +157,14 @@ class grade extends \grade_grade {
     }
 
     /**
-     * Get the user grade item for the grade based on the last attempt.
+     * Get the user grade item for the grade.
      *
+     * @param int $attempt The assignment grade attempt to be evaluate.
      * @return stdClass
      */
-    public function get_user_grade() {
+    public function get_user_grade_attempt(int $attempt = 0) {
         if (!isset($this->usergrade)) {
             // find the attempt last successful attempt otherwise return the latest grade submission attempt
-            $attempt = !empty($this->attempts) && !$this->is_passed() ? ((count($this->attempts)-1) ?: 0) : -1;
             $this->usergrade = $this->get_assignment()->get_user_grade($this->userid, false, $attempt);
         }
 
@@ -164,11 +174,11 @@ class grade extends \grade_grade {
     /**
      * Get subscribing course grading item for a module
      *
-     * @param int   $courseid The subscribing course id
-     * @param mixed $mod      The exercise module requiring the grade item
+     * @param int      $courseid The subscribing course id
+     * @param \cm_info $mod      The exercise module requiring the grade item
      * @return array
      */
-    public static function get_grading_item(int $courseid, mixed $mod) {
+    public static function get_grading_item(int $courseid, \cm_info $mod) {
         // get grading items for all modules
         $params = array('itemtype' => 'mod',
             'itemmodule' => $mod->modname,
@@ -207,15 +217,17 @@ class grade extends \grade_grade {
      * @param string $filearea  The assignment file area
      * @param string $itemid    The assignment grade item
      * @param bool   $path      Whether to return the path or the Stored_file
+     * @param int    $attempt The assignment grade attempt to be evaluate.
      * @return string
      */
-    public function get_feedback_file(string $component, string $filearea, string $itemid = '', $path = true) {
+    public function get_feedback_file(string $component, string $filearea, string $itemid = '', $path = true, int $attempt = 0) {
+        global $COURSE;
 
         $retval = null;
         if (!isset($this->feedbackfile)) {
 
             // get the grade item id
-            $itemid = $itemid ?: $this->get_user_grade()->id;
+            $itemid = $itemid ?: $this->get_user_grade_attempt($attempt)->id;
 
             // get the file storage object
             $fs = get_file_storage();
@@ -227,8 +239,12 @@ class grade extends \grade_grade {
             if (!empty($files)) {
                 foreach ($files as $file) {
                     if (get_class($file) == 'stored_file' && $file->get_filename() != '.') {
-                        $this->feedbackfile = $file;
-                        break;
+                        // verify the correct file name convension otherwise the file is not an evaluation form
+                        $evalfiletemplate = pathinfo($COURSE->subscriber->get_examinerformfile(LOCAL_BOOKING_EVALUATIONFORM)['filename'], PATHINFO_FILENAME);
+                        if (substr($file->get_filename(), 0, strlen($evalfiletemplate)) == $evalfiletemplate) {
+                            $this->feedbackfile = $file;
+                            break;
+                        }
                     }
                 };
                 unset($files);
@@ -247,10 +263,11 @@ class grade extends \grade_grade {
      * Get the grade feedback file.
      *
      * @param string $feedbackfile The feedback file path & name to be uploaded
-     * @param bool   $path      Whether to return the path or the Stored_file
+     * @param bool   $path         Whether to return the path or the Stored_file
+     * @param int    $attempt The assignment grade attempt to be evaluate.
      * @return string|\stored_file
      */
-    public function save_feedback_file(string $feedbackfile, $path = true) {
+    public function save_feedback_file(string $feedbackfile, $path = true, int $attempt = 0) {
         global $USER;
 
         $fs = get_file_storage();
@@ -276,9 +293,9 @@ class grade extends \grade_grade {
 
         // This is the first time that we are submitting feedback, so it is modified.
         $plugin = $this->get_assignment()->get_feedback_plugin_by_type('file');
-        $plugin->is_feedback_modified($this->get_user_grade(), $data);
+        $plugin->is_feedback_modified($this->get_user_grade_attempt($attempt), $data);
         // Save the feedback.
-        $plugin->save($this->get_user_grade(), $data);
+        $plugin->save($this->get_user_grade_attempt($attempt), $data);
         $this->get_feedback_file('assignfeedback_file', 'feedback_files', '', $path);
 
         return $path ? $fs->get_file_system()->get_local_path_from_storedfile($this->feedbackfile) : $this->feedbackfile;
@@ -287,9 +304,10 @@ class grade extends \grade_grade {
     /**
      * Get the student's rubric grade info.
      *
+     * @param int    $attempt The assignment grade attempt to be evaluate.
      * @return string[]
      */
-    public function get_graderubric() {
+    public function get_graderubric(int $attempt = 0) {
 
         $rubric = array();
 
@@ -298,7 +316,7 @@ class grade extends \grade_grade {
         // get the grading instances from the assignment grade
         if ($controller = $gradingmgr->get_active_controller()) {
 
-            $itemid = $this->get_assignment()->get_user_grade($this->userid, false, 0)->id;
+            $itemid = $this->get_assignment()->get_user_grade($this->userid, false, $attempt)->id;
             $instances = $controller->get_active_instances($itemid);
 
             // for each grading instance get the rubric information in an array

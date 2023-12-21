@@ -92,6 +92,15 @@ class session implements session_interface {
     }
 
     /**
+     * Get the id for this session.
+     *
+     * @return int
+     */
+    public function get_id() {
+        return !empty($this->booking) ? $this->booking->get_id() : 0;
+    }
+
+    /**
      * Get the grade for this session.
      *
      * @return grade
@@ -175,6 +184,15 @@ class session implements session_interface {
      */
     public function hasbooking() {
         return $this->booking !== null;
+    }
+
+    /**
+     * Get whether this session has a log entry.
+     *
+     * @return bool
+     */
+    public function haslogentry() {
+        return !empty($this->logentry) ? ($this->logentry->get_sessionid() != 0) : false;
     }
 
     /**

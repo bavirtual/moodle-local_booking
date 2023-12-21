@@ -34,6 +34,14 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface session_interface {
+
+    /**
+     * Get the id for this session.
+     *
+     * @return int
+     */
+    public function get_id();
+
     /**
      * Get the grade for this session.
      *
@@ -96,6 +104,13 @@ interface session_interface {
      * @return bool
      */
     public function hasbooking();
+
+    /**
+     * Get whether this session has a log entry.
+     *
+     * @return bool
+     */
+    public function haslogentry();
 
     /**
      * Get whether this session has not been graded or booked

@@ -28,7 +28,7 @@ namespace local_booking\local\report;
 require_once($CFG->dirroot.'/local/booking/lib/fpdm/fpdm.php');
 
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\local\participant\entities\instructor;
+use local_booking\local\participant\entities\examiner;
 use local_booking\local\participant\entities\student;
 use local_booking\local\session\entities\grade;
 use FPDM;
@@ -44,13 +44,20 @@ defined('MOODLE_INTERNAL') || die();
 class pdf_report_skilltest extends pdf_report {
 
     /**
+     * @var int $attempt The attempt associated with the skill test.
+     */
+    protected $attempt;
+
+    /**
      * Constructor.
      *
-     * @param subscriber $course The report course.
-     * @param student $student   The student for the report.
+     * @param subscriber $course    The report course.
+     * @param student    $student   The student for the report.
+     * @param int        $attempt   The exam attempt number.
      */
-    public function __construct(subscriber $course, student $student) {
+    public function __construct(subscriber $course, student $student, int $attempt) {
         parent::__construct($course, $student, 'evalform');
+        $this->attempt = $attempt;
     }
 
     /**
@@ -63,12 +70,13 @@ class pdf_report_skilltest extends pdf_report {
         $grade = $this->student->get_grade($this->course->get_graduation_exercise(), true);
 
         // generate the examiner evaluation form if it doesn't exist
-        if (!$pdffilename = $grade->get_feedback_file('assignfeedback_file', 'feedback_files')) {
+        if (!$pdffilename = $grade->get_feedback_file('assignfeedback_file', 'feedback_files', '', true, $this->attempt)) {
             if (!$outputform = $this->generate_evaluation_form($grade)) {
-                throw new \Error(get_string('errorexaminerevalformunable', 'local_booking'));
+                // throw new \Error(get_string('errorexaminerevalformunable', 'local_booking'));
+                return;
             } else {
                 // upload the form to the graded exercise
-                $pdffilename = $grade->save_feedback_file($outputform);
+                $pdffilename = $grade->save_feedback_file($outputform, $this->attempt);
             }
         }
 
@@ -91,7 +99,7 @@ class pdf_report_skilltest extends pdf_report {
 
                 // output error and redirect to file location
                 echo get_string('errorredirecttofile', 'local_booking');
-                $redirecturl = '/pluginfile.php/' . $grade->get_context()->id .'/assignfeedback_file/feedback_files/' . $grade->get_user_grade()->id . '/' . $filename;
+                $redirecturl = '/pluginfile.php/' . $grade->get_context()->id .'/assignfeedback_file/feedback_files/' . $grade->get_user_grade_attempt($this->attempt)->id . '/' . $filename;
                 redirect(new moodle_url($redirecturl, ['forcedownload'=>'1']));
                 die('<b>FPDF-Merge Error:</b> '.$e->getMessage());
             }
@@ -103,8 +111,8 @@ class pdf_report_skilltest extends pdf_report {
     /**
      * Generate the Examiner Evaluation Form
      *
-     * @param grade      $grade    The exam grade
-     * @return bool         true/false
+     * @param grade $grade    The exam grade
+     * @return bool true/false
      */
     public function generate_evaluation_form(grade $grade) {
         try {
@@ -113,86 +121,92 @@ class pdf_report_skilltest extends pdf_report {
                 throw new \Error(get_string('errorexaminerevalmissinglogentry', 'local_booking'));
             }
 
-            $examiner = new instructor($this->course, $grade->usermodified);
+            $examiner = new examiner($this->course, $grade->attempts[$this->attempt]->grader);
             $examdate = new \DateTime('@'.$logentry->get_deptime());
-            $rubricgrade = $grade->get_graderubric();
-            $rubric = array_keys($rubricgrade);
+            $rubricgrade = $grade->get_graderubric($this->attempt);
 
-            // FDF header & footer
-            $fdfheader = "%FDF-1.2\r\n1 0 obj\r\n<<\r\n/FDF << /Fields [\r\n";
-            $fdffooter = "] >> >>\r\nendobj\r\ntrailer\r\n<</Root 1 0 R>>\r\n%%EOF";
+            // verify the grade has rubric, otherwise legacy grading
+            if (count($rubricgrade)) {
+                $rubric = array_keys($rubricgrade);
 
-            // form header section
-            $fdfdata = [];
-            $fdfdata['ATO Name'] = get_config('local_booking', 'atoname');
-            $fdfdata['Name'] = $this->student->get_name(false);
-            $fdfdata['CID'] = $this->student->get_profile_field('VATSIMID');
-            $fdfdata['Date of Test'] = $examdate->format('Y-m-d');
-            $fdfdata['Attempt'] = count($grade->attempts);
-            $fdfdata['Examiner Name'] = $examiner->get_name(false);
-            $fdfdata['Examiner CID'] = $examiner->get_profile_field('VATSIMID');
-            $fdfdata['A/C Type'] = $logentry->get_aircraft();
-            $fdfdata['Method of Examination'] = $logentry->get_fstd();
-            $fdfdata['Overall Result'] = $grade->is_passed() ? 'Satsifactory (Pass)' : 'Unsatsifactory (Fail)';
+                // FDF header & footer
+                $fdfheader = "%FDF-1.2\r\n1 0 obj\r\n<<\r\n/FDF << /Fields [\r\n";
+                $fdffooter = "] >> >>\r\nendobj\r\ntrailer\r\n<</Root 1 0 R>>\r\n%%EOF";
 
-            // form grades and comments to build form based on field mapping
-            $configfilename = $this->course->get_examinerformfile(LOCAL_BOOKING_EVALUATIONFORMCONFIG)['moodlefile'];
-            $formmappings = $this->course->get_booking_config(LOCAL_BOOKING_EVALUATIONFORM, true, $configfilename);
+                // form header section
+                $fdfdata = [];
+                $fdfdata['ATO Name'] = get_config('local_booking', 'atoname');
+                $fdfdata['Name'] = $this->student->get_name(false);
+                $fdfdata['CID'] = $this->student->get_profile_field('VATSIMID');
+                $fdfdata['Date of Test'] = $examdate->format('Y-m-d');
+                $fdfdata['Attempt'] = $this->attempt+1;
+                $fdfdata['Examiner Name'] = $examiner->get_name(false);
+                $fdfdata['Examiner CID'] = $examiner->get_profile_field('VATSIMID');
+                $fdfdata['A/C Type'] = $logentry->get_aircraft();
+                $fdfdata['Method of Examination'] = $logentry->get_fstd();
+                $fdfdata['Overall Result'] = $grade->attempts[$this->attempt]->grade >= $grade->grade_item->gradepass ? 'Satsifactory (Pass)' : 'Unsatsifactory (Fail)';
 
-            // throw error if the format entered in the course settings is incorrect based on matching mappings counts (minus keys)
-            $mappingcntr = 0;
-            foreach ($formmappings as $mapping) {
-                $mappingcntr += count(array_filter($mapping, function($maps) {
-                    return $maps != 'result_field';
-                }, \ARRAY_FILTER_USE_KEY));
-            }
-            if ($mappingcntr != count($rubricgrade))
-                throw new \Error(get_string('errorexaminerevalmapping', 'local_booking'));
+                // form grades and comments to build form based on field mapping
+                $configfilename = $this->course->get_examinerformfile(LOCAL_BOOKING_EVALUATIONFORMCONFIG)['moodlefile'];
+                $formmappings = $this->course->get_booking_config(LOCAL_BOOKING_EVALUATIONFORM, true, $configfilename);
 
-            // map grades and comments form sections to student grades & feedback comments
-            foreach ($formmappings as $section) {
-                $failedcntr = 0;
-                $idx = 0;
-                foreach ($section as $config => $assessment) {
-                    if ($config != 'result_field') {
-                        $idx = array_search($config, array_column($rubricgrade, 'name'));
-                        if ($idx !== false) {
-                            $fdfdata[$assessment['grade_field']] = $rubricgrade[$rubric[$idx]]["grade"];
-                            $fdfdata[$assessment['comment_field']] = $rubricgrade[$rubric[$idx]]["feedback"];
-                            if ($rubricgrade[$rubric[$idx]]["grade"] == 'Unsatisfactory')
-                                $failedcntr++;
+                // throw error if the format entered in the course settings is incorrect based on matching mappings counts (minus keys)
+                $mappingcntr = 0;
+                foreach ($formmappings as $mapping) {
+                    $mappingcntr += count(array_filter($mapping, function($maps) {
+                        return $maps != 'result_field';
+                    }, \ARRAY_FILTER_USE_KEY));
+                }
+                if ($mappingcntr != count($rubricgrade))
+                    throw new \Error(get_string('errorexaminerevalmapping', 'local_booking'));
+
+                // map grades and comments form sections to student grades & feedback comments
+                foreach ($formmappings as $section) {
+                    $failedcntr = 0;
+                    $idx = 0;
+                    foreach ($section as $config => $assessment) {
+                        if ($config != 'result_field') {
+                            $idx = array_search($config, array_column($rubricgrade, 'name'));
+                            if ($idx !== false) {
+                                $fdfdata[$assessment['grade_field']] = $rubricgrade[$rubric[$idx]]["grade"];
+                                $fdfdata[$assessment['comment_field']] = $rubricgrade[$rubric[$idx]]["feedback"];
+                                if ($rubricgrade[$rubric[$idx]]["grade"] == 'Unsatisfactory')
+                                    $failedcntr++;
+                            }
                         }
                     }
+                    // average the result count for sections with more than one assessment (subract 1 for the result which is part of the section array)
+                    if ((count($section)-1) > 1) {
+                        $fdfdata[$section['result_field']] = round($failedcntr / count($section), 2, PHP_ROUND_HALF_DOWN) > LOCAL_BOOKING_FAILINGPERCENTAGE ? 'Unsatisfactory' : 'Satisfactory';
+                    } else {
+                        $fdfdata[$section['result_field']] = $rubricgrade[$rubric[$idx]]["grade"];
+                    }
                 }
-                // average the result count for sections with more than one assessment (subract 1 for the result which is part of the section array)
-                if ((count($section)-1) > 1) {
-                    $fdfdata[$section['result_field']] = round($failedcntr / count($section), 2, PHP_ROUND_HALF_DOWN) > LOCAL_BOOKING_FAILINGPERCENTAGE ? 'Unsatisfactory' : 'Satisfactory';
-                } else {
-                    $fdfdata[$section['result_field']] = $rubricgrade[$rubric[$idx]]["grade"];
+
+                // build FDF form content
+                $fdfcontent = '';
+                foreach ($fdfdata as $field => $value) {
+                    $fdfcontent .= "<</T($field)/V($value)>>\r\n";
                 }
+
+                // create the evaluation form file
+                $content = $fdfheader . $fdfcontent . $fdffooter;
+                $fdffile = tempnam(sys_get_temp_dir(), gethostname());
+                file_put_contents($fdffile, $content);
+
+                // merging the FDF data file with the examiner evaluation form
+                $templateform = $this->course->get_examinerformfile(LOCAL_BOOKING_EVALUATIONFORM);
+                $templateformfile = $templateform['moodlefile'];
+                $evaluationform = str_replace('.pdf', '_' . str_replace(' ', '_', $this->student->get_name(false)).'.pdf', '/tmp/' . $templateform['filename']);
+                exec("pdftk $templateformfile fill_form $fdffile output $evaluationform flatten", $output, $result_code);
+
+                // Removing the FDF file as we don't need it anymore
+                unlink($fdffile);
+
+                return $result_code == 0 ? $evaluationform : false;
+            } else {
+                return false;
             }
-
-            // build FDF form content
-            $fdfcontent = '';
-            foreach ($fdfdata as $field => $value) {
-                $fdfcontent .= "<</T($field)/V($value)>>\r\n";
-            }
-
-            // create the evaluation form file
-            $content = $fdfheader . $fdfcontent . $fdffooter;
-            $fdffile = tempnam(sys_get_temp_dir(), gethostname());
-            file_put_contents($fdffile, $content);
-
-            // merging the FDF data file with the examiner evaluation form
-            $templateform = $this->course->get_examinerformfile(LOCAL_BOOKING_EVALUATIONFORM);
-            $templateformfile = $templateform['moodlefile'];
-            $evaluationform = str_replace('.pdf', '_' . str_replace(' ', '_', $this->student->get_name(false)).'.pdf', '/tmp/' . $templateform['filename']);
-            exec("pdftk $templateformfile fill_form $fdffile output $evaluationform flatten", $output, $result_code);
-
-            // Removing the FDF file as we don't need it anymore
-            unlink($fdffile);
-
-            return $result_code == 0 ? $evaluationform : false;
 
         } catch (\Exception $e) {
             return $e;

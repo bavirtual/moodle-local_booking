@@ -92,9 +92,9 @@ class subscriber implements subscriber_interface {
     protected $activeinstructors;
 
     /**
-     * @var int $graduationexercise The exercise id for graduations. Assumes it's the last.
+     * @var int $graduationexerciseid The exercise id for graduations. Assumes it's the last.
      */
-    protected $graduationexercise;
+    protected $graduationexerciseid = 0;
 
     /**
      * @var array $lessons The subscribing course's lessons (sections).
@@ -379,7 +379,7 @@ class subscriber implements subscriber_interface {
             if ($student->has_role('student') || $student->is_member_of($this->get_id(), $student->get_id(), LOCAL_BOOKING_GRADUATESGROUP)) {
                 $student->populate($studentrec);
                 $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
-                $activestudents[] = $student;
+                $activestudents[$student->get_id()] = $student;
                 $i++;
             }
         }
@@ -497,10 +497,12 @@ class subscriber implements subscriber_interface {
      * @return int The last exericse id
      */
     public function get_graduation_exercise(bool $nameonly = false) {
-        $modulesIterator = (new ArrayObject($this->modules))->getIterator();
-        $modulesIterator->seek(count($this->modules)-1);
-        $gradexerciseid = $modulesIterator->current()->id;
-        return $nameonly ? $this->get_exercise_name($gradexerciseid) : $gradexerciseid;
+        if ($this->graduationexerciseid == 0) {
+            $modulesIterator = (new ArrayObject($this->modules))->getIterator();
+            $modulesIterator->seek(count($this->modules)-1);
+            $this->graduationexerciseid = $modulesIterator->current()->id;
+        }
+        return $nameonly ? $this->get_exercise_name($this->graduationexerciseid) : $this->graduationexerciseid;
     }
 
     /**

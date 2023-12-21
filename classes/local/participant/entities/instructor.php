@@ -91,15 +91,6 @@ class instructor extends participant {
     }
 
     /**
-     * Check if the instructor is an examiner.
-     *
-     * @return bool Whether the instructor is an examiner or not.
-     */
-    public function is_examiner() {
-        return $this->has_role('examiner');
-    }
-
-    /**
      * Activates the instructor if inactive.
      */
     public function activate() {

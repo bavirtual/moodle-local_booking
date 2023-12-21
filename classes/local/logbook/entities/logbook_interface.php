@@ -100,6 +100,15 @@ interface logbook_interface {
     public function get_logentry_by_exericseid(int $exerciseid);
 
     /**
+     * get an entry from the logbook entris by
+     * session id.
+     *
+     * @param int $sessionid: The entry associated session id
+     * @return logentry $logentry The logbook entry db record
+     */
+    public function get_logentry_by_sessionid(int $sessionid);
+
+    /**
      * Get the logbook entries time totals
      *
      * @param  bool $tostring   The totals in string time format

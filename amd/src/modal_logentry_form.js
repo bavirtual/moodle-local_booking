@@ -73,6 +73,7 @@ var ModalLogEntryForm = function(root) {
     this.logentryId = null;
     this.flightDate = null;
     this.exerciseId = null;
+    this.sessionId = null;
     this.pirepLookupId = null;
     this.hasfindpirep = false;
     this.reloadingBody = false;
@@ -162,6 +163,36 @@ ModalLogEntryForm.prototype.getExerciseId = function() {
  */
     ModalLogEntryForm.prototype.hasExerciseId = function() {
     return this.exerciseId !== null;
+};
+
+/**
+ * Set the session id to the given value.
+ *
+ * @method setSessionId
+ * @param {int} id The session id
+ */
+    ModalLogEntryForm.prototype.setSessionId = function(id) {
+    this.sessionId = id;
+};
+
+/**
+ * Get the current session id, if any.
+ *
+ * @method getSessionId
+ * @return {int|null} The session id
+ */
+ModalLogEntryForm.prototype.getSessionId = function() {
+    return this.sessionId;
+};
+
+/**
+ * Check if the modal has an session id.
+ *
+ * @method hasSessionId
+ * @return {bool}
+ */
+    ModalLogEntryForm.prototype.hasSessionId = function() {
+    return this.sessionId !== null;
 };
 
 /**
@@ -395,6 +426,10 @@ ModalLogEntryForm.prototype.reloadBodyContent = function(formData) {
         args.exerciseid = this.getExerciseId();
     }
 
+    if (this.hasSessionId()) {
+        args.sessionid = this.getSessionId();
+    }
+
     if (typeof formData !== 'undefined') {
         args.formdata = formData;
     }
@@ -549,6 +584,7 @@ ModalLogEntryForm.prototype.registerChangeListeners = function() {
     pirep = $('#id_p1pirep').val();
     courseid = this.getCourseId();
     exerciseid = this.getExerciseId();
+    sessionid = this.getSessionId();
 
     if (pirep != '') {
         loadingContainer.removeClass('hidden');
@@ -859,6 +895,7 @@ ModalLogEntryForm.prototype.hide = function() {
     this.setContextId(null);
     this.setCourseId(null);
     this.setExerciseId(null);
+    this.setSessionId(null);
 };
 
 /**
@@ -908,7 +945,7 @@ ModalLogEntryForm.prototype.save = function() {
 
     var formData = this.getFormData();
     var formArgs = 'contextid=' + this.contextId + '&courseid=' + this.courseId
-        + '&exerciseid=' + this.exerciseId + '&userid=' + this.userId;
+        + '&exerciseid=' + this.exerciseId + '&sessionid=' + this.sessionId + '&userid=' + this.userId;
 
     // Send the form data to the server for processing.
     // eslint-disable-next-line consistent-return

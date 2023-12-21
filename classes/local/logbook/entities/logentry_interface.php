@@ -80,6 +80,13 @@ interface logentry_interface {
     public function get_exerciseid();
 
     /**
+     * Get the session id for the log entry.
+     *
+     * @return int
+     */
+    public function get_sessionid();
+
+    /**
      * Get the PIREP string of log entry.
      *
      * @return string $pirep
@@ -348,6 +355,13 @@ interface logentry_interface {
      * @param int $exerciseid
      */
     public function set_exerciseid(int $exerciseid);
+
+    /**
+     * Set the session id for the logbook entry.
+     *
+     * @param int $sessionid
+     */
+    public function set_sessionid(int $sessionid);
 
     /**
      * Set the PIREP string of log entry.

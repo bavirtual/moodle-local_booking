@@ -30,7 +30,6 @@ require_once($CFG->dirroot . '/mod/assign/externallib.php');
 use ArrayObject;
 use DateTime;
 use local_booking\local\session\data_access\booking_vault;
-use local_booking\local\session\data_access\grading_vault;
 use local_booking\local\session\entities\priority;
 use local_booking\local\session\entities\booking;
 use local_booking\local\session\entities\grade;
@@ -99,6 +98,11 @@ class student extends participant {
      * @var DateTime $restrictiondate The student's end of restriction period date.
      */
     protected $restrictiondate;
+
+    /**
+     * @var DateTime $graduateddate The student's graduated date.
+     */
+    protected $graduateddate;
 
     /**
      * @var priority $priority The student's priority object.
@@ -285,12 +289,7 @@ class student extends participant {
 
             // fetch grade_grade then ensure it is graded!
             $gradeitem = grade::get_grading_item($this->course->get_id(), $this->course->get_modules()[$coursemodid]);
-            $grade = new grade($gradeitem->id, $this->userid, $coursemodid);
-
-            // get attempts if requested
-            if ($getattempts) {
-                $grade->attempts = grading_vault::get_student_exercise_attempts($this->course->get_id(), $this->userid, $coursemodid);
-            }
+            $grade = new grade($gradeitem->id, $this->userid, $coursemodid, false, $getattempts);
 
             // discard the grade if the final grade is missing or it's over before cutoff period for processing past data
             if (empty($grade->finalgrade) || (strtotime(LOCAL_BOOKING_PASTDATACUTOFF . ' day', $grade->timemodified) < time())) {
@@ -395,6 +394,17 @@ class student extends participant {
         $sessiondate = new \DateTime('@' . $sessiondatets);
 
         return $sessiondate;
+    }
+
+    /**
+     * Returns the date time of the student
+     * graduated date.
+     *
+     * @param bool $timestamp   whether to return the timestamp or datetime object
+     * @return  DateTime|int
+     */
+    public function get_graduated_date(bool $timestamp = false) {
+        return $timestamp ? $this->graduateddate->getTimestamp() : $this->graduateddate;
     }
 
     /**
@@ -661,6 +671,16 @@ class student extends participant {
      */
     public function set_next_lesson(string $nextlesson) {
         $this->nextlesson = $nextlesson;
+    }
+
+    /**
+     * Returns the date time of the student
+     * graduated date.
+     *
+     * @return  DateTime
+     */
+    public function set_graduated_date(int $graduateddate) {
+        $this->graduateddate = new \DateTime('@'.$graduateddate);
     }
 
     /**

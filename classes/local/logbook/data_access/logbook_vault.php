@@ -56,7 +56,7 @@ class logbook_vault implements logbook_vault_interface {
 
         $coursestatement = !$allentries ? 'courseid = :courseid AND' : '';
         $logbookentries = [];
-        $sql = 'SELECT lb.id, lb.courseid, lb.exerciseid, lb.userid, lb.pirep, lb.callsign,
+        $sql = 'SELECT lb.id, lb.courseid, lb.exerciseid, lb.sessionid, lb.userid, lb.pirep, lb.callsign,
                     lb.flighttype, lb.flightdate, lb.depicao, lb.deptime, lb.arricao, lb.arrtime,
                     lb.aircraft, lb.aircraftreg, lb.enginetype, lb.route, lb.multipilottime, lb.p1id, lb.p2id,
                     lb.landingsday, lb.landingsnight, lb.groundtime, lb.flighttime, lb.nighttime, lb.ifrtime,
@@ -87,17 +87,29 @@ class logbook_vault implements logbook_vault_interface {
      * @param logbook $logbook  The logbook_interface of for all entries.
      * @param int $logentryid   The logentry id.
      * @param int $exerciseid   The logentry with exericse id.
+     * @param int $sessionid    The logentry with session id.
      * @return logentry         A logentry_insterface.
      */
-    public static function get_logentry(int $userid, int $courseid, $logbook, int $logentryid = 0, int $exerciseid = 0) {
+    public static function get_logentry(int $userid, int $courseid, $logbook, int $logentryid = 0, int $exerciseid = 0, int $sessionid = 0) {
         global $DB;
 
         $logentry = $logbook->create_logentry();
-        $conditions = $logentryid!=0 ? ['id'=>$logentryid] : [
-            'courseid'=>$courseid,
-            'exerciseid'=>$exerciseid,
-            'userid'=>$userid
-        ];
+        $conditions = [];
+        if ($logentryid != 0) {
+            $conditions = ['id'=>$logentryid];
+         } else if ($exerciseid != 0) {
+            $conditions = [
+                'courseid'=>$courseid,
+                'exerciseid'=>$exerciseid,
+                'userid'=>$userid
+            ];
+        } else if  ($sessionid != 0) {
+            $conditions = [
+                'courseid'=>$courseid,
+                'sessionid'=>$sessionid,
+                'userid'=>$userid
+            ];
+        }
         $logentryrecs = $DB->get_records(static::DB_LOGBOOKS, $conditions,'id DESC','*',0,1);
         if ($logentryrecs)
             $logentry = self::get_logentry_instance(array_values($logentryrecs)[0], $logentry);
@@ -325,6 +337,7 @@ class logbook_vault implements logbook_vault_interface {
         $logentryobj->id = $logentry->get_id();
         $logentryobj->courseid = $courseid;
         $logentryobj->exerciseid = $logentry->get_exerciseid();
+        $logentryobj->sessionid = $logentry->get_sessionid();
         $logentryobj->userid = $userid;
         $logentryobj->flightdate = $logentry->get_flightdate();
         $logentryobj->groundtime = $logentry->get_groundtime();
@@ -378,6 +391,7 @@ class logbook_vault implements logbook_vault_interface {
             $logentry->set_id($dataobj->id);
             $logentry->set_courseid($dataobj->courseid);
             $logentry->set_exerciseid($dataobj->exerciseid);
+            $logentry->set_sessionid($dataobj->sessionid);
             $logentry->set_flightdate($dataobj->flightdate);
             $logentry->set_groundtime($dataobj->groundtime);
             $logentry->set_flighttime($dataobj->flighttime);

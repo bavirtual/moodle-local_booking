@@ -41,6 +41,26 @@ function xmldb_local_booking_upgrade($oldversion) {
     // Automatically generated Moodle v3.11.0 release upgrade line.
     // Put any upgrade step following this.
 
+    // change the PIREP field from the old char(50) to int(10)
+    if ($oldversion < 2023121900) {
+        // Changing type of field attachment on table block_quickmail_log to text.
+        $table = new xmldb_table('local_booking_logbooks');
+        $field = new xmldb_field('sessionid', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'userid');
+
+        // Launch addition of the session id field.
+        if (!$dbmanager->field_exists($table, $field)) {
+            $dbmanager->add_field($table, $field);
+        }
+
+        // update session id to match past logentries for both instructors and students
+        $DB->execute('UPDATE mdl_local_booking_logbooks l INNER JOIN mdl_local_booking_sessions s ON (l.courseid = s.courseid AND l.p1id = s.userid AND l.exerciseid = s.exerciseid) SET l.sessionid = s.id');
+        $DB->execute('UPDATE mdl_local_booking_logbooks l INNER JOIN mdl_local_booking_sessions s ON (l.courseid = s.courseid AND l.p2id = s.studentid AND l.exerciseid = s.exerciseid) SET l.sessionid = s.id');
+        $DB->execute('UPDATE mdl_local_booking_logbooks l INNER JOIN mdl_local_booking_sessions s ON (l.courseid = s.courseid AND l.p1id = s.userid AND l.p2id = s.studentid AND l.exerciseid = s.exerciseid AND s.timemodified IN (SELECT MAX(s2.timemodified) FROM mdl_local_booking_sessions s2 WHERE l.courseid = s2.courseid AND l.p1id = s2.userid AND l.p2id = s2.studentid AND l.exerciseid = s2.exerciseid)) SET l.sessionid = s.id');
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2023121900, 'local', 'booking');
+    }
+
     // change local_booking_sessions table to include a notified field to track student posting notifications
     if ($oldversion < 2023020600) {
         // Define field hidegrader to be added to local_booking_sessions.

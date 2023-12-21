@@ -31,7 +31,6 @@ defined('MOODLE_INTERNAL') || die();
 
 use renderer_base;
 use core\external\exporter;
-use DateTime;
 use local_booking\local\session\entities\action;
 use local_booking\local\participant\entities\student;
 
@@ -74,7 +73,7 @@ class booking_student_exporter extends exporter {
                 $data['recencytooltip'] = $this->student->get_priority()->get_recency_info();
                 break;
             case 'graduates':
-                $data['dateinfo'] = (new \DateTime('@'.$this->student->timeadded))->format('M d, y');
+                $data['dateinfo'] = $this->student->get_graduated_date()->format('M d, y');
                 break;
             case 'suspended':
                 $data['dateinfo'] = $this->student->get_suspension_date()->format('M d, y');
@@ -217,9 +216,7 @@ class booking_student_exporter extends exporter {
         global $CFG;
 
         $sessions = $this->get_sessions($output, $this->student, $this->related);
-        $return = [
-            'sessions'       => $sessions,
-        ];
+        $return = ['sessions'=>$sessions];
 
         if ($this->related['filter'] == 'active') {
 
@@ -232,7 +229,8 @@ class booking_student_exporter extends exporter {
             else
                 $actiontype = 'book';
 
-            $action = new action($this->related['course'], $this->student, $actiontype);
+            $graduationsessionidx = array_search($this->related['course']->get_graduation_exercise(), array_column($sessions, 'exerciseid'));
+            $action = new action($this->related['course'], $this->student, $actiontype, $sessions[$graduationsessionidx]->sessionid);
             $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;
 
             $return = array_merge(array(

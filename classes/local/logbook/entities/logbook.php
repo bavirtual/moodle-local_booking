@@ -142,9 +142,12 @@ class logbook implements logbook_interface {
     /**
      * Load a logbook entry by entry id or exercise id.
      *
+     * @param int $logentryid   The logentry with matching id to be retrieved from the logbook.
+     * @param int $exerciseid   The logentry with matching exercise id to be retrieved from the logbook.
+     * @param int $sessionid   The logentry with matching session id to be retrieved from the logbook.
      * @return logentry
      */
-    public function get_logentry(int $logentryid = 0, int $exerciseid = 0, bool $reload = true) {
+    public function get_logentry(int $logentryid = 0, int $exerciseid = 0, int $sessionid = 0, bool $reload = true) {
         $logentry = null;
 
         if ($logentryid != 0) {
@@ -155,6 +158,10 @@ class logbook implements logbook_interface {
             $logentry = $reload ?
                 logbook_vault::get_logentry($this->userid, $this->courseid, $this, 0, $exerciseid) :
                 $this->get_logentry_by_exericseid($exerciseid);
+        } else if ($sessionid != 0) {
+            $logentry = $reload ?
+                logbook_vault::get_logentry($this->userid, $this->courseid, $this, 0, 0, $sessionid) :
+                $this->get_logentry_by_sessionid($sessionid);
         }
         if (!empty($logentry))
             $logentry->set_parent($this);
@@ -173,6 +180,24 @@ class logbook implements logbook_interface {
         $logentry = null;
         foreach ($this->entries as $entry) {
             if ($entry->get_exerciseid() == $exerciseid) {
+                $logentry = $entry;
+                break;
+            }
+        }
+        return $logentry;
+    }
+
+    /**
+     * get an entry from the logbook entris by
+     * session id.
+     *
+     * @param int $sessionid: The entry associated session id
+     * @return logentry $logentry The logbook entry db record
+     */
+    public function get_logentry_by_sessionid(int $sessionid) {
+        $logentry = null;
+        foreach ($this->entries as $entry) {
+            if ($entry->get_sessionid() == $sessionid) {
                 $logentry = $entry;
                 break;
             }

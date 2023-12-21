@@ -158,7 +158,17 @@ function(
     };
 
     /**
-     * Get the exercise id for the logbook entry being shown in this modal.
+     * Get the session id for the logbook entry being shown in this modal.
+     *
+     * @method getSessionId
+     * @return {int}
+     */
+     ModalLogentrySummary.prototype.getSessionId = function() {
+        return this.getBody().find(SELECTORS.ROOT).attr('data-session-id');
+    };
+
+    /**
+     * Get the flight dategru for the logbook entry being shown in this modal.
      *
      * @method getFlightDate
      * @return {int}

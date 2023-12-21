@@ -353,13 +353,13 @@ class bookings_exporter extends exporter {
             // get the graduation dates
             foreach ($activestudents as $student) {
                 if (\array_key_exists($student->get_id(), $graduates)) {
-                    $student->timeadded = $graduates[$student->get_id()]->timeadded;
+                    $student->set_graduated_date($graduates[$student->get_id()]->timeadded);
                 }
             }
 
             // sort all graduates by their graduation date descending
-            usort($activestudents, function($st1, $st2) {
-                return $st2->timeadded <=> $st1->timeadded;
+            uasort($activestudents, function($st1, $st2) {
+                return $st2->get_graduated_date(true) <=> $st1->get_graduated_date(true);
             });
 
             $finallist = $activestudents;
@@ -373,7 +373,7 @@ class bookings_exporter extends exporter {
                 return property_exists($std, 'tag') ? $std->tag == 'posts_completed' : false;
             });
             // order active students by: recency days then posted slots
-            usort($posts_completed, function($st1, $st2) {
+            uasort($posts_completed, function($st1, $st2) {
                 if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
                     return $st2->get_priority()->get_slot_count() <=> $st1->get_priority()->get_slot_count();
                 }
@@ -388,7 +388,7 @@ class bookings_exporter extends exporter {
                 return property_exists($std, 'tag') ? $std->tag == 'noposts_completed' : false;
             });
             // order active students by session recency
-            usort($noposts_completed, function($st1, $st2) {
+            uasort($noposts_completed, function($st1, $st2) {
                 return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
             });
 
@@ -400,16 +400,16 @@ class bookings_exporter extends exporter {
                 return property_exists($std, 'tag') ? $std->tag == 'not_completed' : false;
             });
             // order active students that has not completed ground lessons modules by recency days
-            usort($not_completed, function($st1, $st2) {
+            uasort($not_completed, function($st1, $st2) {
                 return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
             });
 
             // merge all three arrays
-            $finallist = array_merge($posts_completed, $noposts_completed, $not_completed);
+            $finallist = $posts_completed + $noposts_completed + $not_completed;
 
         } elseif ($sorttype == 's') {
             // Get student booking priority
-            usort($activestudents, function($st1, $st2) {
+            uasort($activestudents, function($st1, $st2) {
                 return $st1->get_priority()->get_score() < $st2->get_priority()->get_score();
             });
             $finallist = $activestudents;

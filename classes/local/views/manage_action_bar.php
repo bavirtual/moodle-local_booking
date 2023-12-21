@@ -188,7 +188,7 @@ class manage_action_bar extends base_action_bar {
      * @return array
      */
     protected function generate_certify_navigation(): array {
-        $evalformurl = new moodle_url($this->additional['url'], ['courseid'=>$this->additional['courseid'], 'userid'=>$this->additional['userid'], 'report'=>'evalform']);
+        $evalformurl = new moodle_url($this->additional['url'], ['courseid'=>$this->additional['courseid'], 'userid'=>$this->additional['userid'], 'report'=>'evalform', 'attempt'=>$this->additional['attempt']]);
         $evalformbuttonlabel     = get_string('evalformbuttonlabel', 'local_booking');
         $evalformbutton          = new single_button($evalformurl, $evalformbuttonlabel, 'post', single_button::BUTTON_PRIMARY);
         $evalformbutton->tooltip = get_string('evalformbuttontooltip', 'local_booking');

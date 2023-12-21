@@ -57,7 +57,7 @@ class booking_mybookings_exporter extends exporter {
         $slot = $booking->get_slot();
         $starttime = new DateTime('@' . $slot->get_starttime());
         // TODO: end time should include the last hour
-        $endtime = new DateTime('@' . $slot->get_endtime() + ((60 * 60)));
+        $endtime = new DateTime(('@' . ($slot->get_endtime()) + (60 * 60)));
 
         $data = [
         'bookingid'     => $booking->get_id(),

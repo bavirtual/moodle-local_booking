@@ -27,6 +27,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
@@ -41,6 +42,7 @@ $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $userid = optional_param('userid', 0, PARAM_INT);
 $reporttype = optional_param('report', 'mentor', PARAM_RAW);
+$attempt = optional_param('attempt', 0, PARAM_INT);
 $action = optional_param('action', '', PARAM_RAW);
 $title = get_string($reporttype . 'report', 'local_booking');
 
@@ -77,6 +79,7 @@ if ($reporttype == 'evalform') {
 
     // show evaluation form message
     $student = new student($COURSE->subscriber, $userid);
+    $instructor = new instructor($COURSE->subscriber, $USER->id);
     $examinerid = $student->get_grade($COURSE->subscriber->get_graduation_exercise())->usermodified;
     $exerciseid = $COURSE->subscriber->get_graduation_exercise();
     $fname = mb_substr($student->get_name(false, 'first'), 0, 1);
@@ -88,7 +91,7 @@ if ($reporttype == 'evalform') {
     echo $renderer->render_tertiary_navigation($evalformmsgbar);
 
     // show evaluation form edit button menu for the examiner only
-    if ($examinerid == $USER->id) {
+    if ($instructor->is_examiner()) {
         // prepare the tertiary navigation menu section
         $tertiarynavadditional['courseid'] = $courseid;
         $tertiarynavadditional['userid'] = $userid;
@@ -130,6 +133,7 @@ $reporturl = new moodle_url('/local/booking/pdfwriter.php');
 $reporturl->param('courseid', $courseid);
 $reporturl->param('userid', $userid);
 $reporturl->param('report', $reporttype);
+$reporturl->param('attempt', $attempt);
 
 echo html_writer::tag('embed', '', array('id'=>'report', 'src'=>$reporturl->out(false), 'type'=>'application/pdf', 'height'=>'1200', 'width'=>'100%'));
 

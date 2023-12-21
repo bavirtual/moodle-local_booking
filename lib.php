@@ -281,6 +281,7 @@ function local_booking_output_fragment_logentry_form($args) {
 
     $courseid = $args['courseid'] ?: 0;
     $exerciseid = $args['exerciseid'] ?: 0;
+    $sessionid = $args['sessionid'] ?: 0;
     $userid = $args['userid'] ?: 0;
     $flightdate = $args['flightdate'] ?: 0;
 
@@ -288,6 +289,7 @@ function local_booking_output_fragment_logentry_form($args) {
         'context'   => $context,
         'courseid'  => $courseid,
         'exerciseid'=> $exerciseid,
+        'sessionid'=> $sessionid,
         'userid' => $userid,
         'flightdate' => $flightdate,
     ];
@@ -310,11 +312,13 @@ function local_booking_output_fragment_logentry_form($args) {
         $logentry = $logbook->create_logentry();
         $formoptions['logentry'] = $logentry;
         $formoptions['exerciseid'] = $exerciseid;
+        $formoptions['sessionid'] = $sessionid;
         $mform = new create_logentry_form(null, $formoptions, 'post', '', null, true, $formdata);
         // copy over additional data needed for setting the form
         $data['courseid'] = $courseid;
         $data['userid'] = $userid;
         $data['exerciseid'] = $exerciseid;
+        $data['sessionid'] = $sessionid;
     }
 
     // Add to form data setup arguments

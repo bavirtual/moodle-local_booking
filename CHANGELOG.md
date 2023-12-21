@@ -1,5 +1,32 @@
 # Change log
 
+## [2023122100] - RELEASED 2023-12-21
+
+### Fixed
+
+- student record displaying twice when graded on last exercise (QXC) before skill test
+
+### Added
+
+- evaluation form for each attempt of the skill test
+- exercise attempts for reporting and skill test evaluation
+- session column in mdl_local_booking_logbooks to associate log entries with sessions
+- examiner class
+
+### Changed
+
+- session id evaluation to validate if a logentry has been recorded
+
+## [2023100200] - RELEASED 2023-10-02
+
+### Fixed
+
+- duplicate students showing in dashboard when a students meets multiple sorting criteria
+
+### Added
+
+- get/set gradated_date in the students list
+
 ## [2023100200] - RELEASED 2023-10-02
 
 ### Fixed

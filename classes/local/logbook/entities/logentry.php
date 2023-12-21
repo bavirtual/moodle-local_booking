@@ -58,9 +58,14 @@ class logentry implements logentry_interface {
     protected $userid = 0;
 
     /**
-     * @var int $exercise The course exercise id.
+     * @var int $exerciseid The course exercise id.
      */
     protected $exerciseid = 0;
+
+    /**
+     * @var int $sessionid The session id.
+     */
+    protected $sessionid = 0;
 
     /**
      * @var int $flightdate The date the flight took place.
@@ -278,6 +283,15 @@ class logentry implements logentry_interface {
      */
     public function get_exerciseid() {
         return $this->exerciseid;
+    }
+
+    /**
+     * Get the session id for the log entry.
+     *
+     * @return int
+     */
+    public function get_sessionid() {
+        return $this->sessionid;
     }
 
     /**
@@ -630,6 +644,15 @@ class logentry implements logentry_interface {
     }
 
     /**
+     * Set the session id for the logbook entry.
+     *
+     * @param int $sessionid
+     */
+    public function set_sessionid(int $sessionid) {
+        $this->sessionid = $sessionid;
+    }
+
+    /**
      * Set the PIREP string of logbook entry.
      *
      * @param string $pirep
@@ -957,6 +980,7 @@ class logentry implements logentry_interface {
     public function populate(object $formdata, bool $isinstructor = false, bool $edit = false) {
         $this->id = $formdata->id ?: null;
         $this->exerciseid = $formdata->exerciseid;
+        $this->sessionid  = $formdata->sessionid;
         $this->flightdate = $formdata->flightdate;
         $pirep = (property_exists('formdata', 'p2pirep') || $edit || $formdata->flighttypehidden == 'solo') ? $formdata->p1pirep : '';
         $this->pirep = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($pirep ?: 0) : ($pirep ?: $formdata->linkedpirep);
@@ -1025,6 +1049,7 @@ class logentry implements logentry_interface {
         $logentryarray = [];
         $logentryarray['id'] = $this->id;
         $logentryarray['exerciseid'] = $this->exerciseid;
+        $logentryarray['sessionid']  = $this->sessionid;
         $logentryarray['flightdate'] = $this->get_flightdate($formattostring && $nullable, $shortdate);
         $logentryarray['p1id'] = $this->p1id;
         $logentryarray['p2id'] = $this->p2id;

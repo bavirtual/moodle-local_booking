@@ -64,12 +64,11 @@
                             }}{{^sessionempty}} session-{{status}}{{/sessionempty}}{{!
                             }}">{{^isquiz}}{{^logentrymissing}}{{^marknoposts}}&nbsp;{{/marknoposts}}{{/logentrymissing}}{{/isquiz}}
                             {{#logentrymissing}}
-                            {{#pix}} info-circle, local_booking,{{#str}} logentrymissing, local_booking {{/str}} {{/pix}}
+                            {{#pix}} {{sessionicon}}, local_booking,{{#str}} logentrymissing, local_booking {{/str}} {{/pix}}
                             {{/logentrymissing}}
                             {{#quizpassed}}
                             {{#pix}} check, local_booking {{/pix}}
                             {{/quizpassed}}
-                            {{#marknoposts}}<span class="d-md-block session-posts">{{noposts}}</span>{{/marknoposts}}
                         </span>
                     </div>
                 </td>

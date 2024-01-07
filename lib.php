@@ -347,6 +347,7 @@ function local_booking_get_fontawesome_icon_map() {
         'local_booking:grade'           => 'fa-pencil-square',
         'local_booking:graduate'        => 'fa-graduation-cap',
         'local_booking:info-circle'     => 'fa-info-circle',
+        'local_booking:check-circle-o'  => 'fa-check-circle-o',
         'local_booking:logbook'         => 'fa-address-book-o',
         'local_booking:noslot'          => 'fa-calendar-times-o',
         'local_booking:paste'           => 'fa-paste',

@@ -154,6 +154,10 @@ class booking_session_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
+            'sessionicon' => [
+                'type' => \PARAM_RAW,
+                'default' => 'info-circle',
+            ],
             'isquiz' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
@@ -210,8 +214,9 @@ class booking_session_exporter extends exporter {
                 'graded'        => $graded,
                 'passed'        => $this->session->haspassed(),
                 'status'        => $this->session->get_status(),
-                'canlogentry'   => $graded && !$this->session->isquiz(),
+                'canlogentry'   => $graded && !$this->session->isquiz() && !empty($this->session->get_id()),
                 'logentrymissing' => $logentrymissing,
+                'sessionicon'   => !empty($this->session->get_id()) ? 'info-circle' : 'check-circle-o',
                 'isquiz'        => $this->session->isquiz(),
                 'quizpassed'    => $this->session->isquiz() && $this->session->haspassed(),
                 'lastbookingts' => $lastbookingdate
@@ -275,7 +280,7 @@ class booking_session_exporter extends exporter {
             // get session tooltip for passing & progressing grades, and exam grades
             if ($grade->grade_item->itemmodule == 'assign') {
                 if ($grade->is_passed()) {
-                    $sessiontooltip =  get_string('sessiongradedby', 'local_booking', $gradeinfo);
+                    $sessiontooltip =  get_string(!empty($booking) ? 'sessiongradedby' : 'sessiongradednosession', 'local_booking', $gradeinfo);
                 } else {
                     $sessiontooltip =  get_string('sessionprogressing', 'local_booking', $gradeinfo);
                     $sessionstatus = 'objective-not-met';

@@ -433,24 +433,26 @@ class student_profile_exporter extends exporter {
         // student skill test form for each exam attempt
         $attempts = [];
         if ($hasexams && $requiresevaluation) {
-            $examgrade = $this->student->get_grade($this->subscriber->get_graduation_exercise(), true);
-            $gradeattempts = $examgrade->attempts;
 
-            // get the url and attempt number for each attempt
-            foreach ($gradeattempts as $gradeattempt) {
-                $gradeattempt->attemptnumber = intval($gradeattempt->attemptnumber)+1;
-                $reporturl = new moodle_url('/local/booking/report.php', [
-                'courseid' => $this->courseid,
-                'userid'   => $studentid,
-                'report'   => 'evalform',
-                'attempt'  => $gradeattempt->attemptnumber,
-                ]);
-                $attempts[] = (object)[
-                        'examinerurl'=>$reporturl->out(false),
-                        'attemptdate'=>(new \DateTime('@'.$gradeattempt->timemodified))->format('M j\, Y'),
-                        'attemptnumber'=>$gradeattempt->attemptnumber,
-                        'gradename'=>$gradeattempt->gradename
-                    ];
+            if ($examgrade = $this->student->get_grade($this->subscriber->get_graduation_exercise(), true)) {
+
+                $gradeattempts = $examgrade->attempts;
+                // get the url and attempt number for each attempt
+                foreach ($gradeattempts as $gradeattempt) {
+                    $gradeattempt->attemptnumber = intval($gradeattempt->attemptnumber)+1;
+                    $reporturl = new moodle_url('/local/booking/report.php', [
+                    'courseid' => $this->courseid,
+                    'userid'   => $studentid,
+                    'report'   => 'evalform',
+                    'attempt'  => $gradeattempt->attemptnumber,
+                    ]);
+                    $attempts[] = (object)[
+                            'examinerurl'=>$reporturl->out(false),
+                            'attemptdate'=>(new \DateTime('@'.$gradeattempt->timemodified))->format('M j\, Y'),
+                            'attemptnumber'=>$gradeattempt->attemptnumber,
+                            'gradename'=>$gradeattempt->gradename
+                        ];
+                }
             }
         }
 

@@ -1,5 +1,11 @@
 # Change log
 
+## [2024010700] - RELEASED 2024-01-07
+
+### Changed
+
+- icon identifying graded exercises without sessions with a circle check
+
 ## [2023122100] - RELEASED 2023-12-21
 
 ### Fixed

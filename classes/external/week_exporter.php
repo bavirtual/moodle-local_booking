@@ -336,7 +336,6 @@ class week_exporter extends exporter {
         list($previousperiod, $previousperiodlink) = $this->get_period($date, '-');
         list($nextperiod, $nextperiodlink) = $this->get_period($date, '+');
 
-        // TODO: PHP9 deprecates dynamic properties
         /** @var \core_renderer $output */
         $return = [
             'contextid' => \context_course::instance($this->course->get_id())->id,
@@ -361,6 +360,7 @@ class week_exporter extends exporter {
             'nextweekts' => $nextperiod[0],
             'nextperiodname' => get_string('weekinyear','local_booking', date('W', $nextperiod[0])),
             'nextperiodlink' => $nextperiodlink->out(false),
+            // TODO: PHP9 deprecates dynamic methods
             'larrow' => $output->larrow(),
             'rarrow' => $output->rarrow(),
         ];

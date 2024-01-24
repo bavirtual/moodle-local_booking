@@ -298,7 +298,7 @@ class bookings_exporter extends exporter {
             // get tooltip
             if (!empty($sorttype) && $this->filter == 'active') {
                 if ($sorttype == 'a') {
-                    $sequencetooltip = ['tag' => get_string('tag_' . $student->tag, 'local_booking')];
+                    $sequencetooltip = ['tag' => get_string('tag_' . $student->get_status(), 'local_booking')];
                 } elseif ($sorttype == 's') {
                     $sequencetooltip = [
                         'score'     => $student->get_priority()->get_score(),
@@ -308,7 +308,7 @@ class bookings_exporter extends exporter {
                         'completion'=> $student->get_priority()->get_completions(),
                     ];
                 }
-                $data['tag'] = $student->tag;
+                $data['tag'] = $student->get_status();
                 $data['sequencetooltip'] = get_string('sequencetooltip_' . (!empty($sorttype) ? $sorttype : 'a'), 'local_booking', $sequencetooltip);
             }
 
@@ -368,9 +368,9 @@ class bookings_exporter extends exporter {
             // filtering students that have posted slots and completed lessons
             $posts_completed = array_filter($activestudents, function($std) {
                 if ($std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0 && empty($std->get_active_booking())) {
-                    $std->tag = 'posts_completed';
+                    $std->set_status('posts_completed');
                 }
-                return property_exists($std, 'tag') ? $std->tag == 'posts_completed' : false;
+                return $std->get_status() == 'posts_completed';
             });
             // order active students by: recency days then posted slots
             uasort($posts_completed, function($st1, $st2) {
@@ -383,9 +383,9 @@ class bookings_exporter extends exporter {
             // filtering students that have no posted slots but completed lessons
             $noposts_completed = array_filter($activestudents, function($std) {
                 if (($std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0) || !empty($std->get_active_booking())) {
-                    $std->tag = 'noposts_completed';
+                    $std->set_status('noposts_completed');
                 }
-                return property_exists($std, 'tag') ? $std->tag == 'noposts_completed' : false;
+                return $std->get_status() == 'noposts_completed';
             });
             // order active students by session recency
             uasort($noposts_completed, function($st1, $st2) {
@@ -395,9 +395,9 @@ class bookings_exporter extends exporter {
             // filtering students that have not completed lessons
             $not_completed = array_filter($activestudents, function($std) {
                 if (!$std->has_completed_lessons()) {
-                    $std->tag = 'not_completed';
+                    $std->set_status('not_completed');
                 }
-                return property_exists($std, 'tag') ? $std->tag == 'not_completed' : false;
+                return $std->get_status() == 'not_completed';
             });
             // order active students that has not completed ground lessons modules by recency days
             uasort($not_completed, function($st1, $st2) {

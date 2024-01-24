@@ -83,6 +83,11 @@ class logentry implements logentry_interface {
     protected $p2id = 0;
 
     /**
+     * @var int $pilot_id The ATO pilot id for the student.
+     */
+    protected $pilot_id = 0;
+
+    /**
      * @var int $groundtime The training session time in minutes.
      */
     protected $groundtime = 0;
@@ -419,6 +424,15 @@ class logentry implements logentry_interface {
      */
     public function get_p2id() {
         return $this->p2id;
+    }
+
+    /**
+     * Get the ATO pilot id of the student.
+     *
+     * @return int
+     */
+    public function get_pilotid() {
+        return $this->pilot_id;
     }
 
     /**
@@ -779,6 +793,15 @@ class logentry implements logentry_interface {
     }
 
     /**
+     * Set the student's ATO pilot id'.
+     *
+     * @param int $pilot_id
+     */
+    public function set_pilotid(int $pilot_id) {
+        $this->pilot_id = $pilot_id;
+    }
+
+    /**
      * Set the number of day landings for the flight.
      *
      * @param int $landingsday
@@ -1099,8 +1122,8 @@ class logentry implements logentry_interface {
         // assign record's values according to keys' requivalent logentry property
         // evaluate results for different types of properties.
         foreach ($record as $key => $value) {
+            // TODO: PHP9 deprecates dynamic properties
             switch ($key) {
-                // TODO: PHP9 deprecates dynamic properties
                 case 'linkedpirep':
                     $this->$key = $value ?: '';
                     break;

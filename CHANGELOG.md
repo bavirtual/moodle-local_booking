@@ -1,5 +1,12 @@
 # Change log
 
+## [2024012400] - RELEASED 2024-01-24
+
+### Fixed
+
+- fixed issues related to deprecate PHP dynamic properties ($var}
+- fixed instructors able to book in past!
+
 ## [2024010700] - RELEASED 2024-01-07
 
 ### Changed

@@ -70,6 +70,11 @@ class student extends participant {
     protected $slotcolor;
 
     /**
+     * @var string $progressionstatus The progression status
+     */
+    protected $progressionstatus;
+
+    /**
      * @var int $total_posts The student's total number of availability posted.
      */
     protected $total_posts;
@@ -373,6 +378,15 @@ class student extends participant {
     }
 
     /**
+     * Get student progression status.
+     *
+     * @return string $progressionstatus;
+     */
+    public function get_status() {
+        return $this->progressionstatus;
+    }
+
+    /**
      * Return student's next lesson.
      *
      * @return string $nextlesson
@@ -662,6 +676,15 @@ class student extends participant {
      */
     public function set_slot_color(string $slotcolor) {
         $this->slotcolor = $slotcolor;
+    }
+
+    /**
+     * Set the student's progression status.
+     *
+     * @param string $slotcolor
+     */
+    public function set_status(string $progressionstatus) {
+        $this->progressionstatus = $progressionstatus;
     }
 
     /**

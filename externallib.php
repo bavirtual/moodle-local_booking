@@ -284,9 +284,7 @@ class local_booking_external extends external_api {
 
             // get pilot integrated info
             if (subscriber::has_integration('pilots')) {
-                // TODO: PHP9 deprecates dynamic properties
-                $pilotidtag = 'pilot_id';
-                $pilotrec = $subscriber->get_integrated_data('pilots', 'pilotinfo', $logentry->$pilotidtag);
+                $pilotrec = $subscriber->get_integrated_data('pilots', 'pilotinfo', $logentry->get_pilotid());
                 $alternatename = $pilotrec['alternatename'];
 
                 if (core_user::get_user($userid, 'alternatename')->alternatename == $alternatename) {

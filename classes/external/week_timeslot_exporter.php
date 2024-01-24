@@ -240,9 +240,7 @@ class week_timeslot_exporter extends exporter {
         $today = $this->related['type']->timestamp_to_date_array(gmmktime(0, 0, 0, $now['mon'], $now['mday'], $now['year']));
 
         // can't mark in the past, the day had passed i.e. yesterday
-        $datepassed = true;
-        $datepassed = $datepassed && $today['year'] >= $date['year'];
-        $datepassed = $datepassed && $today['yday'] >= $date['yday'];
+        $datepassed = $today['year'] <= $date['year'] ? $today['yday'] >= $date['yday'] : true;
 
         // can't mark before x days from last booked session (durnig wait days) for student view
         $lastsessionwait = true;

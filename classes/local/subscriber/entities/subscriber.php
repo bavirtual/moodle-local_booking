@@ -107,11 +107,6 @@ class subscriber implements subscriber_interface {
     public $resources;
 
     /**
-     * @var array $resources The subscribing course's content resources.
-     */
-    public $resources;
-
-    /**
      * @var array $modules The subscribing course's modules (exercises & quizes).
      */
     protected $modules;

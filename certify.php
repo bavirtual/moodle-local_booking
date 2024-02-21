@@ -27,7 +27,6 @@ use core_badges\badge;
 use local_booking\local\views\manage_action_bar;
 use local_booking\local\participant\entities\student;
 use local_booking\local\report\pdf_report_skilltest;
-use local_booking\local\report\pdf_report_skilltest;
 use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\message\notification;
 use local_booking\local\participant\entities\examiner;

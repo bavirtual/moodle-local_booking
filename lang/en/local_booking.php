@@ -16,7 +16,6 @@ $string['actiondisabledexaminersonlytooltip'] = 'Examiners only';
 $string['actiondisabledsubmissionmissingtooltip'] = 'Exercise submission missing.<br/>Request the student to submit the PLog to enable grading.';
 $string['actiondisabledwrongexaminerstooltip'] = 'Action reserved for examiner \'{$a}\'';
 $string['actiondisablednologentrytooltip'] = 'Please record logbook entry to enable student certification';
-$string['actiondisablednologentrytooltip'] = 'Please record logbook entry to enable student certification';
 $string['actiondisabledexercisescompletedtooltip'] = 'All exercises completed';
 $string['actiongradesession'] = 'Grade session';
 $string['actiongraduatetooltip'] = 'Graduate \'{$a->studentname}\' from the course';

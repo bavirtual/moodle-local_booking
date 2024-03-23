@@ -78,7 +78,7 @@ function(
             .then(function(response) {
                 if (response.validationerror) {
                     // eslint-disable-next-line no-alert
-                    alert(Str.get_string('errorlogentrycancel', 'local_booking'));
+                    window.alert(Str.get_string('errorlogentrycancel', 'local_booking'));
                 }
                 return;
             })

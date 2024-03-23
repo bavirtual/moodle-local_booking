@@ -82,6 +82,7 @@ class action implements action_interface {
     public function __construct(subscriber $course, student $student, string $actiontype, int $refid = 0) {
 
         $gradexercise = $course->get_graduation_exercise();
+        $exerciseid = $student->get_next_exercise();
         $enabled =  $student->is_active();
         $tooltip = '';
         $params = [];
@@ -94,12 +95,12 @@ class action implements action_interface {
 
                 // check if the session to book is the next exercise after passing the current session or the same
                 $lastgrade = $student->get_last_grade();
-                $getnextexercise = (!empty($lastgrade) ? $lastgrade->is_passed() : true);
-                $exerciseid = $getnextexercise ? $student->get_next_exercise() : $student->get_current_exercise();
+                $passedlastexercise = (!empty($lastgrade) ? $lastgrade->is_passed() : true);
+                $exerciseid = $passedlastexercise ? $exerciseid : $student->get_current_exercise();
                 $tooltip = get_string('actionbooksession', 'local_booking');
 
-                // get action enabled status by checking if there are more exercises to book and if instructor
-                // is an examiner in the case of graduation skill tests
+                // get action enabled status by checking if there are more exercises to book and
+                // if the user is an examiner in the case of graduation skill tests
 
                 // get action enabled status and tooltip
                 if (!$student->has_completed_lessons()) {
@@ -113,13 +114,12 @@ class action implements action_interface {
                     $enabled = false;
                     $tooltip = get_string('actiondisabledexercisescompletedtooltip', 'local_booking');
 
-                // check if the user is an examiner when the student's next exercise is a final exam
-                } else if ($student->get_next_exercise() == $gradexercise) {
-                    global $USER;
+                // check next exercise permissions
+                } else {
 
-                    $participant = new participant($course, $USER->id);
-                    $enabled = ($participant->is_examiner() || !$lastgrade->is_passed())&& $student->is_active();
-                    $tooltip = get_string((!$this->enabled ? 'actiondisabledexaminersonlytooltip' : 'actiondisabledexaminersonlytooltip'), 'local_booking');
+                    if (!$enabled = \has_capability('mod/assign:grade', \context_module::instance($exerciseid))) {
+                        $tooltip = get_string(($exerciseid == $gradexercise ? 'actiondisabledexaminersonlytooltip' : 'actiondisabledseniorsonlytooltip'), 'local_booking');
+                    }
 
                 }
 
@@ -131,13 +131,14 @@ class action implements action_interface {
                     'view'   => 'user',
                 ];
                 $name = get_string('book', 'local_booking');
+
                 break;
 
             case 'grade':
 
                 // get exercise to be graded
                 if ($grade = $student->get_current_grade()) {
-                    $exerciseid = $grade->finalgrade > 1 ? $student->get_next_exercise() : $student->get_current_exercise();
+                    $exerciseid = $grade->finalgrade > 1 ? $exerciseid : $student->get_current_exercise();
                 } else {
                     $exerciseid = $student->get_current_exercise();
                 }
@@ -148,45 +149,44 @@ class action implements action_interface {
                 $name = get_string('grade', 'grades');
                 $tooltip = get_string('actiongradesession', 'local_booking');
 
-                // check if the exercise requires submission and the assignment is submitted
-                if (!$student->has_submitted_assignment($student->get_next_exercise())) {
-                    $enabled =  false;
-                    $tooltip = get_string('actiondisabledsubmissionmissingtooltip', 'local_booking');
-                // check if the exercise to be graded is the final skill test
-                } elseif ($student->get_next_exercise() == $gradexercise) {
-                    global $USER;
-                    $instructor = new instructor($course, $USER->id);
-                    $enabled =  $instructor->is_examiner();
-                    $tooltip = !$enabled ? get_string('actiondisabledexaminersonlytooltip', 'local_booking') : $tooltip;
+                // check if the instructor can grade the exercise
+                $submissionsatisfied = $student->has_submitted_assignment($exerciseid);
+                if (!$enabled = \has_capability('mod/assign:grade', \context_module::instance($exerciseid)) && $submissionsatisfied) {
+                    $tag = !$submissionsatisfied ? 'actiondisabledsubmissionmissingtooltip' : ($exerciseid == $gradexercise ? 'actiondisabledexaminersonlytooltip' : 'actiondisabledseniorsonlytooltip');
+                    $tooltip = get_string($tag, 'local_booking');
                 }
+
                 break;
 
             case 'graduate':
 
                 // graduate the student's next grading action, which will be 'grade' for exercises
                 // set url to the student's skill test form
-                $exerciseid = 0;
                 $actionurl = '/local/booking/certify.php';
                 $name = get_string($actiontype, 'local_booking');
 
                 // check if the certifer is the examiner
                 if ($student->has_completed_coursework() || $student->get_current_exercise() == $gradexercise) {
                     global $USER;
+
+                    // check if graduation capability is allowed
                     $examinerid = $student->get_grade($gradexercise)->usermodified;
-                    $instructor = new instructor($course, $USER->id);
                     $logbook = $student->get_logbook(true);
                     $hasexamlogentry = !empty($logbook->get_logentry_by_sessionid($refid));
-                    $enabled =  $examinerid == $USER->id && $hasexamlogentry;
-                    if (!$instructor->is_examiner())
-                        $tooltip = get_string('actiondisabledexaminersonlytooltip', 'local_booking');
-                    elseif ($examinerid != $USER->id)
-                        $tooltip = get_string('actiondisabledwrongexaminerstooltip', 'local_booking', participant::get_fullname($examinerid));
-                    elseif (!$hasexamlogentry)
-                        $tooltip = get_string('actiondisablednologentrytooltip', 'local_booking', participant::get_fullname($examinerid));
-                    else
-                        $tooltip = get_string('action' . $actiontype . 'tooltip', 'local_booking', ['studentname'=>$student->get_name(false), 'examname'=>$course->get_graduation_exercise(true)]);
+                    $enabled = \has_capability('mod/assign:grade', \context_module::instance($gradexercise)) && $examinerid == $USER->id && $hasexamlogentry;
 
+                    // evaluate tooltip based on ability to graduate the student
+                    if (!$enabled) {
+                        if ($examinerid != $USER->id)
+                            $tooltip = get_string('actiondisabledwrongexaminerstooltip', 'local_booking', participant::get_fullname($examinerid));
+                        elseif (!$hasexamlogentry)
+                            $tooltip = get_string('actiondisablednologentrytooltip', 'local_booking', participant::get_fullname($examinerid));
+                        else
+                            $tooltip = get_string('actiondisabledexaminersonlytooltip', 'local_booking');
+                    } else
+                        $tooltip = get_string('action' . $actiontype . 'tooltip', 'local_booking', ['studentname'=>$student->get_name(false), 'examname'=>$course->get_graduation_exercise(true)]);
                 }
+
                 break;
 
             case 'cancel':
@@ -197,6 +197,7 @@ class action implements action_interface {
                 $actionurl = '/local/booking/view.php';
                 $name = get_string('bookingcancel', 'local_booking');
                 $tooltip = get_string('actioncancelsession', 'local_booking');
+
                 break;
 
         }

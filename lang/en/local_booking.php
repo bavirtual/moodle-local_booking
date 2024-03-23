@@ -13,6 +13,7 @@ $string['actionbooksession'] = 'Book session';
 $string['actioncancelsession'] = 'Cancel session';
 $string['actiondisabledincompletelessonstooltip'] = 'The student has not completed prerequisite lesson module';
 $string['actiondisabledexaminersonlytooltip'] = 'Examiners only';
+$string['actiondisabledseniorsonlytooltip'] = 'Senior instructors only';
 $string['actiondisabledsubmissionmissingtooltip'] = 'Exercise submission missing.<br/>Request the student to submit the PLog to enable grading.';
 $string['actiondisabledwrongexaminerstooltip'] = 'Action reserved for examiner \'{$a}\'';
 $string['actiondisablednologentrytooltip'] = 'Please record logbook entry to enable student certification';
@@ -327,7 +328,8 @@ $string['graduationconfirmation'] = '<p><strong>Process completed successfully..
     <li style="padding-bottom: 20px;"><strong>Badges</strong> for {$a->courseshortname} completion were generate and sent via email to {$a->firstname}.&nbsp; A copy of the badge generation was sent to you as well.</li>
     <li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to all course active members, both students and instructors.</li>
     <li style="padding-bottom: 20px;">{$a->firstname} has been added to the <strong>Graduates group</strong>.</li>
-    <li style="padding-bottom: 20px;"><strong>Examiner Evaluation Form</strong> was generated. Click the button below to view the form.</li></ul>';
+    {$a->formgenerationmsg}</ul>';
+$string['graduationconfirmationformsection'] = '<li style="padding-bottom: 20px;"><strong>Examiner Evaluation Form</strong> was generated. Click the button below to view the form.</li>';
 $string['feedbackreport'] = 'Feedback report';
 $string['instructorsince'] = 'Instructor since';
 $string['keepactive'] = 'Keep active';
@@ -754,8 +756,7 @@ $string['emailgraduationnotifymsg2'] = '
     Web: {$a->atourl}';
 $string['emailgraduationnotifyhtml1'] = '<font face="sans-serif"><table style="border-collapse: collapse; width: 700px;" border="0"><tbody><tr><td style="width: 20%;"><h1 style="color: #5e9ca0;">
     <span style="color: #000000;"><img style="display: block; margin-left: auto; margin-right: auto;" src="{$a->congrats1pic}" alt="Congratulations" width="70" /></span></h1></td>
-    <td style="width: 65%"><h1 style="color: #5e9ca0;"><span style="color: #000000;">Congratulations {$a->firstname} !!!</span></h1></td>
-    <td style="width: 15%; align: left"><img src="{$a->congrats2pic}" alt="Congratulations" width="70" /></td></tr></tbody>
+    <td style="width: 65%"><h1 style="color: #5e9ca0;"><span style="color: #000000;">Congratulations {$a->firstname} !!!</span></h1></td></tr></tbody>
     </table><p>Join me in congratulating <strong>{$a->fullname}</strong> for passing the {$a->exercisename} examination.&nbsp; {$a->firstname} completed the {$a->atoname} {$a->coursename}
     coursework and achieved the {$a->rating}  on {$a->completiondate}. Please make sure to post a message on the <a href="https://forum.bavirtual.co.uk/forum/29-new-pilots/">New Pilots Forum</a>
     to {$a->firstname} for this achievement.</p><p>{$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate} on the {$a->simulator} simulator and
@@ -810,12 +811,14 @@ $string['postingwait'] = 'Posting wait restriction';
 $string['postingwaitdesc'] = 'A restriction period in days between the last conducted session and the next time a student can post availability (0 = disable restriction)';
 $string['trainingaircraft'] = 'Training aircraft ICAO';
 $string['trainingaircraftdesc'] = '(one per line)';
-$string['vatsimintegration']= 'Enable VATSIM integration';
-$string['vatsimintegrationdesc'] ='Enables student endorsement for the skill test / check ride and generation of the VATSIM Examiner Evaluation Form. (requires pdf template and json config file to be attached to the course).';
+$string['requiresskillseval']= 'Requires skills evaluation';
+$string['requiresskillsevaldesc'] ='Whether skills evaluation is required at the end of the course.';
+$string['vatsimform']= 'Generate VATSIM form';
+$string['vatsimformdesc'] ='Generates the VATSIM Examiner Evaluation form.';
 $string['suspensionperiod'] = 'Suspension restriction';
 $string['suspensionperioddesc'] = 'A restriction period in days after which inactive students will be automatically suspended from the course (0 = disable restriction)';
-$string['vatsimrating'] = 'Course outcome';
-$string['vatsimratingdesc'] = 'Course completion outcome if applicable (i.e. VATSIM P1 rating)';
+$string['outcomerating'] = 'Course outcome';
+$string['outcomeratingdesc'] = 'Course completion outcome if applicable (i.e. VATSIM P1 rating)';
 
 // Groups
 $string['grouponholddesc'] = 'Group to track students put on hold.';

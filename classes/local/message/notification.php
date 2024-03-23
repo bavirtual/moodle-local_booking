@@ -605,7 +605,7 @@ class notification extends \core\message\message {
 
         $msgdata = (object) array(
             'ato'         => get_config('local_booking', 'atoname'),
-            'rating'      => $data['vatsimrating'],
+            'rating'      => $data['outcomerating'],
             'studentname' => $data['studentname'],
             'studentvatsimid' => $data['studentvatsimid'],
             'coursename'  => $data['coursename'],

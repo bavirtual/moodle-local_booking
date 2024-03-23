@@ -127,14 +127,14 @@ class subscriber implements subscriber_interface {
     public $exercisetitles;
 
     /**
-     * @var string $vatsimrating The type of VATSIM rating for the subscribing course.
-     */
-    public $vatsimrating;
-
-    /**
      * @var string $trainingtype The type of training of the subscribing course.
      */
     public $trainingtype;
+
+    /**
+     * @var string $outcomerating The type of VATSIM rating for the subscribing course.
+     */
+    public $outcomerating;
 
     /**
      * @var string $homeicao The ICAO code of the training airport.
@@ -145,11 +145,6 @@ class subscriber implements subscriber_interface {
      * @var string[] $aircrafticao The ICAO code of the training aircraft.
      */
     public $aircrafticao = [];
-
-    /**
-     * @var bool $vatsimintegration Whether the subscribing course has VATSIM integration for examiner evaluation.
-     */
-    public $vatsimintegration;
 
     /**
      * @var int $postingwait The period the student needs to wait prior to posting slots again.
@@ -172,6 +167,16 @@ class subscriber implements subscriber_interface {
     public $overdueperiod;
 
     /**
+     * @var bool $requiresskillseval Whether the subscribing course require students to go through a skills evaluation exercise.
+     */
+    public $requiresskillseval;
+
+    /**
+     * @var string $vatsimform Whether VATSIM Examiner Evaluation form is required.
+     */
+    public $vatsimform;
+
+    /**
      * Constructor.
      *
      * @param string $courseid  The description's value.
@@ -180,8 +185,6 @@ class subscriber implements subscriber_interface {
 
         // check if called at the site level from other than subscribing courses
         if ($courseid == 1) {
-            // throw error
-            // throw new \Exception(get_string('errorcoresubscriber', 'local_booking') . " [courseid=$courseid]");
             return;
         }
 
@@ -604,13 +607,14 @@ class subscriber implements subscriber_interface {
         // TODO: PHP9 deprecates dynamic properties
         $conn = new \mysqli($integrations->$key->host, $CFG->dbuser, $CFG->dbpass, $integrations->$key->db);
 
-        $target = $integrations->$key->data;
-        $fieldnames = array_keys((array) $target->$data->fields);
-        $fields = implode(',', (array) $target->$data->fields);
-        $table = $target->$data->table;
-        $primarykey = $target->$data->primarykey;
-
         if (!$conn->connect_errno) {
+            // get configurations
+            $target = $integrations->$key->data;
+            $fieldnames = array_keys((array) $target->$data->fields);
+            $fields = implode(',', (array) $target->$data->fields);
+            $table = $target->$data->table;
+            $primarykey = $target->$data->primarykey;
+
             $sql = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE ' . $primarykey . ' = "' . $value . '"';
             // Return name of current default database
             if ($result = $conn->query($sql)) {
@@ -682,7 +686,7 @@ class subscriber implements subscriber_interface {
      * @return bool
      */
     public function requires_skills_evaluation() {
-        return $this->vatsimintegration;
+        return $this->requiresskillseval;
     }
 
     /**

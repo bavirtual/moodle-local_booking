@@ -1,5 +1,17 @@
 # Change log
 
+## [2024032200] - RELEASED 2024-03-22
+
+### Fixed
+
+- course certification process for w/o VATSIM examiner evaluation form generation
+- lessons incomplete check for multi-exercise lessons
+
+### Added
+
+- outcomerating and vatsimform custom course fields
+- restrict exercise session booking to senior instructors based on moodle grading permissions for the exercise
+
 ## [2024012400] - RELEASED 2024-01-24
 
 ### Fixed

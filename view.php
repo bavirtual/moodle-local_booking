@@ -49,7 +49,7 @@ $PAGE->set_url($url);
 
 // Flight rules library RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
 $PAGE->requires->jquery();
-$PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask-5/dist/jquery.inputmask.min.js'), true);
+$PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask/dist/jquery.inputmask.min.js'), true);
 
 $navbartext = $action == 'book' ? get_string('bookingdashboard', 'local_booking') : get_string('bookingsessionselection', 'local_booking');
 $PAGE->navbar->add($navbartext);

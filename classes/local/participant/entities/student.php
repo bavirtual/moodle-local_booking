@@ -853,10 +853,10 @@ class student extends participant {
     }
 
     /**
-     * Returns whether the student has been passed
+     * Returns whether the student has been tested
      * skills test or final exam.
      *
-     * @return  string    The grade of the test.
+     * @return bool
      */
     public function tested() {
 
@@ -874,6 +874,16 @@ class student extends participant {
         }
 
         return $this->tested;
+    }
+
+    /**
+     * Returns whether the student has been passed
+     * skills test or final exam.
+     *
+     * @return bool
+     */
+    public function passed() {
+        return $this->passed;
     }
 
     /**

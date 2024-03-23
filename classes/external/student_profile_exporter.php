@@ -368,7 +368,7 @@ class student_profile_exporter extends exporter {
 
         } elseif ($this->student->tested()) {
 
-            $graduationstatus = get_string(($this->student->get_finalgrade() == "Pass" ? 'checkpassed' : 'checkfailed'), 'local_booking') . ' ' .  $this->subscriber->get_graduation_exercise(true);
+            $graduationstatus = get_string(($this->student->passed() ? 'checkpassed' : 'checkfailed'), 'local_booking') . ' ' .  $this->subscriber->get_graduation_exercise(true);
 
         } else {
             $graduationstatus = ($qualified ? get_string('qualified', 'local_booking') . ' ' .

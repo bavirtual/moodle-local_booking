@@ -248,7 +248,7 @@ class notifications_task extends \core\task\scheduled_task {
                 'totalcopilothrs' => $summary->totalcopilottime ?: '00:00',
                 'totalpicustime'  => $summary->totalpicustime ?: '00:00',
                 'totalsolohrs'    => $summary->totalpictime ?: '00:00',
-                'rating'          => $course->vatsimrating,
+                'rating'          => $course->outcomerating,
                 'trainingemail'   => get_config('local_booking', 'atoemail'),
                 'traininglogourl' => get_config('local_booking', 'atologourl'),
                 'examinername'    => $examiner->get_name(false),

@@ -215,6 +215,14 @@ interface subscriber_interface {
     public static function get_integrated_data($key, $data, $value);
 
     /**
+     * Checks if the subscribing course require
+     * skills evaluation.
+     *
+     * @return bool
+     */
+    public function requires_skills_evaluation();
+
+    /**
      * Checks if there is a database integration
      * for the specified passed key.
      *
@@ -222,12 +230,4 @@ interface subscriber_interface {
      * @return bool
      */
     public static function has_integration($key);
-
-    /**
-     * Checks if the subscribing course require
-     * skills evaluation.
-     *
-     * @return bool
-     */
-    public function requires_skills_evaluation();
 }

@@ -27,7 +27,7 @@ import * as Str from 'core/str';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
 import Pending from 'core/pending';
-import ModalFactory from 'core/modal_factory';
+import Modal from 'core/modal';
 import ModalEvents from 'core/modal_events';
 import ModalLogentrySummaryForm from 'local_booking/modal_logentry_summary';
 import * as Repository from 'local_booking/repository';
@@ -97,8 +97,10 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
 
     return LogentryFormPromise
     .then(function(modal) {
+
         // Show the logentry form modal form when the user clicks on a session
         // in the 'Instructor dashboard' page to add or edit a logentry
+        // eslint-disable-next-line promise/no-nesting
         LogentryFormPromise.then(function(modal) {
             var logegntrySession, flightDate, exerciseId, sessionId, flightType, findpirepenabled;
 
@@ -149,9 +151,8 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
 
             modal.show();
             e.stopImmediatePropagation();
-            return;
-        })
-        .fail(Notification.exception);
+            return false;
+        }).catch(Notification.exception);
         return modal;
     })
     .then(function(modal) {
@@ -191,7 +192,7 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
         };
 
         // Create the modal.
-        return ModalFactory.create(modalParams);
+        return Modal.create(modalParams);
     })
     .then(modal => {
         // Handle hidden event.

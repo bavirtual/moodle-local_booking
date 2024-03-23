@@ -76,6 +76,10 @@ import * as Selectors from 'local_booking/selectors';
         }
     );
 
+    // Tnitialize button state
+    const action = root.find(Selectors.calendarwrapper).data('action');
+    SlotActions.setPasteState(root);
+    SlotActions.setSaveButtonState(root, action);
 };
 
 /**

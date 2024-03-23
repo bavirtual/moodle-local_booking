@@ -89,6 +89,7 @@ function(
 
             deleteModal.getRoot().on(ModalEvents.save, function() {
                 var pendingPromise = new Pending('local_booking/booking_actions:initModal:deletedlogentry');
+                // eslint-disable-next-line promise/no-nesting
                 Repository.deleteLogentry(logentryId, userId, courseId)
                     .then(function() {
                         $('body').trigger(BookingSessions.logentrydeleted, [logentryId, false]);

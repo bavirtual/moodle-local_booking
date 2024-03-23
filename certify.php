@@ -82,8 +82,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
 
     // certify the student
     // generate form data file
-    if ($action == 'certify' || $action == 'generate') {
-        $evaluationform = new pdf_report_skilltest($COURSE->subscriber, $student, $lastattempt);
+    if ($COURSE->subscriber->vatsimform && ($action == 'certify' || $action == 'generate')) {
         $evaluationform = new pdf_report_skilltest($COURSE->subscriber, $student, $lastattempt);
         if (!$outputform = $evaluationform->generate_evaluation_form($grade))
             throw new \Error(get_string('errorexaminerevalformunable', 'local_booking'));
@@ -141,7 +140,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
     }
 
     // output certification or sending of evaluation form
-    if ($action == 'certify' || $action == 'send') {
+    if ($action == 'certify' || ($COURSE->subscriber->vatsimform && $action == 'send')) {
 
         // output congratulatory message
         $navbartext = $student->get_fullname($studentid);
@@ -162,22 +161,23 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
         if ($action == 'certify') {
             // output certification message
             $data = [
-                'url'             => '/local/booking/report.php',
-                'courseid'        => $courseid,
-                'userid'          => $studentid,
-                'firstname'       => $student->get_name(false, 'first'),
-                'fullname'        => $student->get_name(),
-                'courseshortname' => $COURSE->subscriber->get_shortname(),
-                'attempt'         => $lastattempt+1
-                'courseshortname' => $COURSE->subscriber->get_shortname(),
-                'attempt'         => $lastattempt+1
+                'url'              => '/local/booking/report.php',
+                'courseid'         => $courseid,
+                'userid'           => $studentid,
+                'firstname'        => $student->get_name(false, 'first'),
+                'fullname'         => $student->get_name(),
+                'courseshortname'  => $COURSE->subscriber->get_shortname(),
+                'attempt'          => $lastattempt+1,
+                'formgenerationmsg'=> $COURSE->subscriber->vatsimform ? get_string('graduationconfirmationformsection', 'local_booking') : ''
             ];
             $certifiedactionbar = new manage_action_bar($PAGE, 'certify', $data);
             echo get_string('graduationconfirmation', 'local_booking', $data);
-            echo $renderer->render_tertiary_navigation($certifiedactionbar);
+            if ($COURSE->subscriber->vatsimform) {
+                echo $renderer->render_tertiary_navigation($certifiedactionbar);
+            }
 
-        } elseif ($action == 'send') {
-
+        } else {
+            // generate VATSIM examiner evaluation form
             // get feedback file
             $fs = get_file_storage();
             $feedbackfile = $grade->get_feedback_file('assignfeedback_file', 'feedback_files', '', false, $lastattempt);
@@ -190,7 +190,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
                 'vatsimcertuid' => $COURSE->subscriber->get_booking_config('vatsimcertemail'),
                 'examinerid'    => $examiner->get_id(),
                 'trainingmanagers'=> $COURSE->subscriber->get_flight_training_managers(),
-                'vatsimrating'  => $COURSE->subscriber->vatsimrating,
+                'outcomerating'  => $COURSE->subscriber->outcomerating,
                 'studentname'   => $student->get_name(false),
                 'studentvatsimid' => $student->get_profile_field('VATSIMID'),
                 'coursename'    => $COURSE->subscriber->get_fullname(),

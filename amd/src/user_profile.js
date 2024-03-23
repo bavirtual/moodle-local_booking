@@ -68,7 +68,7 @@ function(
             }
 
             return message;
-        }.bind(this))
+        })
         .fail(Notification.exception);
 
         // Persist endorsement in user preferences
@@ -91,6 +91,7 @@ function(
      * @return {bool}
      */
      const processUserPreference = function(preference, value, courseId, userId, element) {
+        // eslint-disable-next-line promise/valid-params
         return Repository.updateUserPreferences(preference, value, courseId, userId)
         .then()
         .always(function() {
@@ -114,6 +115,7 @@ function(
      * @return {bool}
      */
      const processSuspendedStatus = function(suspend, courseId, userId) {
+        // eslint-disable-next-line promise/valid-params
         return Repository.updateSuspendedStatus(suspend, courseId, userId)
         .then()
         .always(function() {
@@ -143,6 +145,7 @@ function(
         let userProfile = root.find(Selectors.userprofilewrapper),
         group = userProfile.data(key + 'group');
 
+        // eslint-disable-next-line promise/valid-params
         return Repository.updateGroup(group, value, courseId, userId)
         .then()
         .always(function() {
@@ -220,6 +223,7 @@ function(
         .then(function(response) {
             // Add success status element if necessary
             let result = response.result;
+            // eslint-disable-next-line promise/no-nesting
             Str.get_string((result ? 'commentsaved' : 'commentnotsaved'), 'local_booking').then(function(string) {
                 // Show the status for a little bit
                 $('#status').addClass('comment-status-' + (result ? 'success' : 'error'));

@@ -492,14 +492,13 @@ class participant_vault implements participant_vault_interface {
         $lessonsincompleted = $DB->get_records_sql($sql, $params);
 
         // check the sequence for lessons with multiple assignments to make sure that
-        // only lessons prior to the completed exercise are evaluated for completion
+        // only lesson modules prior to the completed exercise are evaluated for completion
         $incompletesequence = [];
         if (!empty($lessonsincompleted)) {
             $incompletesequence = explode(',', array_values($lessonsincompleted)[0]->sequence);
-            // remove the next exericse from the section list of modules
-            if (($key = array_search($nextexercise, $incompletesequence)) !== false) {
-                unset($incompletesequence[$key]);
-            }
+            // check if any of the lesson modules incomplete are in the list prior to the next exercise
+            $priortonext = array_slice($incompletesequence, 0, array_search($nextexercise, $incompletesequence));
+            $incompletesequence = array_intersect($priortonext, array_keys($lessonsincompleted));
         }
 
         return $incompletesequence;

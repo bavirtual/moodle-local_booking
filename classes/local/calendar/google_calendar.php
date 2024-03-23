@@ -68,7 +68,7 @@ class google_calendar implements calendar_interface {
             $rawparams['start'] = array('dateTime'=>$event->startDateTime->format('Y-m-d\TH\:i\:s'),'timeZone'=>'UTC');
             $rawparams['end']   = array('dateTime'=>$event->endDateTime->format('Y-m-d\TH\:i\:s'),'timeZone'=>'UTC');
 
-            // call the Microsoft calendar rest api
+            // call the Google calendar rest api
             try {
                 $service = new google_calendar_rest($client);
                 $result = $service->call('add', $params, json_encode($rawparams));
@@ -76,7 +76,7 @@ class google_calendar implements calendar_interface {
                 throw $e;
             }
 
-            // redirect to Microsoft calendar upon successful creation of a calendar event
+            // redirect to Google calendar upon successful creation of a calendar event
             if (!empty($result)) {
                 redirect(new \moodle_url(self::GOOGLE_CALENDAR_URL . $event->startDateTime->format('Y\/m\/d')));
             }

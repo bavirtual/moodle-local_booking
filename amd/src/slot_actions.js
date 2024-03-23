@@ -86,12 +86,12 @@ define([
                 }
                 return;
             }
-            .bind(this))
+            )
             .always(function() {
                 Notification.fetchNotifications();
                 return CalendarViewManager.stopLoading(root);
             }
-            .bind(this))
+            )
             .fail(Notification.exception);
     }
 
@@ -123,9 +123,11 @@ define([
                 } else {
                     // Check if there are no conflicting messages
                     if (response.result) {
+                        // eslint-disable-next-line no-alert
                         alert(response.warnings[0].message);
                     } else {
                         // No conflicting bookings, save the booking.
+                        // eslint-disable-next-line promise/no-nesting
                         return Repository.saveBookedSlot(BookedSlot, course, exercise, studentid)
                             .then(function(response) {
                                 if (response.validationerror) {
@@ -137,18 +139,19 @@ define([
                                 }
                                 return;
                             }
-                            .bind(this))
+                            )
                             .always(function() {
                                 CalendarViewManager.stopLoading(root);
                                 return;
                             }
-                            .bind(this))
+                            )
                             .fail(Notification.exception);
                     }
                     return !response.result;
                 }
+                return false;
             }
-            .bind(this))
+            )
             .always(function() {
                 CalendarViewManager.stopLoading(root);
             })
@@ -175,7 +178,6 @@ define([
         let colOffset;
 
         Slots.length = 0;
-
         // Get column index for the start of the week
         head.each(function() {
             if ($(this).data('region') == 'slot-week-day') {
@@ -195,9 +197,9 @@ define([
             let aSlot = {};
 
             // Check each day (column) and record marked slot start-end times
-            // eslint-disable-next-line no-loop-func
             dayHour.forEach((hourSlot, index) => {
                 let isLastElement = index == dayHour.length - 1;
+
                 // Check if the slot is marked to record start or end time in marked sequence
                 if (hourSlot[0]) {
                     if (Object.keys(aSlot).length === 0 && aSlot.constructor === Object) {
@@ -260,8 +262,8 @@ define([
     }
 
     /**
-     * Set the cells from the copied SlotIndexes
-     * to the calendar
+     * Paste slots by seting the cells from
+     * SlotIndexes (copied cells) to the calendar
      *
      * @method pasteSlots
      * @param {object} root The calendar root element
@@ -291,9 +293,9 @@ define([
                 $(this).data('slot-marked', 0);
                 $(this).removeClass('slot-selected');
             }
+            return true;
         });
         setSaveButtonState(root, 'post', true);
-
         return;
     }
 
@@ -345,11 +347,10 @@ define([
      * Set the cells from the CopiedSlotsIndexes to the current table
      *
      * @method setSlot
-     * @param {object} cell     The target event to the clicked slot element
-     * @param {object} root     The calendar root element
-     * @param {String} action   The target event to the clicked slot element
+     * @param {object} cell     The copied cell
+     * @param {String} action   The action mode: book|post
      */
-    function setSlot(cell, root, action) {
+    function setSlot(cell, action) {
         const slotaction = action == 'book' ? 'slot-booked' : 'slot-marked';
         const slotactionclass = action == 'book' ? 'slot-booked' : 'slot-selected';
 
@@ -386,7 +387,7 @@ define([
         // Change marked state
         if (typeof target !== 'undefined' && (postActive || overridePost)) {
             if (!target.is(SELECTORS.DAY_TIME_SLOT) && action !== 'all' && action !== '') {
-                setSlot(target, root, action);
+                setSlot(target, action);
                 setSaveButtonState(root, action);
             }
         }

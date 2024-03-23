@@ -156,8 +156,8 @@ abstract class base_view {
 
             // show the graduation exercise booking option for examiners only or student view
             if ($options['isinstructor'] || $options['readonly']) {
-                if ($options['viewtype'] == 'confirm' && $module->id == $subscriber->get_graduation_exercise() && $options['isexaminer'] ||
-                    $options['viewtype'] != 'confirm' || $module->id != $subscriber->get_graduation_exercise()) {
+                if ((\has_capability('mod/assign:grade', \context_module::instance($module->id)) &&
+                    $options['viewtype'] == 'confirm') || $options['viewtype'] != 'confirm') {
                         $exercisename = new exercise_name_exporter($data);
                         $modsexport[] = $exercisename->export($output);
                 }

@@ -149,7 +149,7 @@ define([
         ViewManager.renderLogentryModal(root, e, LogentryFormPromise, target, contextId, courseId, userId,
             logentryId, false, 'local_booking/logbook_std')
         .then(pendingPromise.resolve())
-        .catch();
+        .catch(window.console.error);
     };
 
     /**
@@ -173,8 +173,8 @@ define([
     };
 
     return {
-        init: function(root) {
-            var root = $(root);
+        init: function(rt) {
+            var root = $(rt);
             registerEventListeners(root);
             ModalActions.registerDelete(root);
             ViewManager.stopLoading(root);

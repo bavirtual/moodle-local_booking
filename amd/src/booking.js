@@ -27,7 +27,7 @@ define([
         'jquery',
         'core/str',
         'core/pending',
-        'core/modal_factory',
+        'core/modal',
         'core/notification',
         'local_booking/booking_view_manager',
         'local_booking/booking_actions',
@@ -39,7 +39,7 @@ define([
         $,
         Str,
         Pending,
-        ModalFactory,
+        Modal,
         Notification,
         ViewManager,
         BookingActions,
@@ -75,7 +75,7 @@ define([
         root.on('click', Selectors.cancelbutton, function(e) {
             Str.get_string('commentcancel', 'local_booking').then(function(promptMsg) {
                 // eslint-disable-next-line no-alert
-                const comment = prompt(promptMsg);
+                const comment = window.prompt(promptMsg);
                 if (comment !== null) {
                     BookingActions.cancelBooking(root, e, comment, false);
                 }
@@ -95,7 +95,7 @@ define([
             $.when(Str.get_string('commentnoshow', 'local_booking'), noShowComment)
             .then(function(promptMsg, noshowMsg) {
                 // eslint-disable-next-line no-alert
-                if (confirm(promptMsg + '\n\n' + noshowMsg)) {
+                if (window.confirm(promptMsg + '\n\n' + noshowMsg)) {
                     BookingActions.cancelBooking(root, e, null, true);
                 }
                 return;
@@ -166,17 +166,14 @@ define([
      * @param  {bool}   isNew      Whether to register for edit mode.
      */
     const registerLogentryEditForm = (root, e, contextId, courseId, userId, logentryId, isNew) => {
-        const LogentryFormPromise = ModalFactory.create({
-            type: ModalLogentryEditForm.TYPE,
-            large: true
-        });
+        const LogentryFormPromise = ModalLogentryEditForm.create();
 
         const target = e.target;
         const pendingPromise = new Pending('local_booking/registerLogentryEditForm');
 
         ViewManager.renderLogentryModal(root, e, LogentryFormPromise, target, contextId, courseId, userId, logentryId, isNew)
         .then(pendingPromise.resolve())
-        .catch();
+        .catch(e);
     };
 
     /**
@@ -206,7 +203,7 @@ define([
                 return modal;
             })
             .then(pendingPromise.resolve())
-            .catch();
+            .catch(window.console.error);
         } else {
             pendingPromise.resolve();
         }
@@ -230,8 +227,8 @@ define([
     };
 
     return {
-        init: function(root) {
-            var root = $(root);
+        init: function(rt) {
+            var root = $(rt);
             registerEventListeners(root);
             ViewManager.stopLoading(root);
         }

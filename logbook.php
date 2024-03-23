@@ -69,7 +69,7 @@ if (empty($COURSE->subscriber)) {
 // add jquery, logbook_easa.js for EASA datatable, and RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
 $PAGE->requires->jquery();
 $PAGE->requires->js(new \moodle_url($CFG->wwwroot . '/local/booking/js/datatables/logbook_easa.js'));
-$PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask-5/dist/jquery.inputmask.min.js'), true);
+$PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask/dist/jquery.inputmask.min.js'), true);
 
 // add js and css requires from config
 $datatablecdns = $COURSE->subscriber->get_booking_config('datatables', true);

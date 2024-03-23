@@ -1,5 +1,8 @@
 {
     "integrations": {
+        "vatsim": {
+            "enabled": 1
+        },
         "pireps": {
             "enabled": 1,
             "host": "127.0.0.1:3306",
@@ -28,7 +31,7 @@
         },
         "aircraft": {
             "enabled": 1,
-            "host": "localhost",
+            "host": "127.0.0.1:3306",
             "db": "bav_management",
             "data": {
                 "aircraftinfo": {
@@ -43,7 +46,7 @@
         },
         "pilots": {
             "enabled": 1,
-            "host": "localhost",
+            "host": "127.0.0.1:3306",
             "db": "bav_management",
             "data": {
                 "pilotinfo": {
@@ -58,7 +61,7 @@
         },
         "pilotid": {
             "enabled": 1,
-            "host": "localhost",
+            "host": "127.0.0.1:3306",
             "db": "bav_management",
             "data": {
                 "pilotinfo": {
@@ -72,7 +75,7 @@
         },
         "pilotstats": {
             "enabled": 1,
-            "host": "localhost",
+            "host": "127.0.0.1:3306",
             "db": "bav_management",
             "data": {
                 "stats": {

@@ -386,12 +386,7 @@ class booking_student_exporter extends exporter {
                 if ($coursemod->modname == 'assign') {
 
                     // show the graduation exercise booking option for examiners only
-                    $gradexercise = $COURSE->subscriber->get_graduation_exercise();
-                    $examiner = false;
-                    if (!empty($this->data['instructor']))
-                        $examiner = $this->data['instructor']->is_examiner();
-
-                    if (($coursemod->id ==  $gradexercise && $examiner) || $coursemod->id != $gradexercise) {
+                    if (\has_capability('mod/assign:grade', \context_module::instance($coursemod->id))) {
                         $sessionoptions[] = [
                             'nextsession' => ($action->get_exerciseid() == $coursemod->id ? "checked" : ""),
                             'bordered' => $action->get_exerciseid() == $coursemod->id,

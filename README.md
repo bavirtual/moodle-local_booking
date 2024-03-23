@@ -42,8 +42,9 @@ The plugin can be installed either directly from Moodle or through CLI.
 
 ### Dependencies
 
-- [Moodle 3.11](https://moodle.org/)
-- [Robin Herbots Inputmask 5.x](https://github.com/RobinHerbots/Inputmask) (package already included in js folder)
+- [Moodle 4.3](https://moodle.org/)
+- [Robin Herbots Inputmask](https://github.com/RobinHerbots/Inputmask) (package already included in js folder)
+   - npm install inputmask --save
 
 ## Configuration
 

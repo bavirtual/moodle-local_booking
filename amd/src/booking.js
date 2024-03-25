@@ -103,16 +103,13 @@ define([
         });
 
         // Register the listeners required to redirect to
-        // $('input[name="studentsfilter"]').change(function() {
-        // $('input[type=radio][name=studentsfilter]').change(function() {
         root.on('change', 'input[type=radio][name=studentsfilter]', function() {
             // Call redirect to assignment feedback page
             ViewManager.refreshBookingsContent(root, 0, 0, null, $('input[name="studentsfilter"]:checked').val());
         });
 
-        // Register the listeners required to redirect to
+        // Register the listeners required to redirect to the Moodle grade page
         root.on('click', Selectors.actions.gotoFeedback, function(e) {
-            // Call redirect to assignment feedback page
             BookingActions.gotoFeedback(root, e);
 
             e.preventDefault();
@@ -134,6 +131,7 @@ define([
             // Listen the click on the progression table of sessions for a logentry (new/view).
             root.on('click', Selectors.actions.viewLogEntry, function(e) {
                 let logentryId = $(this).attr('data-logentry-id'),
+                sessionId = $(this).attr('data-session-id'),
                 userId = $(this).attr('data-student-id');
 
                 // A logentry needs to be created or edite, show the modal form.
@@ -142,7 +140,9 @@ define([
                 // and causing the day click handler to fire.
                 e.stopPropagation();
 
-                if (logentryId == 0) {
+                if (sessionId == 0) {
+                    BookingActions.gotoFeedback(root, e);
+                } else if (logentryId == 0) {
                     registerLogentryEditForm(null, e, contextId, courseId, userId, logentryId, true);
                 } else {
                     registerLogentrySummaryForm(contextId, courseId, userId, logentryId);
@@ -167,7 +167,6 @@ define([
      */
     const registerLogentryEditForm = (root, e, contextId, courseId, userId, logentryId, isNew) => {
         const LogentryFormPromise = ModalLogentryEditForm.create();
-
         const target = e.target;
         const pendingPromise = new Pending('local_booking/registerLogentryEditForm');
 

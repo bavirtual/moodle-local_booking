@@ -25,10 +25,10 @@ define([
     'jquery',
     'core/str',
     'core/notification',
-    'core/modal_factory',
     'core/modal_events',
     'core/pending',
     'local_booking/repository',
+    'local_booking/modal_delete',
     'local_booking/events',
     'local_booking/selectors',
     'local_booking/booking_actions',
@@ -37,10 +37,10 @@ function(
     $,
     Str,
     Notification,
-    ModalFactory,
     ModalEvents,
     Pending,
     Repository,
+    ModalDelete,
     BookingSessions,
     BookingSelectors,
     BookingActions,
@@ -71,9 +71,7 @@ function(
         });
 
 
-        deletePromise = ModalFactory.create({
-            type: ModalFactory.types.SAVE_CANCEL,
-        });
+        deletePromise = ModalDelete.create();
 
         var stringsPromise = Str.get_strings(deleteStrings);
 
@@ -83,7 +81,6 @@ function(
             deleteModal.setRemoveOnClose(true);
             deleteModal.setTitle(strings[0]);
             deleteModal.setBody(strings[1]);
-            deleteModal.setSaveButtonText(strings[0]);
 
             deleteModal.show();
 

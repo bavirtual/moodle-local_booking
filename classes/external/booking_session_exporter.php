@@ -214,7 +214,7 @@ class booking_session_exporter extends exporter {
                 'graded'        => $graded,
                 'passed'        => $this->session->haspassed(),
                 'status'        => $this->session->get_status(),
-                'canlogentry'   => $graded && !$this->session->isquiz() && !empty($this->session->get_id()),
+                'canlogentry'   => $graded && !$this->session->isquiz(),
                 'logentrymissing' => $logentrymissing,
                 'sessionicon'   => !empty($this->session->get_id()) ? 'info-circle' : 'check-circle-o',
                 'isquiz'        => $this->session->isquiz(),

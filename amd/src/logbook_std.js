@@ -25,9 +25,7 @@
 
 define([
         'jquery',
-        'core/str',
         'core/pending',
-        'core/modal_factory',
         'core/templates',
         'core/notification',
         'local_booking/booking_view_manager',
@@ -39,9 +37,7 @@ define([
     ],
     function(
         $,
-        Str,
         Pending,
-        ModalFactory,
         Templates,
         Notification,
         ViewManager,
@@ -138,11 +134,7 @@ define([
      * @param  {Number} logentryId The logentry id.
      */
     const registerLogentryEditForm = (root, e, contextId, courseId, userId, logentryId) => {
-        const LogentryFormPromise = ModalFactory.create({
-            type: ModalLogentryEditForm.TYPE,
-            large: true
-        });
-
+        const LogentryFormPromise = ModalLogentryEditForm.create();
         const target = e.target;
         const pendingPromise = new Pending('local_booking/registerLogentryEditForm');
 

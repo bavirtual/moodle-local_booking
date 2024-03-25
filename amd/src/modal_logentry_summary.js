@@ -22,46 +22,30 @@
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define([
-    'jquery',
-    'core/custom_interaction_events',
-    'core/modal',
-    'core/modal_registry',
-    'core/modal_events',
-    'local_booking/modal_actions',
-    'local_booking/events',
-],
-function(
-    $,
-    CustomEvents,
-    Modal,
-    ModalRegistry,
-    ModalEvents,
-    ModalActions,
-    BookingEvents,
-) {
 
-    var registered = false;
-    var SELECTORS = {
-        ROOT: "[data-region='summary-modal-container']",
-        ADD_BUTTON: '[data-action="add"]',
-        EDIT_BUTTON: '[data-action="edit"]',
-        DELETE_BUTTON: '[data-action="delete"]',
-        FEEDBACK_BUTTON: '[data-action="feedback"]',
-    };
+import $ from 'jquery';
+import * as CustomEvents from 'core/custom_interaction_events';
+import Modal from 'core/modal';
+import * as ModalEvents from 'core/modal_events';
+import * as ModalActions from 'local_booking/modal_actions';
+import * as BookingEvents from 'local_booking/events';
 
-    /**
-     * Constructor for the Modal.
-     *
-     * @param {object} root The root jQuery element for the modal
-     */
-    var ModalLogentrySummary = function(root) {
-        Modal.call(this, root);
-    };
+const SELECTORS = {
+    ROOT: "[data-region='summary-modal-container']",
+    ADD_BUTTON: '[data-action="add"]',
+    EDIT_BUTTON: '[data-action="edit"]',
+    DELETE_BUTTON: '[data-action="delete"]',
+    FEEDBACK_BUTTON: '[data-action="feedback"]',
+};
 
-    ModalLogentrySummary.TYPE = 'local_booking-logentry_summary';
-    ModalLogentrySummary.prototype = Object.create(Modal.prototype);
-    ModalLogentrySummary.prototype.constructor = ModalLogentrySummary;
+/**
+ * Constructor for the Modal.
+ *
+ * @param {object} root The root jQuery element for the modal
+ */
+export default class ModalEventSummary extends Modal {
+    static TEMPLATE = 'local_booking/logentry_summary_modal';
+    static TYPE = 'local_booking-logentry_summary';
 
     /**
      * Get the feedback button element from the footer. The button is cached
@@ -70,13 +54,13 @@ function(
      * @method getFeedbackButton
      * @return {object} button element
      */
-     ModalLogentrySummary.prototype.getFeedbackButton = function() {
+     getFeedbackButton() {
         if (typeof this.feedbackButton == 'undefined') {
             this.feedbackButton = this.getFooter().find(SELECTORS.FEEDBACK_BUTTON);
         }
 
         return this.feedbackButton;
-    };
+    }
 
     /**
      * Get the add logentry button element from the footer. The button is cached
@@ -85,13 +69,13 @@ function(
      * @method getAddButton
      * @return {object} button element
      */
-    ModalLogentrySummary.prototype.getAddButton = function() {
+    getAddButton() {
         if (typeof this.addButton == 'undefined') {
             this.addButton = this.getFooter().find(SELECTORS.ADD_BUTTON);
         }
 
         return this.addButton;
-    };
+    }
 
     /**
      * Get the edit button element from the footer. The button is cached
@@ -100,13 +84,13 @@ function(
      * @method getEditButton
      * @return {object} button element
      */
-    ModalLogentrySummary.prototype.getEditButton = function() {
+    getEditButton() {
         if (typeof this.editButton == 'undefined') {
             this.editButton = this.getFooter().find(SELECTORS.EDIT_BUTTON);
         }
 
         return this.editButton;
-    };
+    }
 
     /**
      * Get the delete button element from the footer. The button is cached
@@ -115,13 +99,13 @@ function(
      * @method getDeleteButton
      * @return {object} button element
      */
-    ModalLogentrySummary.prototype.getDeleteButton = function() {
+    getDeleteButton() {
         if (typeof this.deleteButton == 'undefined') {
             this.deleteButton = this.getFooter().find(SELECTORS.DELETE_BUTTON);
         }
 
         return this.deleteButton;
-    };
+    }
 
     /**
      * Get the id for the logbook entry being shown in this modal. This value is
@@ -131,9 +115,9 @@ function(
      * @method getLogentryId
      * @return {int}
      */
-    ModalLogentrySummary.prototype.getLogentryId = function() {
+    getLogentryId() {
         return this.getBody().find(SELECTORS.ROOT).attr('data-logentry-id');
-    };
+    }
 
     /**
      * Get the id for the logbook entry being shown in this modal. This value is
@@ -143,9 +127,9 @@ function(
      * @method getUserId
      * @return {int}
      */
-     ModalLogentrySummary.prototype.getUserId = function() {
+     getUserId() {
         return this.getBody().find(SELECTORS.ROOT).attr('data-user-id');
-    };
+    }
 
     /**
      * Get the exercise id for the logbook entry being shown in this modal.
@@ -153,9 +137,9 @@ function(
      * @method getExerciseId
      * @return {int}
      */
-     ModalLogentrySummary.prototype.getExerciseId = function() {
+     getExerciseId() {
         return this.getBody().find(SELECTORS.ROOT).attr('data-exercise-id');
-    };
+    }
 
     /**
      * Get the session id for the logbook entry being shown in this modal.
@@ -163,9 +147,9 @@ function(
      * @method getSessionId
      * @return {int}
      */
-     ModalLogentrySummary.prototype.getSessionId = function() {
+     getSessionId() {
         return this.getBody().find(SELECTORS.ROOT).attr('data-session-id');
-    };
+    }
 
     /**
      * Get the flight dategru for the logbook entry being shown in this modal.
@@ -173,9 +157,9 @@ function(
      * @method getFlightDate
      * @return {int}
      */
-     ModalLogentrySummary.prototype.getFlightDate = function() {
+     getFlightDate() {
         return this.getBody().find(SELECTORS.ROOT).attr('data-flight-date');
-    };
+    }
 
     /**
      * Get the title for the logentry being shown in this modal. This value is
@@ -185,18 +169,18 @@ function(
      * @method getLogentryTitle
      * @return {String}
      */
-     ModalLogentrySummary.prototype.getLogentryTitle = function() {
+     getLogentryTitle() {
         return this.getBody().find(SELECTORS.ROOT).attr('data-logentry-title');
-    };
+    }
 
     /**
      * Set up all of the event handling for the modal.
      *
      * @method registerEventListeners
      */
-    ModalLogentrySummary.prototype.registerEventListeners = function() {
+    registerEventListeners() {
         // Apply parent event listeners.
-        Modal.prototype.registerEventListeners.call(this);
+        super.registerEventListeners(this);
 
         // We have to wait for the modal to finish rendering in order to ensure that
         // the data-logentry-id property is available to use in the modal.
@@ -257,14 +241,7 @@ function(
             data.originalEvent.preventDefault();
             data.originalEvent.stopPropagation();
         }.bind(this));
-    };
-
-    // Automatically register with the modal registry the first time this module is imported so that you can create modals
-    // of this type using the modal factory.
-    if (!registered) {
-        ModalRegistry.register(ModalLogentrySummary.TYPE, ModalLogentrySummary, 'local_booking/logentry_summary_modal');
-        registered = true;
     }
+}
 
-    return ModalLogentrySummary;
-});
+ModalEventSummary.registerModalType();

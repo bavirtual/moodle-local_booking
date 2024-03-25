@@ -1,5 +1,16 @@
 # Change log
 
+## [2024032600] - RELEASED 2024-03-26
+
+### Fixed
+
+- missing footer buttons in logentry popup
+
+### Changed
+
+- graded w/o session session click redirects to Moodle grade page
+- removed modal_factory deprecated methods
+
 ## [2024032200] - RELEASED 2024-03-22
 
 ### Fixed

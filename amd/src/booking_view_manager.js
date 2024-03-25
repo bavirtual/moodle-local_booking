@@ -27,7 +27,6 @@ import * as Str from 'core/str';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
 import Pending from 'core/pending';
-import Modal from 'core/modal';
 import ModalEvents from 'core/modal_events';
 import ModalLogentrySummaryForm from 'local_booking/modal_logentry_summary';
 import * as Repository from 'local_booking/repository';
@@ -187,12 +186,11 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
         // Build the modal parameters from the logentry data.
         const modalParams = {
             title: Str.get_string('logentry', 'local_booking'),
-            type: ModalLogentrySummaryForm.TYPE,
             body: Templates.render('local_booking/logentry_summary_body', logentryData)
         };
 
         // Create the modal.
-        return Modal.create(modalParams);
+        return ModalLogentrySummaryForm.create(modalParams);
     })
     .then(modal => {
         // Handle hidden event.

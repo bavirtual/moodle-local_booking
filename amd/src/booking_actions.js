@@ -26,16 +26,8 @@ define([
     'jquery',
     'core/str',
     'core/notification',
-    'core/custom_interaction_events',
-    'core/modal',
-    'core/modal_registry',
-    'core/modal_factory',
-    'core/modal_events',
-    'core/pending',
-    'local_booking/modal_logentry_form',
     'local_booking/repository',
     'local_booking/events',
-    'local_booking/modal_delete',
     'local_booking/selectors',
     'local_booking/booking_view_manager',
 ],
@@ -43,16 +35,8 @@ function(
     $,
     Str,
     Notification,
-    CustomEvents,
-    Modal,
-    ModalRegistry,
-    ModalFactory,
-    ModalEvents,
-    Pending,
-    ModalLogentryForm,
     Repository,
     BookingSessions,
-    ModalDelete,
     BookingSelectors,
     ViewManager,
 ) {
@@ -63,7 +47,7 @@ function(
      * @method  cancelBooking
      * @param   {object} root     The My Bookings root element
      * @param   {object} e        The click event on the Cancel button
-     * @param   {string} comment  The click event on the Cancel button
+     * @param   {string} comment  The cancellation comment
      * @param   {string} noshow   Whether the cancellation is a no-show or instructor initiated
      * @return  {object} The create modal promise
      */
@@ -94,24 +78,31 @@ function(
      * Redirect to exercise (assignment) grading page.
      *
      * @method  gotoFeedback
-     * @param   {jQuery} root
+     * @param   {object} root
+     * @param   {object} e
      */
-     var gotoFeedback = (root) => {
-        // Fetch the exercise and user id and redirect to assignment submission & grading
-        let LogentrySource = root.find(BookingSelectors.logentryitem),
-            courseId, exerciseId, sessionPassed, userId;
+     var gotoFeedback = (root, e) => {
+        let Source = root.find(BookingSelectors.logentryitem),
+            courseId, exerciseId, userId;
 
-        courseId = LogentrySource.data('courseId');
-        exerciseId = LogentrySource.data('exerciseId');
-        sessionPassed = 1;
-        userId = LogentrySource.data('userId');
+        // Call redirect to assignment feedback page
+        if (Source.length !== 0) {
+            courseId = Source.data('courseId');
+            exerciseId = Source.data('exerciseId');
+            userId = Source.data('userId');
+        } else {
+            Source = $(e.target).closest(BookingSelectors.session);
+            courseId = $(BookingSelectors.bookingwrapper).data('courseid');
+            exerciseId = Source.data('exerciseId');
+            userId = Source.data('studentId');
+        }
 
         // Trigger redirect to feedback
         $('body').trigger(BookingSessions.gotoFeedback, [exerciseId]);
 
         // Redirect to the grading and feedback page
         location.href = M.cfg.wwwroot + '/local/booking/assign.php?courseid=' + courseId +
-                '&exeid=' + exerciseId + '&rownum=0&userid=' + userId + '&passed=' + sessionPassed;
+                '&exeid=' + exerciseId + '&rownum=0&userid=' + userId + '&passed=1';
     };
 
     return {

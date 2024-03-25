@@ -22,57 +22,44 @@
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define([
-    'jquery',
-    'core/notification',
-    'core/custom_interaction_events',
-    'core/modal',
-    'core/modal_events',
-    'core/modal_registry',
-    'local_booking/events',
-],
-function(
-    $,
-    Notification,
-    CustomEvents,
-    Modal,
-    ModalEvents,
-    ModalRegistry,
-) {
 
-    var registered = false;
-    var SELECTORS = {
-        DELETE_BUTTON: '[data-action="delete"]',
-        CANCEL_BUTTON: '[data-action="cancel"]',
-    };
+import $ from 'jquery';
+import * as CustomEvents from 'core/custom_interaction_events';
+import Modal from 'core/modal';
+import ModalEvents from 'core/modal_events';
 
-    /**
-     * Constructor for the Modal.
-     *
-     * @class
-     * @param {object} root The root jQuery element for the modal
-     */
-    var ModalDelete = function(root) {
-        Modal.call(this, root);
+const SELECTORS = {
+    DELETE_BUTTON: '[data-action="delete"]',
+    CANCEL_BUTTON: '[data-action="cancel"]',
+};
 
+
+/**
+ * Constructor for the Modal.
+ *
+ * @class
+ * @param {object} root The root jQuery element for the modal
+ */
+export default class ModalDelete extends Modal {
+    static TYPE = 'local_booking-modal_delete';
+    static TEMPLATE = 'local_booking/logentry_delete_modal';
+
+    constructor(root) {
+        super(root);
         this.setRemoveOnClose(true);
-    };
-
-    ModalDelete.TYPE = 'local_booking-modal_delete';
-    ModalDelete.prototype = Object.create(Modal.prototype);
-    ModalDelete.prototype.constructor = ModalDelete;
+    }
 
     /**
      * Set up all of the event handling for the modal.
      *
      * @method registerEventListeners
      */
-    ModalDelete.prototype.registerEventListeners = function() {
+    registerEventListeners() {
         // Apply parent event listeners.
-        Modal.prototype.registerEventListeners.call(this);
+        super.registerEventListeners(this);
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.DELETE_BUTTON, function(e, data) {
-            var deleteEvent = $.Event(ModalEvents.save);
+            const deleteEvent = $.Event(ModalEvents.save);
             this.getRoot().trigger(deleteEvent, this);
 
             if (!deleteEvent.isDefaultPrevented()) {
@@ -82,7 +69,7 @@ function(
         }.bind(this));
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.CANCEL_BUTTON, function(e, data) {
-            var cancelEvent = $.Event(ModalEvents.cancel);
+            const cancelEvent = $.Event(ModalEvents.cancel);
             this.getRoot().trigger(cancelEvent, this);
 
             if (!cancelEvent.isDefaultPrevented()) {
@@ -90,14 +77,8 @@ function(
                 data.originalEvent.preventDefault();
             }
         }.bind(this));
-    };
-
-    // Automatically register with the modal registry the first time this module is imported so that you can create modals
-    // of this type using the modal factory.
-    if (!registered) {
-        ModalRegistry.register(ModalDelete.TYPE, ModalDelete, 'local_booking/logentry_delete_modal');
-        registered = true;
     }
 
-    return ModalDelete;
-});
+}
+
+ModalDelete.registerModalType();

@@ -231,6 +231,10 @@ class logentry_exporter extends exporter {
                 'optional' => true,
                 'default' => true,
             ],
+            'canedit' => [
+                'type' => PARAM_BOOL,
+                'default' => true
+            ],
             'visible' => [
                 'type' => PARAM_INT
             ],

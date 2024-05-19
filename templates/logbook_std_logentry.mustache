@@ -1,0 +1,72 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_booking/logbook_std_logentry
+
+    Log book view for summary and log book entries.
+
+    The purpose of this template is to render the main, detailed weekly view.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Example context (json):
+    {
+    }
+}}
+<div class="logbook-card logbook-shadow1" id="logentry_{{id}}">
+<h2 class="logbook-h2">{{{sectionname}}}</h2>
+    {{^soloflight}}
+    <h4>{{{exercisename}}}</h4><br/>
+    {{/soloflight}}
+    {{#soloflight}}
+    <h4>{{#str}} soloflight, local_booking {{/str}}</h4><br/>
+        {{/soloflight}}
+{{> local_booking/logbook_std_detail}}
+
+    {{#canedit}}
+    <div style="float: right;"{{!
+        }} data-region="summary-modal-container"{{!
+        }} data-logentry-id="{{id}}"{{!
+        }} data-flight-date="{{flightdate}}"{{!
+        }} data-flight-type="{{flighttype}}"{{!
+        }} data-find-pirep="{{hasfindpirep}}"{{!
+        }} data-user-id="{{userid}}"{{!
+        }} data-exercise-id="{{exerciseid}}"{{!
+        }} data-session-id="{{sessionid}}"{{!
+        }}>
+        <button class="icon-no-margin logbook-button"
+            type="button"
+            data-action="delete"
+            data-region="delete-button"
+            id="delete_button">
+            <span>{{#pix}} i/trash, moodle, {{#str}} delete {{/str}} {{/pix}}</span>
+        </button>
+        <button class="icon-no-margin logbook-button"
+            type="button"
+            data-action="edit"
+            data-region="edit-button"
+            id="edit_button">
+            <span>{{#pix}} i/edit, moodle, {{#str}} edit {{/str}} {{/pix}}</span>
+        </button>
+    </div>
+    {{/canedit}}
+
+</div>

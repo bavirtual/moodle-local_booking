@@ -170,10 +170,12 @@ class action implements action_interface {
                     global $USER;
 
                     // check if graduation capability is allowed
+                    $context = \context_system::instance();
+                    $isadmin = has_capability('moodle/site:config', $context);
                     $examinerid = $student->get_grade($gradexercise)->usermodified;
                     $logbook = $student->get_logbook(true);
                     $hasexamlogentry = !empty($logbook->get_logentry_by_sessionid($refid));
-                    $enabled = \has_capability('mod/assign:grade', \context_module::instance($gradexercise)) && $examinerid == $USER->id && $hasexamlogentry;
+                    $enabled = (\has_capability('mod/assign:grade', \context_module::instance($gradexercise)) && $examinerid == $USER->id && $hasexamlogentry) || $isadmin;
 
                     // evaluate tooltip based on ability to graduate the student
                     if (!$enabled) {

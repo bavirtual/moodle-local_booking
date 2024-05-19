@@ -55,10 +55,16 @@ define([
      */
     const registerEventListeners = (root) => {
 
+        // Listen to logentry created events
+        $('body').on(BookingEvents.logentrycreated, function(e, logentry) {
+            // Refresh logbook
+            refreshNewLogentryContent(root, logentry);
+        });
+
         // Listen to logentry updated events
         $('body').on(BookingEvents.logentryupdated, function(e, logentry) {
             // Refresh logbook
-            refreshLogbookContent(root, logentry);
+            refreshLogentryContent(root, logentry);
         });
 
         // Listen to logentry deleted event
@@ -81,10 +87,19 @@ define([
                 let logegntry = target.closest(Selectors.containers.summaryForm),
                     logentryId = logegntry.dataset.logentryId;
 
-                // A logentry needs to be created or edite, show the modal form.
+                // A logentry needs to be edited, show the modal form.
                 e.preventDefault();
                 e.stopPropagation();
                 registerLogentryEditForm(root, e, contextId, courseId, userId, logentryId);
+                e.stopImmediatePropagation();
+            });
+
+            // Listen the edit click of a logbook entry.
+            root.on('click', Selectors.actions.add, function(e) {
+                // A logentry needs to be created, show the modal form.
+                e.preventDefault();
+                e.stopPropagation();
+                registerLogentryAddForm(root, e, contextId, courseId, userId);
                 e.stopImmediatePropagation();
             });
         }
@@ -93,12 +108,42 @@ define([
     /**
      * Refresh the logbook entry edited.
      *
-     * @method  refreshLogbookContent
+     * @method  refreshNewLogentryContent
      * @param   {object} root     The root element.
      * @param   {object} logentry The updated logentry.
      * @return  {promise}
      */
-    const refreshLogbookContent = (root, logentry) => {
+    const refreshNewLogentryContent = (root, logentry) => {
+
+        const courseId = $(Selectors.logbookwrapper).data('courseid'),
+        userId = $(Selectors.logbookwrapper).data('userid');
+
+        M.util.js_pending(root.get('id') + '-' + courseId);
+        return Repository.getLogentryById(logentry.id, courseId, userId)
+            .then((response) => {
+                return Templates.render('local_booking/logbook_std_logentry', response.logentry);
+            })
+            .then((html) => {
+                $('#logbook-summary').after(html);
+                root.find('.logbook-shadow1:first').hide().slideDown(300);
+                return;
+            })
+            .always(() => {
+                M.util.js_complete(root.get('id') + '-' + courseId);
+                return;
+            })
+            .fail(Notification.exception);
+    };
+
+    /**
+     * Refresh the logbook entry edited.
+     *
+     * @method  refreshLogentryContent
+     * @param   {object} root     The root element.
+     * @param   {object} logentry The updated logentry.
+     * @return  {promise}
+     */
+    const refreshLogentryContent = (root, logentry) => {
         let card = $('#cardid_' + logentry.id);
 
         showPlaceholder(card);
@@ -108,8 +153,8 @@ define([
 
         M.util.js_pending(root.get('id') + '-' + courseId);
         return Repository.getLogentryById(logentry.id, courseId, userId)
-            .then((context) => {
-                return Templates.render('local_booking/logbook_std_detail', context.logentry);
+            .then((response) => {
+                return Templates.render('local_booking/logbook_std_detail', response.logentry);
             })
             .then((html, js) => {
                 return Templates.replaceNode(card, html, js);
@@ -119,6 +164,28 @@ define([
                 return showContent(card);
             })
             .fail(Notification.exception);
+    };
+
+    /**
+     * Register the form and listeners required for
+     * creating logentries.
+     *
+     * @method registerLogentryAddForm
+     * @param  {object} root       The root element.
+     * @param  {object} e          The triggered event.
+     * @param  {Number} contextId  The course context id of the logentry.
+     * @param  {Number} courseId   The course id of the logentry.
+     * @param  {Number} userId     The user id the logentry belongs to.
+     */
+    const registerLogentryAddForm = (root, e, contextId, courseId, userId) => {
+        const LogentryFormPromise = ModalLogentryEditForm.create();
+        const target = e.target;
+        const pendingPromise = new Pending('local_booking/registerLogentryEditForm');
+
+        ViewManager.renderLogentryEditForm(root, e, LogentryFormPromise, target, contextId, courseId, userId,
+            0, true, 'local_booking/logbook_std')
+        .then(pendingPromise.resolve())
+        .catch(window.console.error);
     };
 
     /**
@@ -138,7 +205,7 @@ define([
         const target = e.target;
         const pendingPromise = new Pending('local_booking/registerLogentryEditForm');
 
-        ViewManager.renderLogentryModal(root, e, LogentryFormPromise, target, contextId, courseId, userId,
+        ViewManager.renderLogentryEditForm(root, e, LogentryFormPromise, target, contextId, courseId, userId,
             logentryId, false, 'local_booking/logbook_std')
         .then(pendingPromise.resolve())
         .catch(window.console.error);

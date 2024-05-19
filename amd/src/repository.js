@@ -91,6 +91,7 @@ import Ajax from 'core/ajax';
         args: {
             courseid: courseId,
             exerciseid: exerciseId,
+            returnempty: true,
         }
     };
 
@@ -222,7 +223,7 @@ export const isConflictingBookings = (studentid, bookedslot) => {
  */
  export const submitCreateUpdateLogentryForm = (formArgs, formData) => {
     const request = {
-        methodname: 'local_booking_submit_create_update_form',
+        methodname: 'local_booking_submit_logentry_form',
         args: {
             formargs: formArgs,
             formdata: formData

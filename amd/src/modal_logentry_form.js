@@ -25,7 +25,6 @@
  */
 
 import $ from 'jquery';
-// import Inputmask from "local_booking/dist/inputmask";
 import * as FormEvents from 'core_form/events';
 import * as Str from 'core/str';
 import * as Notification from 'core/notification';
@@ -359,7 +358,7 @@ export default class ModalLogEntryForm extends Modal {
         this.titlePromise = Repository.getExerciseName(this.courseId, this.exerciseId)
             .then(function(response) {
                 // Handle the response
-                return response.exercisename;
+                return response.exercisename == '' ? 'New logentry' : response.exercisename;
             })
         .fail(Notification.exception);
 
@@ -534,6 +533,20 @@ export default class ModalLogEntryForm extends Modal {
             }.bind(this));
         }
 
+        // Update elements based on selected exercise
+        var exercises = $('#id_exercises');
+        exercises.on('change', function() {
+            // Assign the value selected in the radio buttons to the hidden flight type element
+            let $exerciseid = $("#id_exercises").val();
+            $("input[name='exerciseid']").val($exerciseid);
+            if ($exerciseid == $("input[name='graduationexerciseid']").val()) {
+                $("input[name='flighttypehidden']").val("check");
+            } else {
+                $("input[name='flighttypehidden']").val($("input[name='flighttype']:checked").val());
+            }
+            this.doDynamicDisplay();
+        }.bind(this));
+
         // Update elements based on selected flighttype (Training/Solo)
         var flighttype = $('input[name="flighttype"]');
         flighttype.on('change', function() {
@@ -546,11 +559,12 @@ export default class ModalLogEntryForm extends Modal {
         // Update flight times when the test result status is changed
         var passfail = $('input[name="passfail"]');
         passfail.on('change', function() {
+            $("input[name='flighttypehidden']").val("check");
             this.doDynamicDisplay();
             this.applyFlightTimes();
         }.bind(this));
 
-        // Update flight times when the test result status is changed
+        // Update flight times when flight rules are changed
         var flightrule = $('input[name="flightrule"]');
         flightrule.on('change', function() {
             this.doDynamicDisplay();
@@ -675,7 +689,10 @@ export default class ModalLogEntryForm extends Modal {
      */
     applyFlightTimes(force) {
 
-        const rule = $(Selectors.bookingwrapper).data('trainingtype');
+        let rule = $(Selectors.bookingwrapper).data('trainingtype');
+        if (typeof rule == 'undefined') {
+            rule = $("input[name='trainingtype']").val();
+        }
         var flighttype = $("input[name='flighttypehidden']").val(),
             flighttime = $('#id_flighttime').val(),
             passfail = $("input[name='passfail']:checked").val(),
@@ -719,10 +736,12 @@ export default class ModalLogEntryForm extends Modal {
      */
     doDynamicDisplay() {
 
-        const rule = $(Selectors.bookingwrapper).data('trainingtype');
+        let rule = $(Selectors.bookingwrapper).data('trainingtype');
+        if (typeof rule == 'undefined') {
+            rule = $("input[name='trainingtype']").val();
+        }
         var flighttype = $("input[name='flighttypehidden']").val(),
             passfail = $("input[name='passfail']:checked").val(),
-            ifr = $("input[name='flightrule']:checked").val() == 'ifr',
             editmode = this.getLogentryId() != 0;
 
         // Toggle the display of elements depending on flight type
@@ -779,12 +798,8 @@ export default class ModalLogEntryForm extends Modal {
 
             // Toggle showing elements conditionally for training flight and failed check flights
             toggle('#fitem_id_p2id', '#id_p2id', true);
-            toggle('#fitem_id_dualtime', '#id_dualtime', rule == 'Dual');
             toggle('#fitem_id_groundtime', '#id_groundtime', true, $('#id_groundtime').val(), true);
-            toggle('#fitem_id_ifrtime', '#id_ifrtime', ifr);
-            toggle('#fitem_id_nighttime', '#id_nighttime', ifr);
-            toggle('#fitem_id_multipilottime', '#id_multipilottime', rule == 'Multicrew');
-            toggle('#fitem_id_copilottime', '#id_copilottime', rule == 'Multicrew');
+            toggle('#fitem_id_dualtime', '#id_dualtime', true);
 
             // Toggle hiding elements
             toggle('#fitem_id_checkpilottime', '#id_checkpilottime', false);
@@ -807,7 +822,6 @@ export default class ModalLogEntryForm extends Modal {
             }
 
             // Toggle showing elements for solo flight
-            toggle('#fitem_id_ifrtime', '#id_ifrtime', ifr);
             $('#id_landingsp1day').val('1');
             $('#id_landingsp2day').val('0');
 
@@ -815,8 +829,7 @@ export default class ModalLogEntryForm extends Modal {
             toggle('#fitem_id_p2id', '#id_p2id', false, $('#id_p2id').val(), true);
             toggle('#fitem_id_groundtime', '#id_groundtime', false, '', true);
             toggle('#fitem_id_dualtime', '#id_dualtime', false);
-            toggle('#fitem_id_multipilottime', '#id_multipilottime', false);
-            toggle('#fitem_id_copilottime', '#id_copilottime', false);
+            toggle('#fitem_id_checkpilottime', '#id_checkpilottime', false);
             toggle('#fitem_id_picustime', '#id_picustime', false);
             toggle('#fgroup_id_landingsp2', '#id_landingsp2', false);
 
@@ -832,17 +845,13 @@ export default class ModalLogEntryForm extends Modal {
 
             // Toggle showing elements for passsed check flight
             toggle('#fitem_id_p2id', '#id_p2id', true);
-            toggle('#fitem_id_ifrtime', '#id_ifrtime', ifr);
-            toggle('#fitem_id_multipilottime', '#id_multipilottime', rule == 'Multicrew');
-            toggle('#fitem_id_picustime', '#id_picustime', true);
-
-            // Toggle hiding elements for passed check flight
+            toggle('#fitem_id_groundtime', '#id_groundtime', false, '', true);
             toggle('#fitem_id_dualtime', '#id_dualtime', false);
-            toggle('#fitem_id_copilottime', '#id_copilottime', false);
 
             // TODO: Instructor logentry edit:
             // toggle('#fitem_id_instructortime', '#id_instructortime', false);
-            toggle('#fitem_id_checkpilottime', '#id_checkpilottime', false);
+            toggle('#fitem_id_checkpilottime', '#id_checkpilottime', true);
+            toggle('#fitem_id_picustime', '#id_picustime', true);
         }
     }
 

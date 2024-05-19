@@ -170,7 +170,7 @@ define([
         const target = e.target;
         const pendingPromise = new Pending('local_booking/registerLogentryEditForm');
 
-        ViewManager.renderLogentryModal(root, e, LogentryFormPromise, target, contextId, courseId, userId, logentryId, isNew)
+        ViewManager.renderLogentryEditForm(root, e, LogentryFormPromise, target, contextId, courseId, userId, logentryId, isNew)
         .then(pendingPromise.resolve())
         .catch(e);
     };

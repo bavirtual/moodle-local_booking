@@ -71,9 +71,19 @@ class create extends \moodleform {
         // Empty string so that the element doesn't get rendered.
         $mform->addElement('header', 'general', '');
 
-        $flighttype = $newentry ? ($this->_customdata['exerciseid'] == $COURSE->subscriber->get_graduation_exercise() ? 'check' : 'training') : $logentry->get_flighttype();
-        $this->add_default_hidden_elements($mform, $COURSE->subscriber->trainingtype, $flighttype);
-        $this->add_elements($mform, $COURSE->subscriber, $logentry, $flighttype);
+        // display a list of all exercises when no exercise is selected
+        $exerciseempty = $this->_customdata['exerciseid'] == 0;
+        if ($exerciseempty) {
+            $exercises[] = '';
+            $exercises = $exercises + $COURSE->subscriber->get_exercises();
+            $this->add_element($mform, 'exercises', [$exercises]);
+        }
+
+        // identify the flight type based on the exercise
+        $graduationexerciseid = $COURSE->subscriber->get_graduation_exercise();
+        $flighttype = $newentry ? ($this->_customdata['exerciseid'] == $graduationexerciseid ? 'check' : 'training') : $logentry->get_flighttype();
+        $this->add_default_hidden_elements($mform, $COURSE->subscriber->trainingtype, $flighttype, $graduationexerciseid);
+        $this->add_elements($mform, $COURSE->subscriber, $logentry, $flighttype, $exerciseempty);
 
         // Add the javascript required to enhance this mform.
         $PAGE->requires->js_call_amd('local_booking/modal_logentry_form');
@@ -113,11 +123,15 @@ class create extends \moodleform {
      * @param subscriber $subscriber
      * @param logentry $logentry
      * @param string $flighttype
+     * @param bool $exerciseempty
      */
-    protected function add_elements($mform, $subscriber, $logentry, $flighttype) {
+    protected function add_elements($mform, $subscriber, $logentry, $flighttype, $exerciseempty) {
         global $USER;
         $integratedpireps = $subscriber->has_integration('pireps');
         $newlogentry = empty($logentry) || empty($logentry->get_id());
+        $graduationexerciseid = $subscriber->get_graduation_exercise();
+        // P1/PIC instructor id and P2 student id
+        $pilots = $this->get_pilot_ids($subscriber);
 
         // set core logentry data
         if ($newlogentry) {
@@ -133,18 +147,11 @@ class create extends \moodleform {
             $p1id = $logentry->get_p1id();
             $p2id = $logentry->get_p2id();
         }
-        // P1/PIC instructor id and P2 student id
-        $pilots = $this->get_pilot_ids($subscriber);
 
-        // show flight type first whether regular training or check flight
-        if (($flighttype == 'training' || $flighttype == 'solo') && $subscriber->trainingtype == 'Dual') {
-            $this->add_element($mform, 'flighttype', null, true, true, null, 'training');
-            // feeze chaning flight type in a solo flight edit
-            if ($flighttype == 'solo' && $logentry->get_id())
-                $mform->freeze('flighttype');
-        } elseif ($flighttype == 'check') {
-            $this->add_element($mform, 'passfail');
-        }
+        // show flight type first both regular training or check flight, and freeze type selection for solo flight edits w/ a logentry
+        $freezeflighttype = $flighttype == 'solo' && $logentry->get_id();
+        $this->add_element($mform, 'flighttype', [$exerciseempty, $graduationexerciseid, $freezeflighttype], true, true, null, 'training');
+        $this->add_element($mform, 'passfail', [$exerciseempty, $graduationexerciseid]);
 
         // show pireps only if they there is lookup integration or a PIREP for editing
         if ($integratedpireps || !$newlogentry) {
@@ -160,8 +167,7 @@ class create extends \moodleform {
         $this->add_element($mform, 'p2id', array($pilots, $p2id, $subscriber->trainingtype, $flighttype));
 
         // add primary flight time
-        if ($flighttype == 'training')
-            $this->add_element($mform, 'groundtime');
+        $this->add_element($mform, 'groundtime');
         $this->add_element($mform, 'flighttime');
 
         // add flight rule (VFR/IFR)
@@ -171,6 +177,7 @@ class create extends \moodleform {
         // add secondary form elements (more...)
         // add flight time elements based on training type
         $this->add_element($mform, 'ifrtime', null, false);
+
         // TODO: Instructor logentry edit: $this->add_element($mform, 'pictime', null, false);
         // TODO: Instructor logentry edit: $this->add_element($mform, 'instructortime', null, false);
         if ($subscriber->trainingtype == "Dual") {
@@ -181,10 +188,8 @@ class create extends \moodleform {
         }
 
         // add flight time elements in check flights
-        if ($flighttype == 'check') {
-            $this->add_element($mform, 'checkpilottime', null, false);
-            $this->add_element($mform, 'picustime', null, false);
-        }
+        $this->add_element($mform, 'checkpilottime', null, false);
+        $this->add_element($mform, 'picustime', null, false);
 
         // default to 30 hr/mins from session time for departure and 1:30 hr/mins from session time for arrival
         $datetime = time();
@@ -228,132 +233,168 @@ class create extends \moodleform {
     protected function add_element($mform, $element, $options = null, $maindisplay = true, $input = true, $value = null, $default = '') {
 
         switch ($element) {
+            case 'exercises':
+                // Exercises list including final exam (skill test)
+                $mform->addElement('select', $element, get_string('exercise', 'local_booking'), $options[0]);
+                $mform->addRule($element, get_string('required'), 'required', null, 'client');
+                $mform->setType($element, PARAM_INT);
+                break;
+
             case 'flightdate':
                 // Flight date field.
-                $mform->addElement('date_time_selector', 'flightdate', get_string('flightdate', 'local_booking'), array('timezone'=>0));
-                $mform->addRule('flightdate', get_string('required'), 'required', null, 'client');
-                $mform->setType('flightdate', PARAM_TEXT);
-                $mform->setDefault('flightdate', $options[0]);
+                $mform->addElement('date_time_selector', $element, get_string($element, 'local_booking'), array('timezone'=>0));
+                $mform->addRule($element, get_string('required'), 'required', null, 'client');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->setDefault($element, $options[0]);
                 break;
 
             case 'p1id':
                 // P1 name select
                 global $USER;
-                $select = $mform->addElement('select', 'p1id', get_string('p1' . strtolower($options[2]), 'local_booking'), $options[0]);
+                $select = $mform->addElement('select', $element, get_string('p1' . strtolower($options[2]), 'local_booking'), $options[0]);
                 $select->setSelected($options[1]);
-                $mform->setType('p1id', PARAM_INT);
-                $mform->addRule('p1id', get_string('required'), 'required', null, 'client');
-                $mform->addHelpButton('p1id', 'p1' . strtolower($options[2]), 'local_booking');
+                $mform->setType($element, PARAM_INT);
+                $mform->addRule($element, get_string('required'), 'required', null, 'client');
+                $mform->addHelpButton($element, 'p1' . strtolower($options[2]), 'local_booking');
                 if (!is_siteadmin($USER))
-                    $mform->freeze('p1id');
+                    $mform->freeze($element);
                 break;
 
             case 'p2id':
                 // P2 name select
                 global $USER;
-                $select = $mform->addElement('select', 'p2id', get_string('p2' . strtolower($options[2]), 'local_booking'), $options[0]);
+                $select = $mform->addElement('select', $element, get_string('p2' . strtolower($options[2]), 'local_booking'), $options[0]);
                 $select->setSelected($options[1]);
-                $mform->setType('p2id', PARAM_INT);
+                $mform->setType($element, PARAM_INT);
                 // Check fo solo flights
                 if ($options[3] != 'solo') {
-                    $mform->addRule('p2id', get_string('required'), 'required', null, 'client');
+                    $mform->addRule($element, get_string('required'), 'required', null, 'client');
                 }
-                $mform->addHelpButton('p2id', 'p2' . strtolower($options[2]), 'local_booking');
+                $mform->addHelpButton($element, 'p2' . strtolower($options[2]), 'local_booking');
                 if (!is_siteadmin($USER))
-                    $mform->freeze('p2id');
+                    $mform->freeze($element);
                 break;
 
             case 'flighttype':
                 // Solo flight indicator
                 $radioarray=array();
-                $radioarray[] = $mform->createElement('radio', 'flighttype', '', get_string('flighttypetraining', 'local_booking'), 'training');
-                $radioarray[] = $mform->createElement('radio', 'flighttype', '', get_string('flighttypesolo', 'local_booking'), 'solo');
-                $mform->addGroup($radioarray, 'flighttype', get_string('flighttype', 'local_booking'), array(' '), false);
-                $mform->setType('flighttype', PARAM_TEXT);
-                $mform->setDefault('flighttype', $default);
+                $radioarray[] = $mform->createElement('radio', $element, '', get_string('flighttypetraining', 'local_booking'), 'training');
+                $radioarray[] = $mform->createElement('radio', $element, '', get_string('flighttypesolo', 'local_booking'), 'solo');
+                $mform->addGroup($radioarray, $element, get_string($element, 'local_booking'), array(' '), false);
+                $mform->setType($element, PARAM_TEXT);
+                $mform->setDefault($element, $default);
+                // when adding from logbook page, show only if a training exercise is selected
+                if ($options[0]) {
+                    $mform->hideIf($element, 'exercises', 'eq', $options[1]);
+                    $mform->hideIf($element, 'exercises', 'eq', '0');
+                } else {
+                    $mform->hideIf($element, 'flighttype', 'eq', 'check');
+                    $mform->hideIf($element, 'trainingtype', 'noteq', 'Dual');
+                }
+                // freeze chaning flight type in a solo flight edit
+                if ($options[2]) {
+                    $mform->freeze('flighttype');
+                }
                 break;
 
             case 'passfail':
                 // Solo flight indicator
                 $radioarray=array();
-                $radioarray[] = $mform->createElement('radio', 'passfail', '', get_string('checkpassed', 'local_booking'), 'pass');
-                $radioarray[] = $mform->createElement('radio', 'passfail', '', get_string('checkfailed', 'local_booking'), 'fail');
-                $mform->addGroup($radioarray, 'passfail',  get_string('checkflight', 'local_booking'), array(' '), false);
-                $mform->setType('passfail', PARAM_TEXT);
-                $mform->setDefault('passfail', 'pass');
+                $radioarray[] = $mform->createElement('radio', $element, '', get_string('checkpassed', 'local_booking'), 'pass');
+                $radioarray[] = $mform->createElement('radio', $element, '', get_string('checkfailed', 'local_booking'), 'fail');
+                $mform->addGroup($radioarray, $element,  get_string('checkflight', 'local_booking'), array(' '), false);
+                $mform->setType($element, PARAM_TEXT);
+                $mform->setDefault($element, 'pass');
+                // when adding from logbook page, show only if a training exercise is selected
+                if ($options[0]) {
+                    $mform->hideIf($element, 'exercises', 'noteq', $options[1]);
+                } else {
+                    $mform->hideIf($element, 'flighttype', 'noteq', 'check');
+                }
                 break;
 
             case 'groundtime':
                 // Session flight time duration
-                $mform->addElement('text', 'groundtime', get_string('groundtime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->addRule('groundtime', get_string('required'), 'required', null, 'client');
-                $mform->addHelpButton('groundtime', 'groundtime', 'local_booking');
-                $mform->setType('groundtime', PARAM_TEXT);
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->addRule($element, get_string('required'), 'required', null, 'client');
+                $mform->addHelpButton($element, $element, 'local_booking');
+                $mform->setType($element, PARAM_TEXT);
                 break;
 
             case 'flighttime':
                 // Flight time duration
                 if ($input) {
                     $attributes = array('size' => '5', 'placeholder' => 'hh:mm');
-                    $mform->addElement('text', 'flighttime', ucfirst(get_string('flighttime', 'local_booking')), $attributes);
-                    $mform->addRule('flighttime', get_string('required'), 'required', null, 'client');
-                    $mform->addHelpButton('flighttime', 'flighttime', 'local_booking');
-                    $mform->setType('flighttime', PARAM_TEXT);
+                    $mform->addElement('text', $element, ucfirst(get_string($element, 'local_booking')), $attributes);
+                    $mform->addRule($element, get_string('required'), 'required', null, 'client');
+                    $mform->addHelpButton($element, $element, 'local_booking');
+                    $mform->setType($element, PARAM_TEXT);
                 } else {
-                    $mform->addElement('static', 'description', get_string('flighttime', 'local_booking'), $value);
+                    $mform->addElement('static', 'description', get_string($element, 'local_booking'), $value);
                 }
                 break;
 
             case 'flightrule':
                 // Solo flight indicator
                 $radioarray=array();
-                $radioarray[] = $mform->createElement('radio', 'flightrule', '', get_string('flightrulevfr', 'local_booking'), 'vfr');
-                $radioarray[] = $mform->createElement('radio', 'flightrule', '', get_string('flightruleifr', 'local_booking'), 'ifr');
-                $mform->addGroup($radioarray, 'flightrule', get_string('flightrule', 'local_booking'), array(' '), false);
-                $mform->setType('flightrule', PARAM_TEXT);
-                $mform->setDefault('flightrule', $default);
+                $radioarray[] = $mform->createElement('radio', $element, '', get_string('flightrulevfr', 'local_booking'), 'vfr');
+                $radioarray[] = $mform->createElement('radio', $element, '', get_string('flightruleifr', 'local_booking'), 'ifr');
+                $mform->addGroup($radioarray, $element, get_string($element, 'local_booking'), array(' '), false);
+                $mform->setType($element, PARAM_TEXT);
+                $mform->setDefault($element, $default);
                 break;
 
             case 'pictime':
                 // PIC flight time duration
-                $mform->addElement('text', 'pictime', get_string('pictime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->setType('pictime', PARAM_TEXT);
-                $mform->addHelpButton('pictime', 'pictime', 'local_booking');
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->addHelpButton($element, $element, 'local_booking');
                 break;
 
             case 'instructortime':
                 // Instructor flight time duration
-                $mform->addElement('text', 'instructortime', get_string('instructortime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->setType('instructortime', PARAM_TEXT);
-                $mform->addHelpButton('instructortime', 'instructortime', 'local_booking');
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->addHelpButton($element, $element, 'local_booking');
+                break;
+
+            case 'checkpilottime':
+                // Examiner flight time duration
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->addHelpButton($element, $element, 'local_booking');
+                $mform->hideIf($element, 'passfail', 'noteq', 'pass');
                 break;
 
             case 'picustime':
                 // PICUS flight time duration
-                $mform->addElement('text', 'picustime', get_string('picustime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->setType('picustime', PARAM_TEXT);
-                $mform->addHelpButton('picustime', 'picustime', 'local_booking');
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->addHelpButton($element, $element, 'local_booking');
                 break;
 
             case 'dualtime':
                 // Dual flight time duration
-                $mform->addElement('text', 'dualtime', get_string('dualtime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->addHelpButton('dualtime', 'dualtime', 'local_booking');
-                $mform->setType('dualtime', PARAM_TEXT);
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->addHelpButton($element, $element, 'local_booking');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->hideIf($element, 'trainingtype', 'noteq', 'Dual');
                 break;
 
             case 'multipilottime':
                 // Multi-pilot flight time duration
-                $mform->addElement('text', 'multipilottime', get_string('multipilottime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->setType('multipilottime', PARAM_TEXT);
-                $mform->addHelpButton('multipilottime', 'multipilottime', 'local_booking');
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->addHelpButton($element, $element, 'local_booking');
+                $mform->hideIf($element, 'trainingtype', 'noteq', 'Multicrew');
                 break;
 
             case 'copilottime':
                 // Co-pilot flight time duration
-                $mform->addElement('text', 'copilottime', get_string('copilottime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->setType('copilottime', PARAM_TEXT);
-                $mform->addHelpButton('copilottime', 'copilottime', 'local_booking');
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->addHelpButton($element, $element, 'local_booking');
+                $mform->hideIf($element, 'trainingtype', 'noteq', 'Multicrew');
                 break;
 
             case 'pireps':
@@ -370,9 +411,9 @@ class create extends \moodleform {
                     $pireps=array();
                     $pireps[] =& $mform->createElement('text', 'p1pirep', get_string('p1pirep', 'local_booking'));
                     $pireps[] =& $mform->createElement('text', 'p2pirep', get_string('p2pirep', 'local_booking'));
-                    $mform->addGroup($pireps, 'pireps', get_string('pirepsgroup', 'local_booking'), '   ', false);
-                    $mform->addGroupRule('pireps', array('p1pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
-                    $mform->addGroupRule('pireps', array('p2pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
+                    $mform->addGroup($pireps, $element, get_string('pirepsgroup', 'local_booking'), '   ', false);
+                    $mform->addGroupRule($element, array('p1pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
+                    $mform->addGroupRule($element, array('p2pirep' => array(array(get_string('err_numeric', 'form'), 'numeric', null, 'client'))));
                     $mform->setType('p2pirep', PARAM_INT);
                 }
                 $mform->setType('p1pirep', PARAM_INT);
@@ -383,7 +424,7 @@ class create extends \moodleform {
                 $departure=array();
                 $departure[] =& $mform->createElement('text', 'depicao', get_string('depicao', 'local_booking'), 'style="text-transform:uppercase" size="8"');
                 $departure[] =& $mform->createElement('text', 'deptime', get_string('deptime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->addGroup($departure, 'departure', get_string('depgroup', 'local_booking'), ' ', false);
+                $mform->addGroup($departure, $element, get_string('depgroup', 'local_booking'), ' ', false);
                 $mform->setDefault('depicao', $options[0]);
                 $mform->setDefault('deptime', $options[1]);
                 $mform->setType('depicao', PARAM_TEXT);
@@ -395,7 +436,7 @@ class create extends \moodleform {
                 $arrival=array();
                 $arrival[] =& $mform->createElement('text', 'arricao', get_string('arricao', 'local_booking'), 'style="text-transform:uppercase" size="8"');
                 $arrival[] =& $mform->createElement('text', 'arrtime', get_string('arrtime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->addGroup($arrival, 'arrival', get_string('arrgroup', 'local_booking'), ' ', false);
+                $mform->addGroup($arrival, $element, get_string('arrgroup', 'local_booking'), ' ', false);
                 $mform->setDefault('arricao', $options[0]);
                 $mform->setDefault('arrtime', $options[1]);
                 $mform->setType('arricao', PARAM_TEXT);
@@ -405,34 +446,29 @@ class create extends \moodleform {
             case 'aircraft':
                 // Aircraft group type, registration, and engine type
                 $aircraft=array();
-                $aircraft[] =& $mform->createElement('select', 'aircraft', get_string('aircraft', 'local_booking'), $options[0]);
+                $aircraft[] =& $mform->createElement('select', $element, get_string($element, 'local_booking'), $options[0]);
                 $aircraft[] =& $mform->createElement('text', 'aircraftreg', get_string('aircraftreg', 'local_booking'), 'style="text-transform:uppercase" size="8"');
                 $aircraft[] =& $mform->createElement('select', 'enginetype', get_string('enginetype', 'local_booking'), $options[1]);
                 $mform->setDefault('enginetype', $options[2]);
-                $mform->addGroup($aircraft, 'aircraft', get_string('aircraftgroup', 'local_booking'), ' ', false);
-                $mform->addHelpButton('aircraft', 'aircraft', 'local_booking');
+                $mform->addGroup($aircraft, $element, get_string('aircraftgroup', 'local_booking'), ' ', false);
+                $mform->addHelpButton($element, $element, 'local_booking');
                 $mform->setType('aircraftreg', PARAM_TEXT);
                 break;
 
             case 'nighttime':
                 // Night flight time duration
-                $mform->addElement('text', 'nighttime', get_string('nighttime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->setType('nighttime', PARAM_TEXT);
-                $mform->addHelpButton('nighttime', 'nighttime', 'local_booking');
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->addHelpButton($element, $element, 'local_booking');
+                $mform->hideIf($element, 'flightrule', 'noteq', 'ifr');
                 break;
 
             case 'ifrtime':
                 // IFR flight time duration
-                $mform->addElement('text', 'ifrtime', get_string('ifrtime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->setType('ifrtime', PARAM_TEXT);
-                $mform->addHelpButton('ifrtime', 'ifrtime', 'local_booking');
-                break;
-
-            case 'checkpilottime':
-                // Examiner flight time duration
-                $mform->addElement('text', 'checkpilottime', get_string('checkpilottime', 'local_booking'), 'size="5" placeholder="hh:mm"');
-                $mform->setType('checkpilottime', PARAM_TEXT);
-                $mform->addHelpButton('checkpilottime', 'checkpilottime', 'local_booking');
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'size="5" placeholder="hh:mm"');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->addHelpButton($element, $element, 'local_booking');
+                $mform->hideIf($element, 'flightrule', 'noteq', 'ifr');
                 break;
 
             case 'landingsp1':
@@ -453,29 +489,29 @@ class create extends \moodleform {
 
             case 'callsign':
                 // Callsign advanced element
-                $mform->addElement('text', 'callsign', get_string('callsign', 'local_booking'), 'style="text-transform:uppercase" ');
-                $mform->setType('callsign', PARAM_TEXT);
-                $mform->setDefault('callsign', $options[0]);
+                $mform->addElement('text', $element, get_string($element, 'local_booking'), 'style="text-transform:uppercase" ');
+                $mform->setType($element, PARAM_TEXT);
+                $mform->setDefault($element, $options[0]);
                 break;
 
             case 'route':
                 // Route advanced element
-                $mform->addElement('textarea', 'route', get_string('route', "local_booking"), 'wrap="virtual" rows="5" cols="50"');
-                $mform->setType('route', PARAM_TEXT);
+                $mform->addElement('textarea', $element, get_string($element, "local_booking"), 'wrap="virtual" rows="5" cols="50"');
+                $mform->setType($element, PARAM_TEXT);
                 break;
 
             case 'remarks':
                 // Remarks advanced element
-                $mform->addElement('textarea', 'remarks', get_string('remarks', "local_booking"), 'wrap="virtual" rows="20" cols="50"');
-                $mform->setType('remarks', PARAM_TEXT);
+                $mform->addElement('textarea', $element, get_string($element, "local_booking"), 'wrap="virtual" rows="20" cols="50"');
+                $mform->setType($element, PARAM_TEXT);
                 break;
 
             case 'fstd':
                 // FSTD advanced element
-                $mform->addElement('text', 'fstd', get_string('fstd', 'local_booking'));
-                $mform->setType('fstd', PARAM_TEXT);
-                $mform->addHelpButton('fstd', 'fstd', 'local_booking');
-                $mform->setDefault('fstd', $options[0]);
+                $mform->addElement('text', $element, get_string($element, 'local_booking'));
+                $mform->setType($element, PARAM_TEXT);
+                $mform->addHelpButton($element, $element, 'local_booking');
+                $mform->setDefault($element, $options[0]);
                 break;
         }
 
@@ -492,7 +528,7 @@ class create extends \moodleform {
      * @param string $trainingtype   The type of training (Dual or Multi-crew)
      * @param string $flighttype     The flight type (training, solo, or check)
      */
-    protected function add_default_hidden_elements($mform, string $trainingtype, string $flighttype) {
+    protected function add_default_hidden_elements($mform, string $trainingtype, string $flighttype, int $graduationexerciseid) {
 
         // Add some hidden fields.
         $mform->addElement('hidden', 'id');
@@ -514,6 +550,10 @@ class create extends \moodleform {
         $mform->addElement('hidden', 'exerciseid');
         $mform->setType('exerciseid', PARAM_INT);
         $mform->setDefault('exerciseid', 0);
+
+        $mform->addElement('hidden', 'graduationexerciseid');
+        $mform->setType('graduationexerciseid', PARAM_INT);
+        $mform->setDefault('graduationexerciseid', $graduationexerciseid);
 
         $mform->addElement('hidden', 'sessionid');
         $mform->setType('sessionid', PARAM_INT);

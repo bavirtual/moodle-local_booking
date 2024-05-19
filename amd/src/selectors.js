@@ -53,6 +53,7 @@ define([], function() {
             loadingIcon: '[data-region="overlay-icon-container"]',
             summaryForm: '[data-region="summary-modal-container"]',
             logEntry: '[data-region="logentry-container"]',
+            logbook: '[data-region="logbook-container"]',
             content: '[data-region="view-content"]',
             loadingPlaceholder: '[data-region="loading-placeholder"]',
         },

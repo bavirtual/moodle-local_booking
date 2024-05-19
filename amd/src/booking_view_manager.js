@@ -77,7 +77,7 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
 /**
  * Render the logentry new/edit modal.
  *
- * @method  renderLogentryModal
+ * @method  renderLogentryEditForm
  * @param   {object} root       The container element
  * @param   {object} e          The triggered event.
  * @param   {Number} LogentryFormPromise  The Logentry form promise.
@@ -90,9 +90,9 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
  * @param   {string} template   The source template for edits.
  * @returns {promise}
  */
- export const renderLogentryModal = (root, e, LogentryFormPromise, target, contextId, courseId,
+ export const renderLogentryEditForm = (root, e, LogentryFormPromise, target, contextId, courseId,
     userId, logentryId, isNew, template) => {
-    const pendingPromise = new Pending('local_booking/booking_view_manager:renderLogentryModal');
+    const pendingPromise = new Pending('local_booking/booking_view_manager:renderLogentryEditForm');
 
     return LogentryFormPromise
     .then(function(modal) {
@@ -105,13 +105,22 @@ export const refreshBookingsContent = (root, courseId, categoryId, target = null
 
             // Sel elements not meant for new or additional logentries
             if (isNew) {
-                // From booking_session_exporter
-                logegntrySession = target.closest(Selectors.actions.viewLogEntry);
-                flightDate = logegntrySession.dataset.flightDate;
-                exerciseId = logegntrySession.dataset.exerciseId;
-                sessionId = logegntrySession.dataset.sessionId;
-                flightType = logegntrySession.dataset.flightType;
-                findpirepenabled = $(Selectors.bookingwrapper).data('findpirep');
+                if (template == 'local_booking/logbook_std') {
+                    // From logbook
+                    flightDate = 0;
+                    exerciseId = 0;
+                    sessionId = 0;
+                    flightType = '';
+                    findpirepenabled = false;
+                } else {
+                    // From booking_session_exporter (Instructor dashboard)
+                    logegntrySession = target.closest(Selectors.actions.viewLogEntry);
+                    flightDate = logegntrySession.dataset.flightDate;
+                    exerciseId = logegntrySession.dataset.exerciseId;
+                    sessionId = logegntrySession.dataset.sessionId;
+                    flightType = logegntrySession.dataset.flightType;
+                    findpirepenabled = $(Selectors.bookingwrapper).data('findpirep');
+                }
             } else {
                 if (template == 'local_booking/logbook_std') {
                     // From logbook

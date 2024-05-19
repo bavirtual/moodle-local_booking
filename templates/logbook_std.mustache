@@ -37,10 +37,11 @@
     }} class="logbookwrapper logbook-body"{{!
     }} data-userid="{{userid}}"{{!
     }} data-courseid="{{courseid}}"{{!
-    }} data-contextid="{{contextid}}"{{!
-    }}>
+    }} data-contextid="{{contextid}}">
     <br>
-    <div class="logbook-card logbook-shadow2">
+    <div class="logbook-card logbook-shadow2"{{!
+    }} data-region="logbook-container"{{!
+    }} id="logbook-summary">
         <h2 class="logbook-h2">{{#str}} logbooksummary, local_booking {{/str}}</h2>
         <pre>{{#str}} pilot, local_booking {{/str}}: <span class="logbook-highlight">{{username}}</span>
 
@@ -80,48 +81,29 @@
         {{#str}} totallandingsday, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsday}}</span>
         {{#str}} totallandingsnight, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsnight}}</span>
         </pre>
-    </div>
-
-{{#entries}}
-    <div class="logbook-card logbook-shadow1" id="logentry_{{id}}">
-    <h2 class="logbook-h2">{{{sectionname}}}</h2>
-        {{^soloflight}}
-        <h4>{{{exercisename}}}</h4><br/>
-        {{/soloflight}}
-        {{#soloflight}}
-        <h4>{{#str}} soloflight, local_booking {{/str}}</h4><br/>
-        {{/soloflight}}
-{{> local_booking/logbook_std_detail}}
 
         {{#canedit}}
         <div style="float: right;"{{!
             }} data-region="summary-modal-container"{{!
-            }} data-logentry-id="{{id}}"{{!
             }} data-flight-date="{{flightdate}}"{{!
             }} data-flight-type="{{flighttype}}"{{!
             }} data-find-pirep="{{hasfindpirep}}"{{!
             }} data-user-id="{{userid}}"{{!
-            }} data-exercise-id="{{exerciseid}}"{{!
-            }} data-session-id="{{sessionid}}"{{!
             }}>
             <button class="icon-no-margin logbook-button"
                 type="button"
-                data-action="delete"
-                data-region="delete-button"
-                id="delete_button">
-                <span>{{#pix}} i/trash, moodle, {{/pix}}</span>
-            </button>
-            <button class="icon-no-margin logbook-button"
-                type="button"
-                data-action="edit"
-                data-region="edit-button"
-                id="edit_button">
-                <span>{{#pix}} i/edit, moodle, {{/pix}}</span>
+                data-action="add"
+                data-region="add-button"
+                id="add_button">
+                <span>{{#pix}} i/addblock, moodle, {{#str}} add {{/str}} {{/pix}}</span>
             </button>
         </div>
         {{/canedit}}
 
-  </div>
+    </div>
+
+{{#entries}}
+{{> local_booking/logbook_std_logentry}}
 {{/entries}}
 <br>
 </div>

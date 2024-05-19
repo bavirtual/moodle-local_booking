@@ -726,7 +726,7 @@ $string['emailevaluationformhtml'] = '<font face="sans-serif"><p><hr /><p>Greeti
 $string['emailgraduationnotify'] = '{$a->fullname} newly graduated';
 $string['emailgraduationnotifymsg1'] = 'Congratulations {$a->firstname} !!!
 
-    Join me in congratulating {$a->fullname} for passing the {$a->exercisename} examination. {$a->firstname} completed the {$a->atoname}
+    Join me in congratulating {$a->fullname} on passing the {$a->exercisename} examination. {$a->firstname} completed the {$a->atoname}
     {$a->coursename} coursework and achieved the {$a->rating} on {$a->completiondate}. Please make sure to post a message on the New Pilots Forum (https://forum.bavirtual.co.uk/forum/29-new-pilots/) to {$a->firstname} for this achievement.
 
     {$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate} on the {$a->simulator} simulator and was able to finish all practical and navigation exercises to standard.
@@ -757,7 +757,7 @@ $string['emailgraduationnotifymsg2'] = '
 $string['emailgraduationnotifyhtml1'] = '<font face="sans-serif"><table style="border-collapse: collapse; width: 700px;" border="0"><tbody><tr><td style="width: 20%;"><h1 style="color: #5e9ca0;">
     <span style="color: #000000;"><img style="display: block; margin-left: auto; margin-right: auto;" src="{$a->congrats1pic}" alt="Congratulations" width="70" /></span></h1></td>
     <td style="width: 65%"><h1 style="color: #5e9ca0;"><span style="color: #000000;">Congratulations {$a->firstname} !!!</span></h1></td></tr></tbody>
-    </table><p>Join me in congratulating <strong>{$a->fullname}</strong> for passing the {$a->exercisename} examination.&nbsp; {$a->firstname} completed the {$a->atoname} {$a->coursename}
+    </table><p>Join me in congratulating <strong>{$a->fullname}</strong> on passing the {$a->exercisename} examination.&nbsp; {$a->firstname} completed the {$a->atoname} {$a->coursename}
     coursework and achieved the {$a->rating}  on {$a->completiondate}. Please make sure to post a message on the <a href="https://forum.bavirtual.co.uk/forum/29-new-pilots/">New Pilots Forum</a>
     to {$a->firstname} for this achievement.</p><p>{$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate} on the {$a->simulator} simulator and
     was able to finish all practical and navigation exercises to standard. Below are some of {$a->firstname}\'s accomplishments:</p><p>
@@ -836,7 +836,7 @@ $string['errordelete'] = 'Failed to delete logentry';
 $string['errorexaminerevalformunable'] = 'Unable to generate examiner evaluation form. Potentially the grade is legacy prior skill test rubric grading.';
 $string['errorexaminerevalmapping'] = 'Incorrect VATSIM form fields mapping format. The number of rubric grade items does not match the number of form field mappings.';
 $string['errorexaminerevalmissinglogentry'] = 'Skill test log entry missing! Please enter a log entry for the skill test.';
-$string['errorexercisemissing'] = 'Exercise not found!';
+$string['errorexercisemissing'] = 'No exercise specified!';
 $string['errorinvaliddate'] = 'Flight date cannot be before booked session date';
 $string['errorinvalidarrtime'] = 'Arrival date/time must be greater than departure date/time';
 $string['errorlandings'] = 'Number from 1-9';

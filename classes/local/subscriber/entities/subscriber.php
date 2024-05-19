@@ -488,6 +488,19 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Retrieves subscribing course modules (exercises & quizes)
+     *
+     * @return array
+     */
+    public function get_exercises() {
+        $exercises = [];
+        foreach ($this->modules as $module) {
+            if ($module->modname == 'assign') $exercises[$module->id] = $module->name;
+        }
+        return $exercises;
+    }
+
+    /**
      * Returns the course graduation exercise as specified in the settings
      * otherwise retrieves the last exercise.
      *
@@ -511,7 +524,7 @@ class subscriber implements subscriber_interface {
      * @param int  $courseid   The course id the exercise belongs to.
      * @return string
      */
-    public function get_exercise_name(int $exerciseid, int $courseid = 0) {
+    public function get_exercise_name(int $exerciseid, int $courseid = 0, $returnempty = false) {
 
         // look in another course
         if (!empty($exerciseid)) {
@@ -523,7 +536,7 @@ class subscriber implements subscriber_interface {
                 $modname = $this->modules[$exerciseid]->name;
             }
         } else {
-            $modname = get_string('errorexercisemissing', 'local_booking');
+            $modname = $returnempty ? '' : get_string('errorexercisemissing', 'local_booking');
         }
 
         return $modname;

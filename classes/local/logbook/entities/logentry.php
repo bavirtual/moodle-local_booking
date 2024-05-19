@@ -1019,7 +1019,7 @@ class logentry implements logentry_interface {
         $ifrtimerule        = $formdata->flightrule == 'ifr';
         $instructortimerule = $isinstructor && $formdata->flighttypehidden == 'training';
         $picustimerule      = !$isinstructor && $formdata->flighttypehidden == 'check' && $formdata->passfail == 'pass';
-        $checkpilottimerule = $isinstructor && $formdata->flighttypehidden == 'check';
+        $checkpilottimerule = $isinstructor && $formdata->flighttypehidden == 'check' && $formdata->checkpilottime != 0;
         $landingsdayrule    = $isinstructor || $formdata->flighttypehidden == 'solo' || $edit;
         $landingsnightrule  = $isinstructor || $formdata->flighttypehidden == 'solo' || $edit;
 

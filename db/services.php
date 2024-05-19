@@ -119,10 +119,10 @@ $functions = array(
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
 
-    'local_booking_submit_create_update_form' => array(
+    'local_booking_submit_logentry_form' => array(
         'classname' => 'local_booking_external',
         'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'submit_create_update_form',
+        'methodname' => 'submit_logentry_form',
         'description' => 'submit or create logbook entry form elements',
         'type' => 'write',
         'ajax' => true,
@@ -284,10 +284,10 @@ $services = array(
     ),
 
     'Student form submission web service'  => array(
-        'functions' => array('local_booking_submit_create_update_form'), // Unused as we add the service in each function definition, third party services would use this.
+        'functions' => array('local_booking_submit_logentry_form'), // Unused as we add the service in each function definition, third party services would use this.
         'enabled' => 1,         // if 0, then token linked to this service won't work
         'restrictedusers' => 0,
-        'shortname' => 'submit_create_update_form',
+        'shortname' => 'submit_logentry_form',
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),

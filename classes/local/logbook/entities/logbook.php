@@ -102,7 +102,7 @@ class logbook implements logbook_interface {
      * @param logentry $logentry
      * @return bool
      */
-    public function update(logentry $logentry){
+    public function update(logentry $logentry) {
         return logbook_vault::update_logentry($this->courseid, $this->userid, $logentry);
     }
 
@@ -110,11 +110,12 @@ class logbook implements logbook_interface {
      * Deletes a logbook entry and its associated logentires.
      *
      * @param int $logentryid
+     * @param bool $cascade
      * @return bool
      */
-    public function delete(int $logentryid) {
+    public function delete(int $logentryid, $cascade) {
         $logentry = $this->get_logentry($logentryid);
-        return logbook_vault::delete_logentry($logentryid, $logentry->get_linkedlogentryid());
+        return logbook_vault::delete_logentry($logentryid, $cascade ? $logentry->get_linkedlogentryid() : 0);
     }
 
     /**

@@ -54,23 +54,27 @@ interface logbook_interface {
     /**
      * Save a logbook entry.
      *
-     * @return bool
+     * @param logentry $logentry
+     * @return int The id of the logbook entery inserted
      */
     public function insert(logentry $logentry);
 
     /**
      * Update a logbook entry.
      *
+     * @param logentry $logentry
      * @return bool
      */
     public function update(logentry $logentry);
 
     /**
-     * Deletes a logbook entry.
+     * Deletes a logbook entry and its associated logentires.
      *
+     * @param int $logentryid
+     * @param bool $cascade
      * @return bool
      */
-    public function delete(int $logentryid);
+    public function delete(int $logentryid, $cascade);
 
     /**
      * Insert/Update then link the instructor

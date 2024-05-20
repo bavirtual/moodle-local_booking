@@ -263,16 +263,18 @@ export const isConflictingBookings = (studentid, bookedslot) => {
  * @param {number} logentryId The logbook entry id to delete.
  * @param {number} userId The logbook entry course id.
  * @param {number} courseId The logbook entry user id.
+ * @param {bool}   cascade Whether to cascade deletion of linked logbook entry.
  * @return {promise} Resolved with requested calendar event
  */
- export const deleteLogentry = (logentryId, userId, courseId) => {
+ export const deleteLogentry = (logentryId, userId, courseId, cascade) => {
 
     const request = {
         methodname: 'local_booking_delete_logentry',
         args: {
             logentryid: logentryId,
             userid: userId,
-            courseid: courseId
+            courseid: courseId,
+            cascade: cascade
         }
     };
 

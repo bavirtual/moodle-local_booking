@@ -367,6 +367,7 @@ class local_booking_external extends external_api {
                 'logentryid'  => new external_value(PARAM_INT, 'The logbook entry id', VALUE_DEFAULT),
                 'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
                 'courseid'  => new external_value(PARAM_INT, 'The course id in context', VALUE_DEFAULT),
+                'cascade'  => new external_value(PARAM_BOOL, 'Whether to ignore cascade delete of linked logentry', VALUE_DEFAULT),
             )
         );
     }
@@ -374,13 +375,14 @@ class local_booking_external extends external_api {
     /**
      * Delete a logbook entry.
      *
-     * @param int $logentryid The logbook entry id.
-     * @param int $userid The user user id in context.
-     * @param int $courseid The course id in context.
+     * @param int  $logentryid The logbook entry id.
+     * @param int  $userid The user user id in context.
+     * @param int  $courseid The course id in context.
+     * @param bool $cascade Whether to ignore cascading delete of linked logentry.
      * @return array array of slots created.
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
-    public static function delete_logentry($logentryid, $userid, $courseid) {
+    public static function delete_logentry($logentryid, $userid, $courseid, $cascade) {
         global $PAGE;
 
         // Parameter validation.
@@ -388,6 +390,7 @@ class local_booking_external extends external_api {
                 'logentryid' => $logentryid,
                 'courseid' => $courseid,
                 'userid' => $userid,
+                'cascade' => $cascade,
                 )
             );
 
@@ -397,7 +400,7 @@ class local_booking_external extends external_api {
 
         $logbook = new logbook($courseid, $userid);
 
-        if ($logbook->delete($logentryid))
+        if ($logbook->delete($logentryid, $cascade))
             \core\notification::SUCCESS(get_string('logentrydeletesuccess', 'local_booking'));
         else
             \core\notification::ERROR(get_string('logentrydeletefailed', 'local_booking'));

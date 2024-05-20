@@ -227,8 +227,8 @@ class notifications_task extends \core\task\scheduled_task {
             $examiner = new instructor($course, $grade->usermodified);
             $logbook = new logbook($course->get_id(), $student->get_id());
             $logbook->load();
-            $summary = $logbook->get_summary(true);
             $logentry = $logbook->get_logentry_by_exericseid($course->get_graduation_exercise());
+            $summary = $logbook->get_summary(true);
             $data = [
                 'trainingtype'    => $course->trainingtype,
                 'graduateid'      => $student->get_id(),
@@ -237,7 +237,7 @@ class notifications_task extends \core\task\scheduled_task {
                 'courseshortname' => $course->get_shortname(),
                 'coursename'      => $course->get_fullname(),
                 'exercisename'    => $course->get_graduation_exercise(true),
-                'completiondate'  => date_format($logentry->get_flightdate(), 'F j, Y'),
+                'completiondate'  => date_format((new \DateTime('@'.$logentry->get_flightdate())), 'F j, Y'),
                 'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
                 'simulator'       => $student->get_profile_field('simulator'),
                 'totallessons'    => count($course->get_lessons()),

@@ -51,11 +51,12 @@ function(
      *
      * @method  confirmDeletion
      * @param   {Number} logentryId The ID of the logentry.
-     * @param   {Number} userId The user of the logentry.
+     * @param   {Number} userId   The user of the logentry.
      * @param   {Number} courseId The course of the logentry.
+     * @param   {bool}   cascade  Whether to cascade delete linked logentries.
      * @return  {Promise}
      */
-    var confirmDeletion = (logentryId, userId, courseId) => {
+    var confirmDeletion = (logentryId, userId, courseId, cascade) => {
         var pendingPromise = new Pending('local_booking/booking_actions:confirmDeletion');
         var deleteStrings = [
             {
@@ -87,7 +88,7 @@ function(
             deleteModal.getRoot().on(ModalEvents.save, function() {
                 var pendingPromise = new Pending('local_booking/booking_actions:initModal:deletedlogentry');
                 // eslint-disable-next-line promise/no-nesting
-                Repository.deleteLogentry(logentryId, userId, courseId)
+                Repository.deleteLogentry(logentryId, userId, courseId, cascade)
                     .then(function() {
                         $('body').trigger(BookingSessions.logentrydeleted, [logentryId, false]);
                         return;
@@ -126,8 +127,10 @@ function(
                 target.closest(BookingSelectors.containers.summaryForm).dataset.logentryId,
                 userId = logentrySource.data('userId') ||
                 target.closest(BookingSelectors.containers.summaryForm).dataset.userId,
-                courseId = logentrySource.data('courseId') || $(BookingSelectors.logbookwrapper).data('courseid');
-            confirmDeletion(logentryId, userId, courseId);
+                courseId = logentrySource.data('courseId') || $(BookingSelectors.logbookwrapper).data('courseid'),
+                cascade = logentrySource.data('cascade') ||
+                target.closest(BookingSelectors.containers.summaryForm).dataset.cascade;
+            confirmDeletion(logentryId, userId, courseId, cascade);
 
             e.preventDefault();
         });

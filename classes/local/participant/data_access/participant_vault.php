@@ -187,6 +187,7 @@ class participant_vault implements participant_vault_interface {
 
         // return $DB->get_records_sql($sql, $params);
         $orderby = '';
+        $groupby = ' GROUP BY u.id';
         switch ($filter) {
             case 'active':
                 $onholdclause = $includeonhold ? '' : ' OR g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
@@ -222,14 +223,14 @@ class participant_vault implements participant_vault_interface {
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
                         'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                        ue.timecreated AS enroldate, ue.timemodified AS suspenddate,
+                        MAX(ue.timecreated) AS enroldate, ue.timemodified AS suspenddate,
                         en.courseid AS courseid, u.lastlogin AS lastlogin
                     FROM {' . self::DB_USER . '} u
                     INNER JOIN {' . self::DB_USER_ENROL . '} ue on u.id = ue.userid
                     INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
                     WHERE en.courseid = :courseid
                         AND u.deleted != 1
-                        AND u.suspended = 0' . $filterclause . $orderby;
+                        AND u.suspended = 0' . $filterclause . $groupby . $orderby;
 
         $params = [
             'courseid'  => $courseid,

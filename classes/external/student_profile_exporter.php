@@ -256,24 +256,6 @@ class student_profile_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
-            'attempts' => [
-                'type' => [
-                    'examinerurl' => [
-                        'type' => PARAM_URL,
-                    ],
-                    'attemptdate' => [
-                        'type' => PARAM_RAW,
-                    ],
-                    'attemptnumber' => [
-                        'type' => PARAM_INT,
-                    ],
-                    'gradename' => [
-                        'type' => \PARAM_RAW,
-                    ],
-                ],
-                'multiple' => true,
-                'optional' => true,
-            ],
             'coursemodules' => [
                 'type' => exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
@@ -430,32 +412,6 @@ class student_profile_exporter extends exporter {
             'report' => 'practicalexam',
         ]);
 
-        // student skill test form for each exam attempt
-        $attempts = [];
-        if ($hasexams && $requiresevaluation) {
-
-            if ($examgrade = $this->student->get_grade($this->subscriber->get_graduation_exercise(), true)) {
-
-                $gradeattempts = $examgrade->attempts;
-                // get the url and attempt number for each attempt
-                foreach ($gradeattempts as $gradeattempt) {
-                    $gradeattempt->attemptnumber = intval($gradeattempt->attemptnumber)+1;
-                    $reporturl = new moodle_url('/local/booking/report.php', [
-                    'courseid' => $this->courseid,
-                    'userid'   => $studentid,
-                    'report'   => 'evalform',
-                    'attempt'  => $gradeattempt->attemptnumber,
-                    ]);
-                    $attempts[] = (object)[
-                            'examinerurl'=>$reporturl->out(false),
-                            'attemptdate'=>(new \DateTime('@'.$gradeattempt->timemodified))->format('M j\, Y'),
-                            'attemptnumber'=>$gradeattempt->attemptnumber,
-                            'gradename'=>$gradeattempt->gradename
-                        ];
-                }
-            }
-        }
-
         // session progression options and related exporter data
         $options = [
             'isinstructor' => true,
@@ -513,8 +469,6 @@ class student_profile_exporter extends exporter {
             'mentorreporturl'          => $mentorreporturl->out(false),
             'theoryexamreporturl'      => $theoryexamreporturl->out(false),
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
-            'attempts'                 => $attempts,
-            'attempts'                 => $attempts,
             'tested'                   => $this->student->tested(),
             'coursemodules'            => base_view::get_modules($output, $this->subscriber, $options),
             'sessions'                 => booking_student_exporter::get_sessions($output, $this->student, $related),

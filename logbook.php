@@ -69,22 +69,25 @@ if (empty($COURSE->subscriber)) {
 // add jquery, logbook_easa.js for EASA datatable, and RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
 $PAGE->requires->jquery();
 $PAGE->requires->js(new \moodle_url($CFG->wwwroot . '/local/booking/js/datatables/logbook_easa.js'));
-$PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask/dist/jquery.inputmask.min.js'), true);
+$PAGE->requires->js(new \moodle_url($CFG->wwwroot . '/local/booking/js/inputmask/dist/jquery.inputmask.min.js'), true);
+$PAGE->requires->js(new \moodle_url("https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap4.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap4.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"), true);
+$PAGE->requires->js(new \moodle_url("https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"), true);
 
-// add js and css requires from config
-$datatablecdns = $COURSE->subscriber->get_booking_config('datatables', true);
-if (!empty($datatablecdns)) {
-    $jscdns = $datatablecdns['js'];
-    $csscdns = $datatablecdns['css'];
-    // get all js CDNs
-    foreach ($jscdns as $jscdn) {
-        $PAGE->requires->js(new \moodle_url($jscdn), true);
-    }
-    // get all css CDNs
-    foreach ($csscdns as $csscdn) {
-        $PAGE->requires->css(new \moodle_url($csscdn));
-    }
-}
+// add css CDNs
+$PAGE->requires->css(new \moodle_url("https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css"));
+$PAGE->requires->css(new \moodle_url("https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap4.min.css"));
+$PAGE->requires->css(new \moodle_url("https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap4.min.css"));
+$PAGE->requires->css(new \moodle_url("https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css"));
+$PAGE->requires->css(new \moodle_url("https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css"));
 
 $PAGE->navbar->add($USER->id == $userid ? get_string('logbookmy', 'local_booking') : ucfirst(get_string('logbook', 'local_booking')));
 $PAGE->set_pagelayout('admin'); // wide page layout
@@ -117,7 +120,7 @@ $data    = [
     'isinstructor'  => $pilot->is_instructor(),
     'isexaminer'    => $pilot->is_examiner(),
     'canedit'       => $editor->is_instructor(),
-    'hasfindpirep'  => $COURSE->subscriber->has_integration('pireps'),
+    'hasfindpirep'  => $COURSE->subscriber->has_integration('external_data', 'pireps'),
     'format'        => $format,
     'easaformaturl' => $PAGE->url . '&format=easa',
     'stdformaturl'  => $PAGE->url . '&format=std',

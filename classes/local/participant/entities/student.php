@@ -72,7 +72,7 @@ class student extends participant {
     /**
      * @var string $progressionstatus The progression status
      */
-    protected $progressionstatus;
+    protected $progressionstatus = '';
 
     /**
      * @var int $total_posts The student's total number of availability posted.
@@ -790,13 +790,16 @@ class student extends participant {
                 // check if a file submission is required for this exercise
                 if ($assign->is_any_submission_plugin_enabled()) {
 
-                    // $assigngradeid = $assign->gradeid();??
-                    $submissions = $assign->get_user_submission($this->userid, 0, false);
+                    // get all submissions
+                    $submissions = $assign->get_user_submission($this->userid, 0);
 
                     // get the file storage object and verify that an assignment file has been submitted
-                    $fs = get_file_storage();
-                    $hassubmission = !$fs->is_area_empty($gradeitem->get_context()->id, 'assignsubmission_file', 'submission_files', $submissions->id);
-
+                    if ($submissions) {
+                        $fs = get_file_storage();
+                        $hassubmission = !$fs->is_area_empty($gradeitem->get_context()->id, 'assignsubmission_file', 'submission_files', $submissions->id);
+                    } else {
+                        $hassubmission = false;
+                    }
                 }
             }
         }

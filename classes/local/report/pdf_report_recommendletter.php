@@ -65,9 +65,9 @@ class pdf_report_recommendletter extends pdf_report {
         // get course aircraft information
         $aircraftsused = $this->course->aircrafticao;
         $aircraftslabel = array_values($aircraftsused)[0];
-        if ($this->course->has_integration('aircraft')) {
+        if ($this->course->has_integration('external_data', 'aircraft')) {
             foreach ($aircraftsused as $aircrafticao) {
-                $aircraft = (object) $this->course->get_integrated_data('aircraft', 'aircraftinfo', $aircrafticao);
+                $aircraft = (object) $this->course->get_external_data('aircraft', 'aircraftinfo', $aircrafticao);
                 $aircraftslabel .= ', ' . $aircraft->description;
             }
         }
@@ -91,7 +91,7 @@ class pdf_report_recommendletter extends pdf_report {
         $this->SetTextColor(0,0,0);
         $this->SetFont($this->fontfamily, '', 11);
         $this->Ln(25);
-        $vatsimid = $this->student->get_profile_field('VATSIMID');
+        $vatsimid = $this->student->get_profile_field(LOCAL_BOOKING_VATSIMCID);
 
         // start borderless table
         $html = '<table width="600" cellspacing="2" cellpadding="2">';

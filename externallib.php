@@ -276,7 +276,7 @@ class local_booking_external extends external_api {
 
         // get PIREP integrated info
         $logentry = (new logbook($courseid, $userid))->create_logentry();
-        $pireprec = $subscriber->get_integrated_data('pireps', 'pirepinfo', $pirep);
+        $pireprec = $subscriber->get_external_data('pireps', 'pirepinfo', $pirep);
 
         if (!empty($pireprec)) {
 
@@ -284,15 +284,15 @@ class local_booking_external extends external_api {
             $logentry->read($pireprec);
 
             // get pilot integrated info
-            if (subscriber::has_integration('pilots')) {
-                $pilotrec = $subscriber->get_integrated_data('pilots', 'pilotinfo', $logentry->get_pilotid());
+            if (subscriber::has_integration('external_data', 'pilots')) {
+                $pilotrec = $subscriber->get_external_data('pilots', 'pilotinfo', $logentry->get_pilotid());
                 $alternatename = $pilotrec['alternatename'];
 
                 if (core_user::get_user($userid, 'alternatename')->alternatename == $alternatename) {
 
                     // get engine type integrated data
-                    if ($subscriber->has_integration('aircraft')) {
-                        $enginetyperec = $subscriber->get_integrated_data('aircraft', 'aircraftinfo', $logentry->get_aircraft());
+                    if ($subscriber->has_integration('external_data', 'aircraft')) {
+                        $enginetyperec = $subscriber->get_external_data('aircraft', 'aircraftinfo', $logentry->get_aircraft());
                         if (!empty($enginetyperec))
                             $logentry->set_enginetype($enginetyperec['engine_type'] == 'single' ? 'SE' : 'ME');
                     }
@@ -326,6 +326,7 @@ class local_booking_external extends external_api {
         if (!$result) {
             // get empty logentry for returns structure
             $data = $logentry->__toArray(false, false) + $params;
+            $data['canedit'] = $subscriber->get_instructor($userid)->is_instructor();
             $data['visible'] = 1;
             // set the warring message
             $warnings[] = [

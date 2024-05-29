@@ -1,5 +1,26 @@
 # Change log
 
+## [2024052900] - RELEASED 2024-05-29 V2.1
+
+### Fixed
+
+- logentry PIREP retrieval
+- activity score uasort() bool deprecation
+- theoretical exam error when exam is manually graded
+
+### Added
+
+- move config to integration json field in plugin settings
+- a link to the QXC Recommendation letter in the instructors notification.
+- checking against all dependencies
+
+### Changed
+
+- moved config.json to plugin settings
+- removed VATSIM integration for skill test as VATSIM as of this time performs skill test examination
+- adding log entries in the Logbook view should not add a linked log entry
+- user custom fields in install function
+
 ## [2024052000] - RELEASED 2024-05-20
 
 ### Added

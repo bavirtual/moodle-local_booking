@@ -593,77 +593,27 @@ class notification extends \core\message\message {
     }
 
     /**
-     * Sends an email with the examiner evaluation form to
-     * the certification body and copy the examiner.
-     *
-     * @param array     $data data tags.
-     * @return bool     The notification message id.
-     */
-    public static function send_evaluationform_notification(array $data) {
-
-        // $result = true;
-
-        $msgdata = (object) array(
-            'ato'         => get_config('local_booking', 'atoname'),
-            'rating'      => $data['outcomerating'],
-            'studentname' => $data['studentname'],
-            'studentvatsimid' => $data['studentvatsimid'],
-            'coursename'  => $data['coursename'],
-            'examinername'=> $data['examinername']
-        );
-
-        $examiner = \core_user::get_user($data['examinerid']);
-        $result = email_to_user(
-            \core_user::get_user_by_email($data['vatsimcertuid']),
-            $examiner,
-            get_string('emailevaluationformsubject', 'local_booking', $msgdata),
-            get_string('emailevaluationformtext', 'local_booking', $msgdata),
-            get_string('emailevaluationformhtml', 'local_booking', $msgdata),
-            $data['evaluationformfile'], basename($data['evaluationformfilename']));
-
-        // send email CC to the examiner
-        $result = $result && email_to_user(
-            $examiner,
-            '',
-            'CC: ' . get_string('emailevaluationformsubject', 'local_booking', $msgdata),
-            get_string('emailevaluationformCCtext', 'local_booking') . get_string('emailevaluationformtext', 'local_booking', $msgdata),
-            get_string('emailevaluationformCChtml', 'local_booking') . get_string('emailevaluationformhtml', 'local_booking', $msgdata),
-            $data['evaluationformfile'], basename($data['evaluationformfilename']));
-
-        // send email CC to the flight training manager
-        $mgrs = $data['trainingmanagers'];
-        foreach ($mgrs as $mgr) {
-            $result = $result && email_to_user(
-                $mgr,
-                $examiner,
-                'CC: ' . get_string('emailevaluationformsubject', 'local_booking', $msgdata),
-                get_string('emailevaluationformCCtext', 'local_booking') . get_string('emailevaluationformtext', 'local_booking', $msgdata),
-                get_string('emailevaluationformCChtml', 'local_booking') . get_string('emailevaluationformhtml', 'local_booking', $msgdata),
-                $data['evaluationformfile'], basename($data['evaluationformfilename']));
-            }
-
-        return $result;
-    }
-
-    /**
      * Sends an email notifying the students and instructors
      * of a newly graduating student.
      *
      * @param array     $coursemembers  A list of all course members.
      * @param array     $data data tags.
+     * @param string    $msgsubject course congratulatory message subject.
+     * @param string    $msgbody course congratulatory message body text.
      * @return bool     The notification message id.
      */
-    public static function send_graduation_notification($coursemembers, array $data) {
+    public static function send_graduation_notification($coursemembers, array $data, string $msgsubject, string $msgbody) {
 
         $result = true;
+        $congratsmsgsubject = $msgsubject;
+        $congratsmsgbodytext = $msgbody;
 
-        // get text and html email message body
-        $msgtext = get_string('emailgraduationnotifymsg1', 'local_booking', $data);
-        $msgtext .= get_string($data['trainingtype'] == 'Dual' ? 'emailgraduationdualnotifymsg' : 'emailgraduationmultinotifymsg', 'local_booking', $data);
-        $msgtext .= get_string('emailgraduationnotifymsg2', 'local_booking', $data);
-        $msghtml = get_string('emailgraduationnotifyhtml1', 'local_booking', $data);
-        $msghtml .= get_string($data['trainingtype'] == 'Dual' ? 'emailgraduationdualnotifyhtml' : 'emailgraduationmultinotifyhtml', 'local_booking', $data);
-        $msghtml .= get_string('emailgraduationnotifyhtml2', 'local_booking', $data);
+        // replace course message text tags with values
+        foreach ($data as $key => $value) {
+            $congratsmsgsubject = str_replace("%$key%", $value, $congratsmsgsubject);
+            $congratsmsgbodytext = str_replace("%$key%", $value, $congratsmsgbodytext);
+        }
+        $congratsmsgbodytext = '<font face="sans-serif">' . $congratsmsgbodytext;
 
         // sent to all except the graduating student
         foreach ($coursemembers as $coursemember) {
@@ -672,9 +622,10 @@ class notification extends \core\message\message {
                 $msg = new notification();
                 $msg->name              = 'graduation_notification';
                 $msg->userto            = $coursemember->get_id();
-                $msg->subject           = get_string('emailgraduationnotify', 'local_booking', $data);
-                $msg->fullmessage       = $msgtext;
-                $msg->fullmessagehtml   = $msghtml;
+                $msg->subject           = $congratsmsgsubject;
+                $msg->fullmessageformat = FORMAT_HTML;
+                $msg->fullmessage       = html_to_text($congratsmsgbodytext);
+                $msg->fullmessagehtml   = $congratsmsgbodytext;
 
                 $result = $result && (message_send($msg) != 0);
             }

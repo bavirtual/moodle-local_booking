@@ -78,11 +78,16 @@ class pdf_report_theoryexam extends pdf_report {
 
             // theory exam report information
             $attempts = (new ArrayObject($exam->attempts))->getIterator();
-            $attempts->seek(count($exam->attempts)-1);
-            $starttime = new \Datetime('@' . $attempts->current()->timestart);
-            $endtime = new \Datetime('@' . $attempts->current()->timefinish);
-            $interval = $starttime->diff($endtime);
-            $duration = $interval->format('%H:%I:%S');
+            if (count($exam->attempts) > 0) {
+                $attempts->seek(count($exam->attempts)-1);
+                $starttime = new \Datetime('@' . $attempts->current()->timestart);
+                $endtime = new \Datetime('@' . $attempts->current()->timefinish);
+                $interval = $starttime->diff($endtime);
+                $duration = $interval->format('%H:%I:%S');
+                } else {
+                $starttime = $endtime = new \Datetime('@' . $exam->timemodified);
+                $duration = 'Manually graded!';
+            }
 
             $this->SetTextColor(255,255,255);
             $this->SetFillColor(100,149,237);
@@ -93,7 +98,7 @@ class pdf_report_theoryexam extends pdf_report {
             $this->SetTextColor(0,0,0);
             $this->SetFont($this->fontfamily, '', 12);
             $this->Ln(50);
-            $vatsimid = $this->student->get_profile_field('VATSIMID');
+            $vatsimid = $this->student->get_profile_field(LOCAL_BOOKING_VATSIMCID);
             $html = '<h3>' . $this->student->get_name() . '</h3>';
             $html .= '<span style="font-size: small;">' . get_string('vatsimid', 'local_booking') . ': ';
             $html .= (!empty($vatsimid) ? $vatsimid : get_string('vatsimidmissing', 'local_booking')) . '</span>';

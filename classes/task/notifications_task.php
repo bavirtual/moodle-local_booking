@@ -115,6 +115,7 @@ class notifications_task extends \core\task\scheduled_task {
                 'firstname'     => $student->get_profile_field('firstname', true),
                 'skilltest'     => $course->get_graduation_exercise(true),
                 'instructorname'=> instructor::get_fullname(get_user_preferences('local_booking_' . $course->get_id() . '_endorser', 0, $student->get_id())),
+                'recommendltrurl'=> (new \moodle_url('/local/booking/report.php', array('courseid'=>$course->get_id(), 'userid'=>$student->get_id(), 'report'=>'recommendation')))->out(false),
                 'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$course->get_id())))->out(false),
                 'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
                 'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
@@ -216,58 +217,48 @@ class notifications_task extends \core\task\scheduled_task {
      * @param subscriber $course    The subscribing course.
      */
     protected function process_graduations(student $student, subscriber $course) {
-        global $CFG;
 
-        $graduationnotify = get_user_preferences('local_booking_' . $course->get_id() . '_graduationnotify', false, $student->get_id());
+        if (!empty($course->gradmsgsubject) && !empty($course->gradmsgbody)) {
 
-        if (!empty($graduationnotify)) {
+            $graduationnotify = get_user_preferences('local_booking_' . $course->get_id() . '_graduationnotify', false, $student->get_id());
 
-            $coursemembers = array_merge($course->get_students('active', true), $course->get_instructors());
-            $grade = $student->get_grade($course->get_graduation_exercise());
-            $examiner = new instructor($course, $grade->usermodified);
-            $logbook = new logbook($course->get_id(), $student->get_id());
-            $logbook->load();
-            $logentry = $logbook->get_logentry_by_exericseid($course->get_graduation_exercise());
-            $summary = $logbook->get_summary(true);
-            $data = [
-                'trainingtype'    => $course->trainingtype,
-                'graduateid'      => $student->get_id(),
-                'firstname'       => $student->get_profile_field('firstname', true),
-                'fullname'        => $student->get_name(),
-                'courseshortname' => $course->get_shortname(),
-                'coursename'      => $course->get_fullname(),
-                'exercisename'    => $course->get_graduation_exercise(true),
-                'completiondate'  => date_format((new \DateTime('@'.$logentry->get_flightdate())), 'F j, Y'),
-                'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
-                'simulator'       => $student->get_profile_field('simulator'),
-                'totallessons'    => count($course->get_lessons()),
-                'totalsessions'   => booking::get_total_sessions($course->get_id(), $student->get_id()),
-                'totalsessionhrs' => $summary->totalsessiontime,
-                'totalflighthrs'  => $summary->totalflighttime,
-                'totaldualhrs'    => $summary->totaldualtime,
-                'totalmultihrs'   => $summary->totalmultipilottime,
-                'totalcopilothrs' => $summary->totalcopilottime ?: '00:00',
-                'totalpicustime'  => $summary->totalpicustime ?: '00:00',
-                'totalsolohrs'    => $summary->totalpictime ?: '00:00',
-                'rating'          => $course->outcomerating,
-                'trainingemail'   => get_config('local_booking', 'atoemail'),
-                'traininglogourl' => get_config('local_booking', 'atologourl'),
-                'examinername'    => $examiner->get_name(false),
-                'atoname'         => get_config('local_booking', 'atoname'),
-                'atourl'          => get_config('local_booking', 'atourl'),
-                'congrats1pic'    => $CFG->wwwroot . '/local/booking/pix/congrats1.png',
-                'congrats2pic'    => $CFG->wwwroot . '/local/booking/pix/congrats2.png',
-                'calendarpic'     => $CFG->wwwroot . '/local/booking/pix/calendar.svg',
-                'planepic'        => $CFG->wwwroot . '/local/booking/pix/book.svg',
-                'cappic'          => $CFG->wwwroot . '/local/booking/pix/graduate.svg'
-            ];
+            if (!empty($graduationnotify)) {
 
-            notification::send_graduation_notification($coursemembers, $data);
+                $coursemembers = array_merge($course->get_students('active', true), $course->get_instructors());
+                $grade = $student->get_grade($course->get_graduation_exercise());
+                $examiner = new instructor($course, $grade->usermodified);
+                $logbook = new logbook($course->get_id(), $student->get_id());
+                $logbook->load();
+                $logentry = $logbook->get_logentry_by_exericseid($course->get_graduation_exercise());
+                $summary = $logbook->get_summary(true);
+                $data = [
+                    'graduateid'      => $student->get_id(),
+                    'firstname'       => $student->get_profile_field('firstname', true),
+                    'fullname'        => $student->get_name(),
+                    'exercisename'    => $course->get_graduation_exercise(true),
+                    'completiondate'  => date_format((new \DateTime('@'.$logentry->get_flightdate())), 'F j, Y'),
+                    'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
+                    'simulator'       => $student->get_profile_field('simulator'),
+                    'totallessons'    => count($course->get_lessons()),
+                    'totalsessions'   => booking::get_total_sessions($course->get_id(), $student->get_id()),
+                    'totalsessionhrs' => $summary->totalsessiontime,
+                    'totalflighthrs'  => $summary->totalflighttime,
+                    'totaldualhrs'    => $summary->totaldualtime,
+                    'totalmultihrs'   => $summary->totalmultipilottime,
+                    'totalcopilothrs' => $summary->totalcopilottime ?: '00:00',
+                    'totalpicustime'  => $summary->totalpicustime ?: '00:00',
+                    'totalsolohrs'    => $summary->totalpictime ?: '00:00',
+                    'rating'          => $course->outcomerating,
+                    'examinername'    => $examiner->get_name(false),
+                ];
 
-            mtrace('                graduation notifications sent...');
+                notification::send_graduation_notification($coursemembers, $data, $course->gradmsgsubject, $course->gradmsgbody);
 
-            // reset notification setting
-            set_user_preference('local_booking_' . $course->get_id() . '_graduationnotify', false, $student->get_id());
+                mtrace('                graduation notifications sent...');
+
+                // reset notification setting
+                set_user_preference('local_booking_' . $course->get_id() . '_graduationnotify', false, $student->get_id());
+            }
         }
     }
 }

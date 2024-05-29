@@ -50,8 +50,8 @@ $string['bookingsavesuccess'] = 'Booking saved for \'{$a->exercise}\' with {$a->
 $string['bookingsaveunable'] = 'Unable to save booking!';
 $string['bookingsessionselection'] = 'Session selection';
 $string['bookingsortby'] = 'Sort by';
-$string['bookingsortbyscore'] = 'score';
-$string['bookingsortbyscoretooltip'] = 'Sorts by student score';
+$string['bookingsortbyscore'] = 'activity';
+$string['bookingsortbyscoretooltip'] = 'Sorts by student activity score';
 $string['bookingsortbyavailability'] = 'availability';
 $string['bookingsortbyavailabilitytooltip'] = 'Sorts by students with availability posts, then no posts, then incomplete lessons';
 $string['booksave'] = 'Save booking';
@@ -65,8 +65,6 @@ $string['coursecompletion'] = 'course completion';
 $string['customfielddual'] = 'Dual';
 $string['customfieldmulticrew'] = 'Multicrew';
 $string['elapseddays'] = 'Elapsed Days';
-$string['evalformbuttonlabel'] = 'View form';
-$string['evalformbuttontooltip'] = 'Examiner evaluation form';
 $string['enroldate'] = 'Enrol date';
 $string['exercise'] = 'Exercise';
 $string['fleet'] = 'Fleet';
@@ -82,7 +80,7 @@ $string['participation'] = 'Instructor participation';
 $string['pluginname'] = 'Session booking';
 $string['role'] = 'Role';
 $string['sequencetooltip_a'] = '{$a->tag}';
-$string['sequencetooltip_s'] = 'Score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
+$string['sequencetooltip_s'] = 'Activity score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
 <br/>Availability: {$a->slots} posts<br/>Completion: {$a->completion} lessons';
 $string['sessionaction'] = 'Action';
 $string['sessioncompleted'] = 'Session completed';
@@ -318,18 +316,12 @@ $string['daysback'] = 'days back';
 $string['graduated'] = 'Graduated';
 $string['endorsement'] = 'Skill Test Recommendation';
 $string['endorsementmgs'] = 'Recommended by {$a->endorser} on {$a->endorsedate}';
-$string['evalutionreport'] = 'Examiner evaluation form';
-$string['evalutionreportsubject'] = 'Examiner evaluation form subject';
 $string['examinersince'] = 'Examiner since';
 $string['graduation'] = 'Certification';
-$string['graduationemailconfirmation'] = '<strong>DONE!</strong><p>The form was emailed successfully to ({$a->certbodyemail}) and a copy was sent to the flight training managers and your email address ({$a->examineremail}).</p><p>Do not forget to promote {$a->studentname} in <a href="{$a->vatsimpramsurl}" target="_blank">VATSIM PRAMS</a>.';
-$string['graduationformregeneration'] = '<p>The form was generated successfully.</p>';
 $string['graduationconfirmation'] = '<p><strong>Process completed successfully...</strong></p><p>&nbsp;\'{$a->fullname}\' certification is complete and the following actions were performed:</p><ul>
-    <li style="padding-bottom: 20px;"><strong>Badges</strong> for {$a->courseshortname} completion were generate and sent via email to {$a->firstname}.&nbsp; A copy of the badge generation was sent to you as well.</li>
-    <li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to all course active members, both students and instructors.</li>
-    <li style="padding-bottom: 20px;">{$a->firstname} has been added to the <strong>Graduates group</strong>.</li>
-    {$a->formgenerationmsg}</ul>';
-$string['graduationconfirmationformsection'] = '<li style="padding-bottom: 20px;"><strong>Examiner Evaluation Form</strong> was generated. Click the button below to view the form.</li>';
+    <li style="padding-bottom: 20px;"><strong>Badge</strong> for {$a->courseshortname} course completion was generate and sent via email to \'{$a->fullname}\'.&nbsp; A copy of the generated badge notification was sent to you as well.</li>
+    <li style="padding-bottom: 20px;">\'{$a->fullname}\' has been added to the <strong>Graduates</strong> group.</li>';
+$string['graduationconfirmationcongrat'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to active course participants.</li>';
 $string['feedbackreport'] = 'Feedback report';
 $string['instructorsince'] = 'Instructor since';
 $string['keepactive'] = 'Keep active';
@@ -393,21 +385,10 @@ $string['dualflight'] = 'Dual flight instruction';
 $string['duration'] = 'Duration';
 $string['examiner'] = 'Examiner';
 $string['examinerdetails'] = 'Examiner\'s Details';
-$string['evalformreport'] = 'Examiner\'s Evaluation Form';
-$string['evalformreportfor'] = 'Examiner Form for';
-$string['evalformreportsubject'] = 'This is {$a->ato} ATO Examiner form for the skills test of the {$a->coursename} course.';
 $string['examreportcopies'] = 'Copies of the report shall be submitted to (1) The candidate (2) BAVirtual Flight Training (3) The Examiner.';
 $string['examdate'] = 'Exam date';
 $string['examend'] = 'Exam end time';
 $string['examstart'] = 'Exam start time';
-$string['evalformeditbuttonlabel'] = 'Edit form data';
-$string['evalformeditbuttontooltip'] = 'Edit the skill test data to update form data';
-$string['evalformemailbuttonlabel'] = 'Send to VATSIM';
-$string['evalformemailbuttontooltip'] = 'Sends an email to ({$a}) with this form attached';
-$string['evalformgeneratebuttonlabel'] = 'Regenerate form';
-$string['evalformgeneratebuttontooltip'] = 'Regenerate the examiner evaluation form';
-$string['evalformmsg'] = '<p>If the form does not display or displays erroneously, you can access it from the student\'s skill test grading page <a href="{$a}">here</a>.</p>';
-$string['evalformeditmmsg'] = '<br/>To edit form data, you will have to update the skill test grade from the [Edit form data] button below.';
 $string['gradescore'] = 'Grade';
 $string['recommendationreport'] = 'Recommendation For Skill Test';
 $string['recommendationreportsubject'] = 'This is {$a->ato} ATO Recommendation for Skill Test letter compiled by the instructor recommending a student for a Skill Test.';
@@ -697,99 +678,35 @@ $string['emailrecommendationnotify'] = '{$a->coursename}: {$a->studentname} QXC 
 $string['emailrecommendationnotifymsg'] = '{$a->coursename} student {$a->studentname} has completed the qualifying cross-country session to standard.
     {$a->firstname} has been recommended for the {$a->skilltest} examination by {$a->instructorname}.
 
+    Instructor recommendation letter: {$a->recommendltrurl}
+
     Note to examiners: please coordinate with the {$a->coursename} training manager to arrange for {$a->firstname}\'s {$a->skilltest} examination.
     {$a->bookingurl}';
 $string['emailrecommendationnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a> ->
     <a href=\'{$a->exerciseurl}\'>{$a->exercise}</a></p><hr /><p>{$a->coursename} student <strong>{$a->studentname}</strong> has completed the qualifying cross-country assignment to standard.
-    <p>{$a->firstname} has been recommended for the {$a->skilltest} examination by {$a->instructorname}.</p>
+    <p>{$a->firstname} has been recommended for the {$a->skilltest} examination by {$a->instructorname}.</p><p><a href="{$a->recommendltrurl}">Instructor recommendation letter</a></p>
     <p>&nbsp;</p><p><i>Note to examiners: please coordinate with the {$a->coursename} training manager to arrange for {$a->firstname}\'s {$a->skilltest} examination.</i></p><hr />';
-
-// email to certification body and copy examiner: Evaluation form
-$string['emailevaluationformCCtext'] = 'You are copied on the following message:
-    ';
-$string['emailevaluationformCChtml'] = '<font face="sans-serif"><p>You are copied on the following message:<p/>';
-$string['emailevaluationformsubject'] = '{$a->ato} student {$a->rating} evaluation form';
-$string['emailevaluationformtext'] = 'Greeting,
-    Please find attached the {$a->rating} examiner evaluation form for {$a->studentname} (VATSIM CID: {$a->studentvatsimid}), a {$a->ato} student.
-    {$a->studentname} completed the {$a->coursename} and passed the skill test successfully as indicated in the attached form.
-
-    Kindly process {$a->studentname} for the {$a->rating} accordingly.
-
-    Best regards,
-    {$a->examinername}
-    {$a->ato} Training Staff';
-$string['emailevaluationformhtml'] = '<font face="sans-serif"><p><hr /><p>Greetings,<p/><p>Please find attached the {$a->rating} examiner evaluation form for {$a->studentname} (VATSIM CID: {$a->studentvatsimid}), a {$a->ato} student.
-{$a->studentname} completed the <strong>{$a->coursename}</strong> course and passed the skill test successfully as indicated in the attached form.</p><p>Kindly process {$a->studentname} for the {$a->rating} accordingly.<p/>
-<p>Best regards,<br/>{$a->examinername}<br/>{$a->ato} Training Staff</p><hr />';
-
-// email to all: congratulations to new graduate
-$string['emailgraduationnotify'] = '{$a->fullname} newly graduated';
-$string['emailgraduationnotifymsg1'] = 'Congratulations {$a->firstname} !!!
-
-    Join me in congratulating {$a->fullname} on passing the {$a->exercisename} examination. {$a->firstname} completed the {$a->atoname}
-    {$a->coursename} coursework and achieved the {$a->rating} on {$a->completiondate}. Please make sure to post a message on the New Pilots Forum (https://forum.bavirtual.co.uk/forum/29-new-pilots/) to {$a->firstname} for this achievement.
-
-    {$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate} on the {$a->simulator} simulator and was able to finish all practical and navigation exercises to standard.
-
-    Below are some of {$a->firstname}\'s accomplishments:
-
-    Lessons: {$a->totallessons} modules
-    Mentoring: {$a->totalsessions} sessions
-    Total session time: {$a->totalsessionhrs} hrs
-    Total flight time: {$a->totalflighthrs} hrs';
-$string['emailgraduationdualnotifymsg'] = '
-    Total Dual time: {$a->totaldualhrs} hrs
-    Total solo flight time: {$a->totalsolohrs} hrs';
-$string['emailgraduationmultinotifymsg'] = '
-    Total Multi-pilot time: {$a->totalmultihrs} hrs
-    Total Copilot time: {$a->totalcopilothrs} hrs';
-$string['emailgraduationnotifymsg2'] = '
-    Total PICUS flight time: {$a->totalpicustime} hrs
-    Course outcome: {$a->rating}
-
-    Congratulations!
-
-    Best regards,
-    {$a->examinername}
-    {$a->atoname} Training staff
-    E-mail: {$a->trainingemail}
-    Web: {$a->atourl}';
-$string['emailgraduationnotifyhtml1'] = '<font face="sans-serif"><table style="border-collapse: collapse; width: 700px;" border="0"><tbody><tr><td style="width: 20%;"><h1 style="color: #5e9ca0;">
-    <span style="color: #000000;"><img style="display: block; margin-left: auto; margin-right: auto;" src="{$a->congrats1pic}" alt="Congratulations" width="70" /></span></h1></td>
-    <td style="width: 65%"><h1 style="color: #5e9ca0;"><span style="color: #000000;">Congratulations {$a->firstname} !!!</span></h1></td></tr></tbody>
-    </table><p>Join me in congratulating <strong>{$a->fullname}</strong> on passing the {$a->exercisename} examination.&nbsp; {$a->firstname} completed the {$a->atoname} {$a->coursename}
-    coursework and achieved the {$a->rating}  on {$a->completiondate}. Please make sure to post a message on the <a href="https://forum.bavirtual.co.uk/forum/29-new-pilots/">New Pilots Forum</a>
-    to {$a->firstname} for this achievement.</p><p>{$a->firstname} enrolled in the {$a->courseshortname} course on {$a->enroldate} on the {$a->simulator} simulator and
-    was able to finish all practical and navigation exercises to standard. Below are some of {$a->firstname}\'s accomplishments:</p><p>
-    <p><img src="{$a->calendarpic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Lessons: <strong>{$a->totallessons} modules</strong></p>
-    <p><img src="{$a->calendarpic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Mentoring: <strong>{$a->totalsessions} sessions</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total session time: <strong>{$a->totalsessionhrs} hrs</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total flight time: <strong>{$a->totalflighthrs} hrs</strong></p>';
-$string['emailgraduationdualnotifyhtml'] = '<p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Dual time: <strong>{$a->totaldualhrs} hrs</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total solo flight time: <strong>{$a->totalsolohrs} hrs</strong></p>';
-$string['emailgraduationmultinotifyhtml'] = '<p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Multi-pilot time: <strong>{$a->totalmultihrs} hrs</strong></p>
-    <p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total Copilot time: <strong>{$a->totalcopilothrs} hrs</strong></p>';
-$string['emailgraduationnotifyhtml2'] = '<p><img src="{$a->planepic}" width="15" style="padding-left: 40px"/><span style="padding-left: 40px;">Total PICUS flight time: <strong>{$a->totalpicustime} hrs</strong></p>
-    <p><img src="{$a->cappic}" width="20" style="padding-left: 40px"/><span style="padding-left: 40px;">Course outcome:&nbsp; <strong>{$a->rating}</strong></p>
-    <p>&nbsp;</p><strong>Congratulations!</strong><p>&nbsp;</p><p>Best regards,</p><p>{$a->examinername}</p><p><br /><strong>{$a->atoname} Training staff<br /></strong><br />E-mail:&nbsp;<a href="mailto:{$a->trainingemail}">{$a->trainingemail}</a>
-    <br />Web:&nbsp;<a href="{$a->atourl}">{$a->atourl}</a>&nbsp;</p><p><a href="{$a->atourl}"><img src="{$a->traininglogourl}" alt="{$a->atoname} Flight Training" width="230px" border="0" /></a></p>';
 
 // settings
 $string['activitycountweight'] = 'Course activity prioritization';
 $string['activitycountweightdesc'] = 'weight multiplier to calculate prioritization for course activity';
-$string['atoemail'] = 'Email';
-$string['atologourl'] = 'Logo URL';
 $string['atoname'] = 'Name';
-$string['atosection'] = 'Authorized Training Organization (ATO) settings';
-$string['atourl'] = 'Website';
+$string['atosection'] = 'Authorized Training Organization (ATO)';
 $string['completionweight'] = 'Lesson completion prioritization';
 $string['completionweightdesc'] = 'weight multiplier to calculate prioritization of lesson completion';
+$string['gradmsgbody'] = 'Message body';
+$string['gradmsgbodydesc'] = 'message body for the congratulatory notification of graduating students sent to course participants. Leave blank to prevent notifications from being sent. Leave blank if prevent sending notifications. For more details refer to <a href="https://docs.moodle.org/400/en/Session_Booking#Skillset_evaluation_%26_graduation" target="_blank" rel="noopener noreferrer">Skillset evaluation & graduation</a>';
+$string['gradmsgsubject'] = 'Message subject';
+$string['gradmsgsubjectdesc'] = 'message subject for the congratulatory notification of graduating students sent to course participants. Leave blank to prevent notifications from being sent.';
 $string['firstsession'] = 'First session time';
 $string['firstsessiondesc'] = 'first allowable session time';
 $string['lastsession'] = 'Last session time';
 $string['lastsessiondesc'] = 'last allowable session time';
-$string['postingsection'] = 'Availability posting settings';
-$string['prioritizationsection'] = 'Booking prioritization settings';
+$string['pluginconfigssection'] = 'Integrations';
+$string['configsjson'] = 'External data configurations';
+$string['configsjsondesc'] = 'configurations for external data read access in JSON format (<a href="https://docs.moodle.org/400/en/Session_Booking#External_data_source_integration" target="_blank" rel="noopener noreferrer">External data source integration</a>)';
+$string['postingsection'] = 'Availability posting';
+$string['prioritizationsection'] = 'Booking prioritization';
 $string['recencydaysweight'] = 'Recency prioritization';
 $string['recencydaysweightdesc'] = 'weight multiplier to calculate prioritization for session recency';
 $string['slotcountweight'] = 'Slot count prioritization';
@@ -813,8 +730,6 @@ $string['trainingaircraft'] = 'Training aircraft ICAO';
 $string['trainingaircraftdesc'] = '(one per line)';
 $string['requiresskillseval']= 'Requires skills evaluation';
 $string['requiresskillsevaldesc'] ='Whether skills evaluation is required at the end of the course.';
-$string['vatsimform']= 'Generate VATSIM form';
-$string['vatsimformdesc'] ='Generates the VATSIM Examiner Evaluation form.';
 $string['suspensionperiod'] = 'Suspension restriction';
 $string['suspensionperioddesc'] = 'A restriction period in days after which inactive students will be automatically suspended from the course (0 = disable restriction)';
 $string['outcomerating'] = 'Course outcome';
@@ -829,12 +744,9 @@ $string['groupexaminersdesc'] = 'Group to identify examiner instructors.';
 
 // Plugin errors
 $string['errorcertifiernotexaminer'] = 'Permission denied. Only the examiner can certify a graduating student.';
-$string['errorcertificationemail'] = 'Unable to send Examiner Evaluation Form email!';
 $string['errorconflictingbooking'] = 'Conflicts with existing booking with {$a->studentname} for {$a->coursename} \'{$a->exercisename}\' on {$a->date}.';
 $string['errorcoresubscriber'] = 'The site can not be a Session Booking plugin subscriber';
 $string['errordelete'] = 'Failed to delete logentry';
-$string['errorexaminerevalformunable'] = 'Unable to generate examiner evaluation form. Potentially the grade is legacy prior skill test rubric grading.';
-$string['errorexaminerevalmapping'] = 'Incorrect VATSIM form fields mapping format. The number of rubric grade items does not match the number of form field mappings.';
 $string['errorexaminerevalmissinglogentry'] = 'Skill test log entry missing! Please enter a log entry for the skill test.';
 $string['errorexercisemissing'] = 'No exercise specified!';
 $string['errorinvaliddate'] = 'Flight date cannot be before booked session date';

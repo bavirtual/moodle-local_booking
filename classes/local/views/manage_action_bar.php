@@ -82,18 +82,6 @@ class manage_action_bar extends base_action_bar {
             case 'profile':
                 $elements = $this->generate_profile_navigation();
                 break;
-
-            case 'certify':
-                $elements = $this->generate_certify_navigation();
-                break;
-
-            case 'evalform':
-                $elements = $this->generate_evalform_navigation();
-                break;
-
-            case 'examiner':
-                $elements = $this->generate_examiner_navigation();
-                break;
         }
 
         return $this->export_elements($output, $elements);
@@ -108,12 +96,12 @@ class manage_action_bar extends base_action_bar {
     protected function generate_availability_navigation(): array {
 
         $elements = [];
-        $access = has_capability('local/booking:view', $this->page->context) ? 'instructor' : 'student';
+        $access = has_capability('local/booking:view', $this->page->context) ? LOCAL_BOOKING_INSTRUCTORROLE : 'student';
         $groupview = optional_param('view', 'user', PARAM_RAW);
         $attributes = ['class'=>'slot-button-gray', 'data-region'=>'book-button', 'id'=>'book_button'];
 
         // availability posting actions for students
-        if ($access == 'instructor' && !$groupview) {
+        if ($access == LOCAL_BOOKING_INSTRUCTORROLE && !$groupview) {
 
             $elements['button'] = new single_button(new moodle_url('/local/booking/availability'), get_string('booksave', 'local_booking'), 'submit', single_button::BUTTON_PRIMARY, $attributes);
 
@@ -123,7 +111,6 @@ class manage_action_bar extends base_action_bar {
             $elements['button'] = new single_button(new moodle_url('/local/booking/availability', $attributes), get_string('back'), 'get');
             $elements['button'] = new single_button(new moodle_url('/local/booking/availability', $attributes), get_string('back'), 'get');
             $elements['button'] = new single_button(new moodle_url('/local/booking/availability', $attributes), get_string('back'), 'get');
-            // $elements['urlselect'] = new url_select($this->generate_badge_navigation(), $this->page->url->out(false), null);
 
         }
         return $elements;
@@ -179,89 +166,6 @@ class manage_action_bar extends base_action_bar {
      */
     protected function generate_profile_navigation(): array {
         return [$this->get_back_button('profile')];
-    }
-
-    /**
-     * Get actions for the certification page navigation elements
-     * to be displayed in the tertiary navigation.
-     *
-     * @return array
-     */
-    protected function generate_certify_navigation(): array {
-        $evalformurl = new moodle_url($this->additional['url'], ['courseid'=>$this->additional['courseid'], 'userid'=>$this->additional['userid'], 'report'=>'evalform', 'attempt'=>$this->additional['attempt']]);
-        $evalformbuttonlabel     = get_string('evalformbuttonlabel', 'local_booking');
-        $evalformbutton          = new single_button($evalformurl, $evalformbuttonlabel, 'post', single_button::BUTTON_PRIMARY);
-        $evalformbutton->tooltip = get_string('evalformbuttontooltip', 'local_booking');
-
-        return [$evalformbutton];
-    }
-
-    /**
-     * Get text message for the evaluation form page navigation
-     * to be displayed in the tertiary navigation.
-     *
-     * @return array
-     */
-    protected function generate_evalform_navigation(): array {
-        $text = get_string('evalformmsg', 'local_booking', $this->additional['skilltestgradeurl']);
-        // check if standard examiner text message or form regeneration
-        if ($this->additional['isexaminer'])
-            $text = !empty($this->additional['regenerate']) ? get_string('graduationformregeneration', 'local_booking') : get_string('evalformeditmmsg', 'local_booking');
-        return [new text_label($text)];
-    }
-
-    /**
-     * Get actions for the examiner evaluation form page navigation elements
-     * to be displayed in the tertiary navigation.
-     *
-     * @return array
-     */
-    protected function generate_examiner_navigation(): array {
-
-        $elements = [];
-        // edit form button
-        $editformbuttonurl = new moodle_url($this->additional['skilltesturl'], [
-            'courseid'=> $this->additional['courseid'],
-            'exeid'  => $this->additional['exeid'],
-            'userid' => $this->additional['userid']]);
-        $editformbutton = new single_button(
-            $editformbuttonurl,
-            get_string('evalformeditbuttonlabel', 'local_booking'),
-            'post',
-            single_button::BUTTON_SECONDARY);
-        $editformbutton->tooltip = get_string('evalformeditbuttontooltip', 'local_booking');
-
-        // regenerate form button
-        $regenerateformbuttonurl = new moodle_url($this->additional['generateformurl'], [
-            'courseid' => $this->additional['courseid'],
-            'userid' => $this->additional['userid'],
-            'action' => 'generate'
-        ]);
-        $regenerateformbutton = new single_button(
-            $regenerateformbuttonurl,
-            get_string('evalformgeneratebuttonlabel', 'local_booking'),
-            'get',
-            single_button::BUTTON_SECONDARY);
-        $regenerateformbutton->tooltip = get_string('evalformgeneratebuttontooltip', 'local_booking');
-
-        // email form button
-        $emailformbuttonurl = new moodle_url($this->additional['sendformurl'], [
-            'courseid' => $this->additional['courseid'],
-            'userid' => $this->additional['userid'],
-            'action' => 'send'
-        ]);
-        $emailformbutton = new single_button(
-            $emailformbuttonurl,
-            get_string('evalformemailbuttonlabel', 'local_booking', $this->additional['vatsimemail']),
-            'post',
-            single_button::BUTTON_PRIMARY);
-        $emailformbutton->tooltip = get_string('evalformemailbuttontooltip', 'local_booking', $this->additional['vatsimemail']);
-
-        $elements[] = $editformbutton;
-        $elements[] = $regenerateformbutton;
-        $elements[] = $emailformbutton;
-
-        return $elements;
     }
 
     /**

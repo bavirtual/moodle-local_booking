@@ -26,7 +26,6 @@
 namespace local_booking\local\session\entities;
 
 use local_booking\local\session\data_access\analytics_vault;
-use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -40,11 +39,6 @@ class priority implements priority_interface {
 
     // Constant as a divider to normalize log entry counts
     const NORMALIZER = 10;
-
-    /**
-     * @var int  $studentid     The student id the priority is calculated for
-     */
-    protected $studentid;
 
     /**
      * @var int  $score         The total score representing the student's priority

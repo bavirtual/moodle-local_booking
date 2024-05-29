@@ -53,6 +53,7 @@
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Logbook entry associated course"/>
         <FIELD NAME="exerciseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Exercise assignment module id associated with the logentry"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Student pilot user id"/>
+        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Session id related to logbook entry"/>
         <FIELD NAME="flightdate" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Date when the flight took place"/>
         <FIELD NAME="p1id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="P1 (instructor) user id"/>
         <FIELD NAME="p2id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="P2 (student) user id"/>
@@ -93,6 +94,7 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" COMMENT="Indexing user id lookups"/>
+        <INDEX NAME="sessionid" UNIQUE="false" FIELDS="userid" COMMENT="Indexing user id lookups"/>
         <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" COMMENT="Course id index for lookup"/>
       </INDEXES>
     </TABLE>

@@ -26,6 +26,8 @@
 
  defined('MOODLE_INTERNAL') || die();
 
+ define('LOCAL_BOOKING_VATSIMCID', 'vatsimcid');
+ define('LOCAL_BOOKING_VATSIMCIDLABEL', 'VATSIM CID');
  define('LOCAL_BOOKING_PRIMARYSIMULATOR', 'simulator');
  define('LOCAL_BOOKING_PRIMARYSIMULATORLABEL', 'Primary Flight Simulator');
  define('LOCAL_BOOKING_SECONDARYSIMULATOR', 'simulator2');
@@ -93,103 +95,29 @@ function create_user_profile_customfields() {
     $lastcustomfield = array_shift($customfields);
     $fieldsortorder = !empty($lastcustomfield) ? $lastcustomfield->sortorder + 1 : 1;
 
+    // Add VATSIM PID  simulator field under the ATO category if it doesn't exist
+    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_VATSIMCID,
+    LOCAL_BOOKING_VATSIMCIDLABEL, 'text', 2);
+
     // Add primary simulator field under the ATO category if it doesn't exist
-    $primarysimfield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_PRIMARYSIMULATOR));
-    if (empty($primarysimfield)) {
-
-        // build field object
-        $primarysimobj = new \stdClass();
-        $primarysimobj->name        = LOCAL_BOOKING_PRIMARYSIMULATORLABEL;
-        $primarysimobj->shortname   = LOCAL_BOOKING_PRIMARYSIMULATOR;
-        $primarysimobj->description = '';
-        $primarysimobj->descriptionformat = 1;
-        $primarysimobj->visible     = 2;
-        $primarysimobj->datatype    = 'menu';
-        $primarysimobj->categoryid  = $categoryid;
-        $primarysimobj->sortorder   = $fieldsortorder;
-        $primarysimobj->defaultdata = LOCAL_BOOKING_DEFAULTSIMULATOR;
-        $primarysimobj->param1      = LOCAL_BOOKING_SUPPORTEDSIMULATORS;
-
-        $DB->insert_record('user_info_field', $primarysimobj);
-        $fieldsortorder++;
-
-    } else { $fieldsortorder = $primarysimfield->sortorder + 1 ;}
+    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_PRIMARYSIMULATOR,
+        LOCAL_BOOKING_PRIMARYSIMULATORLABEL, 'menu', 2, LOCAL_BOOKING_DEFAULTSIMULATOR, LOCAL_BOOKING_SUPPORTEDSIMULATORS);
 
     // Add secondary simulator field under the ATO category if it doesn't exist
-    $secondarysimfield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_SECONDARYSIMULATOR));
-    if (empty($secondarysimfield)) {
-
-        // build field object
-        $secondarysimobj = new \stdClass();
-        $secondarysimobj->name          = LOCAL_BOOKING_SECONDARYSIMULATORLABEL;
-        $secondarysimobj->shortname     = LOCAL_BOOKING_SECONDARYSIMULATOR;
-        $secondarysimobj->description   = '';
-        $secondarysimobj->descriptionformat = 1;
-        $secondarysimobj->visible       = 2;
-        $secondarysimobj->datatype      = 'menu';
-        $secondarysimobj->categoryid    = $categoryid;
-        $secondarysimobj->sortorder     = $fieldsortorder;
-        $secondarysimobj->defaultdata   = ' ';
-        $secondarysimobj->param1        = ' ' . PHP_EOL . LOCAL_BOOKING_SUPPORTEDSIMULATORS;
-
-        $DB->insert_record('user_info_field', $secondarysimobj);
-        $fieldsortorder++;
-
-    } else { $fieldsortorder = $secondarysimfield->sortorder + 1 ;}
+    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_SECONDARYSIMULATOR,
+        LOCAL_BOOKING_SECONDARYSIMULATORLABEL, 'menu', 2, ' ', ' ' . PHP_EOL . LOCAL_BOOKING_SUPPORTEDSIMULATORS);
 
     // Add callsign field if it doesn't exist
-    $callsignfield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_CALLSIGN));
-    if (empty($callsignfield)) {
-
-        // build field object
-        $callsignfieldobj = new \stdClass();
-        $callsignfieldobj->name          = LOCAL_BOOKING_CALLSIGNLABEL;
-        $callsignfieldobj->shortname     = LOCAL_BOOKING_CALLSIGN;
-        $callsignfieldobj->description   = '';
-        $callsignfieldobj->descriptionformat = 1;
-        $callsignfieldobj->visible       = 2;
-        $callsignfieldobj->datatype      = 'text';
-        $callsignfieldobj->categoryid    = $categoryid;
-        $callsignfieldobj->sortorder     = $fieldsortorder;
-
-        $categoryid = $DB->insert_record('user_info_field', $callsignfieldobj);
-    }
+    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_CALLSIGN,
+        LOCAL_BOOKING_CALLSIGNLABEL, 'text', 2);
 
     // Add no-show counter hidden field if it doesn't exist
-    $noshowfield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_NOSHOW));
-    if (empty($noshowfield)) {
-
-        // build field object
-        $noshowfieldobj = new \stdClass();
-        $noshowfieldobj->name          = LOCAL_BOOKING_NOSHOWLABEL;
-        $noshowfieldobj->shortname     = LOCAL_BOOKING_NOSHOW;
-        $noshowfieldobj->description   = '';
-        $noshowfieldobj->descriptionformat = 1;
-        $noshowfieldobj->visible       = 0;
-        $noshowfieldobj->datatype      = 'text';
-        $noshowfieldobj->categoryid    = $categoryid;
-        $noshowfieldobj->sortorder     = $fieldsortorder;
-
-        $categoryid = $DB->insert_record('user_info_field', $noshowfieldobj);
-    }
+    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_NOSHOW,
+    LOCAL_BOOKING_NOSHOWLABEL, 'text', 0);
 
     // Add no-show date hidden field if it doesn't exist
-    $noshowdatefield = $DB->get_record('user_info_field', array('shortname'=>LOCAL_BOOKING_NOSHOWDATE));
-    if (empty($noshowdatefield)) {
-
-        // build field object
-        $noshowdatefieldobj = new \stdClass();
-        $noshowdatefieldobj->name          = LOCAL_BOOKING_NOSHOWDATELABEL;
-        $noshowdatefieldobj->shortname     = LOCAL_BOOKING_NOSHOWDATE;
-        $noshowdatefieldobj->description   = '';
-        $noshowdatefieldobj->descriptionformat = 1;
-        $noshowdatefieldobj->visible       = 0;
-        $noshowdatefieldobj->datatype      = 'datetime';
-        $noshowdatefieldobj->categoryid    = $categoryid;
-        $noshowdatefieldobj->sortorder     = $fieldsortorder;
-
-        $categoryid = $DB->insert_record('user_info_field', $noshowdatefieldobj);
-    }
+    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_NOSHOWDATE,
+    LOCAL_BOOKING_NOSHOWDATELABEL, 'datetime', 0);
 }
 
 /**
@@ -250,8 +178,10 @@ function create_course_customfields() {
         ',"visibility":"0","defaultvalue":"","defaultvalueformat":"1"', get_string('exercisetitlesdesc', 'local_booking'));
     save_course_customfield($category, 'checkbox', 'requiresskillseval', get_string('requiresskillseval', 'local_booking'),
         ',"visibility":"0","checkbydefault":"0"', get_string('requiresskillsevaldesc', 'local_booking'));
-    save_course_customfield($category, 'checkbox', 'vatsimform', get_string('vatsimform', 'local_booking'),
-        ',"visibility":"0","checkbydefault":"0"', get_string('vatsimformdesc', 'local_booking'));
+    save_course_customfield($category, 'text', 'gradmsgsubject', get_string('gradmsgsubject', 'local_booking'),
+        ',"visibility":"0","defaultvalue":"","displaysize":75,"maxlength":100,"ispassword":"0","link":""');
+    save_course_customfield($category, 'textarea', 'gradmsgbody', get_string('gradmsgbody', 'local_booking'),
+        ',"visibility":"0","defaultvalue":"","defaultvalueformat":"1"', get_string('gradmsgbodydesc', 'local_booking'));
 }
 
 /**
@@ -277,7 +207,6 @@ function save_course_customfield($category, $type, $shortname, $name, $configdat
         $fieldrec = new \stdClass();
         $fieldrec->type = $type;
         $field = field_controller::create(0, $fieldrec, $category);
-        // $field->set('type', $type);
         $field->set('shortname', $shortname);
         $field->set('name', $name);
         $field->set('description', !empty($description) ? '<p dir="ltr" style="text-align:left;">' . $description . '</p>' : '');
@@ -287,4 +216,35 @@ function save_course_customfield($category, $type, $shortname, $name, $configdat
         $field->save();
         field_created::create_from_object($field)->trigger();
     }
+}
+
+/**
+ * Persist user custom field.
+ */
+function save_user_customfield($categoryid, $fieldsortorder, $shortname, $name, $type, $visibility, $default = '', $param1 = '') {
+    global $DB;
+
+    // Add primary simulator field under the ATO category if it doesn't exist
+    $userfield = $DB->get_record('user_info_field', array('shortname'=>$shortname));
+    if (empty($userfield)) {
+
+        // build field object
+        $field = new \stdClass();
+        $field->name        = $name;
+        $field->shortname   = $shortname;
+        $field->description = '';
+        $field->descriptionformat = 1;
+        $field->visible     = $visibility;
+        $field->datatype    = $type;
+        $field->categoryid  = $categoryid;
+        $field->sortorder   = $fieldsortorder;
+        $field->defaultdata = $default;
+        $field->param1      = $param1;
+
+        $DB->insert_record('user_info_field', $field);
+        $fieldsortorder = $fieldsortorder++;
+
+    } else { $fieldsortorder = $userfield->sortorder + 1 ;}
+
+    return $fieldsortorder;
 }

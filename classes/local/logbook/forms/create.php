@@ -127,7 +127,7 @@ class create extends \moodleform {
      */
     protected function add_elements($mform, $subscriber, $logentry, $flighttype, $exerciseempty) {
         global $USER;
-        $integratedpireps = $subscriber->has_integration('pireps');
+        $integratedpireps = $subscriber->has_integration('external_data', 'pireps');
         $newlogentry = empty($logentry) || empty($logentry->get_id());
         $graduationexerciseid = $subscriber->get_graduation_exercise();
         // P1/PIC instructor id and P2 student id
@@ -587,7 +587,7 @@ class create extends \moodleform {
      * @return array $activepilots List of user ids for P1 & P2 pilots
      */
     protected function get_pilot_ids($course) {
-        $pilots = $course->get_participants();
+        $pilots = $course->get_participants(true);
 
         foreach ($pilots as $pilot) {
             $activepilots[$pilot->userid] = $pilot->fullname;
@@ -631,8 +631,8 @@ class create extends \moodleform {
             $aircrafts = (new ArrayObject($course->aircrafticao))->getIterator();
             $aircrafticao = $aircrafts->current();
 
-            if ($course->has_integration('aircraft')) {
-                $engintyperec = subscriber::get_integrated_data('aircraft', 'aircraftinfo', $aircrafticao);
+            if ($course->has_integration('external_data', 'aircraft')) {
+                $engintyperec = subscriber::get_external_data('aircraft', 'aircraftinfo', $aircrafticao);
                 $enginetype = $engintyperec['engine_type'] == 'single' ? 'SE' : 'ME';
             }
         }

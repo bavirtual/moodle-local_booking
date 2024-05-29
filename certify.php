@@ -24,12 +24,8 @@
  */
 
 use core_badges\badge;
-use local_booking\local\views\manage_action_bar;
 use local_booking\local\participant\entities\student;
-use local_booking\local\report\pdf_report_skilltest;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\local\message\notification;
-use local_booking\local\participant\entities\examiner;
 
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
@@ -39,7 +35,6 @@ require_once($CFG->dirroot . '/badges/lib/awardlib.php');
 // Get URL parameters.
 $courseid  = optional_param('courseid', 0, PARAM_INT);
 $studentid = optional_param('userid', 0, PARAM_INT);
-$action = optional_param('action', 'certify', PARAM_RAW);
 
 $url = new moodle_url('/local/booking/profile.php');
 $url->param('courseid', $courseid);
@@ -74,29 +69,16 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
     $grade = $student->get_grade($exerciseid, true);
     $lastattempt = (count($grade->attempts) ?: 1) - 1;
     $examinerid = $grade->attempts[$lastattempt]->grader;
+    $data = new stdClass();
+    $data->userid = $studentid;
 
     if ($examinerid != $USER->id)
         throw new \Error(get_string('errorcertifiernotexaminer', 'local_booking'));
     if ($examinerid != $USER->id)
         throw new \Error(get_string('errorcertifiernotexaminer', 'local_booking'));
-
-    // certify the student
-    // generate form data file
-    if ($COURSE->subscriber->vatsimform && ($action == 'certify' || $action == 'generate')) {
-        $evaluationform = new pdf_report_skilltest($COURSE->subscriber, $student, $lastattempt);
-        if (!$outputform = $evaluationform->generate_evaluation_form($grade))
-            throw new \Error(get_string('errorexaminerevalformunable', 'local_booking'));
-
-        // upload the form to the graded exercise
-        $grade->save_feedback_file($outputform, $student, $lastattempt);
-        $grade->save_feedback_file($outputform, $student, $lastattempt);
-
-        // clean up: remove created evaluation form staged file
-        $evaluationform->unlink($outputform);
-    }
 
     // perform student certification actions
-    if ($action == 'certify' && !$student->graduated()) {
+    if (!$student->graduated()) {
         // send badges
         $badges = badges_get_badges(BADGE_TYPE_COURSE, $courseid, '', '' , 0, 0);
 
@@ -122,14 +104,13 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
                     // process manual award of the badge
                     if (process_manual_award($studentid, $USER->id, $acceptedroles[0], $badgeid)) {
                         // If badge was successfully awarded, review manual badge criteria.
-                        $data = new stdClass();
                         $data->crit = $badge->criteria[BADGE_CRITERIA_TYPE_MANUAL];
-                        $data->userid = $studentid;
                         badges_award_handle_manual_criteria_review($data);
                     }
                 }
             }
         }
+
 
         // flag the student activating graduation notifications
         set_user_preference('local_booking_' . $courseid . '_graduationnotify', true, $studentid);
@@ -139,93 +120,38 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
         groups_add_member($groupid, $studentid);
     }
 
-    // output certification or sending of evaluation form
-    if ($action == 'certify' || ($COURSE->subscriber->vatsimform && $action == 'send')) {
+    // output certification message
+    $data = [
+        'courseid'         => $courseid,
+        'userid'           => $studentid,
+        'fullname'         => $student->get_name(),
+        'courseshortname'  => $COURSE->subscriber->get_shortname(),
+        'attempt'          => $lastattempt+1
+    ];
+    $hascongratsmsg = !empty($COURSE->subscriber->gradmsgsubject) && !empty($COURSE->subscriber->gradmsgbody);
+    $gradmsg = get_string('graduationconfirmation', 'local_booking', $data);
+    $gradmsg .= $hascongratsmsg ? get_string('graduationconfirmationcongrat', 'local_booking') : '</ul>';
 
-        // output congratulatory message
-        $navbartext = $student->get_fullname($studentid);
-        $PAGE->navbar->add($navbartext);
-        $PAGE->set_pagelayout('standard');
-        $PAGE->set_context($context);
-        $PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
-        $PAGE->set_heading($title, 'local_booking');
-        $PAGE->add_body_class('path-local-booking');
+    // output graduation process status
+    $navbartext = $student->get_fullname($studentid);
 
-        $renderer = $PAGE->get_renderer('local_booking');
+    $PAGE->navbar->add($navbartext);
+    $PAGE->set_pagelayout('standard');
+    $PAGE->set_context($context);
+    $PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
+    $PAGE->set_heading($title, 'local_booking');
+    $PAGE->add_body_class('path-local-booking');
 
-        echo $OUTPUT->header();
-        echo $renderer->start_layout();
-        echo html_writer::start_tag('div');
+    $renderer = $PAGE->get_renderer('local_booking');
 
-        // certification action options
-        if ($action == 'certify') {
-            // output certification message
-            $data = [
-                'url'              => '/local/booking/report.php',
-                'courseid'         => $courseid,
-                'userid'           => $studentid,
-                'firstname'        => $student->get_name(false, 'first'),
-                'fullname'         => $student->get_name(),
-                'courseshortname'  => $COURSE->subscriber->get_shortname(),
-                'attempt'          => $lastattempt+1,
-                'formgenerationmsg'=> $COURSE->subscriber->vatsimform ? get_string('graduationconfirmationformsection', 'local_booking') : ''
-            ];
-            $certifiedactionbar = new manage_action_bar($PAGE, 'certify', $data);
-            echo get_string('graduationconfirmation', 'local_booking', $data);
-            if ($COURSE->subscriber->vatsimform) {
-                echo $renderer->render_tertiary_navigation($certifiedactionbar);
-            }
+    echo $OUTPUT->header();
+    echo $renderer->start_layout();
+    echo html_writer::start_tag('div');
+    echo $gradmsg;
+    echo html_writer::end_tag('div');
+    echo $renderer->complete_layout();
+    echo $OUTPUT->footer();
 
-        } else {
-            // generate VATSIM examiner evaluation form
-            // get feedback file
-            $fs = get_file_storage();
-            $feedbackfile = $grade->get_feedback_file('assignfeedback_file', 'feedback_files', '', false, $lastattempt);
-            $feedbackfile = $grade->get_feedback_file('assignfeedback_file', 'feedback_files', '', false, $lastattempt);
-
-            // send the form email message
-            $examiner = new examiner($COURSE->subscriber, $USER->id);
-            $examiner = new examiner($COURSE->subscriber, $USER->id);
-            $data = [
-                'vatsimcertuid' => $COURSE->subscriber->get_booking_config('vatsimcertemail'),
-                'examinerid'    => $examiner->get_id(),
-                'trainingmanagers'=> $COURSE->subscriber->get_flight_training_managers(),
-                'outcomerating'  => $COURSE->subscriber->outcomerating,
-                'studentname'   => $student->get_name(false),
-                'studentvatsimid' => $student->get_profile_field('VATSIMID'),
-                'coursename'    => $COURSE->subscriber->get_fullname(),
-                'examinername'  => $examiner->get_name(false),
-                'evaluationformfile' => $fs->get_file_system()->get_local_path_from_storedfile($feedbackfile),
-                'evaluationformfilename' => $feedbackfile->get_filename()
-            ];
-            if (notification::send_evaluationform_notification($data)) {
-                echo get_string('graduationemailconfirmation', 'local_booking', [
-                    'certbodyemail' => $COURSE->subscriber->get_booking_config('vatsimcertemail'),
-                    'examineremail' => $examiner->get_profile_field('email', true),
-                    'studentname'   => $student->get_name(false),
-                    'vatsimpramsurl'=> $COURSE->subscriber->get_booking_config('vatsimpramsurl'),
-                ]);
-            } else {
-                echo get_string('errorcertificationemail', 'local_booking');
-            }
-        }
-
-        echo html_writer::end_tag('div');
-        echo $renderer->complete_layout();
-        echo $OUTPUT->footer();
-
-    } elseif ($action == 'generate') {
-        $newevalformurl = new moodle_url('/local/booking/report.php', [
-            'courseid' => $courseid,
-            'userid'   => $studentid,
-            'report'   => 'evalform',
-            'action'   => 'generate',
-            'attempt'  => $lastattempt
-            'action'   => 'generate',
-            'attempt'  => $lastattempt
-        ]);
-        redirect($newevalformurl);
-    }
 } else {
 
     // redirect to the user's profile page

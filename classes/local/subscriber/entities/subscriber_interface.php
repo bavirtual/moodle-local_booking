@@ -83,11 +83,12 @@ interface subscriber_interface {
     public function get_participant(int $participantid, bool $populate = false, bool $active = true);
 
     /**
-     * Get all active instructors for the course.
+     * Get all senior instructors for the course.
      *
-     * @return {Object}[]   Array of active instructors.
+     * @param bool $rawdata Whether to return participant raw data
+     * @return {Object}[]   Array of course's senior instructors.
      */
-    public function get_participants();
+    public function get_participants(bool $rawdata = false);
 
     /**
      * Get a student.
@@ -104,9 +105,10 @@ interface subscriber_interface {
      *
      * @param string $filter       The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold  Whether to include on-hold students as well
+     * @param bool $rawdata        Whether to return students raw data
      * @return array $activestudents Array of active students.
      */
-    public function get_students(string $filter = 'active', bool $includeonhold = false);
+    public function get_students(string $filter = 'active', bool $includeonhold = false, bool $rawdata = false);
 
     /**
      * Get an active instructor.
@@ -119,10 +121,11 @@ interface subscriber_interface {
     /**
      * Get all active instructors for the course.
      *
-     * @param bool $courseadmins Indicates whether the instructors returned are part of course admins
+     * @param bool $courseadmins Whether the instructors returned are part of course admins
+     * @param bool $rawdata      Whether to return instructors raw data
      * @return {Object}[]   Array of active instructors.
      */
-    public function get_instructors(bool $courseadmins = false);
+    public function get_instructors(bool $courseadmins = false, bool $rawdata = false);
 
     /**
      * Get subscribing course senior instructors list.
@@ -191,7 +194,7 @@ interface subscriber_interface {
      * @param  string The resource module name
      * @return array
      */
-    public function get_examinerformfile(string $resourcename);
+    public function get_moodlefile(string $resourcename);
 
     /**
      * Returns the settings from config.xml
@@ -204,7 +207,7 @@ interface subscriber_interface {
     public static function get_booking_config(string $key, bool $toarray = false, string $filename = '/local/booking/config.json');
 
     /**
-     * Returns an array of records from integrated database
+     * Returns an array of records from integrated external database
      * that matches the passed criteria.
      *
      * @param string $key    The key associated with the integration.
@@ -212,7 +215,7 @@ interface subscriber_interface {
      * @param string $value  The data selection criteria
      * @return array
      */
-    public static function get_integrated_data($key, $data, $value);
+    public static function get_external_data($key, $data, $value);
 
     /**
      * Checks if the subscribing course require
@@ -226,8 +229,9 @@ interface subscriber_interface {
      * Checks if there is a database integration
      * for the specified passed key.
      *
-     * @param string $key The key associated with the integration.
+     * @param string $root The root node in the integration json.
+     * @param string $key  The key associated with the integration.
      * @return bool
      */
-    public static function has_integration($key);
+    public static function has_integration($root, $key);
 }

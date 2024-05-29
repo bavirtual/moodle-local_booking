@@ -105,25 +105,21 @@ define('LOCAL_BOOKING_GRADUATESGROUP', 'Graduates');
  */
 define('LOCAL_BOOKING_SLOTCOLOR', '#00e676');
 /**
- * LOCAL_BOOKING_INSTRUCTORROLE - constant for instructor role shortname
+ * LOCAL_BOOKING_INSTRUCTORROLE - constant for Instructor role shortname
  */
 define('LOCAL_BOOKING_INSTRUCTORROLE', 'instructor');
 /**
- * LOCAL_BOOKING_SENIORINSTRUCTORROLE - constant for instructor role shortname
+ * LOCAL_BOOKING_SENIORINSTRUCTORROLE - constant for the Senior Instructor role shortname
  */
 define('LOCAL_BOOKING_SENIORINSTRUCTORROLE', 'seniorinstructor');
 /**
- * LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE - constant for instructor role shortname
+ * LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE - constant for the Flight Training Manager role shortname
  */
 define('LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE', 'flighttrainingmanager');
 /**
- * LOCAL_BOOKING_EVALUATIONFORM - constant for Examiner Evaluation Form file resource
+ * LOCAL_BOOKING_EXAMINERROLE - constant for the Examiner role shortname
  */
-define('LOCAL_BOOKING_EVALUATIONFORM', 'Examiner Evaluation Form');
-/**
- * LOCAL_BOOKING_EVALUATIONFORMCONFIG - constant for Examiner Evaluation Form file resource
- */
-define('LOCAL_BOOKING_EVALUATIONFORMCONFIG', 'Examiner Evaluation Form Fields Mapping');
+define('LOCAL_BOOKING_EXAMINERROLE', 'examiner');
 /**
  * LOCAL_BOOKING_FAILINGPERCENTAGE - constant for the percentage of failing grade for rubric assessments
  */

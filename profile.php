@@ -46,7 +46,7 @@ $url->param('courseid', $courseid);
 $PAGE->set_url($url);
 
 $context = context_course::instance($courseid);
-$title = get_string('profile' . ($role?'instructor':'student'), 'local_booking');
+$title = get_string('profile' . ($role ? LOCAL_BOOKING_INSTRUCTORROLE : 'student'), 'local_booking');
 
 // basic access check
 require_login($course, false);
@@ -65,7 +65,7 @@ $PAGE->set_heading($title . ' - ' . participant::get_fullname($userid), 'local_b
 $PAGE->add_body_class('path-local-booking');
 
 // get student profile view
-$profileview = new profile_view($context, $courseid, ['subscriber'=>$COURSE->subscriber, 'userid'=>$userid, 'role'=>($role?'instructor':'student')]);
+$profileview = new profile_view($context, $courseid, ['subscriber'=>$COURSE->subscriber, 'userid'=>$userid, 'role'=>($role ? LOCAL_BOOKING_INSTRUCTORROLE : 'student')]);
 
 // output profile page
 echo $OUTPUT->header();

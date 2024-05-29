@@ -52,7 +52,7 @@ class logentry_view extends base_view {
         $pilot = $data['subscriber']->get_participant($data['userid']);
         $this->data['courseid'] = $courseid;
         $this->data['trainingtype'] = $data['subscriber']->trainingtype;
-        $this->data['hasfindpirep'] = $data['subscriber']->has_integration('pireps');
+        $this->data['hasfindpirep'] = $data['subscriber']->has_integration('external_data', 'pireps');
         $this->data['isstudent']    = $pilot->is_student();
         $this->data['isinstructor'] = $pilot->is_instructor();
         $this->data['courseshortname'] = $data['subscriber']->get_shortname();

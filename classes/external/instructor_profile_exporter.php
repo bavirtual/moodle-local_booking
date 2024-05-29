@@ -250,7 +250,7 @@ class instructor_profile_exporter extends exporter {
         // get graded session totals
         $gradedsessions = $this->instructor->get_graded_sessions_count();
         $totalexams = $this->instructor->is_examiner() && !empty($gradedsessions[$examid]) ? $gradedsessions[$examid]->sessions : 0;
-        $instructorsince = $this->instructor->has_role_since('instructor') ?: $this->instructor->has_role_since('seniorinstructor');
+        $instructorsince = $this->instructor->has_role_since(LOCAL_BOOKING_INSTRUCTORROLE) ?: $this->instructor->has_role_since(LOCAL_BOOKING_SENIORINSTRUCTORROLE);
 
         // Sessions conducted data
         $options = [
@@ -312,7 +312,7 @@ class instructor_profile_exporter extends exporter {
             'lastlogin'        => $lastlogindate,
             'instructordate'   => $instructorsince,
             'examiner'         => $this->instructor->is_examiner(),
-            'examinerdate'     => $this->instructor->has_role_since('examiner'),
+            'examinerdate'     => $this->instructor->has_role_since(LOCAL_BOOKING_EXAMINERROLE),
             'lastgraded'       => $lastgradeddate,
             'lastbooked'       => $lastbookeddate,
             'logbookurl'       => $logbookurl->out(false),

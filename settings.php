@@ -37,9 +37,6 @@ if ($hassiteconfig) {
 
         // ATO name, website, email, and url
         $settingspage->add(new admin_setting_configtext('local_booking/atoname', new lang_string('atoname', 'local_booking'), null, null, PARAM_RAW, 50));
-        $settingspage->add(new admin_setting_configtext('local_booking/atourl', new lang_string('atourl', 'local_booking'), null, null, PARAM_RAW, 50));
-        $settingspage->add(new admin_setting_configtext('local_booking/atoemail', new lang_string('atoemail', 'local_booking'), null, null, PARAM_RAW, 50));
-        $settingspage->add(new admin_setting_configtext('local_booking/atologourl', new lang_string('atologourl', 'local_booking'), null, null, PARAM_RAW, 80));
 
         // add general settings section
         $settingspage->add(new admin_setting_heading('local_booking_addheading_posting', new lang_string('postingsection', 'local_booking'),''));
@@ -93,6 +90,13 @@ if ($hassiteconfig) {
             10, PARAM_INT)
         );
 
+        // add plugin configurations settings section
+        $settingspage->add(new admin_setting_heading('local_booking_addheading_configs', new lang_string('pluginconfigssection', 'local_booking'),''));
+
+        // lesson completion weight multiplier
+        $settingspage->add(new admin_setting_configtextarea('local_booking/configsjson',
+            new lang_string('configsjson', 'local_booking'), new lang_string('configsjsondesc', 'local_booking'), null)
+        );
     }
 
     $ADMIN->add('localplugins', $settingspage);

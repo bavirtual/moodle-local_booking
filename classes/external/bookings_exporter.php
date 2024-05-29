@@ -121,11 +121,7 @@ class bookings_exporter extends exporter {
         $this->course = $COURSE->subscriber;
         $this->modules = $this->course->get_modules();
         $data['trainingtype'] = $this->course->trainingtype;
-        $data['findpirepenabled'] = $this->course->has_integration('pireps');
-        $this->course = $COURSE->subscriber;
-        $this->modules = $this->course->get_modules();
-        $data['trainingtype'] = $this->course->trainingtype;
-        $data['findpirepenabled'] = $this->course->has_integration('pireps');
+        $data['findpirepenabled'] = $this->course->has_integration('external_data', 'pireps');
         $this->instructor = key_exists('instructor', $data) ? $data['instructor'] : null;
         if ($this->viewtype == 'confirm')
             $this->bookingstudentid = $data['studentid'];
@@ -178,6 +174,9 @@ class bookings_exporter extends exporter {
                 'type' => booking_mybookings_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
+            'scoresort' => [
+                'type' => \PARAM_BOOL,
+            ],
             'avgwait' => [
                 'type' => PARAM_INT,
             ],
@@ -205,9 +204,9 @@ class bookings_exporter extends exporter {
                 'type' => \PARAM_BOOL,
                 'default' => false,
             ],
-            'studentinfo' => [
-                'type' => PARAM_RAW,
-                'default' => '',
+            'restrictionsenabled' => [
+                'type' => \PARAM_BOOL,
+                'default' => false,
             ],
             'studentinfo' => [
                 'type' => PARAM_RAW,
@@ -232,18 +231,18 @@ class bookings_exporter extends exporter {
         ];
 
         $return = [
-            'coursemodules'  => base_view::get_modules($output, $this->course, $options),
-            'coursemodules'  => base_view::get_modules($output, $this->course, $options),
-            'activestudents' => $this->get_students($output),
-            'activebookings' => $this->get_mybookings($output),
-            'avgwait' => $this->averagewait,
-            'showaction' => $this->filter == 'active',
-            'showactive' => $this->filter == 'active' || empty($this->filter) ? 'checked' : '',
-            'showonhold' => $this->filter == 'onhold' ? 'checked' : '',
+            'coursemodules' => base_view::get_modules($output, $this->course, $options),
+            'activestudents'=> $this->get_students($output),
+            'activebookings'=> $this->get_mybookings($output),
+            'scoresort'         => $this->data['sorttype'] == 's',
+            'avgwait'       => $this->averagewait,
+            'showaction'    => $this->filter == 'active',
+            'showactive'    => $this->filter == 'active' || empty($this->filter) ? 'checked' : '',
+            'showonhold'    => $this->filter == 'onhold' ? 'checked' : '',
             'showgraduates' => $this->filter == 'graduates' ? 'checked' : '',
             'showsuspended' => $this->filter == 'suspended' ? 'checked' : '',
             'showallcourses'=> !empty(\get_user_preferences('local_booking_1_xcoursebookings', false, !empty($this->instructor) ? $this->instructor->get_id() : 0)),
-            'studentinfo'=> get_string('studentinfo' . $this->filter, 'local_booking'),
+            'restrictionsenabled'=> intval($this->course->onholdperiod) > 0,
             'studentinfo'=> get_string('studentinfo' . $this->filter, 'local_booking'),
         ];
 
@@ -439,9 +438,9 @@ class bookings_exporter extends exporter {
         } elseif ($sorttype == 's') {
             // Get student booking priority
             uasort($activestudents, function($st1, $st2) {
-                return $st1->get_priority()->get_score() < $st2->get_priority()->get_score();
+                return  $st1->get_priority()->get_score() <=> $st2->get_priority()->get_score();
             });
-            $finallist = $activestudents;
+            $finallist = array_reverse($activestudents, true);
         }
 
         return $finallist;

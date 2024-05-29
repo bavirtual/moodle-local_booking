@@ -145,8 +145,8 @@ class participant implements participant_interface {
 
             // enrolment type
             $this->is_student = $this->has_role('student');
-            $this->is_instructor = $this->has_role('instructor') || $this->has_role('seniorinstructor') || $this->has_role('manager');
-            $this->is_examiner = $this->has_role('examiner');
+            $this->is_instructor = $this->has_role(LOCAL_BOOKING_INSTRUCTORROLE) || $this->has_role(LOCAL_BOOKING_SENIORINSTRUCTORROLE) || $this->has_role(LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE);
+            $this->is_examiner = $this->has_role(LOCAL_BOOKING_EXAMINERROLE);
 
             // get active participant courses
             $enroledcourses = enrol_get_users_courses($userid, true);
@@ -371,20 +371,21 @@ class participant implements participant_interface {
      * Returns participant's ATO recorded hours
      * using integration db.
      *
-     * @return string   The participant callsign
+     * @return string   The participant's total ATO hours
      */
     public function get_ato_hours() {
-        $totalatohours = '';
+        $totalatohours = 'N/A';
         // get pilot stats integrated info
-        if (subscriber::has_integration('pilotstats')) {
+        if (subscriber::has_integration('external_data', 'pilotstats')) {
             // TODO: PHP9 deprecates dynamic properties
             // get pilot id from integration
             $u = \core_user::get_user($this->userid);
-            $pilotrec = $this->course->get_integrated_data('pilotid', 'pilotinfo', $u->alternatename);
+            $pilotrec = $this->course->get_external_data('pilotid', 'pilotinfo', $u->alternatename);
             $pilotid = $pilotrec['pilotid'];
-            $pilotstatsrec = $this->course->get_integrated_data('pilotstats', 'stats', $pilotid);
+            $pilotstatsrec = $this->course->get_external_data('pilotstats', 'stats', $pilotid);
+            $totalatohours = $pilotstatsrec['totalatohours'];
         }
-        return $pilotstatsrec['totalatohours'];
+        return $totalatohours;
     }
 
     /**
@@ -405,13 +406,19 @@ class participant implements participant_interface {
      */
     public function get_profile_field(string $field, bool $corefield = false) {
         $u = \core_user::get_user($this->userid);
+        $value = '';
 
         if (!$corefield) {
             profile_load_data($u);
             $fld = 'profile_field_' . $field;
+            if (property_exists($u, $fld)) {
+                $value = $u->$fld ?: '';
+            }
+        } else {
+            $value = $u->$field;
         }
         // TODO: PHP9 deprecates dynamic properties
-        return $corefield ? $u->$field : $u->$fld;
+        return $value;
     }
 
     /**

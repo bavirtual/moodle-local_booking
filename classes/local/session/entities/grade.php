@@ -221,7 +221,6 @@ class grade extends \grade_grade {
      * @return string
      */
     public function get_feedback_file(string $component, string $filearea, string $itemid = '', $path = true, int $attempt = 0) {
-        global $COURSE;
 
         $retval = null;
         if (!isset($this->feedbackfile)) {
@@ -239,12 +238,8 @@ class grade extends \grade_grade {
             if (!empty($files)) {
                 foreach ($files as $file) {
                     if (get_class($file) == 'stored_file' && $file->get_filename() != '.') {
-                        // verify the correct file name convension otherwise the file is not an evaluation form
-                        $evalfiletemplate = pathinfo($COURSE->subscriber->get_examinerformfile(LOCAL_BOOKING_EVALUATIONFORM)['filename'], PATHINFO_FILENAME);
-                        if (substr($file->get_filename(), 0, strlen($evalfiletemplate)) == $evalfiletemplate) {
-                            $this->feedbackfile = $file;
-                            break;
-                        }
+                        $this->feedbackfile = $file;
+                        break;
                     }
                 };
                 unset($files);
@@ -257,48 +252,6 @@ class grade extends \grade_grade {
 
         return $retval;
 
-    }
-
-    /**
-     * Get the grade feedback file.
-     *
-     * @param string $feedbackfile The feedback file path & name to be uploaded
-     * @param bool   $path         Whether to return the path or the Stored_file
-     * @param int    $attempt The assignment grade attempt to be evaluate.
-     * @return string|\stored_file
-     */
-    public function save_feedback_file(string $feedbackfile, $path = true, int $attempt = 0) {
-        global $USER;
-
-        $fs = get_file_storage();
-        $context = \context_user::instance($USER->id);
-        $draftitemid = file_get_unused_draft_itemid();
-        file_prepare_draft_area($draftitemid, $context->id, 'assignfeedback_file', 'feedback_files', 1);
-
-        $stagedfile = array(
-            'contextid' => $context->id,
-            'component' => 'user',
-            'filearea' => 'draft',
-            'itemid' => $draftitemid,
-            'filepath' => '/',
-            'filename' => basename($feedbackfile)
-        );
-
-        // upload the file
-        $file = $fs->create_file_from_pathname($stagedfile, $feedbackfile);
-
-        // Create formdata.
-        $data = new \stdClass();
-        $data->{'files_' . $this->userid . '_filemanager'} = $draftitemid;
-
-        // This is the first time that we are submitting feedback, so it is modified.
-        $plugin = $this->get_assignment()->get_feedback_plugin_by_type('file');
-        $plugin->is_feedback_modified($this->get_user_grade_attempt($attempt), $data);
-        // Save the feedback.
-        $plugin->save($this->get_user_grade_attempt($attempt), $data);
-        $this->get_feedback_file('assignfeedback_file', 'feedback_files', '', $path);
-
-        return $path ? $fs->get_file_system()->get_local_path_from_storedfile($this->feedbackfile) : $this->feedbackfile;
     }
 
     /**

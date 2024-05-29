@@ -18,8 +18,7 @@
  * Course specific reporting for:
  *  Mentor report
  *  Theory examination report
- *  Practical Examination report,
- *  Skills test examiner evaluation form.
+ *  Practical Examination report.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -27,11 +26,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
-use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\local\views\manage_action_bar;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -72,40 +68,6 @@ $renderer = $PAGE->get_renderer('local_booking');
 
 echo $OUTPUT->header();
 echo $renderer->start_layout();
-
-// check for exam processing action
-if ($reporttype == 'evalform') {
-    $tertiarynavadditional = [];
-
-    // show evaluation form message
-    $student = new student($COURSE->subscriber, $userid);
-    $instructor = new instructor($COURSE->subscriber, $USER->id);
-    $examinerid = $student->get_grade($COURSE->subscriber->get_graduation_exercise())->usermodified;
-    $exerciseid = $COURSE->subscriber->get_graduation_exercise();
-    $fname = mb_substr($student->get_name(false, 'first'), 0, 1);
-    $lname = mb_substr($student->get_name(false, 'last'), 0, 1);
-    $tertiarynavadditional['skilltestgradeurl'] = $CFG->httpswwwroot . "/mod/assign/view.php?action=grading&id=$exerciseid&tifirst=$fname&tilast=$lname";
-    $tertiarynavadditional['isexaminer'] = $examinerid == $USER->id;
-    $tertiarynavadditional['regenerate'] = $action == 'generate';
-    $evalformmsgbar = new manage_action_bar($PAGE, 'evalform', $tertiarynavadditional);
-    echo $renderer->render_tertiary_navigation($evalformmsgbar);
-
-    // show evaluation form edit button menu for the examiner only
-    if ($instructor->is_examiner()) {
-        // prepare the tertiary navigation menu section
-        $tertiarynavadditional['courseid'] = $courseid;
-        $tertiarynavadditional['userid'] = $userid;
-        $tertiarynavadditional['exeid'] = $COURSE->subscriber->get_graduation_exercise();
-        $tertiarynavadditional['vatsimemail'] = $COURSE->subscriber->get_booking_config('vatsimcertemail');
-        $tertiarynavadditional['skilltesturl'] = '/local/booking/assign.php';
-        $tertiarynavadditional['generateformurl'] = '/local/booking/certify.php';
-        $tertiarynavadditional['sendformurl'] = '/local/booking/certify.php';
-
-        // output evaluation form examiner action bar
-        $examineractionbar = new manage_action_bar($PAGE, 'examiner', $tertiarynavadditional);
-        echo $renderer->render_tertiary_navigation($examineractionbar);
-    }
-}
 
 // report section
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));

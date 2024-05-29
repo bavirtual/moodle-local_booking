@@ -99,17 +99,6 @@
                             {{/qualified}}
                             {{^qualified}}{{#str}} notqualified , local_booking {{/str}}{{/qualified}}
                         </dd>
-                        <dt>{{#str}} evalformreport , local_booking {{/str}}</dt>
-                        <dd>
-                            {{#tested}}
-                            {{#attempts}}
-                            <dd><span><a href="{{examinerurl}}">{{#str}} attempt , quiz {{/str}} {{attemptnumber}} - {{attemptdate}}</br><strong>{{gradename}}</strong></a></span></dd>
-                            {{/attempts}}
-                            {{/tested}}
-                            {{^tested}}
-                            <dd><span>{{#str}} evalformreport , local_booking {{/str}} ({{#str}} notavailable {{/str}})</span></dd>
-                            {{/tested}}
-                        </dd>
                     </dl>
                     {{/requiresevaluation}}
                 </div>

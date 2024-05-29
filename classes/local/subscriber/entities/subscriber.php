@@ -127,6 +127,16 @@ class subscriber implements subscriber_interface {
     public $exercisetitles;
 
     /**
+     * @var string $gradmsgsubject A congratulary message subject for graduating students.
+     */
+    public $gradmsgsubject;
+
+    /**
+     * @var string $gradmsgbody A congratulary message body for graduating students.
+     */
+    public $gradmsgbody;
+
+    /**
      * @var string $trainingtype The type of training of the subscribing course.
      */
     public $trainingtype;
@@ -172,11 +182,6 @@ class subscriber implements subscriber_interface {
     public $requiresskillseval;
 
     /**
-     * @var string $vatsimform Whether VATSIM Examiner Evaluation form is required.
-     */
-    public $vatsimform;
-
-    /**
      * Constructor.
      *
      * @param string $courseid  The description's value.
@@ -211,7 +216,7 @@ class subscriber implements subscriber_interface {
 
             if ($cat == ucfirst(get_string('pluginname', 'local_booking'))) {
                 // split textarea values into cleaned up array values
-                if ($customfield->get_field()->get('type') == 'textarea') {
+                if ($customfield->get_field()->get('type') == 'textarea' && $customfield->get_field()->get('shortname') != 'gradmsgbody') {
                     $fieldvalues = array_filter(preg_split('/\n|\r\n?/', format_text($customfield->get_value(), FORMAT_MARKDOWN)));
 
                     // array callback function to strip html
@@ -324,10 +329,13 @@ class subscriber implements subscriber_interface {
     /**
      * Get all senior instructors for the course.
      *
+     * @param bool $rawdata Whether to return participant raw data
      * @return {Object}[]   Array of course's senior instructors.
      */
-    public function get_participants() {
-        $participants = array_merge(participant_vault::get_students($this->courseid), participant_vault::get_instructors($this->courseid));
+    public function get_participants(bool $rawdata = false) {
+        $instructors = array_values($this->get_instructors(false, $rawdata));
+        $students = array_values($this->get_students('active', false, $rawdata));
+        $participants = array_merge($instructors, $students);
         return $participants;
     }
 
@@ -363,22 +371,27 @@ class subscriber implements subscriber_interface {
      *
      * @param string $filter       The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold  Whether to include on-hold students as well
+     * @param bool $rawdata        Whether to return students raw data
      * @return array $activestudents Array of active students.
      */
-    public function get_students(string $filter = 'active', bool $includeonhold = false) {
+    public function get_students(string $filter = 'active', bool $includeonhold = false, bool $rawdata = false) {
         $activestudents = [];
         $studentrecs = participant_vault::get_students($this->courseid, $filter, $includeonhold);
         $colors = LOCAL_BOOKING_SLOTCOLORS;
 
-        // add a color for the student slots from the config.json file for each student
-        $i = 0;
-        foreach ($studentrecs as $studentrec) {
-            $student = new student($this, $studentrec->userid);
-            if ($student->has_role('student') || $student->is_member_of($this->get_id(), $student->get_id(), LOCAL_BOOKING_GRADUATESGROUP)) {
-                $student->populate($studentrec);
-                $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
-                $activestudents[$student->get_id()] = $student;
-                $i++;
+        if ($rawdata) {
+            $activestudents = $studentrecs;
+        } else {
+            // add a color for the student slots from the config.json file for each student
+            $i = 0;
+            foreach ($studentrecs as $studentrec) {
+                $student = new student($this, $studentrec->userid);
+                if ($student->has_role('student') || $student->is_member_of($this->get_id(), $student->get_id(), LOCAL_BOOKING_GRADUATESGROUP)) {
+                    $student->populate($studentrec);
+                    $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
+                    $activestudents[$student->get_id()] = $student;
+                    $i++;
+                }
             }
         }
         $this->activestudents = $activestudents;
@@ -409,17 +422,22 @@ class subscriber implements subscriber_interface {
     /**
      * Get all active instructors for the course.
      *
-     * @param bool $courseadmins Indicates whether the instructors returned are part of course admins
+     * @param bool $courseadmins Whether the instructors returned are part of course admins
+     * @param bool $rawdata      Whether to return instructors raw data
      * @return {Object}[]   Array of active instructors.
      */
-    public function get_instructors(bool $courseadmins = false) {
+    public function get_instructors(bool $courseadmins = false, bool $rawdata = false) {
         $activeinstructors = [];
         $instructorrecs = participant_vault::get_instructors($this->courseid, $courseadmins);
 
-        foreach ($instructorrecs as $instructorrec) {
-            $instructor = new instructor($this, $instructorrec->userid);
-            $instructor->populate($instructorrec);
-            $activeinstructors[] = $instructor;
+        if ($rawdata) {
+            $activeinstructors = $instructorrecs;
+        } else {
+            foreach ($instructorrecs as $instructorrec) {
+                $instructor = new instructor($this, $instructorrec->userid);
+                $instructor->populate($instructorrec);
+                $activeinstructors[] = $instructor;
+            }
         }
         $this->activeinstructors = $activeinstructors;
 
@@ -548,10 +566,10 @@ class subscriber implements subscriber_interface {
      * @param  string The resource module name
      * @return array
      */
-    public function get_examinerformfile(string $resourcename) {
+    public function get_moodlefile(string $resourcename) {
         global $DB;
 
-        // get evaluation form resource file
+        // get moodle resource file from activity
         $resourceidx = array_search($resourcename, array_column($this->resources,'name'));
         $cm = array_values($this->resources)[$resourceidx];
         $context = \context_module::instance($cm->id);
@@ -580,21 +598,17 @@ class subscriber implements subscriber_interface {
      * @return mixed  $config   The requested setting value.
      */
     public static function get_booking_config(string $key, bool $toarray = false, string $filename = null) {
-        global $CFG;
-
-        $configfile = $filename ?: $CFG->dirroot . '/local/booking/config.json';
         $config = null;
 
-        if (file_exists($configfile)) {
+        try {
 
-            $jsoncontent = file_get_contents($configfile);
-            $configdata = json_decode($jsoncontent, $toarray);
-            $config = $toarray ? $configdata[$key] : $configdata->{$key};
-
-        } else {
-
-            var_dump(get_string('configmissing', 'local_booking', $configfile));
-
+            $jsoncontent = $filename ? file_get_contents($filename) : \get_config('local_booking', 'configsjson');
+            if (!empty($jsoncontent)) {
+                $configdata = json_decode($jsoncontent, $toarray);
+                $config = $toarray ? $configdata[$key] : $configdata->{$key};
+            }
+        } catch(\Exception $e) {
+            echo get_string('configmissing', 'local_booking') + '\n' + $e;
         }
 
         return $config;
@@ -609,20 +623,20 @@ class subscriber implements subscriber_interface {
      * @param string $value  The data selection criteria
      * @return array
      */
-    public static function get_integrated_data($key, $data, $value) {
+    public static function get_external_data($key, $data, $value) {
         global $CFG;
         $record = null;
 
         // get the integration object from settings
-        $integrations = self::get_booking_config('integrations');
+        $external_data = self::get_booking_config('external_data');
 
         // Moodle user/password must have read access to the target host, database, and tables
         // TODO: PHP9 deprecates dynamic properties
-        $conn = new \mysqli($integrations->$key->host, $CFG->dbuser, $CFG->dbpass, $integrations->$key->db);
+        $conn = new \mysqli($external_data->$key->host, $CFG->dbuser, $CFG->dbpass, $external_data->$key->db);
 
         if (!$conn->connect_errno) {
             // get configurations
-            $target = $integrations->$key->data;
+            $target = $external_data->$key->data;
             $fieldnames = array_keys((array) $target->$data->fields);
             $fields = implode(',', (array) $target->$data->fields);
             $table = $target->$data->table;
@@ -648,13 +662,18 @@ class subscriber implements subscriber_interface {
      * Checks if there is a database integration
      * for the specified passed key.
      *
-     * @param string $key The key associated with the integration.
+     * @param string $root The root node in the integration json.
+     * @param string $key  The key associated with the integration.
      * @return bool
      */
-    public static function has_integration($key) {
-        $integrations = self::get_booking_config('integrations');
+    public static function has_integration($root, $key = '') {
+        $hasintegration = false;
+        $integrations = self::get_booking_config($root);
         // TODO: PHP9 deprecates dynamic properties
-        return !empty($integrations->$key->enabled);
+        if ($integrations) {
+            $hasintegration = !empty($key) ? !empty($integrations->$key->enabled) : !empty($integrations->enabled);
+        }
+        return $hasintegration;
     }
 
     /**
@@ -664,14 +683,11 @@ class subscriber implements subscriber_interface {
      * @param  string $value    The value to set
      */
     public static function set_booking_config(string $key, string $value) {
-        global $CFG;
 
-        $configfile = $CFG->dirroot . '/local/booking/config.json';
-
-        if (file_exists($configfile)) {
+        try {
 
             // read config content
-            $jsoncontent = file_get_contents($configfile);
+            $jsoncontent = \get_config('local_booking', 'configsjson');
             $configdata = json_decode($jsoncontent, true);
 
             // recursively go through the config data for nested content
@@ -683,12 +699,10 @@ class subscriber implements subscriber_interface {
 
             // write back config content to json file
             $jsoncontent = json_encode($configdata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-            file_put_contents($CFG->dirroot . '/local/booking/config.json', $jsoncontent);
+            \set_config('configsjson', $jsoncontent, 'local_booking');
 
-        } else {
-
-            var_dump(get_string('configmissing', 'local_booking', $configfile));
-
+        } catch(\Exception $e) {
+            echo get_string('configmissing', 'local_booking') + '\n' + $e;
         }
     }
 

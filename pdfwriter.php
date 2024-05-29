@@ -31,7 +31,6 @@ use local_booking\local\report\pdf_report_mentor;
 use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\report\pdf_report_theoryexam;
 use local_booking\local\report\pdf_report_practicalexam;
-use local_booking\local\report\pdf_report_skilltest;
 use local_booking\local\report\pdf_report_recommendletter;
 
 // Standard GPL and phpdocs
@@ -44,7 +43,6 @@ $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $userid = optional_param('userid', 0, PARAM_INT);
 $reporttype = optional_param('report', 'mentor', PARAM_RAW);
-$attempt = (optional_param('attempt', 0, PARAM_INT) ?: 1) - 1;
 
 $url = new moodle_url('/local/booking/view.php');
 $url->param('courseid', $courseid);
@@ -77,10 +75,6 @@ switch ($reporttype) {
     case 'practicalexam':
         $practicalreport = new pdf_report_practicalexam($COURSE->subscriber, $student);
         $practicalreport->Generate();
-        break;
-    case 'evalform':
-        $examinerreport = new pdf_report_skilltest($COURSE->subscriber, $student, $attempt);
-        $examinerreport->Generate();
         break;
     case 'recommendation':
         $recommendationreport = new pdf_report_recommendletter($COURSE->subscriber, $student);

@@ -1,5 +1,11 @@
 # Change log
 
+## [2024053100] - RELEASED 2024-05-31
+
+### Fixed
+
+- session booking when first session is 00:00
+
 ## [2024052900] - RELEASED 2024-05-29 V2.1
 
 ### Fixed

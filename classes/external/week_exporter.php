@@ -441,8 +441,8 @@ class week_exporter extends exporter {
         global $COURSE;
 
         // Get daily slots from settings
-        $firstsessionhour = (get_config('local_booking', 'firstsession')) ? substr(get_config('local_booking', 'firstsession'), 0, 2) : LOCAL_BOOKING_FIRSTSLOT;
-        $lastsessionhour = (get_config('local_booking', 'lastsession')) ? substr(get_config('local_booking', 'lastsession'), 0, 2) : LOCAL_BOOKING_LASTSLOT;
+        $firstsessionhour = get_config('local_booking', 'firstsession');
+        $lastsessionhour = get_config('local_booking', 'lastsession');
 
         // Get user timezone offset
         $usertz = new \DateTimeZone(usertimezone());

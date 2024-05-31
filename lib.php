@@ -57,14 +57,6 @@ define('LOCAL_BOOKING_MINLANES', 4);
  */
 define('LOCAL_BOOKING_MAXLANES', 20);
 /**
- * LOCAL_BOOKING_FIRSTSLOT - default value of the first slot of the day
- */
-define('LOCAL_BOOKING_FIRSTSLOT', 8);
-/**
- * LOCAL_BOOKING_LASTSLOT - default value of the first slot of the day
- */
-define('LOCAL_BOOKING_LASTSLOT', 23);
-/**
  * LOCAL_BOOKING_WEEKSLOOKAHEAD - default value of the first slot of the day
  */
 define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);

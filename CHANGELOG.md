@@ -1,5 +1,12 @@
 # Change log
 
+## [2024061000] - UNRELEASED 2024-06-10
+
+### Fixed
+
+- session_id column fix
+
+
 ## [2024053100] - RELEASED 2024-05-31
 
 ### Fixed

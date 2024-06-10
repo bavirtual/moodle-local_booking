@@ -42,6 +42,21 @@ function xmldb_local_booking_upgrade($oldversion) {
     // Put any upgrade step following this.
 
     // add sessionid column in logbooks to link log entries to sessions
+    if ($oldversion < 2024061000) {
+        // get table and field info.
+        $table = new xmldb_table('local_booking_logbooks');
+        $field = new xmldb_field('sessionid', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'userid');
+
+        // Launch addition of the session id field.
+        if (!$dbmanager->field_exists($table, $field)) {
+            $dbmanager->add_field($table, $field);
+        }
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2024061000, 'local', 'booking');
+    }
+
+    // add sessionid column in logbooks to link log entries to sessions
     if ($oldversion < 2023121900) {
         // get table and field info.
         $table = new xmldb_table('local_booking_logbooks');

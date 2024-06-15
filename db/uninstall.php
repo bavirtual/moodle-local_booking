@@ -33,6 +33,7 @@ use \core_customfield\api;
 function xmldb_local_booking_uninstall() {
 
     delete_course_customfields();
+    delete_user_customfields();
 
     return true;
 }
@@ -45,10 +46,25 @@ function delete_course_customfields() {
     // get all categories and fields.
     $categories = api::get_categories_with_fields('core_course', 'course', 0);
     foreach ($categories as $coursecategory) {
-        // delete ATO category and associated fields
+        // delete plugin category and associated fields
         if ($coursecategory->get('name') == ucfirst(get_string('pluginname', 'local_booking'))) {
-            // Delete custom ATO category
+            // Delete custom plugin category
             api::delete_category($coursecategory);
+        }
+    }
+}
+
+/**
+ * Delete plugin custom category and fields for all users
+ */
+function delete_user_customfields() {
+    // get all categories and fields.
+    $categories = api::get_categories_with_fields('core_user', 'user', 0);
+    foreach ($categories as $usercategory) {
+        // delete ATO category and associated fields
+        if ($usercategory->get('name') == ucfirst(get_string('pluginname', 'local_booking'))) {
+            // Delete custom plugin category
+            api::delete_category($usercategory);
         }
     }
 }

@@ -36,10 +36,6 @@
  define('LOCAL_BOOKING_DEFAULTSIMULATOR', 'MSFS');
  define('LOCAL_BOOKING_CALLSIGN', 'callsign');
  define('LOCAL_BOOKING_CALLSIGNLABEL', 'Callsign');
- define('LOCAL_BOOKING_NOSHOW', 'noshow');
- define('LOCAL_BOOKING_NOSHOWLABEL', 'No-show counter');
- define('LOCAL_BOOKING_NOSHOWDATE', 'noshowdate');
- define('LOCAL_BOOKING_NOSHOWDATELABEL', 'No-show date');
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
 
@@ -110,14 +106,6 @@ function create_user_profile_customfields() {
     // Add callsign field if it doesn't exist
     $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_CALLSIGN,
         LOCAL_BOOKING_CALLSIGNLABEL, 'text', 2);
-
-    // Add no-show counter hidden field if it doesn't exist
-    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_NOSHOW,
-    LOCAL_BOOKING_NOSHOWLABEL, 'text', 0);
-
-    // Add no-show date hidden field if it doesn't exist
-    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_NOSHOWDATE,
-    LOCAL_BOOKING_NOSHOWDATELABEL, 'datetime', 0);
 }
 
 /**

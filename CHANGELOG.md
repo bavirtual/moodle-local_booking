@@ -1,6 +1,16 @@
 # Change log
 
-## [2024061300] - UNRELEASED 2024-06-13
+## [2024070100] - RELEASED 2024-07-01
+
+### Fixed
+
+- course completion status and skill test recommendation
+- ‘no-show counter’ and ‘no-show date’ in new install showing in user profile
+- recommendation for final assessment (QXC) although PoF is completed!
+
+### Changed
+
+- reverted session_id field in latest upgrade.php
 
 ### Fixed
 

@@ -146,7 +146,7 @@ class action implements action_interface {
                 // set grading url
                 $actionurl = '/local/booking/assign.php';
                 $params = ['exeid' => $exerciseid];
-                $name = get_string('grade', 'grades');
+                $name = get_string('grade', 'local_booking');
                 $tooltip = get_string('actiongradesession', 'local_booking');
 
                 // check if the instructor can grade the exercise

@@ -43,13 +43,6 @@ interface priority_interface {
     public function get_recency_days();
 
     /**
-     * Get the number of Availability slots marked by the student.
-     *
-     * @return int  $slotcount      The number of availability slots marked by the student.
-     */
-    public function get_slot_count();
-
-    /**
      * Get course activity for a student from the logs.
      *
      * @return int  $activitycount  The number of activity events in the log.

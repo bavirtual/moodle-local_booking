@@ -213,12 +213,10 @@ interface participant_interface {
     /**
      * verifies whether the participant is part of a course group
      *
-     * @param int    $courseid  The associated course id.
-     * @param int    $studentid The associated user id.
      * @param string $groupname The group name to verify membership.
      * @return bool             The result of the being a member of the passed group.
      */
-    public static function is_member_of(int $courseid, int $userid, string $groupname);
+    public function is_member_of(string $groupname);
 
     /**
      * check if the participant is a student

@@ -322,7 +322,7 @@ class bookings_exporter extends exporter {
                     $sequencetooltip = [
                         'score'     => $student->get_priority()->get_score(),
                         'recency'   => $student->get_priority()->get_recency_days(),
-                        'slots'     => $student->get_priority()->get_slot_count(),
+                        'slots'     => $student->get_total_posts(),
                         'activity'  => $student->get_priority()->get_activity_count(false),
                         'completion'=> $student->get_priority()->get_completions(),
                         'score'     => $student->get_priority()->get_score(),
@@ -395,7 +395,7 @@ class bookings_exporter extends exporter {
         } elseif ($sorttype == 'a') {
             // filtering students that have posted slots and completed lessons
             $posts_completed = array_filter($activestudents, function($std) {
-                if ($std->has_completed_lessons() && $std->get_priority()->get_slot_count() > 0 && empty($std->get_active_booking())) {
+                if ($std->has_completed_lessons() && $std->get_total_posts() > 0 && empty($std->get_active_booking()->get_id())) {
                     $std->set_status('posts_completed');
                 }
                 return $std->get_status() == 'posts_completed';
@@ -403,14 +403,14 @@ class bookings_exporter extends exporter {
             // order active students by: recency days then posted slots
             uasort($posts_completed, function($st1, $st2) {
                 if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
-                    return $st2->get_priority()->get_slot_count() <=> $st1->get_priority()->get_slot_count();
+                    return $st2->get_total_posts() <=> $st1->get_total_posts();
                 }
                 return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
             });
 
             // filtering students that have no posted slots but completed lessons
             $noposts_completed = array_filter($activestudents, function($std) {
-                if (($std->has_completed_lessons() && $std->get_priority()->get_slot_count() == 0) || !empty($std->get_active_booking())) {
+                if (($std->has_completed_lessons() && $std->get_total_posts() == 0) || !empty($std->get_active_booking()->get_id())) {
                     $std->set_status('noposts_completed');
                 }
                 return $std->get_status() == 'noposts_completed';

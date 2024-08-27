@@ -49,6 +49,11 @@ class participant implements participant_interface {
     protected $course;
 
     /**
+     * @var \stdClass $user The participant Moodle user object.
+     */
+    protected $user;
+
+    /**
      * @var int $userid The participant user id.
      */
     protected $userid;
@@ -82,6 +87,16 @@ class participant implements participant_interface {
      * @var int $lastlogin The participant last login date timestamp.
      */
     protected $lastlogin;
+
+    /**
+     * @var \stdClass $lastgraded The participant last graded information.
+     */
+    protected $lastgraded;
+
+    /**
+     * @var \stdClass $last_booked_date The participant last booked date information.
+     */
+    protected $last_booked_date;
 
     /**
      * @var string $callsign The participant callsign.
@@ -119,6 +134,11 @@ class participant implements participant_interface {
     protected $status;
 
     /**
+     * @var array $groups The student array of member of groups.
+     */
+    protected $groups = [];
+
+    /**
      * @var booking[] $bookings The student array of bookings.
      */
     protected $bookings;
@@ -139,6 +159,7 @@ class participant implements participant_interface {
         $this->vault = new participant_vault();
         $this->course = $course;
         $this->userid = $userid;
+        $this->user = \core_user::get_user($this->userid);
 
         // lookup user type and active status
         if ($userid != 0) {
@@ -149,14 +170,7 @@ class participant implements participant_interface {
             $this->is_examiner = $this->has_role(LOCAL_BOOKING_EXAMINERROLE);
 
             // get active participant courses
-            $enroledcourses = enrol_get_users_courses($userid, true);
-            foreach ($enroledcourses as $ue) {
-                // Default status field label and value.
-                if ($ue->id == $course->get_id()) {
-                    $this->is_active = !$this->is_student ? !self::is_member_of($course->get_id(), $userid, LOCAL_BOOKING_INACTIVEGROUP) : true;
-                    break;
-                }
-            }
+            $this->is_active = !$this->is_student ? !$this->is_member_of(LOCAL_BOOKING_INACTIVEGROUP) : true;
         }
     }
 
@@ -221,19 +235,18 @@ class participant implements participant_interface {
      */
     public function get_name(bool $alternate = true, $namepart = '') {
         // get profile user name information
-        $u = \core_user::get_user($this->userid);
         if (empty($this->name)) {
-            $this->name = $u->firstname . ' ' . $u->lastname;
-            $this->fullname = $this->name . ' ' . $u->alternatename;
+            $this->name = $this->user->firstname . ' ' . $this->user->lastname;
+            $this->fullname = $this->name . ' ' . $this->user->alternatename;
         }
 
         // check for name part
         switch ($namepart) {
             case 'first':
-                $name = $u->firstname;
+                $name = $this->user->firstname;
                 break;
             case 'last':
-                $name = $u->lastname;
+                $name = $this->user->lastname;
                 break;
             default:
                 $name = $this->name;
@@ -252,7 +265,7 @@ class participant implements participant_interface {
      */
     public function get_bookings(bool $isstudent = true, bool $activeonly = false, bool $oldestfirst = false) {
 
-        if (empty($this->bookings)) {
+        if (!isset($this->bookings)) {
             $bookings = [];
             $allcourses = \get_user_preferences('local_booking_1_xcoursebookings', false, $this->userid);
             $bookingobjs = booking_vault::get_bookings($this->course->get_id(), $this->userid, $isstudent, $oldestfirst, $activeonly, $allcourses);
@@ -275,7 +288,7 @@ class participant implements participant_interface {
      * @return logbook   An array of bookings.
      */
     public function get_logbook(bool $loadentries = false, bool $allentries = false) {
-        if (empty($this->logbook) || $loadentries) {
+        if (!isset($this->logbook) || $loadentries) {
             $logbook = new logbook($this->course->get_id(), $this->userid);
             if ($loadentries)
                 $logbook->load($allentries);
@@ -290,7 +303,7 @@ class participant implements participant_interface {
      * @return \DateTime $enroldate  The enrolment date of the participant.
      */
     public function get_enrol_date() {
-        if (empty($this->enroldate)) {
+        if (!isset($this->enroldate)) {
             // TODO: PHP9 deprecates dynamic properties
             $enroldate = 'enroldate';
             $this->enroldate = ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->$enroldate;
@@ -304,7 +317,7 @@ class participant implements participant_interface {
      * @return \DateTime $enroldate  The enrolment suspension date of the participant.
      */
     public function get_suspension_date() {
-        if (empty($this->suspenddate)) {
+        if (!isset($this->suspenddate)) {
             // TODO: PHP9 deprecates dynamic properties
             $suspenddate = 'suspenddate';
             $this->suspenddate = ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->$suspenddate;
@@ -328,9 +341,10 @@ class participant implements participant_interface {
      * @return  \DateTime    The timestamp of the last grading
      */
     public function get_last_graded_date() {
-        $lastgraded = grading_vault::get_last_graded_date($this->userid, $this->course->get_id(), $this->is_student);
+        if (!isset($this->lastgraded))
+            $this->lastgraded = grading_vault::get_last_graded_date($this->userid, $this->course->get_id(), $this->is_student);
 
-        $lastgradeddate = !empty($lastgraded) ? new \DateTime('@' . $lastgraded->timemodified) : null;
+        $lastgradeddate = !empty($this->lastgraded) ? new \DateTime('@' . $this->lastgraded->timemodified) : null;
 
         return $lastgradeddate;
     }
@@ -341,9 +355,11 @@ class participant implements participant_interface {
      * @return  \DateTime    The timestamp of the last booked session
      */
     public function get_last_booked_date() {
-        $sessiondate = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
+        if (!isset($this->last_booked_date)) {
+            $this->last_booked_date = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
+        }
 
-        $lastsessiondate = !empty($sessiondate) ? new \DateTime('@' . $sessiondate->lastbookedsession) : null;
+        $lastsessiondate = !empty($this->last_booked_date) ? new \DateTime('@' . $this->last_booked_date->lastbookedsession) : null;
 
         return $lastsessiondate;
     }
@@ -379,8 +395,7 @@ class participant implements participant_interface {
         if (subscriber::has_integration('external_data', 'pilotstats')) {
             // TODO: PHP9 deprecates dynamic properties
             // get pilot id from integration
-            $u = \core_user::get_user($this->userid);
-            $pilotrec = $this->course->get_external_data('pilotid', 'pilotinfo', $u->alternatename);
+            $pilotrec = $this->course->get_external_data('pilotid', 'pilotinfo', $this->user->alternatename);
             $pilotid = $pilotrec['pilotid'];
             $pilotstatsrec = $this->course->get_external_data('pilotstats', 'stats', $pilotid);
             $totalatohours = $pilotstatsrec['totalatohours'];
@@ -405,17 +420,16 @@ class participant implements participant_interface {
      * @return string           The participant custom field
      */
     public function get_profile_field(string $field, bool $corefield = false) {
-        $u = \core_user::get_user($this->userid);
         $value = '';
 
         if (!$corefield) {
-            profile_load_data($u);
+            profile_load_data($this->user);
             $fld = 'profile_field_' . $field;
-            if (property_exists($u, $fld)) {
-                $value = $u->$fld ?: '';
+            if (property_exists($this->user, $fld)) {
+                $value = $this->user->$fld ?: '';
             }
         } else {
-            $value = $u->$field;
+            $value = $this->user->$field;
         }
         // TODO: PHP9 deprecates dynamic properties
         return $value;
@@ -500,14 +514,19 @@ class participant implements participant_interface {
     /**
      * verifies whether the participant is part of a course group
      *
-     * @param int    $courseid  The associated course id.
      * @param int    $studentid The associated user id.
      * @param string $groupname The group name to verify membership.
      * @return bool             The result of the being a member of the passed group.
      */
-    public static function is_member_of(int $courseid, int $userid, string $groupname) {
-        $groupid = groups_get_group_by_name($courseid, $groupname);
-        return groups_is_member($groupid, $userid);
+    public function is_member_of(string $groupname) {
+        $ismember = false;
+        if (!$ismember = in_array($groupname, $this->groups)) {
+            $groupid = groups_get_group_by_name($this->course->get_id(), $groupname);
+            if ($ismember = groups_is_member($this->course->get_id(), $this->userid)) {
+                array_push($this->groups, $groupname);
+            }
+        }
+        return $ismember;
     }
 
     /**

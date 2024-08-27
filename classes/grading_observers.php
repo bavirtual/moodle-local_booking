@@ -66,8 +66,8 @@ class grading_observers {
             $booking->deactivate();
 
         // revoke 'Keep Active' status
-        if (student::is_member_of($courseid, $studentid, LOCAL_BOOKING_KEEPACTIVEGROUP)) {
-            $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_KEEPACTIVEGROUP);
+        $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_KEEPACTIVEGROUP);
+        if (groups_is_member($groupid, $studentid)) {
             groups_remove_member($groupid, $studentid);
         }
 

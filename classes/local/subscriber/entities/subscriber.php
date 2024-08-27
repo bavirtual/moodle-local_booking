@@ -107,6 +107,11 @@ class subscriber implements subscriber_interface {
     public $resources;
 
     /**
+     * @var array $roles The subscribing course's role.
+     */
+    public $roles;
+
+    /**
      * @var array $modules The subscribing course's modules (exercises & quizes).
      */
     protected $modules;
@@ -125,6 +130,11 @@ class subscriber implements subscriber_interface {
      * @var array $exercisetitles An array holding subscribing course exercise titles for grid UI.
      */
     public $exercisetitles;
+
+    /**
+     * @var array $gradeitems An array holding subscribing course grade items for all modules.
+     */
+    public $gradeitems;
 
     /**
      * @var string $gradmsgsubject A congratulary message subject for graduating students.
@@ -206,6 +216,8 @@ class subscriber implements subscriber_interface {
         $this->modules = array_filter($cms, function($property) { return ($property->modname == 'assign' || $property->modname == 'quiz');});
         $this->lessonmods = array_filter($cms, function($property) { return ($property->modname == 'lesson');});
         $this->resources = array_filter($cms, function($property) { return ($property->modname == 'resource');});
+        $this->roles = [];
+        $this->gradeitems = [];
 
         // define course custom fields globally
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
@@ -386,7 +398,7 @@ class subscriber implements subscriber_interface {
             $i = 0;
             foreach ($studentrecs as $studentrec) {
                 $student = new student($this, $studentrec->userid);
-                if ($student->has_role('student') || $student->is_member_of($this->get_id(), $student->get_id(), LOCAL_BOOKING_GRADUATESGROUP)) {
+                if ($student->has_role('student') || $student->is_member_of(LOCAL_BOOKING_GRADUATESGROUP)) {
                     $student->populate($studentrec);
                     $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
                     $activestudents[$student->get_id()] = $student;
@@ -467,6 +479,18 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Retrieves subscribing course roles
+     *
+     * @return array
+     */
+    public function get_roles() {
+        if (count($this->roles)==0) {
+            $this->roles = get_viewable_roles($this->context);
+        }
+        return $this->roles;
+    }
+
+    /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array
@@ -495,6 +519,19 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Retrieves subscribing course modules (exercises & quizes)
+     *
+     * @return array
+     */
+    public function get_exercises() {
+        $exercises = [];
+        foreach ($this->modules as $module) {
+            if ($module->modname == 'assign') $exercises[$module->id] = $module->name;
+        }
+        return $exercises;
+    }
+
+    /**
      * Returns the subscribed course section id and lesson name that contains the exercise
      *
      * @param int $exerciseid The exercise id in the course inside the section
@@ -506,16 +543,27 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Retrieves subscribing course modules (exercises & quizes)
+     * Get subscribing course grading item for a module
      *
+     * @param int  $modid The exercise id requiring the grade item
      * @return array
      */
-    public function get_exercises() {
-        $exercises = [];
-        foreach ($this->modules as $module) {
-            if ($module->modname == 'assign') $exercises[$module->id] = $module->name;
+    public function get_grading_item(int $modid) {
+        // get grading items for all modules
+        $mod = $this->get_modules()[$modid];
+        $idx = array_search($mod->instance, array_column($this->gradeitems, 'iteminstance'));
+        if (empty($idx)) {
+            $params = array('itemtype' => 'mod',
+                'itemmodule' => $mod->modname,
+                'iteminstance' => $mod->instance,
+                'courseid' => $this->courseid,
+                'itemnumber' => 0);
+            $gradeitem = \grade_item::fetch($params);
+            $this->gradeitems[] = $gradeitem;
+        } else {
+            $gradeitem = $this->gradeitems[$idx];
         }
-        return $exercises;
+        return $gradeitem;
     }
 
     /**

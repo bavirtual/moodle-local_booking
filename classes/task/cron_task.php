@@ -206,7 +206,7 @@ class cron_task extends \core\task\scheduled_task {
                     $alreayonhold = $student->is_onhold();
                     $keepactive =  $student->is_kept_active();
                     $isactive = $student->has_completed_lessons() && $student->get_total_posts() > 0;
-                    $booked = !empty($student->get_active_booking());
+                    $booked = !empty($student->get_active_booking()->get_id());
 
                     // on-hold date from last booked session
                     $lastsessiondate = new DateTime('@' . $lastsessionts);

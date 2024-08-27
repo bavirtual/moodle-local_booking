@@ -99,7 +99,12 @@ class instructor_participation_exporter extends exporter {
             $lastsessiondate = $instructor->get_last_booked_date();
             $interval = !empty($lastgradeddate) ? date_diff($lastgradeddate, $today) : 0;
 
-            $courserole = strip_tags(get_user_roles_in_course($instructor->get_id(), $courseid));
+            // get instructor instructor role in the course
+            $roleobjects = $instructor->get_roles();
+            $rolesarray = array_map(fn($role): array => ['id'=>$role->roleid,'name'=>$role->name], $roleobjects);
+            $roles = array_combine(array_column($rolesarray, 'id'), array_column($rolesarray, 'name'));
+            $rolesintersect = array_intersect_key($COURSE->subscriber->get_roles(), $roles);
+            $courserole = implode(', ', array_values($rolesintersect));
 
             $participation[] = [
                 'instructorid' => $instructor->get_id(),

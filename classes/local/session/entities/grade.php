@@ -31,7 +31,6 @@ require_once($CFG->dirroot . '/grade/grading/lib.php');
 
 use assign;
 use local_booking\local\session\data_access\grading_vault;
-use local_booking\local\participant\entities\participant;
 
 defined('MOODLE_INTERNAL') || die();
 define('MOODLE_REPOSITORY_ID', 4);
@@ -87,25 +86,26 @@ class grade extends \grade_grade {
     /**
      * Constructor.
      *
-     * @param {object}  $coursemodgrade The grader user id of the grade.
-     * @param int       $userid         The user id of the student of the grade.
-     * @param int       $exerciseid     The exercise id of the grade.
-     * @param bool      $force          Whether to force loading the grade object even before a final grade is assigned.
-     * @param bool      $getattempts    Whether to retrieve students attempts for the exercise.
+     * @param grade_item $gradeitem    The grader user id of the grade.
+     * @param int        $userid        The user id of the student of the grade.
+     * @param int        $exerciseid    The exercise id of the grade.
+     * @param bool       $force         Whether to force loading the grade object even before a final grade is assigned.
+     * @param bool       $getattempts   Whether to retrieve students attempts for the exercise.
      */
-    public function __construct(int $gradeitemid, int $userid, int $exerciseid, bool $force = false, bool $getattempts = false) {
-        parent::__construct(array('userid'=>$userid, 'itemid'=>$gradeitemid));
+    public function __construct(\grade_item $gradeitem, int $userid, int $exerciseid, bool $force = false, bool $getattempts = false) {
+        parent::__construct(array('userid'=>$userid, 'itemid'=>$gradeitem->id));
 
         if (!empty($this->finalgrade) || $force) {
             $this->exerciseid = $exerciseid;
-            $this->gradername = participant::get_fullname($this->usermodified ?: $userid);
-            $this->load_grade_item();
-            $this->gradeinfo = ((object) grade_get_grades(
-                $this->grade_item->courseid,
-                $this->grade_item->itemtype,
-                $this->grade_item->itemmodule,
-                $this->grade_item->iteminstance,
-                $userid))->items[0];
+            $this->grade_item = $gradeitem;
+            if (!isset($this->gradeinfo)) {
+                $this->gradeinfo = ((object) grade_get_grades(
+                    $this->grade_item->courseid,
+                    $this->grade_item->itemtype,
+                    $this->grade_item->itemmodule,
+                    $this->grade_item->iteminstance,
+                    $userid))->items[0];
+            }
 
             if ($this->grade_item->itemmodule == 'quiz') {
                 $this->attempts = quiz_get_user_attempts($this->grade_item->iteminstance, $userid);
@@ -169,24 +169,6 @@ class grade extends \grade_grade {
         }
 
         return $this->usergrade;
-    }
-
-    /**
-     * Get subscribing course grading item for a module
-     *
-     * @param int      $courseid The subscribing course id
-     * @param \cm_info $mod      The exercise module requiring the grade item
-     * @return array
-     */
-    public static function get_grading_item(int $courseid, \cm_info $mod) {
-        // get grading items for all modules
-        $params = array('itemtype' => 'mod',
-            'itemmodule' => $mod->modname,
-            'iteminstance' => $mod->instance,
-            'courseid' => $courseid,
-            'itemnumber' => 0);
-
-        return \grade_item::fetch($params);
     }
 
     /**

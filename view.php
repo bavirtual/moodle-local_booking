@@ -38,6 +38,7 @@ $course     = get_course($courseid);
 $studentid  = optional_param('userid', 0, PARAM_INT);
 $sorttype   = optional_param('sort', '', PARAM_ALPHA);
 $action     = optional_param('action', 'book', PARAM_ALPHA);
+$filter     = optional_param('filter', 'active', PARAM_ALPHA);
 $context     = context_course::instance($courseid);
 
 require_login($course, false);
@@ -71,7 +72,7 @@ $data = [
     'action'     => $action,
     'view'       => 'sessions',
     'sorttype'   => $sorttype,
-    'filter'     => 'active',
+    'filter'     => $filter,
 ];
 // get booking view
 $bookingview = new booking_view($context, $courseid, $data);

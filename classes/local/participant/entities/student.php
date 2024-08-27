@@ -288,19 +288,24 @@ class student extends participant {
     public function get_grade(int $coursemodid, bool $getattempts = false) {
 
         // get the grade if already exists otherwise create a new one making sure it's not empty
-        if (isset($this->grades[$coursemodid])) {
+        if (array_key_exists($coursemodid, $this->grades)) {
 
             $grade = $this->grades[$coursemodid];
 
         } else {
 
             // fetch grade_grade then ensure it is graded!
-            $gradeitem = grade::get_grading_item($this->course->get_id(), $this->course->get_modules()[$coursemodid]);
-            $grade = new grade($gradeitem->id, $this->userid, $coursemodid, false, $getattempts);
+            $gradeitem = $this->course->get_grading_item($coursemodid);
+            $grade = new grade($gradeitem, $this->userid, $coursemodid, false, $getattempts);
 
             // discard the grade if the final grade is missing or it's over before cutoff period for processing past data
             if (empty($grade->finalgrade) || (strtotime(LOCAL_BOOKING_PASTDATACUTOFF . ' day', $grade->timemodified) < time())) {
                 $grade = null;
+            }
+
+            // add to grades object
+            if (!array_key_exists($coursemodid, $this->grades)) {
+                $this->grades[$coursemodid] = $grade;
             }
         }
 
@@ -482,10 +487,9 @@ class student extends participant {
      */
     public function get_active_booking() {
 
-        if (empty($this->activebooking)) {
-            $booking = new booking(0, $this->course->get_id(), $this->userid);
-            if ($booking->load())
-                $this->activebooking = $booking;
+        if (!isset($this->activebooking)) {
+            $this->activebooking = new booking(0, $this->course->get_id(), $this->userid);
+            $this->activebooking->load();
         }
 
         return $this->activebooking;
@@ -522,7 +526,8 @@ class student extends participant {
         if (empty($this->nextexercise)) {
 
             // get booking if exists otherwise pick the next exercise
-            if ($booking = $this->get_active_booking()) {
+            $booking = $this->get_active_booking();
+            if (!empty($booking->get_id())) {
 
                 $this->nextexercise = $booking->get_exerciseid();
 
@@ -562,7 +567,7 @@ class student extends participant {
     public function get_priority() {
 
         if (empty($this->priority)) {
-            $this->priority = new priority($this->course->get_id(), $this->userid);
+            $this->priority = new priority($this);
         }
 
         return $this->priority;
@@ -575,7 +580,7 @@ class student extends participant {
      */
     public function get_total_posts() {
 
-        if (empty($this->total_posts))
+        if (!isset($this->total_posts))
             $this->total_posts = slot_vault::get_slot_count($this->course->get_id(), $this->userid);
 
         return $this->total_posts;
@@ -781,10 +786,10 @@ class student extends participant {
 
         if ($hassubmission = !empty($exerciseid)) {
             // get the assignment associated with the exercise comments
-            $gradeitem = grade::get_grading_item($this->course->get_id(), $this->course->get_modules()[$exerciseid]);
+            $gradeitem = $this->course->get_grading_item($exerciseid);
 
             if (!empty($gradeitem)) {
-                $grade = new grade($gradeitem->id, $this->userid, $exerciseid, true);
+                $grade = new grade($gradeitem, $this->userid, $exerciseid, true);
                 $assign = $grade->get_assignment();
 
                 // check if a file submission is required for this exercise
@@ -813,7 +818,7 @@ class student extends participant {
      * @return  bool    Whether the student is on hold.
      */
     public function is_onhold() {
-        return self::is_member_of($this->course->get_id(), $this->userid, LOCAL_BOOKING_ONHOLDGROUP);
+        return $this->is_member_of(LOCAL_BOOKING_ONHOLDGROUP);
     }
 
     /**
@@ -822,7 +827,7 @@ class student extends participant {
      * @return  bool    Whether the student is in 'Keep Active' status.
      */
     public function is_kept_active() {
-        return self::is_member_of($this->course->get_id(), $this->userid, LOCAL_BOOKING_KEEPACTIVEGROUP);
+        return $this->is_member_of(LOCAL_BOOKING_KEEPACTIVEGROUP);
     }
 
     /**
@@ -896,6 +901,6 @@ class student extends participant {
      * @return  bool    Whether the student had graduated.
      */
     public function graduated() {
-        return self::is_member_of($this->course->get_id(), $this->userid, LOCAL_BOOKING_GRADUATESGROUP);
+        return $this->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
     }
 }

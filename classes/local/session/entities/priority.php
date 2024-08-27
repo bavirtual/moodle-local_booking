@@ -26,6 +26,7 @@
 namespace local_booking\local\session\entities;
 
 use local_booking\local\session\data_access\analytics_vault;
+use local_booking\local\participant\entities\student;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -41,17 +42,22 @@ class priority implements priority_interface {
     const NORMALIZER = 10;
 
     /**
-     * @var int  $score         The total score representing the student's priority
+     * @var student  $student   The student related to the priority score.
+     */
+    protected $student;
+
+    /**
+     * @var int  $score         The total score representing the student's priority.
      */
     protected $score;
 
     /**
-     * @var int  $recencydays    The number of days since last session
+     * @var int  $recencydays    The number of days since last session.
      */
     protected $recencydays;
 
     /**
-     * @var array  $recencyinfo  An array containing the source of the recency information
+     * @var array  $recencyinfo  An array containing the source of the recency information.
      */
     protected $recencyinfo;
 
@@ -78,26 +84,10 @@ class priority implements priority_interface {
     /**
      * Constructor.
      *
-     * @param int $studentid    The student id related to the priority score.
-     * @param array $related Related objects.
+     * @param int $student    The student related to the priority score.
      */
-    public function __construct(int $courseid, int $studentid) {
-        list($this->recencydays, $this->recencyinfo) = analytics_vault::get_session_recency($courseid, $studentid);
-        $recencydaysweight = get_config('local_booking', 'recencydaysweight') ? get_config('local_booking', 'recencydaysweight') : LOCAL_BOOKING_RECENCYWEIGHT;
-
-        $this->slotcount = analytics_vault::get_slot_count($courseid, $studentid);
-        $slotcountweight = get_config('local_booking', 'slotcountweight') ? get_config('local_booking', 'slotcountweight') : LOCAL_BOOKING_SLOTSWEIGHT;
-
-        $activity = analytics_vault::get_activity_count($courseid, $studentid);
-        $this->activitycount = floor($activity/ self::NORMALIZER);
-        $this->activitycountraw = $activity;
-        $activitycountweight = get_config('local_booking', 'activitycountweight') ? get_config('local_booking', 'activitycountweight') : LOCAL_BOOKING_ACTIVITYWEIGHT;
-
-        $this->completions = analytics_vault::get_lesson_completions($courseid, $studentid);
-        $completionsweight = get_config('local_booking', 'completionweight') ? get_config('local_booking', 'completionweight') : LOCAL_BOOKING_COMPLETIONWEIGHT;
-
-        $this->score = ( $this->recencydays * $recencydaysweight ) + ( $this->slotcount * $slotcountweight ) +
-                       ( $this->activitycount * $activitycountweight ) + ( $this->completions + $completionsweight );
+    public function __construct(student $student) {
+        $this->student = $student;
     }
 
     /**
@@ -106,6 +96,9 @@ class priority implements priority_interface {
      * @return int  $recencydays    The number of days since last session
      */
     public function get_recency_days() {
+        if (!isset($this->recencydays)) {
+            list($this->recencydays, $this->recencyinfo) = analytics_vault::get_session_recency($this->student->get_courseid(), $this->student->get_id());
+        }
         return $this->recencydays;
     }
 
@@ -117,6 +110,10 @@ class priority implements priority_interface {
      */
     public function get_recency_info() {
         $info = '';
+
+        if (!isset($this->recencydays)) {
+            $this->get_recency_days();
+        }
 
         switch ($this->recencyinfo['source']) {
             case 'booking':
@@ -133,20 +130,18 @@ class priority implements priority_interface {
     }
 
     /**
-     * Get the number of Availability slots marked by the student.
-     *
-     * @return int  $slotcount      The number of availability slots marked by the student.
-     */
-    public function get_slot_count() {
-        return $this->slotcount;
-    }
-
-    /**
      * Get course activity for a student from the logs.
      *
      * @return int  $activitycount  The number of activity events in the log.
      */
     public function get_activity_count(bool $normalized = true) {
+
+        if (!isset($this->activitycount)) {
+            $activity = analytics_vault::get_activity_count($this->student->get_courseid(), $this->student->get_id());
+            $this->activitycount = floor($activity / self::NORMALIZER);
+            $this->activitycountraw = $activity;
+        }
+
         return $normalized ? $this->activitycount : $this->activitycountraw;
     }
 
@@ -156,6 +151,9 @@ class priority implements priority_interface {
      * @return int  $completions    The number of lesson completions.
      */
     public function get_completions() {
+        if (!isset($this->completions)) {
+            $this->completions = analytics_vault::get_lesson_completions($this->student->get_courseid(), $this->student->get_id());
+        }
         return $this->completions;
     }
 
@@ -165,6 +163,17 @@ class priority implements priority_interface {
      * @return int  $score      The total prioritization score
      */
     public function get_score() {
+
+        if (!isset($this->score)) {
+            // get booking plugin configs
+            $recencydaysweight = get_config('local_booking', 'recencydaysweight') ? get_config('local_booking', 'recencydaysweight') : LOCAL_BOOKING_RECENCYWEIGHT;
+            $activitycountweight = get_config('local_booking', 'activitycountweight') ? get_config('local_booking', 'activitycountweight') : LOCAL_BOOKING_ACTIVITYWEIGHT;
+            $slotcountweight = get_config('local_booking', 'slotcountweight') ? get_config('local_booking', 'slotcountweight') : LOCAL_BOOKING_SLOTSWEIGHT;
+            $completionsweight = get_config('local_booking', 'completionweight') ? get_config('local_booking', 'completionweight') : LOCAL_BOOKING_COMPLETIONWEIGHT;
+
+            $this->score = ( $this->recencydays * $recencydaysweight ) + ( $this->slotcount * $slotcountweight ) +
+                        ( $this->activitycount * $activitycountweight ) + ( $this->completions + $completionsweight );
+        }
         return $this->score;
     }
 }

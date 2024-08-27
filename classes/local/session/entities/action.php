@@ -25,7 +25,6 @@
 
 namespace local_booking\local\session\entities;
 
-use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;

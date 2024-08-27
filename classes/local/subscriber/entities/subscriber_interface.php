@@ -142,6 +142,13 @@ interface subscriber_interface {
     public function get_flight_training_managers();
 
     /**
+     * Retrieves subscribing course roles
+     *
+     * @return array
+     */
+    public function get_roles();
+
+    /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
      * @return array
@@ -170,6 +177,21 @@ interface subscriber_interface {
      * @return array  The section name of a course associated with the exercise
      */
     public function get_lesson_by_exerciseid(int $exerciseid);
+
+    /**
+     * Retrieves subscribing course modules (exercises & quizes)
+     *
+     * @return array
+     */
+    public function get_exercises();
+
+    /**
+     * Get subscribing course grading item for a module
+     *
+     * @param int  $modid The exercise id requiring the grade item
+     * @return array
+     */
+    public function get_grading_item(int $modid);
 
     /**
      * Returns the course graduation exercise the last exercise

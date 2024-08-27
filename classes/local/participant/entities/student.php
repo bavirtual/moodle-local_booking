@@ -60,6 +60,11 @@ class student extends participant {
     protected $grades = [];
 
     /**
+     * @var bool $gradesloaded Whether the grades were loaded or not.
+     */
+    protected $gradesloaded = false;
+
+    /**
      * @var array $slots The student posted timeslots.
      */
     protected $slots;
@@ -235,6 +240,15 @@ class student extends participant {
     }
 
     /**
+     * Loads the student's grades
+     *
+     */
+    public function load_grades() {
+        $this->grades = $this->get_exercise_grades() + $this->get_quize_grades();
+        $this->gradesloaded = true;
+    }
+
+    /**
      * Get a list of the student exercise grades objects.
      *
      * @return {object}[]   An array of the student exercise grade objects.
@@ -288,9 +302,9 @@ class student extends participant {
     public function get_grade(int $coursemodid, bool $getattempts = false) {
 
         // get the grade if already exists otherwise create a new one making sure it's not empty
-        if (array_key_exists($coursemodid, $this->grades)) {
+        if ($this->gradesloaded) {
 
-            $grade = $this->grades[$coursemodid];
+            $grade = array_key_exists($coursemodid, $this->grades) ? $this->grades[$coursemodid] : null;
 
         } else {
 

@@ -1,5 +1,11 @@
 # Change log
 
+## [2024082702] - RELEASED 2024-08-27
+
+### Fixed
+
+- quiz cell incorrectly showing unmarked
+
 ## [2024082701] - RELEASED 2024-08-27
 
 ### Fixed

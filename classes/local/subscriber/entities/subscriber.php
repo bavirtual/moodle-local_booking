@@ -386,7 +386,7 @@ class subscriber implements subscriber_interface {
      * @param bool $rawdata        Whether to return students raw data
      * @return array $activestudents Array of active students.
      */
-    public function get_students(string $filter = 'active', bool $includeonhold = false, bool $rawdata = false) {
+    public function get_students(string $filter = 'active', bool $includeonhold = false, bool $rawdata = false, bool $loadgrades = false) {
         $activestudents = [];
         $studentrecs = participant_vault::get_students($this->courseid, $filter, $includeonhold);
         $colors = LOCAL_BOOKING_SLOTCOLORS;
@@ -400,6 +400,9 @@ class subscriber implements subscriber_interface {
                 $student = new student($this, $studentrec->userid);
                 if ($student->has_role('student') || $student->is_member_of(LOCAL_BOOKING_GRADUATESGROUP)) {
                     $student->populate($studentrec);
+                    if ($loadgrades) {
+                        $student->load_grades();
+                    }
                     $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
                     $activestudents[$student->get_id()] = $student;
                     $i++;

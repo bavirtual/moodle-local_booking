@@ -372,7 +372,6 @@ class booking_student_exporter extends exporter {
      * @return {object} $sessionoptions
      */
     protected function get_session_options($action) {
-        global $COURSE;
 
         $sessionoptions = [];
         $grades = $this->student->get_grades();

@@ -1,10 +1,11 @@
 # Change log
 
-## [2024082700] - RELEASED 2024-08-27
+## [2024082701] - RELEASED 2024-08-27
 
 ### Fixed
 
 - optimized db reads, bookings and student exporters, method calls
+- false active booking
 
 ## [2024070100] - RELEASED 2024-07-01
 

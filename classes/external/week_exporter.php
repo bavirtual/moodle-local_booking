@@ -163,7 +163,7 @@ class week_exporter extends exporter {
             }
 
             // get student active booking and instructor id if exists
-            if ($this->activebooking = $this->student->get_active_booking())
+            if ($this->activebooking = !empty($this->student->get_active_booking()->get_id()))
                 $activebookinginstrname = participant::get_fullname($this->activebooking->get_instructorid());
         }
 

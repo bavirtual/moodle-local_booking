@@ -1,5 +1,17 @@
 # Change log
 
+## [2024090600] - RELEASED 2024-09-06
+
+### Added
+
+- mdl_session_booking_stats table to reduce db calls
+- event triggers to manage stats
+- pagination for students on the Instructor Dashboard
+
+### Fixed
+
+- duplicate slots error handling for same user same course
+
 ## [2024082702] - RELEASED 2024-08-27
 
 ### Fixed

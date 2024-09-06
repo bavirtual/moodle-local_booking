@@ -215,6 +215,18 @@ class logbook_exporter extends exporter {
     }
 
     /**
+     * Returns a list of objects that are related.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        return array(
+            'context' => 'context',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
+        );
+    }
+
+    /**
      * Get the additional values to inject while exporting.
      *
      * @param renderer_base $output The renderer.
@@ -243,16 +255,5 @@ class logbook_exporter extends exporter {
         }
 
         return $entries;
-    }
-
-    /**
-     * Returns a list of objects that are related.
-     *
-     * @return array
-     */
-    protected static function define_related() {
-        return array(
-            'context'=>'context',
-        );
     }
 }

@@ -69,7 +69,7 @@ class cron_task extends \core\task\scheduled_task {
                 // check if the course is using Session Booking
                 $course = new subscriber($sitecourse->id);
 
-                if (!empty($course->subscribed) && $course->subscribed) {
+                if (!empty($course->subscribed)) {
 
                     mtrace('    Course: ' . $sitecourse->shortname . ' (id: ' . $sitecourse->id . ')');
 

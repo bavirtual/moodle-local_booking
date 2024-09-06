@@ -33,6 +33,10 @@ use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
 
 /**
+ * LOCAL_BOOKING_DASHBOARDPAGESIZE - constant value for the instructor dashboard page size
+ */
+define('LOCAL_BOOKING_DASHBOARDPAGESIZE', 50);
+/**
  * LOCAL_BOOKING_RECENCYWEIGHT - constant value for session recency weight multipler
  */
 define('LOCAL_BOOKING_RECENCYWEIGHT', 10);
@@ -116,6 +120,10 @@ define('LOCAL_BOOKING_EXAMINERROLE', 'examiner');
  * LOCAL_BOOKING_FAILINGPERCENTAGE - constant for the percentage of failing grade for rubric assessments
  */
 define('LOCAL_BOOKING_FAILINGPERCENTAGE', .33);
+/**
+ * LOCAL_BOOKING_PASTDATACUTOFFDAYS - Past cutoff date (timestamp) for data retrieval
+ */
+define('LOCAL_BOOKING_PASTDATACUTOFFDAYS', LOCAL_BOOKING_PASTDATACUTOFF * 60 * 60 * 24);
 /**
  * LOCAL_BOOKING_SLOTCOLORS - constant array for slot colors for students availability grid
  */

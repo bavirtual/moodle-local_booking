@@ -31,14 +31,13 @@ class calendar_view extends base_view {
     /**
      * calendar view constructor.
      *
-     * @param \context $context   The course context
-     * @param int      $courseid  The course id
      * @param array    $data      The data required for output
+     * @param array    $related   The related objects to pass
      */
-    public function __construct(\context $context, int $courseid, array $data) {
-        parent::__construct($context, $courseid, $data, 'local_booking/availability_calendar');
+    public function __construct(array $data, array $related) {
+        parent::__construct($data, $related, 'local_booking/availability_calendar');
 
-        $related = [
+        $related += [
             'type' => \core_calendar\type_factory::get_calendar_instance(),
             'calendar' => $data['calendar']
         ];

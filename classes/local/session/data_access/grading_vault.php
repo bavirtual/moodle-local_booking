@@ -152,7 +152,9 @@ class grading_vault implements grading_vault_interface {
 
         $sql = 'SELECT scale FROM {' . self::DB_SCALE . '}
                 WHERE id = :scaleid';
-        $scale = explode(',', $DB->get_record_sql($sql, ['scaleid'=>$scaleid])->scale);
+        $scalerec = $DB->get_record_sql($sql, ['scaleid'=>$scaleid])->scale;
+        if (!empty($scalerec))
+            $scale = explode(',', $scalerec);
         return $scale;
     }
 }

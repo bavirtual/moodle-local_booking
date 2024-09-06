@@ -29,33 +29,22 @@ use local_booking\external\logentry_exporter;
 class logentry_view extends base_view {
 
     /**
-     * @var array $related Related objects necessary to pass along to exporters.
-     */
-    protected $related;
-
-    /**
      * logentry view constructor.
      *
-     * @param \context $context   The course context
-     * @param int      $courseid  The course id
      * @param array    $data      The data required for output
+     * @param array    $related   The related objects to pass
      */
-    public function __construct(\context $context, int $courseid, array $data) {
-        parent::__construct($context, $courseid, $data, 'local_booking/modal_logentry_form');
-
-        // set class properties
-        $this->related = [
-            'context'   => $this->context,
-        ];
+    public function __construct(array $data, array $related) {
+        parent::__construct($data, $related, 'local_booking/modal_logentry_form');
 
         // add training type to the data sent to the exporter
-        $pilot = $data['subscriber']->get_participant($data['userid']);
-        $this->data['courseid'] = $courseid;
-        $this->data['trainingtype'] = $data['subscriber']->trainingtype;
-        $this->data['hasfindpirep'] = $data['subscriber']->has_integration('external_data', 'pireps');
+        $pilot = $related['subscriber']->get_participant($data['userid']);
+        $this->data['courseid'] = $related['subscriber']->get_id();
+        $this->data['trainingtype'] = $related['subscriber']->trainingtype;
+        $this->data['hasfindpirep'] = $related['subscriber']->has_integration('external_data', 'pireps');
         $this->data['isstudent']    = $pilot->is_student();
         $this->data['isinstructor'] = $pilot->is_instructor();
-        $this->data['courseshortname'] = $data['subscriber']->get_shortname();
+        $this->data['courseshortname'] = $related['subscriber']->get_shortname();
 
         // export the logbook
         $logentryexporter = new logentry_exporter($this->data, $this->related);

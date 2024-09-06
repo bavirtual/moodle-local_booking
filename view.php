@@ -39,6 +39,7 @@ $studentid  = optional_param('userid', 0, PARAM_INT);
 $sorttype   = optional_param('sort', '', PARAM_ALPHA);
 $action     = optional_param('action', 'book', PARAM_ALPHA);
 $filter     = optional_param('filter', 'active', PARAM_ALPHA);
+$page       = optional_param('page', 0, PARAM_INT);
 $context     = context_course::instance($courseid);
 
 require_login($course, false);
@@ -73,9 +74,10 @@ $data = [
     'view'       => 'sessions',
     'sorttype'   => $sorttype,
     'filter'     => $filter,
+    'page'       => $page,
 ];
 // get booking view
-$bookingview = new booking_view($context, $courseid, $data);
+$bookingview = new booking_view($data, ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
 
 echo $OUTPUT->header();
 echo $bookingview->get_renderer()->start_layout();

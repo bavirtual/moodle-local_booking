@@ -374,7 +374,8 @@ class logentry_exporter extends exporter {
      */
     protected static function define_related() {
         return array(
-            'context'=>'context',
+            'context' => 'context',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
         );
     }
 }

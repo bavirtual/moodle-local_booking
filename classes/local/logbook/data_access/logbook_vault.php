@@ -287,7 +287,8 @@ class logbook_vault implements logbook_vault_interface {
                 AND cm.id = :exerciseid';
         $sectionrec = $DB->get_record_sql($sql, array('courseid'=>$courseid, 'exerciseid'=>$exerciseid));
         $section = $sectionrec->section;
-        $sequence = explode(',', $sectionrec->sequence);
+        if (!empty($sectionrec->sequence))
+            $sequence = explode(',', $sectionrec->sequence);
 
         // slice the sequence until the exercise to exclude exercises after it in the same section
         $sequencearr = array_slice($sequence, array_search($exerciseid, $sequence)+1);

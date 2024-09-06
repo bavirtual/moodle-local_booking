@@ -65,7 +65,7 @@ $PAGE->set_heading($title . ' - ' . participant::get_fullname($userid), 'local_b
 $PAGE->add_body_class('path-local-booking');
 
 // get student profile view
-$profileview = new profile_view($context, $courseid, ['subscriber'=>$COURSE->subscriber, 'userid'=>$userid, 'role'=>($role ? LOCAL_BOOKING_INSTRUCTORROLE : 'student')]);
+$profileview = new profile_view(['userid'=>$userid, 'role'=>($role ? LOCAL_BOOKING_INSTRUCTORROLE : 'student')], ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
 
 // output profile page
 echo $OUTPUT->header();

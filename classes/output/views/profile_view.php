@@ -31,27 +31,14 @@ class profile_view extends base_view {
     /**
      * calendar view constructor.
      *
-     * @param \context $context   The course context
-     * @param int      $courseid  The course id
      * @param array    $data      The data required for output
+     * @param array    $related   The related objects to pass
      */
-    public function __construct(\context $context, int $courseid, array $data) {
-
-        // get user type: instructor|student
-        $user = $data['subscriber']->get_participant($data['userid']);
-        $role = $data['role'];
-        $template = 'local_booking/' . $role .'_profile';
-
-        parent::__construct($context, $courseid, $data, $template);
-
-        // set class properties
-        $this->data['courseid'] = $courseid;
-        $related = [
-            'context'   => $this->context,
-        ];
+    public function __construct(array $data, array $related) {
+        parent::__construct($data, $related, 'local_booking/' . $data['role'] .'_profile');
 
         // dynamically load the right exporter based on role
-        $class = $role . '_profile_exporter';
+        $class = $data['role'] . '_profile_exporter';
         $profileexporter = "\\local_booking\\external\\$class";
         $profile = new $profileexporter($this->data, $related);
         $this->exporteddata = $profile->export($this->renderer);

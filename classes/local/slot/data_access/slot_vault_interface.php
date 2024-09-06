@@ -18,7 +18,8 @@
  * slot vault interface
  *
  * @package    local_booking
- * @copyright  2017 Ryan Wyllie <ryan@moodle.com>
+ * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

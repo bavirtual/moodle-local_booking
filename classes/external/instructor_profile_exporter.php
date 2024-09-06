@@ -69,17 +69,19 @@ class instructor_profile_exporter extends exporter {
      */
     public function __construct($data, $related) {
 
+        $this->subscriber = $related['subscriber'];
+        $this->courseid = $this->subscriber->get_id();
+        $this->instructor = $this->subscriber->get_instructor($data['userid'], true);
+
         $url = new moodle_url('/local/booking/view.php', [
-                'courseid' => $data['courseid']
+                'courseid' => $this->courseid
             ]);
 
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
+        $data['courseid'] = $this->courseid;
         $data['userid'] = $data['userid'];
         $data['ato'] = get_config('local_booking', 'atoname');
-        $this->courseid = $data['courseid'];
-        $this->subscriber = $data['subscriber'];
-        $this->instructor = $this->subscriber->get_instructor($data['userid'], true);
 
         parent::__construct($data, $related);
     }
@@ -215,6 +217,10 @@ class instructor_profile_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
+            'rolesincename' => [
+                'type' => PARAM_RAW,
+                'optional' => true
+            ],
             'roles' => [
                 'type' => PARAM_RAW,
                 'optional' => true
@@ -250,6 +256,8 @@ class instructor_profile_exporter extends exporter {
         // get graded session totals
         $gradedsessions = $this->instructor->get_graded_sessions_count();
         $totalexams = $this->instructor->is_examiner() && !empty($gradedsessions[$examid]) ? $gradedsessions[$examid]->sessions : 0;
+        $roles = $this->instructor->get_roles('course');
+        $currentrole = $roles[0];
         $instructorsince = $this->instructor->has_role_since(LOCAL_BOOKING_INSTRUCTORROLE) ?: $this->instructor->has_role_since(LOCAL_BOOKING_SENIORINSTRUCTORROLE);
 
         // Sessions conducted data
@@ -326,7 +334,8 @@ class instructor_profile_exporter extends exporter {
             'loginasurl'       => $loginas->out(false),
             'admin'            => has_capability('moodle/user:loginas', $this->related['context']),
             'xcoursebookings'  => \get_user_preferences('local_booking_1_xcoursebookings', false, $instructorid),
-            'roles'            => strip_tags(get_user_roles_in_course($instructorid, $this->courseid)),
+            'rolesincename'    => $currentrole,
+            'roles'            => implode(', ', $roles),
             'coursemodules'    => $exercisenames,
             'sessions'         => $sessions,
             'totalgradedsessions'=> $totalgradedsessions,
@@ -344,7 +353,7 @@ class instructor_profile_exporter extends exporter {
     protected static function define_related() {
         return array(
             'context' => 'context',
-            'exercises' => 'stdClass[]?',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
         );
     }
 }

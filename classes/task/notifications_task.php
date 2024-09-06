@@ -147,7 +147,8 @@ class notifications_task extends \core\task\scheduled_task {
         if (!empty($slotstonotify)) {
 
             // get student availability slots new postings
-            $slotids = explode(',', $slotstonotify);
+            if (!empty($slotstonotify))
+                $slotids = explode(',', $slotstonotify);
             $postingstext = '';
             $postingshtml = '<table style="border-collapse: collapse; width: 400px"><tbody>';
             $previousday = '';

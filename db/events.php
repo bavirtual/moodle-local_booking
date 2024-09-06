@@ -29,7 +29,27 @@ defined('MOODLE_INTERNAL') || die();
 $observers = array(
 
     array(
+        'eventname' => 'core\event\user_enrolment_created',
+        'callback' => '\local_booking\observers::user_enrolment_created',
+    ),
+    array(
+        'eventname' => 'core\event\user_enrolment_deleted',
+        'callback' => '\local_booking\observers::user_enrolment_deleted',
+    ),
+    array(
+        'eventname' => 'core\event\course_updated',
+        'callback' => '\local_booking\observers::course_updated',
+    ),
+    array(
+        'eventname' => '\mod_lesson\event\lesson_ended',
+        'callback' => '\local_booking\observers::lesson_ended',
+    ),
+    array(
+        'eventname' => '\core\event\course_module_completion_updated',
+        'callback' => '\local_booking\observers::course_module_completion_updated',
+    ),
+    array(
         'eventname' => '\mod_assign\event\submission_graded',
-        'callback' => '\local_booking\grading_observers::submission_graded',
+        'callback' => '\local_booking\observers::submission_graded',
     ),
 );

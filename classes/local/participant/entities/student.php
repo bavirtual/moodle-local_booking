@@ -29,11 +29,12 @@ require_once($CFG->dirroot . '/mod/assign/externallib.php');
 
 use ArrayObject;
 use DateTime;
+use Exception;
 use local_booking\local\session\data_access\booking_vault;
+use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\session\entities\priority;
 use local_booking\local\session\entities\booking;
 use local_booking\local\session\entities\grade;
-use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\slot\entities\slot;
 use local_booking\local\subscriber\entities\subscriber;
 
@@ -85,19 +86,24 @@ class student extends participant {
     protected $total_posts;
 
     /**
-     * @var int $nextlesson The student's next upcoming lesson.
+     * @var bool $lessonscomplete List of student's completed lessons.
+     */
+    protected $lessonscomplete;
+
+    /**
+     * @var int $nextlesson The student's next upcoming lesson id.
      */
     protected $nextlesson;
 
     /**
-     * @var array $nextexercise The student's next exercise and section.
+     * @var array $nextexerciseid The student's next exercise id.
      */
-    protected $nextexercise;
+    protected $nextexerciseid;
 
     /**
-     * @var array $currentexercise The student's current exercise and section.
+     * @var int $currentexerciseid The student's current exercise id.
      */
-    protected $currentexercise;
+    protected $currentexerciseid;
 
     /**
      * @var booking $activebooking The currently active booking for the student.
@@ -179,35 +185,47 @@ class student extends participant {
         $slots = $params['slots'];
         $year = $params['year'];
         $week = $params['week'];
+        $userid = $this->userid;
+        $courseid = $this->course->get_id();
 
         // start transaction
         $transaction = $DB->start_delegated_transaction();
 
-        // remove all week/year slots for the user to avoid updates
-        $result = slot_vault::delete_slots($this->course->get_id(), $year, $week, $this->userid);
+        try {
+            // remove all week/year slots for the user to avoid updates
+            $result = slot_vault::delete_slots($this->course->get_id(), $year, $week, $this->userid);
 
-        if ($result) {
-            foreach ($slots as $slot) {
-                $newslot = new slot(0,
-                    $this->userid,
-                    $this->course->get_id(),
-                    $slot['starttime'],
-                    $slot['endtime'],
-                    $year,
-                    $week,
-                );
+            if ($result) {
+                foreach ($slots as $slot) {
+                    $newslot = new slot(0,
+                        $userid,
+                        $courseid,
+                        $slot['starttime'],
+                        $slot['endtime'],
+                        $year,
+                        $week,
+                    );
 
-                // add each slot and record the slot id
-                $slotid = slot_vault::save_slot($newslot);
-                $slotids .= (!empty($slotids) ? ',' : '') . $slotid;
-                $result = $result && $slotid != 0;
+                    // add each slot and record the slot id
+                    $slotid = slot_vault::save_slot($newslot);
+                    $slotids .= (!empty($slotids) ? ',' : '') . $slotid;
+                    $result &= $slotid != 0;
+                }
             }
-        }
 
-        if ($result) {
-            $transaction->allow_commit();
-        } else {
-            $transaction->rollback(new \moodle_exception(get_string('slotssaveunable', 'local_booking')));
+            if ($result) {
+                // update student stats slot count
+                slot_vault::update_slot_count($courseid, $userid);
+                $lastslotdate = booking_vault::get_last_booked_session($courseid, $userid)->lastbookedsession;
+                subscriber::update_stat($courseid, $userid, 'lastsessiondate', $lastslotdate);
+
+                // commit transaction
+                $transaction->allow_commit();
+            } else {
+                $transaction->rollback(new \moodle_exception(get_string('slotssaveunable', 'local_booking')));
+            }
+        } catch (Exception $e) {
+            $transaction->rollback($e);
         }
 
         return $slotids;
@@ -224,12 +242,17 @@ class student extends participant {
 
         $year = $params['year'];
         $week = $params['week'];
+        $courseid = $this->course->get_id();
+        $userid = $this->userid;
 
         // start transaction
         $transaction = $DB->start_delegated_transaction();
 
         // remove all week/year slots for the user to avoid updates
-        $result = slot_vault::delete_slots($this->course->get_id(), $this->userid, $year, $week);
+        $result = slot_vault::delete_slots($courseid, $userid, $year, $week);
+        $lastslotdate = self::get_last_booked_date($courseid, $userid);
+        subscriber::update_stat($courseid, $userid, 'lastsessiondate', $lastslotdate);
+
         if ($result) {
             $transaction->allow_commit();
         } else {
@@ -517,17 +540,17 @@ class student extends participant {
      */
     public function get_current_exercise() {
 
-        if (empty($this->currentexercise)) {
+        if (empty($this->currentexerciseid)) {
 
             // get last graded exercise
-            $this->currentexercise = array_key_last($this->get_exercise_grades());
+            $this->currentexerciseid = array_key_last($this->get_exercise_grades());
 
             // check for newly enrolled student (boundry condition)
-            if (empty($this->currentexercise) )
-                $this->currentexercise = array_values($this->course->get_modules())[0]->id;
+            if (empty($this->currentexerciseid) )
+                $this->currentexerciseid = array_values($this->course->get_modules())[0]->id;
         }
 
-        return $this->currentexercise;
+        return $this->currentexerciseid;
     }
 
     /**
@@ -537,13 +560,13 @@ class student extends participant {
      */
     public function get_next_exercise() {
 
-        if (empty($this->nextexercise)) {
+        if (empty($this->nextexerciseid)) {
 
             // get booking if exists otherwise pick the next exercise
             $booking = $this->get_active_booking();
             if (!empty($booking->get_id())) {
 
-                $this->nextexercise = $booking->get_exerciseid();
+                $this->nextexerciseid = $booking->get_exerciseid();
 
             } else {
 
@@ -563,14 +586,14 @@ class student extends participant {
 
                 // check for graduated student (boundry condition)
                 if (isset($modids[$nextid])) {
-                    $this->nextexercise = ($nextmod = $coursemodules[$modids[$nextid]]) ? $nextmod->id : 0;
+                    $this->nextexerciseid = ($nextmod = $coursemodules[$modids[$nextid]]) ? $nextmod->id : 0;
                 } else {
-                    $this->nextexercise = 0;
+                    $this->nextexerciseid = 0;
                 }
             }
         }
 
-        return $this->nextexercise;
+        return $this->nextexerciseid;
     }
 
     /**
@@ -646,39 +669,7 @@ class student extends participant {
      * @param  bool  $byname Whether to return the name or ids of pending lessons
      * @return array list of pending lessons
      */
-    public function get_pending_lessons(bool $byname = false) {
-
-        if (!isset($this->incompletelessons)) {
-
-            // check if the student is not graduating
-            if (!$this->has_completed_coursework()) {
-
-                // exercise associated with completed lessons depends on whether the student passed the current exercise
-                $grade = $this->get_grade($this->get_current_exercise());
-                if (!empty($grade))
-                    // check if passed exercise or received a progressing or objective not met grade
-                    $exerciseid = $grade->is_passed() ? $this->get_next_exercise() : $this->get_current_exercise();
-                else
-                    $exerciseid = $this->get_current_exercise();
-
-                // get lessons complete
-                $this->incompletelessons = $this->vault->get_student_incomplete_lesson_ids($this->userid, $this->course->get_id(), $exerciseid);
-
-            } else {
-                $this->incompletelessons = [];
-            }
-        }
-
-        // check whether to return ids or string
-        if ($byname) {
-            foreach ($this->incompletelessons as $lessonid) {
-                $pendinglessons[] = $this->course->get_lesson_module($lessonid)->name;
-            }
-        } else  {
-            $pendinglessons = $this->incompletelessons;
-        }
-
-        return $pendinglessons;
+    public function get_completed_lessons(bool $byname = false) {
     }
 
     /**
@@ -689,6 +680,7 @@ class student extends participant {
      */
     public function get_pending_lessons(bool $byname = false) {
 
+        $pendinglessons = [];
         if (!isset($this->incompletelessons)) {
 
             // check if the student is not graduating
@@ -776,8 +768,7 @@ class student extends participant {
      * @return  bool    Whether the lessones were completed or not.
      */
     public function has_completed_lessons() {
-        return empty($this->get_pending_lessons());
-        return empty($this->get_pending_lessons());
+        return isset($this->lessonscomplete) ? $this->lessonscomplete : false;
     }
 
     /**
@@ -916,5 +907,31 @@ class student extends participant {
      */
     public function graduated() {
         return $this->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
+    }
+
+    /**
+     * Loads student's data from a table record
+     *
+     * @param \stdClass The table record
+     */
+    public function populate($record) {
+        // call extended method first
+        parent::populate($record);
+        if (!empty($record)) {
+            if (!empty($record->activeposts))
+                $this->total_posts = $record->activeposts;
+            if (!empty($record->currentexerciseid))
+                $this->currentexerciseid = $record->currentexerciseid;
+            if (!empty($record->nextexerciseid))
+                $this->nextexerciseid = $record->nextexerciseid;
+            if (!empty($record->lessonscomplete))
+                $this->lessonscomplete = $record->lessonscomplete;
+        }
+        // set status
+        if ($this->lessonscomplete) {
+            $this->progressionstatus = $this->total_posts > 0 ? 'posts_completed' : 'noposts_completed';
+        } else {
+            $this->progressionstatus = 'not_completed';
+        }
     }
 }

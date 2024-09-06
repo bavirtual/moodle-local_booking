@@ -248,6 +248,60 @@ interface subscriber_interface {
     public function requires_skills_evaluation();
 
     /**
+     * Updates the stats table with a specific value
+     *
+     * @param int    $courseid  The course id
+     * @param int    $userid    The user id
+     * @param string $stat      The stat field being update
+     * @param string $value     The field value being update
+     * @return bool             The result
+     */
+    public static function update_stat(int $courseid, int $userid, string $stat, $value);
+
+    /**
+     * Updates the stats table with a lastest lesson completed
+     *
+     * @param int    $courseid  The course id
+     * @param int    $userid    The user id
+     * @return bool             The result
+     */
+    public static function update_lessonscomplete_stat(int $courseid, int $userid);
+
+    /**
+     * Checks if the passed course is a subscriber 'enabled'
+     *
+     * @param int $courseid
+     * @return bool
+     */
+    public static function is_subscribed(int $courseid);
+
+    /**
+     * Adds students stats for a newly enabled course subscriber
+     *
+     * @param int $courseid
+     * @return bool
+     */
+    public static function add_new_enrolments(int $courseid);
+
+    /**
+     * Retrieves the next exercise (assign module) id in the subscribed course
+     *
+     * @param int $courseid
+     * @param int $exerciseid   The assign module id
+     * @return int
+     */
+    public static function get_next_exerciseid(int $courseid, int $exerciseid);
+
+    /**
+     * Whether the student still has lessons to complete prior to the next exercise
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @return bool
+     */
+    public static function has_incomplete_lessons(int $courseid, int $userid);
+
+    /**
      * Checks if there is a database integration
      * for the specified passed key.
      *

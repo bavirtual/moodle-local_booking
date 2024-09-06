@@ -74,6 +74,11 @@ class participant implements participant_interface {
     protected $roles;
 
     /**
+     * @var array $rolenames The participant assigned roles shortname.
+     */
+    protected $rolenames;
+
+    /**
      * @var int $enroldate The participant enrolment date timestamp.
      */
     protected $enroldate = 0;
@@ -195,15 +200,32 @@ class participant implements participant_interface {
     /**
      * Get participant's roles in the course.
      *
+     * @param  bool  $roleattribute The role object attributes to return
      * @return array $roles
      */
-    public function get_roles() {
+    public function get_roles(string $roleattribute = null) {
 
-        // assign roles if not already available
-        if (!isset($this->roles)) {
-            $this->roles = get_user_roles($this->course->get_context(), $this->userid);
+        $roles = [];
+
+        // check if shortnames is requested
+        if ($roleattribute == 'shortname' && isset($this->rolenames)) {
+            $roles = $this->rolenames;
+        } else {
+            if (!isset($this->roles)) {
+                // assign roles if not already available
+                $this->roles = get_user_roles($this->course->get_context(), $this->userid);
+                $this->rolenames = array_column($this->roles, 'shortname');
+            }
+
+            // get course named roles if requested
+            if ($roleattribute == 'course') {
+                $roles = explode(', ', strip_tags(get_user_roles_in_course($this->userid, $this->course->get_id())));
+            } else {
+                $roles = !empty($roleattribute) ? array_column($this->roles, $roleattribute) : $this->roles;
+            }
         }
-        return $this->roles;
+
+        return $roles;
     }
 
     /**
@@ -355,7 +377,7 @@ class participant implements participant_interface {
      * @return  \DateTime    The timestamp of the last booked session
      */
     public function get_last_booked_date() {
-        if (!isset($this->last_booked_date)) {
+        if (!isset($this->last_booked_date) || empty($this->last_booked_date)) {
             $this->last_booked_date = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
         }
 
@@ -465,9 +487,9 @@ class participant implements participant_interface {
     }
 
     /**
-     * Loads participant's date from a table record
+     * Loads participant's data from a table record
      *
-     * @param string   The participant callsign
+     * @param \stdClass The table record
      */
     public function populate($record) {
         if (!empty($record)) {
@@ -476,6 +498,10 @@ class participant implements participant_interface {
             $this->suspenddate = $record->suspenddate;
             $this->lastlogin   = $record->lastlogin;
             $this->simulator   = $this->get_simulator();
+            if (!empty($record->roles))
+                $this->rolenames   = explode(',', $record->roles);
+            if (!empty($record->lastsessiondate))
+                $this->last_booked_date = $record->lastsessiondate;
         }
     }
 
@@ -486,7 +512,7 @@ class participant implements participant_interface {
      * @return bool        Whether the participant has the role.
      */
     public function has_role(string $role) {
-        return in_array($role, array_column($this->get_roles(), 'shortname'));
+        return in_array($role, $this->get_roles(true));
     }
 
     /**
@@ -522,7 +548,7 @@ class participant implements participant_interface {
         $ismember = false;
         if (!$ismember = in_array($groupname, $this->groups)) {
             $groupid = groups_get_group_by_name($this->course->get_id(), $groupname);
-            if ($ismember = groups_is_member($this->course->get_id(), $this->userid)) {
+            if ($ismember = groups_is_member($groupid, $this->userid)) {
                 array_push($this->groups, $groupname);
             }
         }

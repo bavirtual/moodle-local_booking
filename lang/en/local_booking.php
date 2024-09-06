@@ -323,7 +323,7 @@ $string['graduationconfirmation'] = '<p><strong>Process completed successfully..
     <li style="padding-bottom: 20px;">\'{$a->fullname}\' has been added to the <strong>Graduates</strong> group.</li>';
 $string['graduationconfirmationcongrat'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to active course participants.</li>';
 $string['feedbackreport'] = 'Feedback report';
-$string['instructorsince'] = 'Instructor since';
+$string['instructorsince'] = 'In {$a} role since';
 $string['keepactive'] = 'Keep active';
 $string['lastlesson'] = 'Last lesson completed';
 $string['lastgraded'] = 'Last session graded';

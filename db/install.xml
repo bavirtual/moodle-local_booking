@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/booking/db" VERSION="20230125" COMMENT="XMLDB file for Moodle local/booking"
+<XMLDB PATH="local/booking/db" VERSION="20240904" COMMENT="XMLDB file for Moodle local/booking"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -42,6 +42,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="slottouser" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="Student's user id"/>
         <KEY NAME="slottocourse" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id" COMMENT="Foreign key for courses"/>
+        <KEY NAME="slotunique" TYPE="unique" FIELDS="courseid, userid, starttime, endtime" COMMENT="Unique slot for a user in a course on the same start and end time"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="userweeklyslots" UNIQUE="false" FIELDS="userid, week, year" COMMENT="Retrieving user's weekly slots"/>
@@ -97,6 +98,23 @@
         <INDEX NAME="sessionid" UNIQUE="false" FIELDS="userid" COMMENT="Indexing user id lookups"/>
         <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" COMMENT="Course id index for lookup"/>
       </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_booking_stats" COMMENT="Statistics for student booked sessions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="activeposts" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Total count of active posted slots"/>
+        <FIELD NAME="lessonscomplete" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Whether the student completed lessons prior to upcoming exercise"/>
+        <FIELD NAME="lastsessiondate" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Date timestamp of last session booked"/>
+        <FIELD NAME="currentexerciseid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The current exercise assignment module id"/>
+        <FIELD NAME="nextexerciseid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The next exercise assignment module id"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" COMMENT="user table foreign key for joins"/>
+        <KEY NAME="user_course" TYPE="unique" FIELDS="userid, courseid" COMMENT="Unique key to avoid same user being created for the same course more than once."/>
+      </KEYS>
     </TABLE>
   </TABLES>
 </XMLDB>

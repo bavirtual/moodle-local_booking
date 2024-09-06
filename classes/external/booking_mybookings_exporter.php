@@ -29,7 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 
 use DateTime;
 use core\external\exporter;
-use local_booking\local\participant\entities\student;
 use local_booking\local\session\entities\action;
 
 /**
@@ -42,6 +41,15 @@ use local_booking\local\session\entities\action;
  */
 class booking_mybookings_exporter extends exporter {
 
+    // data payload
+    protected $data;
+
+    // related objects
+    protected $related;
+
+    // instructor bookings
+    protected $mybookings;
+
     /**
      * Constructor.
      *
@@ -49,73 +57,80 @@ class booking_mybookings_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($data, $related) {
-        global $COURSE;
+        global $USER;
 
-        $booking = $data['booking'];
-        $student = new student($COURSE->subscriber, $booking->get_studentid());
-        $action = new action($COURSE->subscriber, $student, 'cancel', $booking->get_exerciseid());
-        $slot = $booking->get_slot();
-        $starttime = new DateTime('@' . $slot->get_starttime());
-        // TODO: end time should include the last hour
-        $endtime = new DateTime(('@' . ($slot->get_endtime()) + (60 * 60)));
+        $subscriber = $related['subscriber'];
+        $data['courseid'] = $subscriber->get_id();
 
-        $data = [
-        'bookingid'     => $booking->get_id(),
-        'studentid'     => $booking->get_studentid(),
-        'studentname'   => student::get_fullname($booking->get_studentid()),
-        'exerciseid'    => $booking->get_exerciseid(),
-        'noshows'       => count($student->get_noshow_bookings()),
-        'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid(), $booking->get_courseid()),
-        'sessiondate'   => $starttime->format('D M j'),
-        'starttime'     => $starttime->format('H:i \z\u\l\u'),
-        'endtime'       => $endtime->format('H:i \z\u\l\u'),
-        'actionname'    => $action->get_name(),
-        'actionurl'     => $action->get_url()->out(false),
-        'coursename'    => $COURSE->subscriber->get_course($booking->get_courseid())->shortname,
-        ];
+        // get intructor bookings
+        $instructor = $subscriber->get_instructor($USER->id);
+        $this->mybookings = $instructor->get_bookings(false, true, true);
 
         parent::__construct($data, $related);
     }
 
     protected static function define_properties() {
         return [
-            'bookingid' => [
+            'contextid' => [
                 'type' => PARAM_INT,
+                'default' => 0,
             ],
-            'studentid' => [
+            'courseid' => [
                 'type' => PARAM_INT,
-            ],
-            'coursename' => [
-                'type' => PARAM_RAW,
-            ],
-            'studentname' => [
-                'type' => PARAM_RAW,
-            ],
-            'exerciseid' => [
-                'type' => PARAM_INT,
-            ],
-            'noshows' => [
-                'type' => PARAM_INT,
-            ],
-            'exercise' => [
-                'type' => PARAM_RAW,
-            ],
-            'sessiondate' => [
-                'type' => PARAM_RAW,
-            ],
-            'starttime' => [
-                'type' => PARAM_RAW,
-            ],
-            'endtime' => [
-                'type' => PARAM_RAW,
-            ],
-            'actionname' => [
-                'type' => PARAM_RAW,
-            ],
-            'actionurl' => [
-                'type' => PARAM_RAW,
             ],
         ];
+     }
+
+    /**
+     * Return the list of additional properties.
+     *
+     * @return array
+     */
+    protected static function define_other_properties() {
+        return [
+            'activebookings' => [
+                'type' => PARAM_RAW,
+                'multiple' => true,
+            ],
+        ];
+    }
+
+    /**
+     * Get the additional values to inject while exporting.
+     *
+     * @param renderer_base $output The renderer.
+     * @return array Keys are the property names, values are their values.
+     */
+    protected function get_other_values(\renderer_base $output) {
+
+        $course = $this->related['subscriber'];
+        $bookings = [];
+
+        foreach ($this->mybookings as $booking) {
+            $student = $course->get_student($booking->get_studentid());
+            $action = new action($course, $student, 'cancel', $booking->get_exerciseid());
+            $slot = $booking->get_slot();
+            $starttime = new DateTime('@' . $slot->get_starttime());
+            // TODO: end time should include the last hour
+            $endtime = new DateTime(('@' . ($slot->get_endtime()) + (60 * 60)));
+
+            $bookings[] = [
+            'bookingid'     => $booking->get_id(),
+            'studentid'     => $booking->get_studentid(),
+            'studentname'   => $student->get_name(),
+            'exerciseid'    => $booking->get_exerciseid(),
+            'noshows'       => count($student->get_noshow_bookings()),
+            'exercise'      => $course->get_exercise_name($booking->get_exerciseid(), $booking->get_courseid()),
+            'sessiondate'   => $starttime->format('D M j'),
+            'starttime'     => $starttime->format('H:i \z\u\l\u'),
+            'endtime'       => $endtime->format('H:i \z\u\l\u'),
+            'actionname'    => $action->get_name(),
+            'actionurl'     => $action->get_url()->out(false),
+            'coursename'    => $course->get_course($booking->get_courseid())->shortname,
+            ];
+        }
+
+        return ['activebookings' => $bookings];
     }
 
     /**
@@ -126,6 +141,7 @@ class booking_mybookings_exporter extends exporter {
     protected static function define_related() {
         return array(
             'context' => 'context',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
         );
     }
 }

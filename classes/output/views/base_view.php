@@ -33,16 +33,6 @@ use local_booking\local\subscriber\entities\subscriber;
 abstract class base_view {
 
     /**
-     * @var course_context $context The course contenxt.
-     */
-    protected $context;
-
-    /**
-     * @var int $courseid The course id.
-     */
-    protected $courseid;
-
-    /**
      * @var \renderer_base $renderer The course contenxt.
      */
     protected $renderer;
@@ -51,6 +41,11 @@ abstract class base_view {
      * @var array $data The data needed to render the page.
      */
     protected $data;
+
+    /**
+     * @var array $related The related objects to pass.
+     */
+    protected $related;
 
     /**
      * @var stdClass $exporteddata The exported data from the exporter.
@@ -70,12 +65,11 @@ abstract class base_view {
      * @param stClass   $data      The data class.
      * @param string    $template  The template used for output.
      */
-    public function __construct(\context $context, int $courseid, array $data, string $template) {
+    public function __construct(array $data, array $related, string $template) {
         global $PAGE;
 
         $this->renderer = $PAGE->get_renderer('local_booking');
-        $this->context = $context;
-        $this->courseid = $courseid;
+        $this->related = $related;
         $this->data = $data;
         $this->template = $template;
     }
@@ -86,7 +80,7 @@ abstract class base_view {
      * @return \context
      */
     public function get_context() {
-        return $this->context;
+        return $this->related['context'];
     }
 
     /**

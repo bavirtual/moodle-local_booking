@@ -29,27 +29,16 @@ use local_booking\external\logbook_exporter;
 class logbook_view extends base_view {
 
     /**
-     * @var array $related Related objects necessary to pass along to exporters.
-     */
-    protected $related;
-
-    /**
      * logbook view constructor.
      *
-     * @param \context $context   The course context
-     * @param int      $courseid  The course id
      * @param array    $data      The data required for output
+     * @param array    $related   The related objects to pass
      */
-    public function __construct(\context $context, int $courseid, array $data) {
-        parent::__construct($context, $courseid, $data, 'local_booking/logbook_' . $data['format']);
-
-        // set class properties
-        $this->related = [
-            'context'   => $this->context,
-        ];
+    public function __construct(array $data, array $related) {
+        parent::__construct($data, $related, 'local_booking/logbook_' . $data['format']);
 
         // export the logbook
-        $logbookexporter = new logbook_exporter($this->data, $this->related);
+        $logbookexporter = new logbook_exporter($data, $related);
         $this->exporteddata = $logbookexporter->export($this->renderer);
     }
 }

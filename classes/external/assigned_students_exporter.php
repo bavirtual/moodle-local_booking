@@ -117,6 +117,7 @@ class assigned_students_exporter extends exporter {
     protected static function define_related() {
         return array(
             'context' => 'context',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
         );
     }
 

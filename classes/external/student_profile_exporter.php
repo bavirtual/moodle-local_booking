@@ -68,16 +68,17 @@ class student_profile_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($data, $related) {
+        $this->subscriber = $related['subscriber'];
+        $this->courseid = $this->subscriber->get_id();
 
         $url = new moodle_url('/local/booking/view.php', [
-                'courseid' => $data['courseid']
+                'courseid' => $this->courseid
             ]);
 
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
+        $data['courseid'] = $this->courseid;
         $data['userid'] = $data['userid'];
-        $this->courseid = $data['courseid'];
-        $this->subscriber = $data['subscriber'];
         $this->student = $this->subscriber->get_student($data['userid'], true);
 
         parent::__construct($data, $related);
@@ -419,10 +420,8 @@ class student_profile_exporter extends exporter {
             'viewtype'     => 'sessions',
             'readonly'     => true
         ];
-        $related = [
-            'context'       => \context_system::instance(),
+        $this->related += [
             'coursemodules' => $this->subscriber->get_modules(),
-            'course'        => $this->subscriber,
             'filter'        => 'active'
         ];
 
@@ -471,7 +470,7 @@ class student_profile_exporter extends exporter {
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
             'tested'                   => $this->student->tested(),
             'coursemodules'            => base_view::get_modules($output, $this->subscriber, $options),
-            'sessions'                 => booking_student_exporter::get_sessions($output, $this->student, $related),
+            'sessions'                 => booking_student_exporter::get_sessions($output, $this->student, $this->related),
             'comment'                  => $this->student->get_comment(),
         ];
 
@@ -485,7 +484,8 @@ class student_profile_exporter extends exporter {
      */
     protected static function define_related() {
         return array(
-            'context' => 'context'
+            'context' => 'context',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
         );
     }
 }

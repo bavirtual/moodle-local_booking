@@ -47,11 +47,13 @@ class instructor_participation_exporter extends exporter {
      */
     public function __construct($data, $related) {
 
+        $courseid = $related['subscriber']->get_id();
         $url = new \moodle_url('/local/booking/view.php', [
-                'courseid' => $data['courseid'],
+                'courseid' => $courseid,
             ]);
 
         $data['url'] = $url->out(false);
+        $data['courseid'] = $courseid;
 
         parent::__construct($data, $related);
     }
@@ -98,13 +100,7 @@ class instructor_participation_exporter extends exporter {
             $lastgradeddate = $instructor->get_last_graded_date();
             $lastsessiondate = $instructor->get_last_booked_date();
             $interval = !empty($lastgradeddate) ? date_diff($lastgradeddate, $today) : 0;
-
-            // get instructor instructor role in the course
-            $roleobjects = $instructor->get_roles();
-            $rolesarray = array_map(fn($role): array => ['id'=>$role->roleid,'name'=>$role->name], $roleobjects);
-            $roles = array_combine(array_column($rolesarray, 'id'), array_column($rolesarray, 'name'));
-            $rolesintersect = array_intersect_key($COURSE->subscriber->get_roles(), $roles);
-            $courserole = implode(', ', array_values($rolesintersect));
+            $courserole = implode(', ', $instructor->get_roles('name'));
 
             $participation[] = [
                 'instructorid' => $instructor->get_id(),
@@ -129,6 +125,7 @@ class instructor_participation_exporter extends exporter {
     protected static function define_related() {
         return array(
             'context' => 'context',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
         );
     }
 }

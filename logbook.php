@@ -127,7 +127,7 @@ $data    = [
     'shortdate'     => $format == 'easa'
 ];
 // get logbook view
-$logbookview = new logbook_view($context, $courseid, $data + $totals);
+$logbookview = new logbook_view($data + $totals, ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
 $actionbar = new manage_action_bar($PAGE, 'logbook');
 
 // output logbook page

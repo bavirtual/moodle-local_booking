@@ -35,6 +35,7 @@ require_once(__DIR__ . '/lib.php');
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $title = get_string('pluginname', 'local_booking');
+$page = optional_param('page', 0, PARAM_INT);
 
 $url = new moodle_url('/local/booking/progression.php');
 $url->param('courseid', $courseid);
@@ -56,10 +57,11 @@ $data = [
     'view'      => 'sessions',
     'sorttype'  => '',
     'filter'    => 'active',
-    'action'    => 'readonly'
+    'action'    => 'readonly',
+    'page'      => $page,
 ];
 // get booking view
-$bookingview = new booking_view($context, $courseid, $data);
+$bookingview = new booking_view($data, ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
 
 $navbartext =get_string('bookingprogression', 'local_booking');
 $PAGE->navbar->add($navbartext);

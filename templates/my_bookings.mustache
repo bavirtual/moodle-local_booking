@@ -31,8 +31,9 @@
     {
     }
 }}
+<div id="bookings-{{uniqid}}" data-template="local_booking/my_bookings">
 <div{{!
-}} class="mybookingswrapper"{{!
+}} class="mybookingswrapper bookingwrapper"{{!
 }}{{#courseid}} data-courseid="{{courseid}}"{{/courseid}}{{!
 }} data-contextid="{{contextid}}"{{!
 }}>
@@ -124,4 +125,10 @@
     </tbody>
 </table>
 </div>
+</div>
 
+{{#js}}
+require(['jquery', 'local_booking/booking'], function($, Booking) {
+    Booking.init($("#bookings-{{uniqid}}"));
+});
+{{/js}}

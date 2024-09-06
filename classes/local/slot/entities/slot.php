@@ -25,6 +25,7 @@
 namespace local_booking\local\slot\entities;
 
 use local_booking\local\slot\data_access\slot_vault;
+use local_booking\local\subscriber\entities\subscriber;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -150,8 +151,12 @@ class slot implements slot_interface {
      */
     public function delete() {
         $vault = new slot_vault();
+        $result = $vault->delete_slot($this->courseid, $this->userid, $this->id);
 
-        return $vault->delete_slot($this->id);
+        // update stats
+        $result &= subscriber::update_stat($this->courseid, $this->userid, 'lastsessiondate', self::get_last_booking_date($this->courseid, $this->userid));
+
+        return $result;
     }
 
     /**

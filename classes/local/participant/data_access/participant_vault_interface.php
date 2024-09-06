@@ -35,9 +35,10 @@ interface participant_vault_interface {
      * @param int  $courseid The course id.
      * @param int  $userid   A specific user.
      * @param bool $active   Whether the user is actively enrolled.
+     * @param bool $student  Whether the user is a student or not
      * @return {Object}      Array of database records.
      */
-    public static function get_participant(int $courseid, int $userid = 0, bool $active = true);
+    public static function get_participant(int $courseid, int $userid = 0, bool $active = true, bool $student = true);
 
     /**
      * Get all active students from the database.
@@ -77,6 +78,15 @@ interface participant_vault_interface {
     public function get_assigned_students(int $courseid, int $userid);
 
     /**
+     * Returns full username
+     *
+     * @param int $userid            The user id.
+     * @param bool $includealternate Whether to include the user's alternate name.
+     * @return string $fullusername  The full participant username
+     */
+    public static function get_participant_name(int $userid, bool $includealternate = true);
+
+    /**
      * Get student's enrolment date.
      *
      * @param int $studentid        The student id in reference
@@ -85,23 +95,14 @@ interface participant_vault_interface {
     public function get_enrol_date(int $courseid, int $studentid);
 
     /**
-     * Suspends the student's enrolment to a course.
+     * Returns the module id of the current lesson for
+     * a student in a subscribed course
      *
-     * @param int   $courseid   The course the student is being unenrolled from.
-     * @param int   $studentid  The student id in reference
-     * @param int   $status     The status of the enrolment suspended = 1
-     * @return bool             The result of the suspension action.
+     * @param   int The user id
+     * @param   int The course id
+     * @return  int The lesson id
      */
-    public function suspend(int $courseid, int $studentid, int $status);
-
-    /**
-     * Returns full username
-     *
-     * @param int $userid            The user id.
-     * @param bool $includealternate Whether to include the user's alternate name.
-     * @return string $fullusername  The full participant username
-     */
-    public static function get_participant_name(int $userid, bool $includealternate = true);
+    public function get_current_lesson_id(int $userid, int $courseid);
 
     /**
      * Returns the timestamp of the last
@@ -113,6 +114,16 @@ interface participant_vault_interface {
      * @return  stdClass The record containing timestamp of the last grading
      */
     public function get_last_graded_date(int $userid, int $courseid, bool $is_student);
+
+    /**
+     * Returns the list of completed lesson ids
+     * for a student in a course.
+     *
+     * @param   int     The student user id
+     * @param   int     The course id
+     * @return  array   List of completed lesson ids
+     */
+    public function get_student_completed_lesson_ids(int $userid, int $courseid);
 
     /**
      * Returns the list of incomplete lessons for a student
@@ -134,4 +145,14 @@ interface participant_vault_interface {
      * @return  bool            Whether the comment was updated or not.
      */
     public function update_participant_field(int $userid, string $field, $value);
+
+    /**
+     * Suspends the student's enrolment to a course.
+     *
+     * @param int   $courseid   The course the student is being unenrolled from.
+     * @param int   $studentid  The student id in reference
+     * @param int   $status     The status of the enrolment suspended = 1
+     * @return bool             The result of the suspension action.
+     */
+    public function suspend(int $courseid, int $studentid, int $status);
 }

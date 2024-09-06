@@ -16,9 +16,11 @@
 
 namespace local_booking\output\views;
 
-use local_booking\external\assigned_students_exporter;
 use local_booking\external\bookings_exporter;
+use local_booking\external\booking_mybookings_exporter;
+use local_booking\external\assigned_students_exporter;
 use local_booking\external\instructor_participation_exporter;
+use moodle_url;
 use stdClass;
 
 /**
@@ -39,19 +41,13 @@ class booking_view extends base_view {
     /**
      * logbook view constructor.
      *
-     * @param \context $context   The course context
-     * @param int      $courseid  The course id
      * @param array    $data      The data required for output
+     * @param array    $related   The related objects to pass
      */
-    public function __construct(\context $context, int $courseid, array $data) {
-        parent::__construct($context, $courseid, $data, 'local_booking/bookings' . ($data['action'] == 'readonly' ? '_readonly' : ''));
+    public function __construct(array $data, array $related) {
+        parent::__construct($data, $related, 'local_booking/bookings' . ($data['action'] == 'readonly' ? '_readonly' : ''));
 
-        // set class properties
-        $this->data['courseid'] = $courseid;
-        $this->related = [
-            'context'   => $this->context,
-        ];
-
+        // export bookings
         if ($this->data['action'] == 'readonly' || $this->data['action']=='book') {
 
             $bookings = new bookings_exporter($this->data, $this->related);
@@ -75,7 +71,7 @@ class booking_view extends base_view {
      * @return  string
      */
     public function output(?string $template = null, ?stdClass $exporteddata = null):string {
-
+        global $OUTPUT, $PAGE;
         $output = '';
 
         // select the student progression booking view or the booking confirmation view
@@ -85,7 +81,19 @@ class booking_view extends base_view {
 
         } elseif ($this->data['action']=='book') {
 
+            // get student progression output
             $output = parent::output();
+
+            // show page bar if required
+            $course = $this->related['subscriber'];
+            if ($course->get_students_count() > LOCAL_BOOKING_DASHBOARDPAGESIZE) {
+                $output .= $OUTPUT->paging_bar($course->get_students_count(), $this->data['page'], LOCAL_BOOKING_DASHBOARDPAGESIZE, $PAGE->url);
+            }
+
+            // get active bookings if the view is session booking
+            $mybookings = new booking_mybookings_exporter($this->data, $this->related);
+            $exporteddata = $mybookings->export($this->renderer);
+            $output .= parent::output('local_booking/my_bookings', $exporteddata);
 
             // get assigned students if exists
             if (count($this->data['instructor']->get_assigned_students()) > 0) {

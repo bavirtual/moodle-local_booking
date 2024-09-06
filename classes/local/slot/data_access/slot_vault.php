@@ -25,12 +25,16 @@
 
 namespace local_booking\local\slot\data_access;
 
+use Exception;
 use local_booking\local\slot\entities\slot;
 
 class slot_vault implements slot_vault_interface {
 
     /** Table name for the persistent. */
     const DB_SLOTS = 'local_booking_slots';
+
+    /** Table name for the persistent. */
+    const DB_STATS = 'local_booking_stats';
 
     /**
      * Get a based on its id
@@ -86,29 +90,83 @@ class slot_vault implements slot_vault_interface {
     public static function save_slot(slot $slot) {
         global $DB, $USER;
 
-        $slotrecord = new \stdClass();
-        $slotrecord->userid = $slot->get_userid() == 0 ? $USER->id : $slot->get_userid();
-        $slotrecord->courseid = $slot->get_courseid();
-        $slotrecord->starttime = $slot->get_starttime();
-        $slotrecord->endtime = $slot->get_endtime();
-        $slotrecord->year = $slot->get_year();
-        $slotrecord->week = $slot->get_week();
-        $slotrecord->slotstatus = $slot->get_slotstatus();
-        $slotrecord->bookinginfo = $slot->get_bookinginfo();
+        // $sql = "INSERT IGNORE INTO {" . self::DB_SLOTS . "} (userid, courseid, starttime, endtime, `year`, week, slotstatus, bookinginfo)
+        //         VALUES (:userid, :courseid, :starttime, :endtime, :year, :week, :slotstatus, :bookinginfo)
+        //         ON DUPLICATE KEY UPDATE
+        //             starttime = VALUES(starttime),
+        //             endtime = VALUES(endtime),
+        //             `year` = VALUES(`year`),
+        //             week = VALUES(week),
+        //             slotstatus = VALUES(slotstatus),
+        //             bookinginfo = VALUES(bookinginfo)";
 
-        return $DB->insert_record(static::DB_SLOTS, $slotrecord);
+        // $params = [
+        //     'userid' => $slot->get_userid() == 0 ? $USER->id : $slot->get_userid(),
+        //     'courseid' => $slot->get_courseid(),
+        //     'starttime' => $slot->get_starttime(),
+        //     'endtime' => $slot->get_endtime(),
+        //     'year' => $slot->get_year(),
+        //     'week' => $slot->get_week(),
+        //     'slotstatus' => $slot->get_slotstatus(),
+        //     'bookinginfo' => $slot->get_bookinginfo()
+        // ];
+
+        // return $DB->execute($sql, $params);
+
+        try {
+
+            $slotrecord = new \stdClass();
+            $slotrecord->userid = $slot->get_userid() == 0 ? $USER->id : $slot->get_userid();
+            $slotrecord->courseid = $slot->get_courseid();
+            $slotrecord->starttime = $slot->get_starttime();
+            $slotrecord->endtime = $slot->get_endtime();
+            $slotrecord->year = $slot->get_year();
+            $slotrecord->week = $slot->get_week();
+            $slotrecord->slotstatus = $slot->get_slotstatus();
+            $slotrecord->bookinginfo = $slot->get_bookinginfo();
+
+            $slotid = $DB->insert_record(static::DB_SLOTS, $slotrecord);
+            return $slotid;
+
+        } catch (Exception $e) {
+            // update if a this is a duplicate slot error otherwise throw exception
+            if (str_contains($e->getMessage(), "Duplicate entry")) {
+                $existingslot = $DB->get_record(static::DB_SLOTS, [
+                    'courseid' => $slot->get_courseid(),
+                    'userid'    => $slot->get_userid(),
+                    'starttime' => $slot->get_starttime(),
+                    'endtime'   => $slot->get_endtime()
+                ]);
+                $existingslot->year = $slot->get_year();
+                $existingslot->week = $slot->get_week();
+                $existingslot->slotstatus = $slot->get_slotstatus();
+                $existingslot->bookinginfo = $slot->get_bookinginfo();
+
+                $DB->update_record(self::DB_SLOTS, $existingslot);
+                return $existingslot->id;
+            } else {
+                // check for unique key exception
+                throw $e;
+            }
+        }
     }
 
     /**
      * delete specific slot
      *
+     * @param   int     The course id
+     * @param   int     The user id
      * @param int $slotid The slot id.
      * @return bool
      */
-    public static function delete_slot($slotid) {
+    public static function delete_slot($courseid, $userid, $slotid) {
         global $DB;
 
-        return $DB->delete_records(self::DB_SLOTS, ['id' => $slotid]);
+        if ($result = $DB->delete_records(self::DB_SLOTS, ['id' => $slotid])) {
+            $result &= self::update_slot_count($courseid, $userid);
+        }
+
+        return $result;
     }
 
     /**
@@ -137,8 +195,12 @@ class slot_vault implements slot_vault_interface {
                 'week'          => $week,
             ];
         }
+        // update student stats
+        if (!empty($result = $DB->delete_records(self::DB_SLOTS, $condition))) {
+            $result &= self::update_slot_count($course, $userid);
+        }
 
-        return $DB->delete_records(self::DB_SLOTS, $condition);
+        return $result;
     }
 
     /**
@@ -213,10 +275,10 @@ class slot_vault implements slot_vault_interface {
      * Returns the total number of active posts.
      *
      * @param   int     The course id
-     * @param   int     The student id
+     * @param   int     The user id
      * @return  int     The number of active posts
      */
-    public static function get_slot_count(int $courseid, int $studentid) {
+    public static function get_slot_count(int $courseid, int $userid) {
         global $DB;
 
         $sql = 'SELECT COUNT(id) AS slotcount
@@ -227,7 +289,7 @@ class slot_vault implements slot_vault_interface {
                 AND starttime > :slottime';
         $params = array(
             'courseid'  => $courseid,
-            'userid'    => $studentid,
+            'userid'    => $userid,
             'slotstatus'=> '',
             'slottime'  => time()
         );
@@ -235,4 +297,26 @@ class slot_vault implements slot_vault_interface {
         $rc = $DB->get_record_sql($sql, $params);
         return $rc->slotcount;
     }
+
+    /**
+     * Returns the total number of active posts.
+     *
+     * @param   int     The course id
+     * @param   int     The user id
+     * @return  bool    The result
+     */
+    public static function update_slot_count(int $courseid, int $userid) {
+        global $DB;
+        return $DB->execute("UPDATE {" . self::DB_STATS . "} bs SET activeposts =
+                            (
+                                SELECT count(s.id)
+                                FROM {" . self::DB_SLOTS . "} s
+                                WHERE s.userid = $userid AND
+                                    s.courseid = $courseid AND
+                                    slotstatus = '' AND
+                                    starttime > UNIX_TIMESTAMP()
+                            )
+                            WHERE bs.userid = $userid AND bs.courseid = $courseid");
+    }
+
 }

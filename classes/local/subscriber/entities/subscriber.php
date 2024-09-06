@@ -27,10 +27,12 @@ namespace local_booking\local\subscriber\entities;
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
+require_once($CFG->libdir . '/completionlib.php');
 require_once($CFG->dirroot . '/group/lib.php');
 
 use ArrayObject;
 use local_booking\local\participant\data_access\participant_vault;
+use local_booking\local\subscriber\data_access\subscriber_vault;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
@@ -77,6 +79,11 @@ class subscriber implements subscriber_interface {
     protected $shortname;
 
     /**
+     * @var array $coursemodinfo The Moodle course modules information.
+     */
+    protected $coursemodules;
+
+    /**
      * @var course_modinfo $coursemodinfo The Moodle course modules information.
      */
     protected $coursemodinfo;
@@ -85,6 +92,11 @@ class subscriber implements subscriber_interface {
      * @var array $activestudents An array of course active students.
      */
     protected $activestudents;
+
+    /**
+     * @var int $activestudentscount Total count of active students.
+     */
+    protected $activestudentscount = 0;
 
     /**
      * @var array $activeinstructorss An array of course active instructors.
@@ -211,11 +223,11 @@ class subscriber implements subscriber_interface {
         $this->shortname = $this->course->shortname;
 
         // filter exercise and quiz modules only
-        $cms = $this->coursemodinfo->get_cms();
+        $this->coursemodules = $this->coursemodinfo->get_cms();
         $this->lessons = $this->coursemodinfo->get_section_info_all();
-        $this->modules = array_filter($cms, function($property) { return ($property->modname == 'assign' || $property->modname == 'quiz');});
-        $this->lessonmods = array_filter($cms, function($property) { return ($property->modname == 'lesson');});
-        $this->resources = array_filter($cms, function($property) { return ($property->modname == 'resource');});
+        $this->modules = array_filter($this->coursemodules, function($property) { return ($property->modname == 'assign' || $property->modname == 'quiz');});
+        $this->lessonmods = array_filter($this->coursemodules, function($property) { return ($property->modname == 'lesson');});
+        $this->resources = array_filter($this->coursemodules, function($property) { return ($property->modname == 'resource');});
         $this->roles = [];
         $this->gradeitems = [];
 
@@ -330,7 +342,7 @@ class subscriber implements subscriber_interface {
         $participant = new participant($this, $participantid);
 
         if ($populate) {
-            $participantrec = participant_vault::get_participant($this->courseid, $participantid, $active);
+            $participantrec = participant_vault::get_participant($this->courseid, $participantid, $active, $participant->is_student());
             if (!empty($participantrec->userid))
                 $participant->populate($participantrec);
         }
@@ -386,9 +398,14 @@ class subscriber implements subscriber_interface {
      * @param bool $rawdata        Whether to return students raw data
      * @return array $activestudents Array of active students.
      */
-    public function get_students(string $filter = 'active', bool $includeonhold = false, bool $rawdata = false, bool $loadgrades = false) {
+    public function get_students(string $filter = 'active', bool $includeonhold = false, bool $rawdata = false, bool $loadgrades = false, int $page = 0) {
         $activestudents = [];
-        $studentrecs = participant_vault::get_students($this->courseid, $filter, $includeonhold);
+        $studentrecs = participant_vault::get_students(
+            $this->courseid,
+            $filter,
+            $includeonhold,
+            ($page * LOCAL_BOOKING_DASHBOARDPAGESIZE),
+            $this->activestudentscount);
         $colors = LOCAL_BOOKING_SLOTCOLORS;
 
         if ($rawdata) {
@@ -398,20 +415,27 @@ class subscriber implements subscriber_interface {
             $i = 0;
             foreach ($studentrecs as $studentrec) {
                 $student = new student($this, $studentrec->userid);
-                if ($student->has_role('student') || $student->is_member_of(LOCAL_BOOKING_GRADUATESGROUP)) {
-                    $student->populate($studentrec);
-                    if ($loadgrades) {
-                        $student->load_grades();
-                    }
-                    $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
-                    $activestudents[$student->get_id()] = $student;
-                    $i++;
+                $student->populate($studentrec);
+                if ($loadgrades) {
+                    $student->load_grades();
                 }
+                $student->set_slot_color(count($colors) > 0 ? array_values($colors)[$i % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
+                $activestudents[$student->get_id()] = $student;
+                $i++;
             }
         }
         $this->activestudents = $activestudents;
 
         return $this->activestudents;
+    }
+
+    /**
+     * Total number of students queried for pagination.
+     *
+     * @return int $activestudentscount number of students last queried.
+     */
+    public function get_students_count() {
+        return $this->activestudentscount;
     }
 
     /**
@@ -421,10 +445,11 @@ class subscriber implements subscriber_interface {
      * @return instructor       The instructor object
      */
     public function get_instructor(int $instructorid) {
-        $instructor = (!empty($this->activeinstructors) && !empty($instructorid) && isset($this->activeinstructors[$instructorid])) ? $this->activeinstructors[$instructorid] : null;
+        $instructor = (!empty($this->activeinstructors) && !empty($instructorid) && isset($this->activeinstructors[$instructorid])) ?
+            $this->activeinstructors[$instructorid] : null;
 
         if (empty($instructor)) {
-            $instructorrec = participant_vault::get_participant($this->courseid, $instructorid);
+            $instructorrec = participant_vault::get_participant($this->courseid, $instructorid, true, false);
             // instantiate the instructor object and add to the list of activeinstructors
             $instructor = new instructor($this, $instructorid);
             $instructor->populate($instructorrec);
@@ -500,6 +525,15 @@ class subscriber implements subscriber_interface {
      */
     public function get_modules() {
         return $this->modules;
+    }
+
+    /**
+     * Retrieves subscribing course modules (exercises, quizes, lessons, sections...etc.)
+     *
+     * @return array
+     */
+    public function get_all_modules() {
+        return $this->coursemodules;
     }
 
     /**
@@ -765,6 +799,88 @@ class subscriber implements subscriber_interface {
      */
     public function requires_skills_evaluation() {
         return $this->requiresskillseval;
+    }
+
+    /**
+     * Updates the stats table with a specific value
+     *
+     * @param int    $courseid  The course id
+     * @param int    $userid    The user id
+     * @param string $stat      The stat field being update
+     * @param string $value     The field value being update
+     * @return bool             The result
+     */
+    public static function update_stat(int $courseid, int $userid, string $stat, $value) {
+        return subscriber_vault::update_subscriber_stat($courseid, $userid, $stat, $value);
+    }
+
+    /**
+     * Updates the stats table with a lastest lesson completed
+     *
+     * @param int    $courseid  The course id
+     * @param int    $userid    The user id
+     * @return bool             The result
+     */
+    public static function update_lessonscomplete_stat(int $courseid, int $userid) {
+        return subscriber_vault::update_subscriber_lessonscomplete_stat($courseid, $userid);
+    }
+
+    /**
+     * Checks if the passed course is a subscriber 'enabled'
+     *
+     * @param int $courseid
+     * @return bool
+     */
+    public static function is_subscribed(int $courseid) {
+        return subscriber_vault::is_course_enabled($courseid);
+    }
+
+    /**
+     * Adds students stats for a newly enabled course subscriber
+     *
+     * @param int $courseid
+     * @return bool
+     */
+    public static function add_new_enrolments(int $courseid) {
+        // if not already a subscriber then add new enrolments
+        return subscriber_vault::add_new_subscriber_enrolments($courseid);
+    }
+
+    /**
+     * Retrieves the next exercise (assign module) id in the subscribed course
+     *
+     * @param int $courseid
+     * @return int
+     */
+    public static function get_next_exerciseid(int $courseid, int $exerciseid = 0) {
+        $coursemodinfo = get_fast_modinfo($courseid);
+        $cms = $coursemodinfo->get_cms();
+        $modules = array_filter($cms, function($property) { return ($property->modname == 'assign');});
+        $keys = array_keys($modules);
+        $idx = $exerciseid != 0 ? array_search($exerciseid, $keys) : 0;
+
+        // return the current exercise if it's not the last otherwise return first exercise in the course
+        $currentexercise = ($exerciseid == array_key_last($modules) ?: $modules[$keys[$idx]]);
+        // return the next exercise if it's not the last otherwise return second exercise in the course
+        $nextexercise = ($exerciseid != array_key_last($modules) ? $modules[$keys[$idx+1]] : 0);
+
+        return [$currentexercise->id, $nextexercise->id];
+    }
+
+    /**
+     * Whether the student still has lessons to complete prior to the next exercise
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @return bool
+     */
+    public static function has_incomplete_lessons(int $courseid, int $userid) {
+        // get last lesson completion
+
+        // check if next exercise (assign mod) is the next exercise or an exercise completed before
+        $coursemodinfo = get_fast_modinfo($courseid);
+        $cms = $coursemodinfo->get_cms();
+        $modules = array_filter($cms, function($property) { return ($property->modname == 'assign' || $property->modname == 'lesson');});
     }
 
     /**

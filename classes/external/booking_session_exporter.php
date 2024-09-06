@@ -242,7 +242,7 @@ class booking_session_exporter extends exporter {
         return array(
             'context'=>'context',
             'coursemodules'=>'cm_info[]?',
-            'course'=>'local_booking\local\subscriber\entities\subscriber',
+            'subscriber'=>'local_booking\local\subscriber\entities\subscriber',
             'filter'=>'string',
         );
     }

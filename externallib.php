@@ -126,10 +126,11 @@ class local_booking_external extends external_api {
             'view'       => 'sessions',
             'sorttype'   => '',
             'filter'     => $filter,
+            'page'       => 0,
         ];
 
         // get students bookings and progression view
-        $bookingview = new booking_view($subscriber->get_context(), $courseid, $data);
+        $bookingview = new booking_view($data, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);
 
         return $bookingview->get_exported_data();
     }
@@ -209,7 +210,7 @@ class local_booking_external extends external_api {
         $logentry = (new logbook($courseid, $userid))->get_logentry($logentryid);
         $subscriber = self::get_course_subscriber_context('/local/booking/logbook?courseid=' . $courseid, $courseid);
         $data = array('subscriber'=>$subscriber, 'logentry' => $logentry, 'view' => 'summary', 'canedit' => $subscriber->get_instructor($USER->id)->is_instructor()) + $params;
-        $entry = new logentry_view($subscriber->get_context(), $courseid, $data);
+        $entry = new logentry_view($data, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);
 
         return array('logentry' => $entry->get_exported_data(), 'warnings' => $warnings);
     }
@@ -307,7 +308,7 @@ class local_booking_external extends external_api {
                         'view'      => 'summary',
                         'nullable'  => false
                     ];
-                    $entry = new logentry_view($subscriber->get_context(), $courseid, $data);
+                    $entry = new logentry_view($data, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);
                     $data = $entry->get_exported_data();
 
                 } else {
@@ -481,7 +482,7 @@ class local_booking_external extends external_api {
             'exerciseid'=> $exerciseid == null ? 0 : $exerciseid,
         ];
 
-        $calendarview = new calendar_view($subscriber->get_context(), $courseid, $data);
+        $calendarview = new calendar_view($data, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);
 
         return $calendarview->get_exported_data();
     }
@@ -1367,7 +1368,7 @@ class local_booking_external extends external_api {
 
             // get exporter output for return values
             $viewdata = ['subscriber'=>$subscriber, 'logentry'=>$logentry, 'userid'=>$userid];
-            $entry = new logentry_view($subscriber->get_context(), $courseid, $viewdata);
+            $entry = new logentry_view($viewdata, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);
             $output = $entry->get_exported_data();
 
             // send student notification for new logbook entries

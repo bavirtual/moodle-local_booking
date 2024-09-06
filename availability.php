@@ -112,7 +112,7 @@ $data = [
     'confirm'    => $confirm,
     ];
 // get calendar view for Session booking
-$calendarview = new calendar_view($context, $courseid, $data);
+$calendarview = new calendar_view($data, ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
 
 // output calendar view
 echo $OUTPUT->header();

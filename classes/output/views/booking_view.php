@@ -16,6 +16,8 @@
 
 namespace local_booking\output\views;
 
+require_once($CFG->dirroot.'/lib/formslib.php');
+
 use local_booking\external\bookings_exporter;
 use local_booking\external\booking_mybookings_exporter;
 use local_booking\external\assigned_students_exporter;
@@ -87,6 +89,9 @@ class booking_view extends base_view {
             // show page bar if required
             $course = $this->related['subscriber'];
             if ($course->get_students_count() > LOCAL_BOOKING_DASHBOARDPAGESIZE) {
+                $mform = new form
+                 \plugintype_pluginname\form\myform();
+                $output .= $OUTPUT->paging_bar($course->get_students_count(), $this->data['page'], LOCAL_BOOKING_DASHBOARDPAGESIZE, $PAGE->url);
                 $output .= $OUTPUT->paging_bar($course->get_students_count(), $this->data['page'], LOCAL_BOOKING_DASHBOARDPAGESIZE, $PAGE->url);
             }
 

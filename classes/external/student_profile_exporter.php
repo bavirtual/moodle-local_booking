@@ -232,6 +232,9 @@ class student_profile_exporter extends exporter {
             'requiresevaluation' => [
                 'type'  => PARAM_BOOL,
             ],
+            'forcecompletionurl' => [
+                'type' => PARAM_URL,
+            ],
             'loginasurl' => [
                 'type' => PARAM_URL,
             ],
@@ -359,6 +362,13 @@ class student_profile_exporter extends exporter {
         }
 
         // log in as url
+        $forcecompletionurl = new moodle_url('/local/booking/profile.php', [
+            'courseid' => $this->courseid,
+            'userid' => $studentid,
+            'forcecompletion' => 1,
+        ]);
+
+        // log in as url
         $loginas = new moodle_url('/course/loginas.php', [
             'id' => $this->courseid,
             'user' => $studentid,
@@ -461,6 +471,7 @@ class student_profile_exporter extends exporter {
             'restrictionoverride'      => get_user_preferences('local_booking_' . $this->courseid . '_availabilityoverride', false, $studentid),
             'admin'                    => has_capability('moodle/user:loginas', $this->related['context']),
             'hasexams'                 => $hasexams,
+            'forcecompletionurl'       => $forcecompletionurl->out(false),
             'loginasurl'               => $loginas->out(false),
             'outlinereporturl'         => $outlinereporturl->out(false),
             'completereporturl'        => $completereporturl->out(false),

@@ -26,6 +26,7 @@
  */
 
 use local_booking\local\participant\entities\participant;
+use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 use local_booking\output\views\profile_view;
 
@@ -39,6 +40,7 @@ $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $userid = optional_param('userid', 0, PARAM_INT);
 $role = optional_param('role', 0, PARAM_INT);
+$forcecompletion = optional_param('forcecompletion', 0, PARAM_INT);
 
 $url = new moodle_url('/local/booking/view.php');
 $url->param('courseid', $courseid);
@@ -55,6 +57,12 @@ require_capability('local/booking:view', $context);
 // define subscriber globally
 if (empty($COURSE->subscriber)) {
     $COURSE->subscriber = new subscriber($courseid);
+}
+
+// process force course completion given right permissions
+if (has_capability('enrol/apply:manage', $context) && $forcecompletion) {
+    $COURSE->subscriber->force_student_course_completion($userid);
+    redirect($url);
 }
 
 $navbartext = participant::get_fullname($userid);

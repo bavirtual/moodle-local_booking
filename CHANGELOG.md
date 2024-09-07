@@ -1,15 +1,22 @@
 # Change log
 
-## [2024090800] - RELEASED 2024-09-08
+## [202409xxxx] - RELEASED 2024-09-xx
 
-### Changed
+### Added
 
-- get participants criteria sql
+- search dashboard students
+- overlay on [Save booking] whlie loading the dashboard
+- force course completion in profile to exclude legacy enrolments
 
 ### Fixed
 
-- P2 not showing when filling new logentry
-- graduates booking view exception
+- graduates filter exception
+- my bookings not showing after saving a logentry or canceling a booking
+
+### Changed
+
+- center pagination to the middle of the grid not the page
+- active/graduated students evaluation
 
 ## [2024090600] - RELEASED 2024-09-06
 

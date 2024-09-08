@@ -150,7 +150,7 @@ class participant_vault implements participant_vault_interface {
     public static function get_students(int $courseid, string $filter = 'active', bool $includeonhold = false, int $offset = 0, int &$count = 0) {
         global $DB;
 
-        list($sql, $countsql) = self::get_students_sql($filter, $includeonhold);
+        list($sql, $countsql) = self::get_criteria_sql($filter, $includeonhold, false, 'student');
 
         $params = [
             'courseid'  => $courseid,
@@ -172,9 +172,10 @@ class participant_vault implements participant_vault_interface {
      * @param int $courseid         The course id.
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
+     * @param string $roles         The roles of the participants
      * @return {Object}[]           Array of database records.
      */
-    public static function get_participants_for_select(int $courseid, string $filter = 'active', bool $includeonhold = false) {
+    public static function get_participants_simple(int $courseid, string $filter = 'active', bool $includeonhold = false, string $roles = null) {
         global $DB;
 
         $params = [
@@ -184,7 +185,7 @@ class participant_vault implements participant_vault_interface {
             'contextid' => \context_course::instance($courseid)->id
         ];
 
-        list($sql, $countsql) = self::get_students_sql($filter, $filter, true);
+        list($sql, $countsql) = self::get_criteria_sql($filter, $filter, true, $roles);
         return $DB->get_records_sql($sql, $params);
     }
 
@@ -193,36 +194,36 @@ class participant_vault implements participant_vault_interface {
      *
      * @param  string $filter          The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param  bool   $includeonhold   Whether to include on-hold students as well
-     * @param  bool   $forselect       To return sql for html Select user ids & names only
+     * @param  bool   $simple          To return sql for html Select user ids & names only
+     * @param  string $roles           The roles of the participants
      * @return string $sql             The query SQL string
      */
-    private static function get_students_sql(string $filter = 'active', bool $includeonhold = false, bool $forselect = false) {
+    private static function get_criteria_sql(string $filter = 'active', bool $includeonhold = false, bool $simple = false, string $roles = null) {
         global $DB;
 
-        $select = 'SELECT * FROM (SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . '
-                    AS fullname, (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
+        $select = 'SELECT * FROM (SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . ' AS fullname';
+        $select .= !empty($roles) ? ', (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
                          INNER JOIN {' . self::DB_ROLE . '}  r ON r.id = ra.roleid
-                         WHERE ra.userid = u.id AND ra.contextid = :contextid) AS roles';
-        $select .= $forselect ? '' : ', s.activeposts, s.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid,
+                         WHERE ra.userid = u.id AND ra.contextid = :contextid) AS roles' : '';
+        $select .= $simple ? '' : ', s.activeposts, s.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid,
                     MAX(ue.timecreated) AS enroldate, ue.timemodified AS suspenddate, cc.timecompleted AS graduateddate,
                     en.courseid AS courseid, u.lastlogin AS lastlogin, IF(s.activeposts > 0, 1, 0) AS hasposts';
 
-        $from = ' FROM {' . self::DB_USER . '} u
-        INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id
-        INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = s.userid
-        INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid
-        LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid';
+        $from = ' FROM {' . self::DB_USER . '} u';
+        $from .= !empty($roles) && str_contains($roles, 'student') ? ' INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id' : '';
+        $from .= ' INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = ' . (!empty($roles) && str_contains($roles, 'student') ? 's.userid' : 'u.id') .
+                 ' INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid
+                   LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid';
 
-        $innerwhere = ' WHERE s.courseid = :scourseid AND
-                en.courseid = :courseid AND
-                u.deleted != 1 AND
-                u.suspended = 0';
+        $innerwhere = ' WHERE ';
+        $innerwhere .= !empty($roles) && str_contains($roles, 'student') ? 's.courseid = :scourseid AND ' : '';
+        $innerwhere .= 'en.courseid = :courseid AND u.deleted != 1 AND u.suspended = 0 ';
 
-        $outerwhere = ' WHERE roles like "%student%"';
+        $outerwhere = !empty($roles) ? " WHERE roles like '%$roles%'" : '';
 
-        $orderby = $forselect ? ' ORDER BY fullname' : ' ORDER BY lessonscomplete DESC, hasposts DESC, lastsessiondate ASC';
+        $orderby = $simple ? ' ORDER BY fullname' : ' ORDER BY lessonscomplete DESC, hasposts DESC, lastsessiondate ASC';
 
-        $groupby = ' GROUP BY u.id) students';
+        $groupby = ' GROUP BY u.id) participants';
 
         switch ($filter) {
             // cross reference course completion and on-hold group

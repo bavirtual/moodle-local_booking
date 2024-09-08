@@ -73,7 +73,13 @@ class booking_student_exporter extends exporter {
                 $data['recencytooltip'] = $this->student->get_priority()->get_recency_info();
                 break;
             case 'graduates':
-                $data['dateinfo'] = $this->student->get_graduated_date()->format('M d, y');
+                $graduatedate = $this->student->get_graduated_date();
+                if (!empty($graduatedate)) {
+                    $data['dateinfo'] = $graduatedate->format('M d, y');
+                } else {
+                    $data['dateinfo'] = get_string('nograduatedate', 'local_booking');
+                }
+
                 break;
             case 'suspended':
                 $data['dateinfo'] = $this->student->get_suspension_date()->format('M d, y');

@@ -587,13 +587,8 @@ class create extends \moodleform {
      * @return array $activepilots List of user ids for P1 & P2 pilots
      */
     protected function get_pilot_ids($course) {
-        $pilots = $course->get_participants(true);
-
-        foreach ($pilots as $pilot) {
-            $activepilots[$pilot->userid] = $pilot->fullname;
-        }
-
-        return $activepilots;
+        $pilots = $course->get_participant_names('active', true);
+        return $pilots;
     }
 
     /**

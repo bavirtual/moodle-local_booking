@@ -91,6 +91,16 @@ interface subscriber_interface {
     public function get_participants(bool $rawdata = false);
 
     /**
+     * Get all active participant names for UI from the database.
+     *
+     * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
+     * @param bool $includeonhold   Whether to include on-hold students as well
+     * @param string $roles         The roles of the participants
+     * @return array                Array of student ids & names
+     */
+    public function get_participant_names(string $filter = 'active', bool $includeonhold = false, string $roles = null);
+
+    /**
      * Get a student.
      *
      * @param int  $studentid   A participant user id.
@@ -310,4 +320,12 @@ interface subscriber_interface {
      * @return bool
      */
     public static function has_integration($root, $key);
+
+    /**
+     * Forces completion of the subscribed course for a specific student.
+     * This function is to fix eliminate legacy enrolments
+     *
+     * @param int $studentid    The user id for the student to force course completion for
+     */
+    public function force_student_course_completion(int $studentid);
 }

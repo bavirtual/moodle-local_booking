@@ -47,6 +47,7 @@ class participant_vault implements participant_vault_interface {
     const DB_MODULES = 'modules';
     const DB_COURSE_SECTIONS = 'course_sections';
     const DB_COURSE_MODS = 'course_modules';
+    const DB_COURSE_COMP = 'course_completions';
     const DB_COURSE_MODS_COMP = 'course_modules_completion';
 
     // course assignment tables
@@ -69,14 +70,15 @@ class participant_vault implements participant_vault_interface {
     public static function get_participant(int $courseid, int $userid = 0, bool $active = true, bool $student = true) {
         global $DB;
 
-        $statssql = $student ? 's.activeposts, s.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid, IF(activeposts > 0, 1, 0) AS hasposts' :
-            '0 AS activeposts, 0 AS lessonscomplete, 0 AS lastsessiondate, 0 AS currentexerciseid, 0 AS nextexerciseid, 0 AS hasposts';
-        $conditionaljoin = $student ? 'INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id' : '';
-        $statsclause = $student ? ' AND s.courseid = :scourseid' : '';
+        $statssql = $student ? 's.activeposts, s.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid, IF(activeposts > 0, 1, 0) AS haspostscc.timecompleted AS graduateddate,' :
+            '0 AS activeposts, 0 AS lessonscomplete, 0 AS lastsessiondate, 0 AS currentexerciseid, 0 AS nextexerciseid, 0 AS hasposts, 0 AS graduateddate';
+        $conditionaljoin = $student ? 'INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid' : '';
+        $statsclause = $student ? ' AND s.courseid = :scourseid AND cc.timecompleted IS NULL' : '';
         $activeclause = $active ? ' AND ue.status = 0' : '';
 
         $sql = "SELECT u.id AS userid, " . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . " AS fullname,
-                    MAX(ue.timecreated) AS enroldate, $statssql, ue.timemodified AS suspenddate, en.courseid AS courseid, u.lastlogin AS lastlogin,
+                    MAX(ue.timecreated) AS enroldate, $statssql, ue.timemodified AS suspenddate,
+                    en.courseid AS courseid, u.lastlogin AS lastlogin,
                         (SELECT GROUP_CONCAT(shortname) FROM {" . self::DB_ROLE_ASSIGN . "} ra
                          INNER JOIN {" . self::DB_ROLE . "}  r ON r.id = ra.roleid
                          WHERE ra.userid = :ruserid AND ra.contextid = :contextid) AS roles
@@ -110,7 +112,8 @@ class participant_vault implements participant_vault_interface {
 
         $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . '
                     AS fullname, s.activeposts, s.lastsessiondate, s.lessonscomplete, s.currentexerciseid, s.nextexerciseid, ue.timecreated AS enroldate,
-                    ue.timemodified AS suspenddate, en.courseid AS courseid, u.lastlogin AS lastlogin, IF(s.activeposts > 0, 1, 0) AS hasposts,
+                    ue.timemodified AS suspenddate, cc.timecompleted AS graduateddate, en.courseid AS courseid, u.lastlogin AS lastlogin,
+                    IF(s.activeposts > 0, 1, 0) AS hasposts,
                         (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
                          INNER JOIN {' . self::DB_ROLE . '}  r ON r.id = ra.roleid
                          WHERE ra.userid = :ruserid AND ra.contextid = :contextid) AS roles
@@ -118,6 +121,7 @@ class participant_vault implements participant_vault_interface {
                 INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id
                 INNER JOIN {' . self::DB_USER_ENROL . '} ue on s.userid = ue.userid
                 INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
+                LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid
                 WHERE en.courseid = :courseid AND s.courseid = :scourseid AND u.id = :userid
                 ORDER BY ue.timemodified DESC
                 LIMIT 1';
@@ -139,9 +143,11 @@ class participant_vault implements participant_vault_interface {
      * @param int $courseid         The course id.
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
+     * @param int $offset           The offset record for pagination
+     * @param bool &$count          Reference to the count of students count before pagination
      * @return {Object}[]           Array of database records.
      */
-    public static function get_students(int $courseid, string $filter = 'active', bool $includeonhold = false, $offset = 0, int &$count = 0) {
+    public static function get_students(int $courseid, string $filter = 'active', bool $includeonhold = false, int $offset = 0, int &$count = 0) {
         global $DB;
 
         list($sql, $countsql) = self::get_students_sql($filter, $includeonhold);
@@ -161,27 +167,51 @@ class participant_vault implements participant_vault_interface {
     }
 
     /**
+     * Get all active participants for a course for UI select controls (ids & fullname)
+     *
+     * @param int $courseid         The course id.
+     * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
+     * @param bool $includeonhold   Whether to include on-hold students as well
+     * @return {Object}[]           Array of database records.
+     */
+    public static function get_participants_for_select(int $courseid, string $filter = 'active', bool $includeonhold = false) {
+        global $DB;
+
+        $params = [
+            'courseid'  => $courseid,
+            'scourseid' => $courseid,
+            'gcourseid' => $courseid,
+            'contextid' => \context_course::instance($courseid)->id
+        ];
+
+        list($sql, $countsql) = self::get_students_sql($filter, $filter, true);
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
      * Get all active students from the database.
      *
      * @param  string $filter          The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param  bool   $includeonhold   Whether to include on-hold students as well
+     * @param  bool   $forselect       To return sql for html Select user ids & names only
      * @return string $sql             The query SQL string
      */
-    private static function get_students_sql(string $filter = 'active', bool $includeonhold = false) {
+    private static function get_students_sql(string $filter = 'active', bool $includeonhold = false, bool $forselect = false) {
         global $DB;
 
         $select = 'SELECT * FROM (SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . '
-                    AS fullname, s.activeposts, s.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid,
-                    MAX(ue.timecreated) AS enroldate, ue.timemodified AS suspenddate,
-                    en.courseid AS courseid, u.lastlogin AS lastlogin, IF(s.activeposts > 0, 1, 0) AS hasposts,
-                        (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
+                    AS fullname, (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
                          INNER JOIN {' . self::DB_ROLE . '}  r ON r.id = ra.roleid
                          WHERE ra.userid = u.id AND ra.contextid = :contextid) AS roles';
+        $select .= $forselect ? '' : ', s.activeposts, s.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid,
+                    MAX(ue.timecreated) AS enroldate, ue.timemodified AS suspenddate, cc.timecompleted AS graduateddate,
+                    en.courseid AS courseid, u.lastlogin AS lastlogin, IF(s.activeposts > 0, 1, 0) AS hasposts';
 
         $from = ' FROM {' . self::DB_USER . '} u
         INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id
         INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = s.userid
-        INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid';
+        INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid
+        LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid';
 
         $innerwhere = ' WHERE s.courseid = :scourseid AND
                 en.courseid = :courseid AND
@@ -190,24 +220,24 @@ class participant_vault implements participant_vault_interface {
 
         $outerwhere = ' WHERE roles like "%student%"';
 
-        $orderby = ' ORDER BY lessonscomplete DESC, hasposts DESC, lastsessiondate ASC';
+        $orderby = $forselect ? ' ORDER BY fullname' : ' ORDER BY lessonscomplete DESC, hasposts DESC, lastsessiondate ASC';
 
         $groupby = ' GROUP BY u.id) students';
 
         switch ($filter) {
+            // cross reference course completion and on-hold group
             case 'active':
-                $onholdclause = $includeonhold ? '' : ' OR g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"';
-                $innerwhere .= ' AND ue.status = 0 AND
-                        u.id NOT IN (
+                $excludeonhold = ' AND u.id NOT IN (
                             SELECT userid
                             FROM {' . self::DB_GROUPS_MEM . '} gm
                             INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                            WHERE g.courseid = :gcourseid AND (g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
-                            ' . $onholdclause . '))';
+                            WHERE g.courseid = :gcourseid AND g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '")';
+                $innerwhere .= $includeonhold ? '' : $excludeonhold;
+                $innerwhere .= ' AND ue.status = 0 AND cc.timecompleted IS NULL';
                 break;
 
             case 'onhold':
-                $innerwhere .= ' AND ue.status = 0
+                $innerwhere .= ' AND ue.status = 0 AND cc.timecompleted IS NULL
                     AND u.id IN (
                         SELECT userid
                         FROM {' . self::DB_GROUPS_MEM . '} gm
@@ -221,18 +251,13 @@ class participant_vault implements participant_vault_interface {
                 break;
 
             case 'graduates':
-                $innerwhere .= ' AND ue.status = 0
-                    AND u.id IN (
-                        SELECT userid
-                        FROM {' . self::DB_GROUPS_MEM . '} gm
-                        INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                        WHERE g.courseid = :gcourseid AND (g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"))';
+                $innerwhere .= ' AND ue.status = 0 AND cc.timecompleted IS NOT NULL';
                 break;
         }
 
         $sql = $select. $from . $innerwhere . $groupby . $outerwhere . $orderby;
 
-        $countsql = 'SELECT Count(u.id)' . $from . ' INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra ON ra.userid = ue.userid' . $innerwhere . ' AND ra.contextid = :contextid';
+        $countsql = 'SELECT Count(u.id)' . $from . ' INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra ON ra.userid = ue.userid ' . $innerwhere . ' AND ra.contextid = :contextid';
 
         return [$sql, $countsql];
     }
@@ -254,7 +279,7 @@ class participant_vault implements participant_vault_interface {
 
         $sql = "SELECT DISTINCT u.id AS userid, " . $DB->sql_concat('u.firstname', '" "',
                     'u.lastname', '" "', 'u.alternatename') . " AS fullname, ue.timemodified AS enroldate,
-                    ue.timemodified AS suspenddate, en.courseid AS courseid, u.lastlogin AS lastlogin,
+                    ue.timemodified AS suspenddate, 0 AS graduateddate, en.courseid AS courseid, u.lastlogin AS lastlogin,
                     0 AS activeposts, 0 AS lastsessiondate, 0 AS currentexerciseid,
                     0 AS nextexerciseid, (
                         SELECT GROUP_CONCAT(shortname) FROM {" . self::DB_ROLE_ASSIGN . "} ra

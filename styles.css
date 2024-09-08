@@ -197,6 +197,9 @@
 .disabled-link {
     pointer-events: none;
 }
+#searchform .fitem {
+    display: inline-block;
+}
 
 /* Session Booking: booking container interim step */
 .booking-container {

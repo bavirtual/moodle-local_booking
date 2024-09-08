@@ -455,6 +455,20 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Get all active students from the database.
+     *
+     * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
+     * @param bool $includeonhold   Whether to include on-hold students as well
+     * @return array                Array of student ids & names
+     */
+    public function get_students_for_select(string $filter = 'active', bool $includeonhold = false) {
+        $studentrecs = participant_vault::get_students_for_select($this->courseid, $filter, $includeonhold);
+        $students = array_combine(array_keys($studentrecs), array_column($studentrecs, 'fullname'));
+        array_unshift($students, '');
+        return $students;
+    }
+
+    /**
      * Get an active instructor.
      *
      * @param int $instructorid An instructor user id.

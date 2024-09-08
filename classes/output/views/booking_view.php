@@ -16,13 +16,11 @@
 
 namespace local_booking\output\views;
 
-require_once($CFG->dirroot.'/lib/formslib.php');
-
 use local_booking\external\bookings_exporter;
 use local_booking\external\booking_mybookings_exporter;
 use local_booking\external\assigned_students_exporter;
 use local_booking\external\instructor_participation_exporter;
-use moodle_url;
+use local_booking\output\forms\booking_view_search;
 use stdClass;
 
 /**
@@ -89,9 +87,8 @@ class booking_view extends base_view {
             // show page bar if required
             $course = $this->related['subscriber'];
             if ($course->get_students_count() > LOCAL_BOOKING_DASHBOARDPAGESIZE) {
-                $mform = new form
-                 \plugintype_pluginname\form\myform();
-                $output .= $OUTPUT->paging_bar($course->get_students_count(), $this->data['page'], LOCAL_BOOKING_DASHBOARDPAGESIZE, $PAGE->url);
+                $searchform = new booking_view_search(null, array('students' => $course->get_students_for_select()),'post','',array('id'=>'searchform'));
+                $output .= $searchform->render();
                 $output .= $OUTPUT->paging_bar($course->get_students_count(), $this->data['page'], LOCAL_BOOKING_DASHBOARDPAGESIZE, $PAGE->url);
             }
 

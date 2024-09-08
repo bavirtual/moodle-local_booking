@@ -19,7 +19,7 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -116,9 +116,9 @@ class student extends participant {
     protected $restrictiondate;
 
     /**
-     * @var DateTime $graduateddate The student's graduated date.
+     * @var int $graduateddate The student's graduated date timestamp.
      */
-    protected $graduateddate;
+    protected $graduateddate = 0;
 
     /**
      * @var priority $priority The student's priority object.
@@ -462,7 +462,11 @@ class student extends participant {
      * @return  DateTime|int
      */
     public function get_graduated_date(bool $timestamp = false) {
-        return $timestamp ? $this->graduateddate->getTimestamp() : $this->graduateddate;
+        $graduatedate = null;
+        if (!empty($this->graduateddate)) {
+            $graduatedate = new \DateTime('@' . $this->graduateddate);
+        }
+        return $timestamp ? $this->graduateddate : $graduatedate;
     }
 
     /**
@@ -751,16 +755,6 @@ class student extends participant {
     }
 
     /**
-     * Returns the date time of the student
-     * graduated date.
-     *
-     * @return  DateTime
-     */
-    public function set_graduated_date(int $graduateddate) {
-        $this->graduateddate = new \DateTime('@'.$graduateddate);
-    }
-
-    /**
      * Returns whether the student completed
      * all lessons prior to the upcoming next
      * exercise.
@@ -906,7 +900,7 @@ class student extends participant {
      * @return  bool    Whether the student had graduated.
      */
     public function graduated() {
-        return $this->is_member_of(LOCAL_BOOKING_GRADUATESGROUP);
+        return !empty($this->graduateddate);
     }
 
     /**
@@ -926,6 +920,8 @@ class student extends participant {
                 $this->nextexerciseid = $record->nextexerciseid;
             if (!empty($record->lessonscomplete))
                 $this->lessonscomplete = $record->lessonscomplete;
+            if (!empty($record->graduateddate))
+                $this->graduateddate = $record->graduateddate;
         }
         // set status
         if ($this->lessonscomplete) {

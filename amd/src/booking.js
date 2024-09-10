@@ -216,13 +216,6 @@ define([
         init: function(rt) {
             var root = $(rt);
             registerEventListeners(root);
-
-            // show search and clear search buttons after the autocomplete loads
-            $('#id_searchstudents').removeClass('hidden');
-            $('#id_clearsearch').removeClass('hidden');
-            $('.felement').removeClass('flex-wrap');
-            $('.felement').addClass('col-md-12').removeClass('col-md-9').removeClass('flex-wrap');
-
             ViewManager.stopLoading(root);
         }
     };

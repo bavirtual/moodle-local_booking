@@ -66,8 +66,8 @@ class booking_view_search extends \moodleform {
         );
         // add students to the select criteria
         $mform->addElement('students_list_autocomplete', 'userids', get_string('search'), $options);
-        $mform->addElement('button', 'searchstudents', get_string('search'), ['data-region'=>'search-button'], ['customclassoverride' => 'btn-primary ml-2 hidden']);
-        $mform->addElement('button', 'clearsearch', get_string('clear'), ['data-region'=>'clearsearch-button'], ['customclassoverride' => 'btn-secondary ml-2 hidden']);
+        $mform->addElement('button', 'searchstudents', get_string('search'), ['data-region'=>'search-button'], ['customclassoverride' => 'btn-primary ml-2']);
+        $mform->addElement('button', 'clearsearch', get_string('clear'), ['data-region'=>'clearsearch-button'], ['customclassoverride' => 'btn-secondary ml-2']);
 
         // add hidden fields
         $mform->addElement('hidden', 'courseid');

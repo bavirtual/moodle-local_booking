@@ -77,6 +77,9 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, Ajax, Notificat
             var el = $(selector),
                 courseId = el.data('courseid');
 
+            $('.felement').removeClass('flex-wrap');
+            $('.felement').addClass('col-md-12').removeClass('col-md-9').removeClass('flex-wrap');
+
             if (!courseId) {
                 throw new Error('The attribute data-courseid is required on ' + selector);
             }

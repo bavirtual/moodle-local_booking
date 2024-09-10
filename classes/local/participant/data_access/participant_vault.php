@@ -173,9 +173,10 @@ class participant_vault implements participant_vault_interface {
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @param string $roles         The roles of the participants
+     * @param string $wildcard      Wildcard value for autocomplete
      * @return {Object}[]           Array of database records.
      */
-    public static function get_participants_simple(int $courseid, string $filter = 'active', bool $includeonhold = false, string $roles = null) {
+    public static function get_participants_simple(int $courseid, string $filter = 'active', bool $includeonhold = false, string $roles = null, string $wildcard = null) {
         global $DB;
 
         $params = [
@@ -185,7 +186,7 @@ class participant_vault implements participant_vault_interface {
             'contextid' => \context_course::instance($courseid)->id
         ];
 
-        list($sql, $countsql) = self::get_criteria_sql($filter, $filter, true, $roles);
+        list($sql, $countsql) = self::get_criteria_sql($filter, $filter, true, $roles, $wildcard);
         return $DB->get_records_sql($sql, $params);
     }
 
@@ -196,9 +197,10 @@ class participant_vault implements participant_vault_interface {
      * @param  bool   $includeonhold   Whether to include on-hold students as well
      * @param  bool   $simple          To return sql for html Select user ids & names only
      * @param  string $roles           The roles of the participants
+     * @param  string $wildcard        Wildcard criteria value
      * @return string $sql             The query SQL string
      */
-    private static function get_criteria_sql(string $filter = 'active', bool $includeonhold = false, bool $simple = false, string $roles = null) {
+    private static function get_criteria_sql(string $filter = 'active', bool $includeonhold = false, bool $simple = false, string $roles = null, $wildcard = null) {
         global $DB;
 
         $select = 'SELECT * FROM (SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . ' AS fullname';
@@ -218,12 +220,15 @@ class participant_vault implements participant_vault_interface {
         $innerwhere = ' WHERE ';
         $innerwhere .= !empty($roles) && str_contains($roles, 'student') ? 's.courseid = :scourseid AND ' : '';
         $innerwhere .= 'en.courseid = :courseid AND u.deleted != 1 AND u.suspended = 0 ';
+        $innerwhere .= !empty($wildcard) && $simple ? " AND CONCAT(u.firstname, ' ', u.lastname, ' ', u.alternatename) LIKE '%$wildcard%'" : '';
 
         $outerwhere = !empty($roles) ? " WHERE roles like '%$roles%'" : '';
 
         $orderby = $simple ? ' ORDER BY fullname' : ' ORDER BY lessonscomplete DESC, hasposts DESC, lastsessiondate ASC';
 
         $groupby = ' GROUP BY u.id) participants';
+
+        $limit = $simple ? ' LIMIT ' . LOCAL_BOOKING_DASHBOARDPAGESIZE : '';
 
         switch ($filter) {
             // cross reference course completion and on-hold group
@@ -256,7 +261,7 @@ class participant_vault implements participant_vault_interface {
                 break;
         }
 
-        $sql = $select. $from . $innerwhere . $groupby . $outerwhere . $orderby;
+        $sql = $select. $from . $innerwhere . $groupby . $outerwhere . $orderby . $limit;
 
         $countsql = 'SELECT Count(u.id)' . $from . ' INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra ON ra.userid = ue.userid ' . $innerwhere . ' AND ra.contextid = :contextid';
 
@@ -311,55 +316,6 @@ class participant_vault implements participant_vault_interface {
             'gcourseid' => $courseid,
             'contextid' => $contextid,
             'rcontextid' => $contextid,
-        ];
-
-        return $DB->get_records_sql($sql, $params);
-    }
-
-    /**
-     * Get students assigned to an instructor from the database.
-     *
-     * @param int $courseid The course in context
-     * @param int $userid   The instructor user id
-     * @return {Object}[]   Array of database records.
-     */
-    public function get_assigned_students(int $courseid, int $userid) {
-        global $DB;
-        $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "',
-                    'u.lastname', '" "', 'u.alternatename') . ' AS fullname,
-                    ue.timemodified AS enroldate, ue.timemodified AS suspenddate,
-                    en.courseid AS courseid, u.lastlogin AS lastlogin
-                FROM {' . self::DB_USER . '} u
-                INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra on u.id = ra.userid
-                INNER JOIN {' . self::DB_ROLE . '} r on r.id = ra.roleid
-                INNER JOIN {' . self::DB_USER_ENROL . '} ue on ra.userid = ue.userid
-                INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
-                INNER JOIN {' . self::DB_GROUPS_MEM . '} gm on ue.userid = gm.userid
-                INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                WHERE en.courseid = :courseid
-                    AND ra.contextid = :contextid
-                    AND r.shortname = :role
-                    AND ue.status = :status
-                    AND g.courseid = :gcourseid
-                    AND g.name = :instructorname
-                    AND u.lastlogin > ' . (time() - LOCAL_BOOKING_PASTDATACUTOFFDAYS) . '
-                    AND u.id NOT IN (
-                        SELECT userid
-                        FROM {' . self::DB_GROUPS_MEM . '} gm
-                        INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                        WHERE g.courseid = :g2courseid AND
-                        (g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '"
-                        OR g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '"
-                        ))';
-
-        $params = [
-            'courseid'  => $courseid,
-            'contextid' => \context_course::instance($courseid)->id,
-            'role'      => 'student',
-            'status'    => 0,
-            'gcourseid' => $courseid,
-            'g2courseid'=> $courseid,
-            'instructorname' => instructor::get_fullname($userid, false)
         ];
 
         return $DB->get_records_sql($sql, $params);

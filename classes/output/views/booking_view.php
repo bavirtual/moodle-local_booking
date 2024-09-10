@@ -18,9 +18,8 @@ namespace local_booking\output\views;
 
 use local_booking\external\bookings_exporter;
 use local_booking\external\booking_mybookings_exporter;
-use local_booking\external\assigned_students_exporter;
 use local_booking\external\instructor_participation_exporter;
-use local_booking\output\forms\booking_view_search;
+use local_booking\output\form\booking_view_search;
 use stdClass;
 
 /**
@@ -28,7 +27,7 @@ use stdClass;
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2023
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class booking_view extends base_view {
@@ -45,81 +44,95 @@ class booking_view extends base_view {
      * @param array    $related   The related objects to pass
      */
     public function __construct(array $data, array $related) {
-        parent::__construct($data, $related, 'local_booking/bookings' . ($data['action'] == 'readonly' ? '_readonly' : ''));
-
-        // export bookings
-        if ($this->data['action'] == 'readonly' || $this->data['action']=='book') {
-
-            $bookings = new bookings_exporter($this->data, $this->related);
-            $this->exporteddata = $bookings->export($this->renderer);
-
-        } elseif ($this->data['action']=='confirm') {
-
-            $this->data['view'] = 'confirm';
-            $bookings = new bookings_exporter($this->data, $this->related);
-            $this->exporteddata = $bookings->export($this->renderer);
-
-        }
+        parent::__construct($data, $related, '');
     }
 
     /**
-     * Override parent output method to get Instructor dashboard
-     * additional views.
+     * Get students progression export
      *
-     * @param   ?string   $template     Optional template to be rendered
-     * @param   ?stdClass $exporteddata Optional data to be rendered in the template
-     * @return  string
+     * @return  ?stdClass
      */
-    public function output(?string $template = null, ?stdClass $exporteddata = null):string {
+    public function get_student_progression(bool $html = true) {
         global $OUTPUT, $PAGE;
         $output = '';
 
-        // select the student progression booking view or the booking confirmation view
-        if ($this->data['action']=='confirm') {
+        $bookings = new bookings_exporter($this->data, $this->related);
+        $this->exporteddata = $bookings->export($this->renderer);
 
-            $output = parent::output('local_booking/booking', $this->exporteddata);
+        // export bookings
+        if ($this->data['action'] == 'readonly' || $this->data['action'] == 'book') {
 
-        } elseif ($this->data['action']=='book') {
+            if ($html) {
+                $output = parent::output('local_booking/bookings' . ($this->data['action'] == 'readonly' ? '_readonly' : '') , $this->exporteddata);
 
-            // get student progression output
-            $output = parent::output();
+                // show page bar and search form if required
+                $course = $this->related['subscriber'];
+                if ($course->get_students_count() > LOCAL_BOOKING_DASHBOARDPAGESIZE) {
 
-            // show page bar if required
-            $course = $this->related['subscriber'];
-            if ($course->get_students_count() > LOCAL_BOOKING_DASHBOARDPAGESIZE) {
-                $searchform = new booking_view_search(null, array('students' => $course->get_students_for_select()),'post','',array('id'=>'searchform'));
-                $output .= $searchform->render();
-                $output .= $OUTPUT->paging_bar($course->get_students_count(), $this->data['page'], LOCAL_BOOKING_DASHBOARDPAGESIZE, $PAGE->url);
+                    // show autocomplete search form
+                    // $students = $course->get_participant_names('active', false, 'student');
+                    // $students = [0=>''] + $students; // add blank entry to avoid noselectiondefault for autocomplete
+                    $params = array('courseid'=>$course->get_id());
+                    $searchform = new booking_view_search(null, $params,'post','',array('id'=>'searchform'));
+                    $output .= $searchform->render();
+
+                    // show paging bar
+                    $output .= $OUTPUT->paging_bar($course->get_students_count(), $this->data['page'], LOCAL_BOOKING_DASHBOARDPAGESIZE, $PAGE->url);
+                }
             }
+
+        } elseif ($this->data['action'] == 'confirm') {
+            $output = parent::output('local_booking/booking_confirm', $this->exporteddata);
+        }
+
+        return $html ? $output : $this->exporteddata;
+    }
+
+    /**
+     * Get instructor 'My bookings' export
+     *
+     * @return  ?stdClass
+     */
+    public function get_instructor_bookings(bool $html = true) {
+
+        $output = '';
+        if ($this->data['action'] != 'confirm') {
 
             // get active bookings if the view is session booking
             $mybookings = new booking_mybookings_exporter($this->data, $this->related);
-            $exporteddata = $mybookings->export($this->renderer);
-            $output .= parent::output('local_booking/my_bookings', $exporteddata);
+            $this->exporteddata = $mybookings->export($this->renderer);
 
-            // get assigned students if exists
-            if (count($this->data['instructor']->get_assigned_students()) > 0) {
-
-                // get instructor's assigned students
-                $students = new assigned_students_exporter($this->data, $this->related);
-                $exporteddata = $students->export($this->renderer);
-                $output .= parent::output('local_booking/my_students', $exporteddata);
+            if ($html) {
+                $output = parent::output('local_booking/my_bookings', $this->exporteddata);
             }
-
-            if (has_capability('local/booking:participationview', $this->get_context())) {
-
-                // get instructor participation
-                $participation = new instructor_participation_exporter($this->data, $this->related);
-                $exporteddata = $participation->export($this->renderer);
-                $output .= parent::output('local_booking/instructor_participation', $exporteddata);
-            }
-
-        } elseif ($this->data['action'] == 'readonly') {
-
-            $output = parent::output();
 
         }
+        return $html ? $output : $this->exporteddata;
+    }
 
-        return $output;
+    /**
+     * Get instructor participation export
+     *
+     * @return  ?stdClass
+     */
+    public function get_instructor_participation(bool $html = true) {
+
+        $output = '';
+        if ($this->data['action'] != 'confirm') {
+
+            if (has_capability('local/booking:participationview', $this->related['context'])) {
+
+                // get active bookings if the view is session booking
+                $participation = new instructor_participation_exporter($this->data, $this->related);
+                $this->exporteddata = $participation->export($this->renderer);
+
+            }
+
+            if ($html) {
+                $output = parent::output('local_booking/instructor_participation', $this->exporteddata);
+            }
+        }
+
+        return $html ? $output : $this->exporteddata;
     }
 }

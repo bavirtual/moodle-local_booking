@@ -24,7 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\local\logbook\forms;
+namespace local_booking\local\logbook\form;
 
 use ArrayObject;
 use DateTimeImmutable;
@@ -131,7 +131,7 @@ class create extends \moodleform {
         $newlogentry = empty($logentry) || empty($logentry->get_id());
         $graduationexerciseid = $subscriber->get_graduation_exercise();
         // P1/PIC instructor id and P2 student id
-        $pilots = $this->get_pilot_ids($subscriber);
+        $pilots = $subscriber->get_participant_names('active', true);
 
         // set core logentry data
         if ($newlogentry) {
@@ -578,17 +578,6 @@ class create extends \moodleform {
         $mform->addElement('hidden', 'visible');
         $mform->setType('visible', PARAM_INT);
         $mform->setDefault('visible', 1);
-    }
-
-    /**
-     * Get the list of active user pilot ids.
-     *
-     * @param subscriber $course   The subscriber course
-     * @return array $activepilots List of user ids for P1 & P2 pilots
-     */
-    protected function get_pilot_ids($course) {
-        $pilots = $course->get_participant_names('active', true);
-        return $pilots;
     }
 
     /**

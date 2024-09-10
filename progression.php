@@ -73,7 +73,7 @@ $PAGE->add_body_class('path-local-booking');
 echo $OUTPUT->header();
 echo $bookingview->get_renderer()->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
-echo $bookingview->output();
+echo $bookingview->get_student_progression();
 echo html_writer::end_tag('div');
 echo $bookingview->get_renderer()->complete_layout();
 echo $OUTPUT->footer();

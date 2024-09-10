@@ -52,7 +52,6 @@ function(
      * @return  {object} The create modal promise
      */
     var cancelBooking = (root, e, comment, noshow) => {
-        ViewManager.startLoading(root);
 
         var target = e.target;
         const bookingId = target.dataset.bookingid;
@@ -69,7 +68,6 @@ function(
             .always(function() {
                 $('body').trigger(BookingSessions.sessioncanceled, [root, false]);
                 Notification.fetchNotifications();
-                ViewManager.stopLoading(root);
             })
             .fail(Notification.exception);
     };

@@ -20,7 +20,7 @@
  *
  * @module     local_booking/selectors
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define([], function() {
@@ -59,6 +59,7 @@ define([], function() {
         },
         toggle: '[toggle-input]',
         onhold: '[onhold-toggle]',
+        searchbutton: '[data-region="search-button"]',
         cancelbutton: '[data-region="cancel-button"]',
         noshowbutton: '[data-region="noshow-button"]',
         studentsfilter: '[data-region="students-filter"]',

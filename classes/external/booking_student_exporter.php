@@ -362,9 +362,9 @@ class booking_student_exporter extends exporter {
     protected function get_session_options($action) {
 
         $sessionoptions = [];
-        $grades = $this->student->get_grades();
 
         if ($this->data['view'] == 'confirm') {
+            $grades = $this->student->get_grades();
 
             $coursemods = $this->related['coursemodules'];
             foreach ($coursemods as $coursemod) {

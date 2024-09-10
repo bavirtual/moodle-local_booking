@@ -484,7 +484,7 @@ class notification extends \core\message\message {
 
         // send notification then copy senior instructors
         $result = message_send($this) != 0;
-        $result = $result && $this->copy_senior_instructors('suspension_notification', 'emailonholdnotify',
+        $result = $result && $this->copy_senior_instructors('suspension_notification', 'emailsuspendnotify',
             'emailsuspendinstnotifymsg', 'emailsuspendinstnotifyhtml', $data, $seniorinstructors);
 
         return $result;

@@ -19,7 +19,7 @@
  *
  * @module     local_booking/booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -61,6 +61,7 @@ define([
         body.on(BookingEvents.sessioncanceled, function() {
             ViewManager.refreshBookingsContent(root);
         });
+
         body.on(BookingEvents.logentrycreated, function() {
             ViewManager.refreshBookingsContent(root);
         });
@@ -71,41 +72,27 @@ define([
             ViewManager.refreshBookingsContent(root);
         });
 
-        // Listen to the click on the Cancel booking buttons in 'Instructor dashboard' page.
-        root.on('click', Selectors.cancelbutton, function(e) {
-            Str.get_string('commentcancel', 'local_booking').then(function(promptMsg) {
-                // eslint-disable-next-line no-alert
-                const comment = window.prompt(promptMsg);
-                if (comment !== null) {
-                    BookingActions.cancelBooking(root, e, comment, false);
-                }
-                return;
-            }).catch(Notification.exception);
-        });
-
-        // Listen to the click on the 'No-show' booking buttons in 'Instructor dashboard' page.
-        root.on('click', Selectors.noshowbutton, function(e) {
-            // Get number of no shows
-            const noshows = $(e.target).closest(Selectors.noshowbutton).data('noshows');
-            // Get the message associated with the number of no-show occurence
-            const noShowComment = Str.get_string('commentnoshow' + noshows, 'local_booking').then(function(noshowMsg) {
-                return noshowMsg;
-            }).catch(Notification.exception);
-            // Chain the two retrieved strings in the prompt
-            $.when(Str.get_string('commentnoshow', 'local_booking'), noShowComment)
-            .then(function(promptMsg, noshowMsg) {
-                // eslint-disable-next-line no-alert
-                if (window.confirm(promptMsg + '\n\n' + noshowMsg)) {
-                    BookingActions.cancelBooking(root, e, null, true);
-                }
-                return;
-            }).catch(Notification.exception);
-        });
-
-        // Register the listeners required to redirect to
+        // Register the listeners required to refresh students progress table based on filter
         root.on('change', 'input[type=radio][name=studentsfilter]', function() {
             // Call redirect to assignment feedback page
-            ViewManager.refreshBookingsContent(root, 0, 0, null, $('input[name="studentsfilter"]:checked').val());
+            ViewManager.refreshBookingsContent(root, 0, 0, 0, null, $('input[name="studentsfilter"]:checked').val());
+        });
+
+        // Register the listeners required to search for a specific user
+        $('#id_searchstudents').on('click', function(e) {
+            let selectedOption = $("[id^=form_autocomplete_suggestions-]")[1];
+            let userId = $(selectedOption).data('value');
+            if (userId != 0) {
+                ViewManager.refreshBookingsContent(root, 0, 0, userId);
+                $('html,body').scrollTop(0);
+            }
+            e.preventDefault();
+        });
+
+        // Register the listeners required to clear the search
+        $('#id_clearsearch').on('click', function(e) {
+            ViewManager.refreshBookingsContent(root);
+            e.preventDefault();
         });
 
         // Register the listeners required to redirect to the Moodle grade page
@@ -229,6 +216,13 @@ define([
         init: function(rt) {
             var root = $(rt);
             registerEventListeners(root);
+
+            // show search and clear search buttons after the autocomplete loads
+            $('#id_searchstudents').removeClass('hidden');
+            $('#id_clearsearch').removeClass('hidden');
+            $('.felement').removeClass('flex-wrap');
+            $('.felement').addClass('col-md-12').removeClass('col-md-9').removeClass('flex-wrap');
+
             ViewManager.stopLoading(root);
         }
     };

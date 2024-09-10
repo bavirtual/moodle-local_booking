@@ -371,10 +371,11 @@ class subscriber implements subscriber_interface {
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @param string $roles         The roles of the participants
+     * @param string $wildcard      Wildcard value for autocomplete
      * @return array                Array of student ids & names
      */
-    public function get_participant_names(string $filter = 'active', bool $includeonhold = false, string $roles = null) {
-        $participantrecs = participant_vault::get_participants_simple($this->courseid, $filter, $includeonhold, $roles);
+    public function get_participant_names(string $filter = 'active', bool $includeonhold = false, string $roles = null, string $wildcard = null) {
+        $participantrecs = participant_vault::get_participants_simple($this->courseid, $filter, $includeonhold, $roles, $wildcard);
         $participants = array_combine(array_keys($participantrecs), array_column($participantrecs, 'fullname'));
         return $participants;
     }
@@ -452,20 +453,6 @@ class subscriber implements subscriber_interface {
      */
     public function get_students_count() {
         return $this->activestudentscount;
-    }
-
-    /**
-     * Get all active students from the database.
-     *
-     * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
-     * @param bool $includeonhold   Whether to include on-hold students as well
-     * @return array                Array of student ids & names
-     */
-    public function get_students_for_select(string $filter = 'active', bool $includeonhold = false) {
-        $studentrecs = participant_vault::get_students_for_select($this->courseid, $filter, $includeonhold);
-        $students = array_combine(array_keys($studentrecs), array_column($studentrecs, 'fullname'));
-        array_unshift($students, '');
-        return $students;
     }
 
     /**

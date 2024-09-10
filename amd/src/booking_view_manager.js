@@ -18,7 +18,7 @@
  *
  * @module     local_booking/booking_view_manager
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -33,42 +33,69 @@ import * as Repository from 'local_booking/repository';
 import * as Selectors from 'local_booking/selectors';
 
 /**
- * Refresh student progression, mybookings, and myassignees content.
+ * Refresh student progression and mybookings content.
  *
  * @method  refreshBookingsContent
  * @param   {object} root The root element.
  * @param   {number} courseId The id of the course associated with the progression view shown
- * @param   {number} categoryId The id of the category associated with the progression view shown
+ * @param   {number} contextId The context id for the course
+ * @param   {number} userId The user id for single user booking view.
  * @param   {object} target The element being replaced. If not specified, the bookingwrapper is used.
  * @param   {string} filter The filter to show students, inactive (including graduates), suspended, and default to active.
  * @return  {promise}
  */
-export const refreshBookingsContent = (root, courseId, categoryId, target = null, filter = null) => {
+export const refreshBookingsContent = (root, courseId, contextId, userId = 0, target = null, filter = null) => {
     startLoading(root);
 
-    const template = root.attr('data-template'),
-        mybookingstarget = root.find(Selectors.mybookingswrapper);
-    target = target || root.find(Selectors.bookingwrapper);
+    const bookingtemplate = root.attr('data-template'),
+        bookingtarget = target || root.find(Selectors.bookingwrapper);
     courseId = courseId || root.find(Selectors.bookingwrapper).data('courseid');
+    contextId = contextId || root.find(Selectors.bookingwrapper).data('contextid');
     filter = filter || 'active';
-    var bookingsContext;
-    M.util.js_pending([root.get('id'), courseId, categoryId].join('-'));
-    return Repository.getBookingsData(courseId, filter)
+
+    M.util.js_pending([root.get('id'), courseId, contextId].join('-'));
+    return Repository.getBookingsData(courseId, filter, userId)
         .then((context) => {
-            bookingsContext = context;
-            return Templates.render(template, context);
+            return Templates.render(bookingtemplate, context);
         })
         .then((html, js) => {
-            return Templates.replaceNode(target, html, js);
+            return Templates.replaceNode(bookingtarget, html, js);
         })
-        .then(() => {
-            return Templates.render('local_booking/my_bookings', bookingsContext);
+        .always(() => {
+            M.util.js_complete([root.get('id'), courseId, contextId].join('-'));
+            return stopLoading(root);
+        })
+        .fail(Notification.exception);
+};
+
+/**
+ * Refresh student progression and mybookings content.
+ *
+ * @method  refreshInstructorBookingsContent
+ * @param   {object} root The root element.
+ * @param   {number} courseId The id of the course associated with the progression view shown
+ * @param   {number} contextId The context id for the course
+ * @param   {object} target The element being replaced. If not specified, the bookingwrapper is used.
+ * @return  {promise}
+ */
+export const refreshInstructorBookingsContent = (root, courseId, contextId, target = null, template = null) => {
+    startLoading(root);
+
+    const mybookingstemplate = template || root.attr('data-template'),
+        mybookingstarget = root.find(Selectors.mybookingswrapper);
+    courseId = courseId || root.find(Selectors.mybookingswrapper).data('courseid');
+    contextId = contextId || root.find(Selectors.mybookingswrapper).data('contextid');
+
+    M.util.js_pending([root.get('id'), courseId, contextId].join('-'));
+    return Repository.getInstructorBookingsData(courseId)
+        .then((context) => {
+            return Templates.render(mybookingstemplate, context);
         })
         .then((html, js) => {
             return Templates.replaceNode(mybookingstarget, html, js);
         })
         .always(() => {
-            M.util.js_complete([root.get('id'), courseId, categoryId].join('-'));
+            M.util.js_complete([root.get('id'), courseId, contextId].join('-'));
             return stopLoading(root);
         })
         .fail(Notification.exception);

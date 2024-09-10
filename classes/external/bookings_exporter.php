@@ -75,6 +75,11 @@ class bookings_exporter extends exporter {
     protected $instructor;
 
     /**
+     * @var int $studentid the user id of the student being booked, applicable in confirmation only.
+     */
+    protected $studentid = 0;
+
+    /**
      * @var string $viewtype The view type requested: session booking or session confirmation
      */
     protected $viewtype;
@@ -95,11 +100,6 @@ class bookings_exporter extends exporter {
     protected $activestudents = [];
 
     /**
-     * @var int $bookingstudentid the user id of the student being booked, applicable in confirmation only.
-     */
-    protected $bookingstudentid = 0;
-
-    /**
      * @var int $averagewait The average wait time for students.
      */
     protected $averagewait;
@@ -109,12 +109,10 @@ class bookings_exporter extends exporter {
      *
      * @param mixed $data An array of student progress data.
      * @param array $related Related objects.
-     * @param int   $studentid optional parameter for confirming a student booking.
      */
     public function __construct($data, $related) {
-        global $COURSE;
 
-        $this->course = $COURSE->subscriber;
+        $this->course = $related['subscriber'];
         $url = new moodle_url('/local/booking/view.php', [
                 'courseid' => $this->course->get_id(),
                 'time' => time(),
@@ -128,8 +126,7 @@ class bookings_exporter extends exporter {
         $data['trainingtype'] = $this->course->trainingtype;
         $data['findpirepenabled'] = $this->course->has_integration('external_data', 'pireps');
         $this->instructor = key_exists('instructor', $data) ? $data['instructor'] : null;
-        if ($this->viewtype == 'confirm')
-            $this->bookingstudentid = $data['studentid'];
+        $this->studentid = $data['studentid'];
         $this->filter = !empty($data['filter']) ? $data['filter'] : 'active';
         $data['visible'] = 0;
 
@@ -260,7 +257,7 @@ class bookings_exporter extends exporter {
     protected function get_students($output) {
 
         // get all active students for the instructor dashboard view (sessions) or a single student of the interim step (confirm)
-        if ($this->viewtype == 'sessions') {
+        if ($this->studentid == 0) {
             // get the user preference for the student progression sort type by s = score or a = availability
             $sorttype = $this->data['sorttype'];
             $filter = $this->filter;
@@ -274,8 +271,6 @@ class bookings_exporter extends exporter {
 
             // get the students list based on the requested filter for active or on-hold
             $this->activestudents = $this->course->get_students($filter, false, false, true, $this->data['page']);
-            // $studentslist = $this->course->get_students($filter, false, false, true, $this->data['page']);
-            // $this->activestudents = $this->filter != 'suspended' ? $this->sort_students($studentslist, $sorttype) : $studentslist;
 
         } elseif ($this->viewtype == 'confirm') {
             $this->activestudents[] = $this->course->get_student($this->bookingstudentid);
@@ -339,105 +334,13 @@ class bookings_exporter extends exporter {
     }
 
     /**
-     * Sort the list of active students depending on the sort type
-     * (student score or availability).  The student score type orders
-     * the list by highest priority score to lowest, where Availability
-     * sort type orders the list by recency days then number of posts
-     * into three sequential segments, with each sorted by session recency:
-     *  1. students that posted slots and completed lessons
-     *  2. students that completed lessons but have no posted slots
-     *  3. students that have not completed lessons
-     *
-     * @param   string  $sorttype       The sort type 'score' vs 'availability'
-     * @param   array   $activestudents The ordered list of active students
-     */
-    protected function sort_students($activestudents, $sorttype) {
-        $posts_completed = [];
-        $noposts_completed = [];
-        $not_completed = [];
-        $finallist = [];
-
-        // sort depending on filter
-        if ($this->filter == 'graduates') {
-            $groupid = groups_get_group_by_name($this->course->get_id(), LOCAL_BOOKING_GRADUATESGROUP);
-            $graduates = groups_get_members($groupid, 'u.id, gm.timeadded');
-
-            // get the graduation dates
-            foreach ($activestudents as $student) {
-                if (\array_key_exists($student->get_id(), $graduates)) {
-                    $student->set_graduated_date($graduates[$student->get_id()]->timeadded);
-                }
-            }
-
-            // sort all graduates by their graduation date descending
-            uasort($activestudents, function($st1, $st2) {
-                return $st2->get_graduated_date(true) <=> $st1->get_graduated_date(true);
-            });
-
-            $finallist = $activestudents;
-
-        } elseif ($sorttype == 'a') {
-            // filtering students that have posted slots and completed lessons
-            $posts_completed = array_filter($activestudents, function($std) {
-                if ($std->has_completed_lessons() && $std->get_total_posts() > 0 && empty($std->get_active_booking()->get_id())) {
-                    $std->set_status('posts_completed');
-                }
-                return $std->get_status() == 'posts_completed';
-            });
-            // order active students by: recency days then posted slots
-            uasort($posts_completed, function($st1, $st2) {
-                if ($st1->get_priority()->get_recency_days() === $st2->get_priority()->get_recency_days()) {
-                    return $st2->get_total_posts() <=> $st1->get_total_posts();
-                }
-                return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
-            });
-
-            // filtering students that have no posted slots but completed lessons
-            $noposts_completed = array_filter($activestudents, function($std) {
-                if (($std->has_completed_lessons() && $std->get_total_posts() == 0) || !empty($std->get_active_booking()->get_id())) {
-                    $std->set_status('noposts_completed');
-                }
-                return $std->get_status() == 'noposts_completed';
-            });
-            // order active students by session recency
-            uasort($noposts_completed, function($st1, $st2) {
-                return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
-            });
-
-            // filtering students that have not completed lessons
-            $not_completed = array_filter($activestudents, function($std) {
-                if (!$std->has_completed_lessons()) {
-                    $std->set_status('not_completed');
-                }
-                return $std->get_status() == 'not_completed';
-            });
-            // order active students that has not completed ground lessons modules by recency days
-            uasort($not_completed, function($st1, $st2) {
-                return $st2->get_priority()->get_recency_days() <=> $st1->get_priority()->get_recency_days();
-            });
-
-            // merge all three arrays
-            $finallist = $posts_completed + $noposts_completed + $not_completed;
-
-        } elseif ($sorttype == 's') {
-            // Get student booking priority
-            uasort($activestudents, function($st1, $st2) {
-                return  $st1->get_priority()->get_score() <=> $st2->get_priority()->get_score();
-            });
-            $finallist = array_reverse($activestudents, true);
-        }
-
-        return $finallist;
-    }
-
-    /**
      * Get a warning flag related to
      * when the student took the last
      * session 3x wait is overdue, and
      * 4x wait is late.
      *
-     * @param   int $studentid  The student id
-     * @return  int $flag       The delay flag
+     * @param   int $dayssincelast  Days since last booking
+     * @return  int $warning        The warning flag
      */
     protected function get_warning($dayssincelast) {
         $warning = 0;

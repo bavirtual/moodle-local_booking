@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Session Booking Plugin
+ * Class for displaying student names.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,59 +30,37 @@ defined('MOODLE_INTERNAL') || die();
 use core\external\exporter;
 
 /**
- * Class for displaying instructor's 'My assigned students' view.
+ * Class for displaying student names for autocomplete.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assigned_student_exporter extends exporter {
+class booking_student_names_exporter extends exporter {
 
     /**
      * Constructor.
      *
-     * @param mixed $data An array of student progress data.
-     * @param array $related Related objects.
+     * @param array $names The list of exercise names.
      */
-    public function __construct($data, $related) {
-        $student = $data['student'];
-
-        $data = [
-        'studentname'   => $student->get_name(),
-        'simulator'     => $student->get_simulator(),
-        'nextlesson'    => $student->get_next_lesson(),
-        'enroldate'     => $student->get_enrol_date()->format('M j\, Y'),
-        ];
-
-        parent::__construct($data, $related);
-    }
-
-    protected static function define_properties() {
-        return [
-            'studentname' => [
-                'type' => PARAM_RAW,
-            ],
-            'simulator' => [
-                'type' => PARAM_RAW,
-            ],
-            'nextlesson' => [
-                'type' => PARAM_RAW,
-            ],
-            'enroldate' => [
-                'type' => PARAM_RAW,
-            ],
-        ];
+    public function __construct($data) {
+        parent::__construct($data, []);
     }
 
     /**
-     * Returns a list of objects that are related.
+     * Return the list of properties.
      *
      * @return array
      */
-    protected static function define_related() {
-        return array(
-            'context' => 'context',
-        );
+    protected static function define_properties() {
+        return [
+            'userid' => [
+                'type' => PARAM_INT,
+            ],
+            'fullname' => [
+                'type' => PARAM_RAW,
+            ],
+        ];
     }
 }

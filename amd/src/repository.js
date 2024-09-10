@@ -18,7 +18,7 @@
  *
  * @module     local_booking/repository
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import Ajax from 'core/ajax';
@@ -58,19 +58,39 @@ import Ajax from 'core/ajax';
 };
 
 /**
- * Get sesison booking, my bookings, and my students data to view.
+ * Get student progression  section data.
  *
  * @method getBookingsData
- * @param {number} courseId The course id.
- * @param {string} filter   The filter to show students, inactive (including graduates), suspended, and default to active.
- * @return {promise} Resolved with the month view data.
+ * @param {number} courseId     The course id.
+ * @param {string} filter       The filter to show students, inactive (including graduates), suspended, and default to active.
+ * @param   {number} userId The user id for single user booking view.
+ * @return {promise} Resolved with the student progression data.
  */
- export const getBookingsData = (courseId, filter) => {
+ export const getBookingsData = (courseId, filter, userId) => {
     const request = {
         methodname: 'local_booking_get_bookings_view',
         args: {
             courseid: courseId,
+            userid: userId,
             filter: filter,
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
+ * Get instructor my bookings section data.
+ *
+ * @method getInstructorBookingsData
+ * @param {number} courseId     The course id.
+ * @return {promise} Resolved with the instructor bookings data.
+ */
+ export const getInstructorBookingsData = (courseId) => {
+    const request = {
+        methodname: 'local_booking_get_instructor_bookings_view',
+        args: {
+            courseid: courseId,
         }
     };
 

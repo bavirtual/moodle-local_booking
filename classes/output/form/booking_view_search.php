@@ -24,14 +24,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\output\forms;
+namespace local_booking\output\form;
 
 defined('MOODLE_INTERNAL') || die();
 
  /**
   * Always include formslib
   */
-require_once($CFG->dirroot.'/lib/formslib.php');
+require_once($CFG->libdir . '/formslib.php');
+\MoodleQuickForm::registerElementType('students_list_autocomplete',
+    $CFG->dirroot . '/local/booking/classes/output/form/students_list_autocomplete.php',
+    '\\local_booking\\output\\form\\students_list_autocomplete');
 
 /**
  * The mform class for students search and filter in session booking view
@@ -49,7 +52,6 @@ class booking_view_search extends \moodleform {
         global $PAGE;
 
         $mform = $this->_form;
-        $students = isset($this->_customdata['students']) ? $this->_customdata['students'] : null;
 
         $mform->setDisableShortforms();
         $mform->disable_form_change_checker();
@@ -60,10 +62,17 @@ class booking_view_search extends \moodleform {
         $options = array(
             'multiple' => false,
             'placeholder' => get_string('search:typetosearch', 'local_booking'),
+            'courseid' => $this->_customdata['courseid'],
         );
         // add students to the select criteria
-        $mform->addElement('autocomplete', 'userids', get_string('search'), $students, $options);
-        $mform->addElement('submit', 'submitbutton', get_string('search'));
+        $mform->addElement('students_list_autocomplete', 'userids', get_string('search'), $options);
+        $mform->addElement('button', 'searchstudents', get_string('search'), ['data-region'=>'search-button'], ['customclassoverride' => 'btn-primary ml-2 hidden']);
+        $mform->addElement('button', 'clearsearch', get_string('clear'), ['data-region'=>'clearsearch-button'], ['customclassoverride' => 'btn-secondary ml-2 hidden']);
+
+        // add hidden fields
+        $mform->addElement('hidden', 'courseid');
+        $mform->setType('courseid', PARAM_INT);
+        $mform->setDefault('courseid', $this->_customdata['courseid']);
 
         // Add the javascript required to enhance this mform.
         $PAGE->requires->js_call_amd('local_booking/booking_view_manager');

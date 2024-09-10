@@ -31,8 +31,7 @@ use local_booking\output\views\booking_view;
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 
-// Set up the page.
-$categoryid = optional_param('categoryid', null, PARAM_INT);
+// Get URL parameters
 $courseid   = optional_param('courseid', SITEID, PARAM_INT);
 $course     = get_course($courseid);
 $studentid  = optional_param('userid', 0, PARAM_INT);
@@ -71,18 +70,24 @@ $data = [
     'instructor' => $instructor,
     'studentid'  => $studentid,
     'action'     => $action,
-    'view'       => 'sessions',
+    'view'       => $action == 'confirm' ? $action : 'sessions',
     'sorttype'   => $sorttype,
     'filter'     => $filter,
     'page'       => $page,
 ];
+
 // get booking view
 $bookingview = new booking_view($data, ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
 
 echo $OUTPUT->header();
 echo $bookingview->get_renderer()->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
-echo $bookingview->output();
+
+// output booking view
+echo $bookingview->get_student_progression();
+echo $bookingview->get_instructor_bookings();
+echo $bookingview->get_instructor_participation();
+
 echo html_writer::end_tag('div');
 echo $bookingview->get_renderer()->complete_layout();
 echo $OUTPUT->footer();

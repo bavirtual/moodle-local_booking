@@ -82,6 +82,7 @@ $string['pluginname'] = 'Session booking';
 $string['role'] = 'Role';
 $string['search:typetosearch'] = 'Type to search for students';
 $string['search:students'] = 'Search students:';
+$string['search:clear'] = 'Clear search:';
 $string['sequencetooltip_a'] = '{$a->tag}';
 $string['sequencetooltip_s'] = 'Activity score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
 <br/>Availability: {$a->slots} posts<br/>Completion: {$a->completion} lessons';

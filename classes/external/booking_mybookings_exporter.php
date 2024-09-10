@@ -60,6 +60,7 @@ class booking_mybookings_exporter extends exporter {
         global $USER;
 
         $subscriber = $related['subscriber'];
+        $data['contextid'] = $subscriber->get_context()->id;
         $data['courseid'] = $subscriber->get_id();
 
         // get intructor bookings
@@ -72,8 +73,7 @@ class booking_mybookings_exporter extends exporter {
     protected static function define_properties() {
         return [
             'contextid' => [
-                'type' => PARAM_INT,
-                'default' => 0,
+                'type' => PARAM_INT
             ],
             'courseid' => [
                 'type' => PARAM_INT,
@@ -89,7 +89,7 @@ class booking_mybookings_exporter extends exporter {
     protected static function define_other_properties() {
         return [
             'activebookings' => [
-                'type' => PARAM_RAW,
+                'type' => booking_instructor_booking_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
         ];
@@ -104,7 +104,7 @@ class booking_mybookings_exporter extends exporter {
     protected function get_other_values(\renderer_base $output) {
 
         $course = $this->related['subscriber'];
-        $bookings = [];
+        $instructorbookings = [];
 
         foreach ($this->mybookings as $booking) {
             $student = $course->get_student($booking->get_studentid());
@@ -114,7 +114,7 @@ class booking_mybookings_exporter extends exporter {
             // TODO: end time should include the last hour
             $endtime = new DateTime(('@' . ($slot->get_endtime()) + (60 * 60)));
 
-            $bookings[] = [
+            $data = [
             'bookingid'     => $booking->get_id(),
             'studentid'     => $booking->get_studentid(),
             'studentname'   => $student->get_name(),
@@ -128,9 +128,12 @@ class booking_mybookings_exporter extends exporter {
             'actionurl'     => $action->get_url()->out(false),
             'coursename'    => $course->get_course($booking->get_courseid())->shortname,
             ];
+
+            $instructorbookingexporter = new booking_instructor_booking_exporter($data);
+            $instructorbookings[] = $instructorbookingexporter->export($output);
         }
 
-        return ['activebookings' => $bookings];
+        return ['activebookings' => $instructorbookings];
     }
 
     /**

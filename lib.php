@@ -27,8 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/group/lib.php');
 
-use local_booking\local\logbook\forms\create as create_logentry_form;
-use local_booking\local\logbook\forms\create as update_logentry_form;
+use local_booking\local\logbook\form\create as create_logentry_form;
+use local_booking\local\logbook\form\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
 

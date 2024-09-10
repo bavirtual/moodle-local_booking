@@ -122,7 +122,7 @@ class action implements action_interface {
 
                 }
 
-                // Book action takes the instructor to the week of the firs slot or after waiting period
+                // Book action takes the instructor to the week of the first slot or after waiting period
                 $actionurl = '/local/booking/view.php';
                 $params = [
                     'exid'   => $exerciseid,

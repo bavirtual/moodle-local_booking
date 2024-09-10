@@ -66,9 +66,10 @@ interface participant_vault_interface {
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @param string $roles         The roles of the participants
+     * @param string $wildcard      Wildcard value for autocomplete
      * @return {Object}[]           Array of database records.
      */
-    public static function get_participants_simple(int $courseid, string $filter = 'active', bool $includeonhold = false, string $roles = null);
+    public static function get_participants_simple(int $courseid, string $filter = 'active', bool $includeonhold = false, string $roles = null, string $wildcard = null);
 
     /**
      * Get all active instructors for the course from the database.
@@ -78,15 +79,6 @@ interface participant_vault_interface {
      * @return {Object}[]        Array of database records.
      */
     public static function get_instructors(int $courseid, bool $courseadmins = false);
-
-    /**
-     * Get students assigned to an instructor from the database.
-     *
-     * @param int $courseid The course in context
-     * @param int $userid   The instructor user id
-     * @return {Object}[]   Array of database records.
-     */
-    public function get_assigned_students(int $courseid, int $userid);
 
     /**
      * Returns full username

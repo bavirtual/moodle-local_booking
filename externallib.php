@@ -19,7 +19,7 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,7 +35,7 @@ use core_external\external_single_structure;
 use core_external\external_multiple_structure;
 use core_external\external_function_parameters;
 use local_booking\external\logentry_exporter;
-use local_booking\local\logbook\forms\create as update_logentry_form;
+use local_booking\local\logbook\form\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\message\notification;
 use local_booking\local\participant\entities\instructor;
@@ -93,6 +93,7 @@ class local_booking_external extends external_api {
         return new external_function_parameters(
             array(
                 'courseid'  => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
+                'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
                 'filter'  => new external_value(PARAM_RAW, 'The results filter', VALUE_DEFAULT),
             )
         );
@@ -101,17 +102,19 @@ class local_booking_external extends external_api {
     /**
      * Retrieve instructor's booking.
      *
-     * @param int $courseid The course id for context.
+     * @param int $courseid  The course id for context.
+     * @param int $userid    The user id for single user selection.
      * @param string $filter The filter to show students, inactive (including graduates), suspended, and default to active.
-     * @return array array of slots created.
+     * @return array         Array of booking objects.
      * @throws moodle_exception if user doesnt have the permission to create events.
      */
-    public static function get_bookings_view(int $courseid, string $filter) {
+    public static function get_bookings_view(int $courseid, int $userid, string $filter) {
         global $USER;
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_bookings_view_parameters(), array(
                 'courseid' => $courseid,
+                'userid' => $userid,
                 'filter' => $filter,
                 )
             );
@@ -122,6 +125,7 @@ class local_booking_external extends external_api {
         // data required get data
         $data = [
             'instructor' => $subscriber->get_instructor($USER->id),
+            'studentid'  => $userid,
             'action'     => 'book',
             'view'       => 'sessions',
             'sorttype'   => '',
@@ -129,10 +133,10 @@ class local_booking_external extends external_api {
             'page'       => 0,
         ];
 
-        // get students bookings and progression view
         $bookingview = new booking_view($data, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);
+        $bookings = $bookingview->get_student_progression(false);
 
-        return $bookingview->get_exported_data();
+        return $bookings;
     }
 
     /**
@@ -143,6 +147,113 @@ class local_booking_external extends external_api {
      */
     public static function get_bookings_view_returns() {
         return \local_booking\external\bookings_exporter::get_read_structure();
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters
+     * @since Moodle 2.5
+     */
+    public static function get_instructor_bookings_view_parameters() {
+        return new external_function_parameters(
+            array(
+                'courseid'  => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
+            )
+        );
+    }
+
+    /**
+     * Retrieve instructor's booking.
+     *
+     * @param int $courseid          The course id for context.
+     * @return array                 Array of instructor booking objects.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function get_instructor_bookings_view(int $courseid) {
+        global $USER;
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::get_bookings_view_parameters(), array(
+                'courseid' => $courseid,
+                )
+            );
+
+        // set the subscriber object
+        $subscriber = self::get_course_subscriber_context('/local/booking/', $courseid);
+
+        // data required get data
+        $data = [
+            'instructor' => $subscriber->get_instructor($USER->id),
+        ];
+
+        $bookingview = new booking_view($data, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);
+        $instuctorbookings = $bookingview->get_instructor_bookings(false);
+
+        return $instuctorbookings;
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function get_instructor_bookings_view_returns() {
+        return \local_booking\external\booking_mybookings_exporter::get_read_structure();
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters
+     * @since Moodle 2.5
+     */
+    public static function get_student_names_parameters() {
+        return new external_function_parameters(
+            array(
+                'courseid'  => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
+                'wildcard'  => new external_value(PARAM_RAW, 'The search wildcard', VALUE_DEFAULT),
+            )
+        );
+    }
+
+    /**
+     * Retrieve student names for autocomplete.
+     *
+     * @param int $courseid          The course id for context.
+     * @param string $wildcard       The search wildcard.
+     * @return array                 Array of student names exported.
+     * @throws moodle_exception if user doesnt have the permission to create events.
+     */
+    public static function get_student_names(int $courseid, string $wildcard) {
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::get_student_names_parameters(), array(
+                'courseid' => $courseid,
+                'wildcard' => $wildcard,
+                )
+            );
+
+        // set the subscriber object
+        $subscriber = self::get_course_subscriber_context('/local/booking/', $courseid);
+
+        // get student names data
+        $studentrecords = $subscriber->get_participant_names('active', true, 'student', $wildcard);
+
+        $students = array_map(function($userid, $fullname){return ['userid'=>$userid, 'fullname'=>$fullname];},array_keys($studentrecords), array_values($studentrecords));
+
+        return $students;
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description.
+     * @since Moodle 2.5
+     */
+    public static function get_student_names_returns() {
+        return new external_multiple_structure(\local_booking\external\booking_student_names_exporter::get_read_structure());
     }
 
     /**

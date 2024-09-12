@@ -250,8 +250,12 @@ class student extends participant {
 
         // remove all week/year slots for the user to avoid updates
         $result = slot_vault::delete_slots($courseid, $userid, $year, $week);
-        $lastslotdate = self::get_last_booked_date($courseid, $userid);
-        subscriber::update_stat($courseid, $userid, 'lastsessiondate', $lastslotdate);
+
+        if (empty($this->lastbookeddatets)) {
+            $lastbookeddate = self::get_last_booked_date($courseid, $userid);
+        }
+
+        subscriber::update_stat($courseid, $userid, 'lastsessiondate', $this->lastbookeddatets);
 
         if ($result) {
             $transaction->allow_commit();

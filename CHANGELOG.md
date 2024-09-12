@@ -2,7 +2,7 @@
 
 ## [202409xxxx] - RELEASED 2024-09-xx
 
-### Added
+### Fixed
 
 - search dashboard students
 - overlay on [Save booking] whlie loading the dashboard
@@ -13,7 +13,7 @@
 - graduates filter exception
 - my bookings not showing after saving a logentry or canceling a booking
 
-### Changed
+### Added
 
 - center pagination to the middle of the grid not the page
 - active/graduated students evaluation

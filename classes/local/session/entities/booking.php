@@ -382,10 +382,11 @@ class booking implements booking_interface {
      * @param int $courseid      The associated course id
      * @param int $studentid     The student id conducted the session
      * @param int $exerciseid    The exercise id for the session
-     * @return DateTime          The date of last session for that exercise
+     * @return ?          The date of last session for that exercise
      */
     public static function get_exercise_date(int $courseid, int $studentid, int $exerciseid) {
-        return booking_vault::get_booked_exercise_date($courseid, $studentid, $exerciseid);
+        $exercisedatets = booking_vault::get_booked_exercise_date($courseid, $studentid, $exerciseid);
+        return $exercisedatets ? new \DateTime('@' . $exercisedatets) : null;
     }
 
     /**
@@ -397,7 +398,8 @@ class booking implements booking_interface {
      * @return DateTime         The date of last session for that exercise
     */
     public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false) {
-        return booking_vault::get_last_booked_session($courseid, $userid, $isinstructor);
+        $lastbookedsessionts = booking_vault::get_last_booked_session($courseid, $userid, $isinstructor);
+        return $lastbookedsessionts ? new \DateTime('@' . $lastbookedsessionts->lastbookedsession) : null;
     }
 
     /**

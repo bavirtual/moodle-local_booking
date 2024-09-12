@@ -101,8 +101,14 @@ class create extends \moodleform {
 
         // validate the flight date is not before the booking date
         $exercisedate = booking::get_exercise_date($data['courseid'], $data['userid'], $data['exerciseid']);
-        if (!empty($exercisedate) && array_key_exists('flighttype', $data) && array_key_exists('flightdate', $data)) {
-            if ($data['flightdate'] < $exercisedate && $data['flighttype'] != 'solo' )
+        $exercisedatets = 0;
+
+        if (!empty($exercisedate)) {
+            $exercisedatets = $exercisedate->getTimestamp();
+        }
+
+        if ($exercisedatets != 0 && array_key_exists('flighttype', $data) && array_key_exists('flightdate', $data)) {
+            if ($data['flightdate'] < $exercisedatets && $data['flighttype'] != 'solo' )
                 $errors['flightdate'] = get_string('errorinvaliddate', 'local_booking');
         }
 
@@ -130,8 +136,6 @@ class create extends \moodleform {
         $integratedpireps = $subscriber->has_integration('external_data', 'pireps');
         $newlogentry = empty($logentry) || empty($logentry->get_id());
         $graduationexerciseid = $subscriber->get_graduation_exercise();
-        // P1/PIC instructor id and P2 student id
-        $pilots = $subscriber->get_participant_names('active', true);
 
         // set core logentry data
         if ($newlogentry) {
@@ -148,6 +152,11 @@ class create extends \moodleform {
             $p2id = $logentry->get_p2id();
         }
 
+        // P1/PIC instructor id and P2 student id
+        $instructors = $subscriber->get_instructors(false,true);
+        $p1s = \array_combine(array_keys($instructors), array_column($instructors, 'fullname'));
+        $p2 = $subscriber->get_participant($p2id);
+
         // show flight type first both regular training or check flight, and freeze type selection for solo flight edits w/ a logentry
         $freezeflighttype = $flighttype == 'solo' && $logentry->get_id();
         $this->add_element($mform, 'flighttype', [$exerciseempty, $graduationexerciseid, $freezeflighttype], true, true, null, 'training');
@@ -163,8 +172,8 @@ class create extends \moodleform {
 
         // add primary elements
         $this->add_element($mform, 'flightdate', [$flightdate]);
-        $this->add_element($mform, 'p1id', array($pilots, $p1id, $subscriber->trainingtype));
-        $this->add_element($mform, 'p2id', array($pilots, $p2id, $subscriber->trainingtype, $flighttype));
+        $this->add_element($mform, 'p1id', array($p1s, $p1id, $subscriber->trainingtype));
+        $this->add_element($mform, 'p2id', array([$p2->get_id()=>$p2->get_name()], $p2id, $subscriber->trainingtype, $flighttype));
 
         // add primary flight time
         $this->add_element($mform, 'groundtime');
@@ -250,14 +259,12 @@ class create extends \moodleform {
 
             case 'p1id':
                 // P1 name select
-                global $USER;
                 $select = $mform->addElement('select', $element, get_string('p1' . strtolower($options[2]), 'local_booking'), $options[0]);
                 $select->setSelected($options[1]);
                 $mform->setType($element, PARAM_INT);
                 $mform->addRule($element, get_string('required'), 'required', null, 'client');
                 $mform->addHelpButton($element, 'p1' . strtolower($options[2]), 'local_booking');
-                if (!is_siteadmin($USER))
-                    $mform->freeze($element);
+                $mform->freeze($element);
                 break;
 
             case 'p2id':

@@ -282,6 +282,7 @@ $string['pilotlogbook'] = 'Pilot\'s Logbook';
 $string['pirep'] = 'PIREP';
 $string['pireplabel'] = 'PIREP search';
 $string['pirepfound'] = ' - PIREP found.';
+$string['pirepfoundnotlinked'] = ' - PIREP found. (NOT LINKED!)';
 $string['pirepsgroup'] = 'PIREPs (P1/P2)';
 $string['remarks'] = 'Remarks';
 $string['sessionlength'] = 'Session length';

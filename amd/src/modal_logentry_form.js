@@ -604,13 +604,9 @@ export default class ModalLogEntryForm extends Modal {
                     if (response.result) {
                         // Get found message
                         if (!$('#id_valid_p1pirep').length) {
-                            Str.get_string('pirepfound', 'local_booking').then(function(string) {
-                                pirepdiv.append('<div class="form-control-feedback valid-feedback" id="id_valid_p1pirep" ' +
-                                'tabindex="0" style="">' + string + '</div>');
-                                $('#id_p1pirep').addClass('is-valid');
-                                return string;
-                            })
-                            .fail(Notification.exception);
+                            pirepdiv.append('<div class="form-control-feedback valid-feedback" id="id_valid_p1pirep" ' +
+                            'tabindex="0" style="">' + response.warnings[0].message + '</div>');
+                            $('#id_p1pirep').addClass('is-valid');
                         }
 
                         // Update elements with PIREP returned data depending on

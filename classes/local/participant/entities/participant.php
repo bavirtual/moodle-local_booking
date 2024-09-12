@@ -99,9 +99,9 @@ class participant implements participant_interface {
     protected $lastgraded;
 
     /**
-     * @var \stdClass $last_booked_date The participant last booked date information.
+     * @var int $lastbookeddatets The participant last booked date information.
      */
-    protected $last_booked_date;
+    protected $lastbookeddatets;
 
     /**
      * @var string $callsign The participant callsign.
@@ -377,13 +377,19 @@ class participant implements participant_interface {
      * @return  \DateTime    The timestamp of the last booked session
      */
     public function get_last_booked_date() {
-        if (!isset($this->last_booked_date) || empty($this->last_booked_date)) {
-            $this->last_booked_date = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
+
+        $lastbookeddate = null;
+        if (!isset($this->lastbookeddatets) || empty($this->lastbookeddatets)) {
+
+            $lastbookeddate = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
+            if (!empty($lastbookeddate)) {
+                $this->lastbookeddatets = $lastbookeddate->getTimestamp();
+            }
+        } else {
+            $lastbookeddate = new \DateTime('@' . $this->lastbookeddatets);
         }
 
-        $lastsessiondate = !empty($this->last_booked_date) ? new \DateTime('@' . $this->last_booked_date->lastbookedsession) : null;
-
-        return $lastsessiondate;
+        return $lastbookeddate;
     }
 
     /**
@@ -501,7 +507,7 @@ class participant implements participant_interface {
             if (!empty($record->roles))
                 $this->rolenames   = explode(',', $record->roles);
             if (!empty($record->lastsessiondate))
-                $this->last_booked_date = $record->lastsessiondate;
+                $this->lastbookeddatets = $record->lastsessiondate;
         }
     }
 

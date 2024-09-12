@@ -421,6 +421,11 @@ class local_booking_external extends external_api {
                     ];
                     $entry = new logentry_view($data, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);
                     $data = $entry->get_exported_data();
+                    $warnings[] = [
+                        'item' => $pirep,
+                        'warningcode' => '0',
+                        'message' => get_string('pirepfound' . (!empty($logentry->get_linkedpirep()) ? '' : 'notlinked'), 'local_booking')
+                    ];
 
                 } else {
                     $result = false;

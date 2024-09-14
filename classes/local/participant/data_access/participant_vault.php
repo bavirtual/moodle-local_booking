@@ -26,7 +26,6 @@
 namespace local_booking\local\participant\data_access;
 
 use DateTime;
-use local_booking\local\participant\entities\instructor;
 
 require_once($CFG->dirroot . "/lib/completionlib.php");
 
@@ -196,38 +195,51 @@ class participant_vault implements participant_vault_interface {
      * @param  string $filter          The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param  bool   $includeonhold   Whether to include on-hold students as well
      * @param  bool   $simple          To return sql for html Select user ids & names only
-     * @param  string $roles           The roles of the participants
+     * @param  ?      $roles           The roles of the participants
      * @param  string $wildcard        Wildcard criteria value
      * @return string $sql             The query SQL string
      */
-    private static function get_criteria_sql(string $filter = 'active', bool $includeonhold = false, bool $simple = false, string $roles = null, $wildcard = null) {
+    private static function get_criteria_sql(string $filter = 'active', bool $includeonhold = false, bool $simple = false, $roles = null, $wildcard = null) {
         global $DB;
 
-        $select = 'SELECT * FROM (SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . ' AS fullname';
-        $select .= !empty($roles) ? ', (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
+        $isstudent = !empty($roles) && $roles == 'student';
+
+        // outer select statement
+        $select = 'SELECT * FROM ';
+
+        // inner select fields statement
+        $innerselect = '(SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . ' AS fullname';
+        $innerselect .= !empty($roles) ? ', (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
                          INNER JOIN {' . self::DB_ROLE . '}  r ON r.id = ra.roleid
                          WHERE ra.userid = u.id AND ra.contextid = :contextid) AS roles' : '';
-        $select .= $simple ? '' : ', s.activeposts, s.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid,
-                    MAX(ue.timecreated) AS enroldate, ue.timemodified AS suspenddate, cc.timecompleted AS graduateddate,
-                    en.courseid AS courseid, u.lastlogin AS lastlogin, IF(s.activeposts > 0, 1, 0) AS hasposts';
+        $innerselect .= $simple ? '' : ( $isstudent ? ', s.activeposts, s.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid, cc.timecompleted AS graduateddate,
+                         IF(s.activeposts > 0, 1, 0) AS hasposts' : ', 0 AS activeposts, 0 AS lessonscomplete, 0 AS lastsessiondate, 0 AS currentexerciseid, 0 AS nextexerciseid,
+                         0 AS hasposts, 0 AS graduateddate');
+        $innerselect .= ', en.courseid AS courseid, u.lastlogin AS lastlogin, ue.timecreated AS enroldate, ue.timemodified AS suspenddate';
 
-        $from = ' FROM {' . self::DB_USER . '} u';
-        $from .= !empty($roles) && str_contains($roles, 'student') ? ' INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id' : '';
-        $from .= ' INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = ' . (!empty($roles) && str_contains($roles, 'student') ? 's.userid' : 'u.id') .
-                 ' INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid
-                   LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid';
+        // inner selectfrom tables statement
+        $innerfrom = ' FROM {' . self::DB_USER . '} u';
+        $innerfrom .=  $isstudent ? ' INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id' : '';
+        $innerfrom .= ' INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = ' . ($isstudent ? 's.userid' : 'u.id') .
+                 ' INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid';
+        $innerfrom .= $isstudent ? ' LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid' : '';
 
+        // inner select where statement
         $innerwhere = ' WHERE ';
-        $innerwhere .= !empty($roles) && str_contains($roles, 'student') ? 's.courseid = :scourseid AND ' : '';
+        $innerwhere .= $isstudent ? 's.courseid = :scourseid AND ' : '';
         $innerwhere .= 'en.courseid = :courseid AND u.deleted != 1 AND u.suspended = 0 ';
         $innerwhere .= !empty($wildcard) && $simple ? " AND CONCAT(u.firstname, ' ', u.lastname, ' ', u.alternatename) LIKE '%$wildcard%'" : '';
 
-        $outerwhere = !empty($roles) ? " WHERE roles like '%$roles%'" : '';
+        // outer select where statement
+        $outerwhere = !empty($roles) ? " WHERE roles " . ($isstudent ? "like '%$roles%'" : "REGEXP '$roles'") : '';
 
-        $orderby = $simple ? ' ORDER BY fullname' : ' ORDER BY lessonscomplete DESC, hasposts DESC, lastsessiondate ASC';
+        // outer select order by statement
+        $orderby = 'ORDER BY ' . ($simple ? 'fullname' : ($isstudent ? 'lessonscomplete DESC, hasposts DESC, lastsessiondate ASC' : 'userid'));
 
-        $groupby = ' GROUP BY u.id) participants';
+        // inner select group by statement
+        $innergroupby = ' GROUP BY u.id)  participants';
 
+        // outer select limit statement
         $limit = $simple ? ' LIMIT ' . LOCAL_BOOKING_DASHBOARDPAGESIZE : '';
 
         switch ($filter) {
@@ -237,9 +249,9 @@ class participant_vault implements participant_vault_interface {
                             SELECT userid
                             FROM {' . self::DB_GROUPS_MEM . '} gm
                             INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
-                            WHERE g.courseid = :gcourseid AND g.name = "' . LOCAL_BOOKING_ONHOLDGROUP . '")';
+                            WHERE g.courseid = :gcourseid AND g.name = "' . ($isstudent ? LOCAL_BOOKING_ONHOLDGROUP : LOCAL_BOOKING_INACTIVEGROUP) . '")';
                 $innerwhere .= $includeonhold ? '' : $excludeonhold;
-                $innerwhere .= ' AND ue.status = 0 AND cc.timecompleted IS NULL';
+                $innerwhere .= ' AND ue.status = 0' . ($isstudent ? ' AND cc.timecompleted IS NULL' : '');
                 break;
 
             case 'onhold':
@@ -261,9 +273,9 @@ class participant_vault implements participant_vault_interface {
                 break;
         }
 
-        $sql = $select. $from . $innerwhere . $groupby . $outerwhere . $orderby . $limit;
+        $sql = $select. $innerselect . $innerfrom . $innerwhere . $innergroupby . $outerwhere . $orderby . $limit;
 
-        $countsql = 'SELECT Count(u.id)' . $from . ' INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra ON ra.userid = ue.userid ' . $innerwhere . ' AND ra.contextid = :contextid';
+        $countsql = 'SELECT Count(u.id)' . $innerfrom . ' INNER JOIN {' . self::DB_ROLE_ASSIGN . '} ra ON ra.userid = ue.userid ' . $innerwhere . ' AND ra.contextid = :contextid';
 
         return [$sql, $countsql];
     }
@@ -279,46 +291,18 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         $contextid = \context_course::instance($courseid)->id;
-        $roles = (!$courseadmins ? '"' . LOCAL_BOOKING_INSTRUCTORROLE . '", ' : '') . '"' .
-                LOCAL_BOOKING_SENIORINSTRUCTORROLE . '", "' .
-                LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE . '"';
+        $roles = LOCAL_BOOKING_INSTRUCTORROLE . ($courseadmins ?  ',' . LOCAL_BOOKING_SENIORINSTRUCTORROLE . ',' . LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE : '');
 
-        $sql = "SELECT DISTINCT u.id AS userid, " . $DB->sql_concat('u.firstname', '" "',
-                    'u.lastname', '" "', 'u.alternatename') . " AS fullname, ue.timemodified AS enroldate,
-                    ue.timemodified AS suspenddate, 0 AS graduateddate, en.courseid AS courseid, u.lastlogin AS lastlogin,
-                    0 AS activeposts, 0 AS lastsessiondate, 0 AS currentexerciseid,
-                    0 AS nextexerciseid, (
-                        SELECT GROUP_CONCAT(shortname) FROM {" . self::DB_ROLE_ASSIGN . "} ra
-                        INNER JOIN {" . self::DB_ROLE . "}  r ON r.id = ra.roleid
-                        WHERE ra.userid = u.id AND ra.contextid = :contextid
-                        ) AS roles
-                FROM {" . self::DB_USER . "} u
-                INNER JOIN {" . self::DB_ROLE_ASSIGN . "} ra ON ra.userid = u.id
-                INNER JOIN {" . self::DB_ROLE . "} r ON r.id = ra.roleid
-                INNER JOIN {" . self::DB_USER_ENROL . "} ue on ra.userid = ue.userid
-                INNER JOIN {" . self::DB_ENROL . "} en on ue.enrolid = en.id
-                WHERE en.courseid = :courseid AND
-                    ra.contextid = :rcontextid AND
-                    r.shortname IN ($roles) AND
-                    ue.status = 0 AND
-                    u.deleted != 1 AND
-                    u.lastlogin > " . (time() - LOCAL_BOOKING_PASTDATACUTOFFDAYS) . " AND
-                    u.id NOT IN (
-                        SELECT userid
-                        FROM {" . self::DB_GROUPS_MEM . "} gm
-                        INNER JOIN {" . self::DB_GROUPS . "} g on g.id = gm.groupid
-                        WHERE g.courseid= :gcourseid AND g.name = '" . LOCAL_BOOKING_INACTIVEGROUP . "'
-                        )
-                GROUP BY u.id";
+        $sql = self::get_criteria_sql('active', false, false, str_replace(',', '|', $roles))[0];
 
         $params = [
             'courseid'  => $courseid,
             'gcourseid' => $courseid,
             'contextid' => $contextid,
-            'rcontextid' => $contextid,
         ];
 
-        return $DB->get_records_sql($sql, $params);
+        $instructors = $DB->get_records_sql($sql, $params);
+        return $instructors;
     }
 
     /**

@@ -46,17 +46,17 @@ class student extends participant {
     const SLOT_COLOR = '#00e676';
 
     /**
-     * @var array $exercises The student exercise grades.
+     * @var array $exercises The student graded exercise.
      */
     protected $exercises = [];
 
     /**
-     * @var array $quizes The student quize grades.
+     * @var array $quizes The student graded quizes.
      */
     protected $quizes = [];
 
     /**
-     * @var array $grades The student exercise/quize grades.
+     * @var array $grades The student exercise/quiz grades.
      */
     protected $grades = [];
 
@@ -311,7 +311,7 @@ class student extends participant {
      */
     public function get_grades() {
 
-        if (empty($this->grades)) {
+        if (!$this->gradesloaded) {
             // join both graded assignments and attempted quizes into one grades array
             $this->grades = $this->get_exercise_grades() + $this->get_quize_grades();
         }

@@ -219,7 +219,7 @@ class availability_week_timeslot_exporter extends exporter {
         // loop through week's timeslots to see if the slot marked by student
         if (!empty($studentslots)) {
             foreach ($studentslots as $savedslot) {
-                if ($weekdate[0] >= intval($savedslot->starttime)  && $weekdate[0] <= intval($savedslot->endtime)) {
+                if ($weekdate[0] >= intval($savedslot->starttime)  && $weekdate[0] < intval($savedslot->endtime)) {
                     $slot = $savedslot;
                 }
             }

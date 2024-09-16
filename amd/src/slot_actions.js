@@ -72,6 +72,11 @@ define([
 
         let serverCall = null;
         if (Slots.length != 0) {
+            // Evaluate slots to make sure they all have an end time (i.e. single 1hr slot case
+            $.map( Slots, function(val, i) {
+console.log('value='+val);
+console.log('index='+i);
+            });
             serverCall = Repository.saveSlots(Slots, course, year, week);
         } else {
             serverCall = Repository.clearSlots(course, year, week);
@@ -171,6 +176,7 @@ define([
         const slottype = action == 'book' ? 'slot-booked' : 'slot-marked';
         const year = root.find(SELECTORS.CALENDAR_WRAPPER).data('year');
         const week = root.find(SELECTORS.CALENDAR_WRAPPER).data('week');
+        const minute59 = 3540; // 59 minutes end of slot but befor next hour
 
         const tableid = root.find(SELECTORS.SLOTS_TABLE).attr('id');
         const head = $('#' + tableid + ' th');
@@ -204,13 +210,16 @@ define([
                 if (hourSlot[0]) {
                     if (Object.keys(aSlot).length === 0 && aSlot.constructor === Object) {
                         aSlot.starttime = hourSlot[1];
+                        aSlot.endtime = hourSlot[1] + minute59;
                     } else {
-                        aSlot.endtime = hourSlot[1];
+                        aSlot.endtime = hourSlot[1] + minute59;
                     }
+
                 // Add the slot if it has start and end, and this slot is empty => slot sequence ended
                 } else if (!(Object.keys(aSlot).length === 0 && aSlot.constructor === Object)) {
                     aSlot = addSlot(aSlot, slottype, week, year);
                 }
+
                 // Add slot if it ends at the end of the day
                 if (isLastElement && !(Object.keys(aSlot).length === 0 && aSlot.constructor === Object)) {
                     aSlot = addSlot(aSlot, slottype, week, year);

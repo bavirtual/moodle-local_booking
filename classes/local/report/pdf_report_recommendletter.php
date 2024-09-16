@@ -92,7 +92,7 @@ class pdf_report_recommendletter extends pdf_report {
         $this->SetTextColor(0,0,0);
         $this->SetFont($this->fontfamily, '', 11);
         $this->Ln(25);
-        $vatsimid = $this->student->get_profile_field(LOCAL_BOOKING_VATSIMCID);
+        $vatsimid = $this->student->get_profile_field('vatsimcid') ?: get_string('notfound', 'local_booking');
 
         // start borderless table
         $html = '<table width="600" cellspacing="2" cellpadding="2">';

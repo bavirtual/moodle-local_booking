@@ -146,7 +146,7 @@ class local_booking_external extends external_api {
      * @since Moodle 2.5
      */
     public static function get_bookings_view_returns() {
-        return \local_booking\external\bookings_exporter::get_read_structure();
+        return \local_booking\external\dashboard_bookings_exporter::get_read_structure();
     }
 
     /**
@@ -200,7 +200,7 @@ class local_booking_external extends external_api {
      * @since Moodle 2.5
      */
     public static function get_instructor_bookings_view_returns() {
-        return \local_booking\external\booking_mybookings_exporter::get_read_structure();
+        return \local_booking\external\dashboard_mybookings_exporter::get_read_structure();
     }
 
     /**
@@ -253,7 +253,7 @@ class local_booking_external extends external_api {
      * @since Moodle 2.5
      */
     public static function get_student_names_returns() {
-        return new external_multiple_structure(\local_booking\external\booking_student_names_exporter::get_read_structure());
+        return new external_multiple_structure(\local_booking\external\list_student_name_exporter::get_read_structure());
     }
 
     /**
@@ -609,7 +609,7 @@ class local_booking_external extends external_api {
      * @return external_description
      */
     public static function get_weekly_view_returns() {
-        return \local_booking\external\week_exporter::get_read_structure();
+        return \local_booking\external\availability_week_exporter::get_read_structure();
     }
 
     /**

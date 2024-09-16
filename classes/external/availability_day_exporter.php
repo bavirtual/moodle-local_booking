@@ -41,7 +41,7 @@ use moodle_url;
  * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class day_exporter extends exporter {
+class availability_day_exporter extends exporter {
 
     /**
      * @var \calendar_information $calendar The calendar being displayed.

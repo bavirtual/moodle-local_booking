@@ -16,7 +16,7 @@
 
 namespace local_booking\output\views;
 
-use local_booking\external\week_exporter;
+use local_booking\external\availability_week_exporter;
 
 /**
  * Class to output calendar view.
@@ -42,7 +42,7 @@ class calendar_view extends base_view {
             'calendar' => $data['calendar']
         ];
 
-        $week = new week_exporter($data, $related);
+        $week = new availability_week_exporter($data, $related);
         $this->exporteddata = $week->export($this->renderer);
         $this->exporteddata->viewingmonth = true;
     }

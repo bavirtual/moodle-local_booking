@@ -54,6 +54,7 @@ if (empty($COURSE->subscriber)) {
 
 // get students progression view
 $data = [
+    'studentid' => 0,
     'view'      => 'sessions',
     'sorttype'  => '',
     'filter'    => 'active',

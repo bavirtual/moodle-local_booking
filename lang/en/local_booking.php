@@ -73,7 +73,6 @@ $string['graduate'] = 'Cert.';
 $string['instructors'] = 'Instructors';
 $string['lastgradeddate'] = 'Last session graded';
 $string['lastsessiondate'] = 'Last session booked';
-$string['mystudents'] = 'My assigned students';
 $string['nextlesson'] = 'Next Lesson';
 $string['nobookingtoconfirm'] = 'You have no booking to confirm.';
 $string['nograduatedate'] = 'No graduate date';
@@ -339,7 +338,7 @@ $string['modulescompleted'] = 'Modules completed';
 $string['moodleprofile'] = 'Moodle profile';
 $string['modscompletemsg'] = '{$a->usermods} out of {$a->coursemods} ({$a->percent}% complete)';
 $string['noshows'] = 'No Shows';
-$string['notfound'] = 'Not found';
+$string['notfound'] = 'not found';
 $string['notqualified'] = 'Not qualified';
 $string['onhold'] = 'On-hold';
 $string['outlinereport'] = 'Outline report';
@@ -419,7 +418,7 @@ $string['tobecompletedbyexaminer'] = 'to be completed by the examiner';
 $string['trainingaudit'] = 'Flight Training Audit';
 $string['trainingcontent'] = 'Training Content';
 $string['vatsimid'] = 'VATSIM PID';
-$string['vatsimidmissing'] = 'VATSIM PID missing!';
+$string['vatsimidmissing'] = '-- missing! --';
 $string['aircrafttype'] = "Aircraft Type";
 $string['ato'] = "ATO";
 $string['attempts'] = "Attempts";
@@ -656,15 +655,14 @@ $string['emailsuspendinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$
 
 // email to instructor: session overdue notification
 $string['emailoverduenotify'] = '{$a->coursename}: Session overdue notification';
-$string['emailoverduenotifymsg'] = 'Please note that you have {$a->status}.  Please book a session with your assigned student or any student from the booking view. Otherwise, please ask the course administrator to remove you from the list of active instructors.
+$string['emailoverduenotifymsg'] = 'Please note that you have {$a->status}.  Please book a session with a student from the booking view. Otherwise, please ask the course administrator to remove you from the list of active instructors.
 You can book a session from the following view link: {$a->bookingurl}';
 $string['emailoverduenotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Please note that you have {$a->status}.</p><p>Please book a session with your assigned student or any student from the <a href="{$a->bookingurl}">booking view</a>
+    <p>Please note that you have {$a->status}.</p><p>Please book a session with a student from the <a href="{$a->bookingurl}">booking view</a>
     as soon as possible. To stop receiving these messages, please ask the course administrator to remove you from the list of active instructors.</p><hr />';
-$string['emailoverduenotifyinstmsg'] = 'Please note that {$a->instructorname} has {$a->status}.  The instructor has been notified to book a session with assigned
-    student or any student from the list, otherwise to request removal from the list of active instructors.';
+$string['emailoverduenotifyinstmsg'] = 'Please note that {$a->instructorname} has {$a->status}.  The instructor has been notified to book a session a student from the list, otherwise to request removal from the list of active instructors.';
 $string['emailoverduenotifyinsthtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Please note that {$a->instructorname} has {$a->status}.</p><p>The instructor has been notified to book a session with assigned student or any student from the list,
+    <p>Please note that {$a->instructorname} has {$a->status}.</p><p>The instructor has been notified to book a session with a student from the list,
     otherwise to request removal from the list of active instructors.</p><hr />';
 $string['emailoverduestatus'] = 'not booked a session since \'{$a}\'';
 

@@ -81,9 +81,10 @@ class pdf_report_recommendletter extends pdf_report {
         // recommendation letter info
         $endorserid = get_user_preferences('local_booking_' . $this->course->get_id() . '_endorser', '', $this->student->get_id());
         $instructor = new instructor($this->course, $endorserid);
+        $vatsimid = $instructor->get_profile_field('vatsimcid') ?: get_string('notfound', 'local_booking');
 
         $recomendedby = !empty($instructor) ? $instructor->get_name() : get_string('notfound', 'local_booking');
-        $recomendedbyVATSIM = !empty($instructor) ? $instructor->get_profile_field('VATSIMID') : get_string('notfound', 'local_booking');
+        $recomendedbyVATSIM = $vatsimid;
         $recomendedonts = !empty($instructor) ? get_user_preferences('local_booking_' . $this->course->get_id() . '_endorsedate', '', $this->student->get_id()) : get_string('notfound', 'local_booking');
         $recomendedon = !empty($recomendedonts) ? (new \DateTime('@'.$recomendedonts))->format('M j\, Y') : get_string('notfound', 'local_booking');
 

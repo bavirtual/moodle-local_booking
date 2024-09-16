@@ -16,7 +16,8 @@
 
 namespace local_booking\output\views;
 
-require_once($CFG->dirroot . '/local/booking/classes/external/student_profile_exporter.php');
+require_once($CFG->dirroot . '/local/booking/classes/external/profile_instructor_exporter.php');
+require_once($CFG->dirroot . '/local/booking/classes/external/profile_student_exporter.php');
 
 /**
  * Class to output student profile view.
@@ -35,10 +36,10 @@ class profile_view extends base_view {
      * @param array    $related   The related objects to pass
      */
     public function __construct(array $data, array $related) {
-        parent::__construct($data, $related, 'local_booking/' . $data['role'] .'_profile');
+        parent::__construct($data, $related, 'local_booking/profile_' . $data['role']);
 
         // dynamically load the right exporter based on role
-        $class = $data['role'] . '_profile_exporter';
+        $class = 'profile_' . $data['role'] . '_exporter';
         $profileexporter = "\\local_booking\\external\\$class";
         $profile = new $profileexporter($this->data, $related);
         $this->exporteddata = $profile->export($this->renderer);

@@ -42,7 +42,7 @@ use local_booking\local\participant\entities\student;
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class booking_student_exporter extends exporter {
+class dashboard_student_exporter extends exporter {
 
     /**
      * @var student $student The student.
@@ -165,7 +165,7 @@ class booking_student_exporter extends exporter {
     protected static function define_other_properties() {
         return [
             'sessions' => [
-                'type' => booking_session_exporter::read_properties_definition(),
+                'type' => dashboard_session_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
             'actionurl' => [
@@ -344,8 +344,12 @@ class booking_student_exporter extends exporter {
                 'logbook'     => $logbook,
                 'logbook'     => $logbook,
             ];
+<<<<<<< HEAD:classes/external/booking_student_exporter.php
             $coursemodsession = new booking_session_exporter($studentinfo, $related);
             $coursemodsession = new booking_session_exporter($studentinfo, $related);
+=======
+            $coursemodsession = new dashboard_session_exporter($studentinfo, $related);
+>>>>>>> 63798e5bb7 (unique slots and student profile progres fix):classes/external/dashboard_student_exporter.php
             $sessions[] = $coursemodsession->export($output);
         }
 

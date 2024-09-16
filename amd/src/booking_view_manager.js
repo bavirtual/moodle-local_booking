@@ -28,7 +28,7 @@ import Templates from 'core/templates';
 import Notification from 'core/notification';
 import Pending from 'core/pending';
 import ModalEvents from 'core/modal_events';
-import ModalLogentrySummaryForm from 'local_booking/modal_logentry_summary';
+import ModalLogentrySummaryForm from 'local_booking/logentry_modal_summary';
 import * as Repository from 'local_booking/repository';
 import * as Selectors from 'local_booking/selectors';
 
@@ -140,7 +140,7 @@ export const refreshInstructorBookingsContent = (root, courseId, contextId, targ
                     flightType = '';
                     findpirepenabled = false;
                 } else {
-                    // From booking_session_exporter (Instructor dashboard)
+                    // From dashboard_session_exporter (Instructor dashboard)
                     logegntrySession = target.closest(Selectors.actions.viewLogEntry);
                     flightDate = logegntrySession.dataset.flightDate;
                     exerciseId = logegntrySession.dataset.exerciseId;

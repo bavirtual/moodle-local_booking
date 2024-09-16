@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Class for displaying the session booking instructor participation list.
+ * Class for displaying instructor's active bookings in the 'My bookings' view.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
@@ -27,7 +27,9 @@ namespace local_booking\external;
 
 defined('MOODLE_INTERNAL') || die();
 
+use DateTime;
 use core\external\exporter;
+use local_booking\local\session\entities\action;
 
 /**
  * Class for displaying instructor's booked sessions view.
@@ -37,7 +39,16 @@ use core\external\exporter;
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class instructor_participation_exporter extends exporter {
+class dashboard_mybookings_exporter extends exporter {
+
+    // data payload
+    protected $data;
+
+    // related objects
+    protected $related;
+
+    // instructor bookings
+    protected $mybookings;
 
     /**
      * Constructor.
@@ -46,28 +57,29 @@ class instructor_participation_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($data, $related) {
+        global $USER;
 
-        $courseid = $related['subscriber']->get_id();
-        $url = new \moodle_url('/local/booking/view.php', [
-                'courseid' => $courseid,
-            ]);
+        $subscriber = $related['subscriber'];
+        $data['contextid'] = $subscriber->get_context()->id;
+        $data['courseid'] = $subscriber->get_id();
 
-        $data['url'] = $url->out(false);
-        $data['courseid'] = $courseid;
+        // get intructor bookings
+        $instructor = $subscriber->get_instructor($USER->id);
+        $this->mybookings = $instructor->get_bookings(false, true, true);
 
         parent::__construct($data, $related);
     }
 
     protected static function define_properties() {
         return [
-            'url' => [
-                'type' => PARAM_URL,
+            'contextid' => [
+                'type' => PARAM_INT
             ],
             'courseid' => [
                 'type' => PARAM_INT,
             ],
         ];
-    }
+     }
 
     /**
      * Return the list of additional properties.
@@ -76,8 +88,8 @@ class instructor_participation_exporter extends exporter {
      */
     protected static function define_other_properties() {
         return [
-            'participation' => [
-                'type' => PARAM_RAW,
+            'activebookings' => [
+                'type' => dashboard_booking_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
         ];
@@ -90,31 +102,38 @@ class instructor_participation_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(\renderer_base $output) {
-        global $COURSE;
-        $courseid = $this->data['courseid'];
-        $instructors = $COURSE->subscriber->get_instructors();
-        $today = new \DateTime('@'.time());
 
-        $participation = [];
-        foreach ($instructors as $instructor) {
-            $lastgradeddate = $instructor->get_last_graded_date();
-            $lastsessiondate = $instructor->get_last_booked_date();
-            $interval = !empty($lastgradeddate) ? date_diff($lastgradeddate, $today) : 0;
-            $courserole = implode(', ', $instructor->get_roles('name'));
+        $course = $this->related['subscriber'];
+        $instructorbookings = [];
 
-            $participation[] = [
-                'instructorid' => $instructor->get_id(),
-                'instructorname' => $instructor->get_name(),
-                'lastsessionts' => !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : 0,
-                'lastgradeddate' => !empty($lastgradeddate) ? $lastgradeddate->format('l M d, Y') : get_string('unknown', 'local_booking'),
-                'lastsessiondate' => !empty($lastsessiondate) ? $lastsessiondate->format('l M d, Y') : get_string('unknown', 'local_booking'),
-                'elapseddays' => !empty($lastgradeddate) ? $interval->days : '--',
-                'roles' => $courserole,
+        foreach ($this->mybookings as $booking) {
+            $student = $course->get_student($booking->get_studentid());
+            $action = new action($course, $student, 'cancel', $booking->get_exerciseid());
+            $slot = $booking->get_slot();
+            $starttime = new DateTime('@' . $slot->get_starttime());
+            // TODO: end time should include the last hour
+            $endtime = new DateTime(('@' . ($slot->get_endtime()) + (60 * 60)));
+
+            $data = [
+            'bookingid'     => $booking->get_id(),
+            'studentid'     => $booking->get_studentid(),
+            'studentname'   => $student->get_name(),
+            'exerciseid'    => $booking->get_exerciseid(),
+            'noshows'       => count($student->get_noshow_bookings()),
+            'exercise'      => $course->get_exercise_name($booking->get_exerciseid(), $booking->get_courseid()),
+            'sessiondate'   => $starttime->format('D M j'),
+            'starttime'     => $starttime->format('H:i \z\u\l\u'),
+            'endtime'       => $endtime->format('H:i \z\u\l\u'),
+            'actionname'    => $action->get_name(),
+            'actionurl'     => $action->get_url()->out(false),
+            'coursename'    => $course->get_course($booking->get_courseid())->shortname,
             ];
-        }
-        array_multisort (array_column($participation, 'lastsessionts'), SORT_DESC, $participation);
 
-        return ['participation' => $participation];
+            $instructorbookingexporter = new dashboard_booking_exporter($data);
+            $instructorbookings[] = $instructorbookingexporter->export($output);
+        }
+
+        return ['activebookings' => $instructorbookings];
     }
 
     /**

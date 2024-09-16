@@ -26,7 +26,6 @@
  */
 
 use local_booking\local\participant\entities\participant;
-use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 use local_booking\output\views\profile_view;
 

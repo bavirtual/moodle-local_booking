@@ -19,7 +19,7 @@ namespace local_booking\output\views;
 use stdClass;
 use renderer_base;
 use local_booking_renderer;
-use local_booking\external\exercise_name_exporter;
+use local_booking\external\list_exercise_name_exporter;
 use local_booking\local\subscriber\entities\subscriber;
 
 /**
@@ -152,7 +152,7 @@ abstract class base_view {
             if ($options['isinstructor'] || $options['readonly']) {
                 if ((\has_capability('mod/assign:grade', \context_module::instance($module->id)) &&
                     $options['viewtype'] == 'confirm') || $options['viewtype'] != 'confirm') {
-                        $exercisename = new exercise_name_exporter($data);
+                        $exercisename = new list_exercise_name_exporter($data);
                         $modsexport[] = $exercisename->export($output);
                 }
             }

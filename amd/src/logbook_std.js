@@ -31,7 +31,7 @@ define([
         'local_booking/booking_view_manager',
         'local_booking/modal_actions',
         'local_booking/events',
-        'local_booking/modal_logentry_form',
+        'local_booking/logentry_modal_form',
         'local_booking/repository',
         'local_booking/selectors'
     ],

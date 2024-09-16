@@ -15,11 +15,11 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_booking/bookings_readonly
+    @template local_booking/logentry_modal_form
 
-    Bookings view for progression and instructor lists.
+    Moodle modal template with save and cancel buttons.
 
-    The purpose of this template is to render the main, detailed weekly view.
+    The purpose of this template is to render a modal.
 
     Classes required for JS:
     * none
@@ -27,11 +27,28 @@
     Data attributes required for JS:
     * none
 
+    Context variables required for this template:
+    * title A cleaned string (use clean_text()) to display.
+    * body HTML content for the boday
+
     Example context (json):
     {
+        "title": "Example save cancel modal",
+        "body": "Some example content for the body"
     }
 }}
 
-<div id="bookings-{{uniqid}}" data-template="local_booking/students_progression">
-    {{> local_booking/students_progression}}
-</div>
+{{< core/modal }}
+    {{$footer}}
+        <button type="button"
+                class="btn btn-primary"
+                data-contextid="{{contextid}}"
+                data-action="save">
+
+            {{#str}} save {{/str}}
+            <span class="hidden" data-region="loading-icon-container">
+                {{> core/loading }}
+            </span>
+        </button>
+    {{/footer}}
+{{/ core/modal }}

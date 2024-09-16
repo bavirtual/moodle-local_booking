@@ -43,7 +43,7 @@ use local_booking\local\slot\entities\slot;
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class booking_session_exporter extends exporter {
+class dashboard_session_exporter extends exporter {
 
     /**
      * @var student $student An object representing the student.

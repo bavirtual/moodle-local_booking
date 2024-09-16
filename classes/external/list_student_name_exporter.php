@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Class for displaying availability view exercise names.
+ * Class for displaying student names.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,14 +30,14 @@ defined('MOODLE_INTERNAL') || die();
 use core\external\exporter;
 
 /**
- * Class for displaying each exercise session in progression view.
+ * Class for displaying student names for autocomplete.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class exercise_name_exporter extends exporter {
+class list_student_name_exporter extends exporter {
 
     /**
      * Constructor.
@@ -55,16 +55,10 @@ class exercise_name_exporter extends exporter {
      */
     protected static function define_properties() {
         return [
-            'exerciseid' => [
+            'userid' => [
                 'type' => PARAM_INT,
             ],
-            'exercisename' => [
-                'type' => PARAM_RAW,
-            ],
-            'exercisetype' => [
-                'type' => PARAM_RAW,
-            ],
-            'exercisetitle' => [
+            'fullname' => [
                 'type' => PARAM_RAW,
             ],
         ];

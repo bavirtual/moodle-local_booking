@@ -44,7 +44,7 @@ use moodle_url;
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class student_profile_exporter extends exporter {
+class profile_student_exporter extends exporter {
 
     /**
      * @var subscriber $subscriber The plugin subscribing course
@@ -261,11 +261,11 @@ class student_profile_exporter extends exporter {
                 'default' => false,
             ],
             'coursemodules' => [
-                'type' => exercise_name_exporter::read_properties_definition(),
+                'type' => list_exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
             'sessions' => [
-                'type' => booking_session_exporter::read_properties_definition(),
+                'type' => dashboard_session_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
             'comment' => [
@@ -481,7 +481,7 @@ class student_profile_exporter extends exporter {
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
             'tested'                   => $this->student->tested(),
             'coursemodules'            => base_view::get_modules($output, $this->subscriber, $options),
-            'sessions'                 => booking_student_exporter::get_sessions($output, $this->student, $this->related),
+            'sessions'                 => dashboard_student_exporter::get_sessions($output, $this->student, $this->related),
             'comment'                  => $this->student->get_comment(),
         ];
 

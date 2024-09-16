@@ -19,7 +19,7 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2024
+ * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,14 +30,14 @@ defined('MOODLE_INTERNAL') || die();
 use core\external\exporter;
 
 /**
- * Class for displaying each instructor booking in the instructor dashboard view.
+ * Class for displaying each exercise session in progression view.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2024
+ * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class booking_instructor_booking_exporter extends exporter {
+class list_exercise_name_exporter extends exporter {
 
     /**
      * Constructor.
@@ -55,41 +55,17 @@ class booking_instructor_booking_exporter extends exporter {
      */
     protected static function define_properties() {
         return [
-            'bookingid' => [
+            'exerciseid' => [
                 'type' => PARAM_INT,
             ],
-            'studentid' => [
-                'type' => \PARAM_INT,
-            ],
-            'studentname' => [
+            'exercisename' => [
                 'type' => PARAM_RAW,
             ],
-            'exerciseid' => [
-                'type' => \PARAM_INT,
+            'exercisetype' => [
+                'type' => PARAM_RAW,
             ],
-            'noshows' => [
-                'type' => \PARAM_INT,
-            ],
-            'exercise' => [
-                'type' => \PARAM_RAW,
-            ],
-            'sessiondate' => [
-                'type' => \PARAM_RAW,
-            ],
-            'starttime' => [
-                'type' => \PARAM_RAW,
-            ],
-            'endtime' => [
-                'type' => \PARAM_RAW,
-            ],
-            'actionname' => [
-                'type' => \PARAM_RAW,
-            ],
-            'actionurl' => [
-                'type' => \PARAM_RAW,
-            ],
-            'coursename' => [
-                'type' => \PARAM_RAW,
+            'exercisetitle' => [
+                'type' => PARAM_RAW,
             ],
         ];
     }

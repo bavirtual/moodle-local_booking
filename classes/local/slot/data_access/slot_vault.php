@@ -107,7 +107,7 @@ class slot_vault implements slot_vault_interface {
 
         } catch (Exception $e) {
             // update if a this is a duplicate slot error otherwise throw exception
-            if (str_contains($e->getMessage(), "Duplicate entry")) {
+            try {
                 $existingslot = $DB->get_record(static::DB_SLOTS, [
                     'courseid' => $slot->get_courseid(),
                     'userid'    => $slot->get_userid(),
@@ -121,9 +121,10 @@ class slot_vault implements slot_vault_interface {
 
                 $DB->update_record(self::DB_SLOTS, $existingslot);
                 return $existingslot->id;
-            } else {
+
+            } catch (Exception $ex) {
                 // check for unique key exception
-                throw $e;
+                throw $ex;
             }
         }
     }

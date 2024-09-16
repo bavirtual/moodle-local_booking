@@ -18,7 +18,7 @@
 /**
  * This module handles logbook entry form.
  *
- * @module     local_booking/modal_logentry_form
+ * @module     local_booking/logentry_modal_form
  * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -47,8 +47,8 @@ var SELECTORS = {
  * @param {object} root The root jQuery element for the modal
  */
 export default class ModalLogEntryForm extends Modal {
-    static TYPE = 'local_booking-modal_logentry_form';
-    static TEMPLATE = 'local_booking/modal_logentry_form';
+    static TYPE = 'local_booking-logentry_modal_form';
+    static TEMPLATE = 'local_booking/logentry_modal_form';
 
     /**
      * Constructor for the Modal.

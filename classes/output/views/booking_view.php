@@ -16,9 +16,9 @@
 
 namespace local_booking\output\views;
 
-use local_booking\external\bookings_exporter;
-use local_booking\external\booking_mybookings_exporter;
-use local_booking\external\instructor_participation_exporter;
+use local_booking\external\dashboard_bookings_exporter;
+use local_booking\external\dashboard_mybookings_exporter;
+use local_booking\external\dashboard_participation_exporter;
 use local_booking\output\form\booking_view_search;
 use stdClass;
 
@@ -56,14 +56,14 @@ class booking_view extends base_view {
         global $OUTPUT, $PAGE;
         $output = '';
 
-        $bookings = new bookings_exporter($this->data, $this->related);
+        $bookings = new dashboard_bookings_exporter($this->data, $this->related);
         $this->exporteddata = $bookings->export($this->renderer);
 
         // export bookings
         if ($this->data['action'] == 'readonly' || $this->data['action'] == 'book') {
 
             if ($html) {
-                $output = parent::output('local_booking/bookings' . ($this->data['action'] == 'readonly' ? '_readonly' : '') , $this->exporteddata);
+                $output = parent::output('local_booking/dashboard' . ($this->data['action'] == 'readonly' ? '_readonly' : '') , $this->exporteddata);
 
                 // show page bar and search form if required
                 $course = $this->related['subscriber'];
@@ -82,7 +82,7 @@ class booking_view extends base_view {
             }
 
         } elseif ($this->data['action'] == 'confirm') {
-            $output = parent::output('local_booking/booking_confirm', $this->exporteddata);
+            $output = parent::output('local_booking/dashboard_booking_confirm', $this->exporteddata);
         }
 
         return $html ? $output : $this->exporteddata;
@@ -99,11 +99,11 @@ class booking_view extends base_view {
         if ($this->data['action'] != 'confirm') {
 
             // get active bookings if the view is session booking
-            $mybookings = new booking_mybookings_exporter($this->data, $this->related);
+            $mybookings = new dashboard_mybookings_exporter($this->data, $this->related);
             $this->exporteddata = $mybookings->export($this->renderer);
 
             if ($html) {
-                $output = parent::output('local_booking/my_bookings', $this->exporteddata);
+                $output = parent::output('local_booking/dashboard_my_bookings', $this->exporteddata);
             }
 
         }
@@ -123,7 +123,7 @@ class booking_view extends base_view {
             if (has_capability('local/booking:participationview', $this->related['context'])) {
 
                 // get active bookings if the view is session booking
-                $participation = new instructor_participation_exporter($this->data, $this->related);
+                $participation = new dashboard_participation_exporter($this->data, $this->related);
                 $this->exporteddata = $participation->export($this->renderer);
 
             }

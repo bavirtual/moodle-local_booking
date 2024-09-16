@@ -86,7 +86,7 @@ class create extends \moodleform {
         $this->add_elements($mform, $COURSE->subscriber, $logentry, $flighttype, $exerciseempty);
 
         // Add the javascript required to enhance this mform.
-        $PAGE->requires->js_call_amd('local_booking/modal_logentry_form');
+        $PAGE->requires->js_call_amd('local_booking/logentry_modal_form');
     }
 
     /**

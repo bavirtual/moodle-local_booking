@@ -34,11 +34,6 @@ use local_booking\local\session\data_access\grading_vault;
 class instructor extends participant {
 
     /**
-     * @var array $assigned_students The students assigned to the instructor.
-     */
-    protected $assigned_students;
-
-    /**
      * Constructor.
      *
      * @param subscriber $course The subscribing course the student is enrolled in.
@@ -47,27 +42,6 @@ class instructor extends participant {
     public function __construct(subscriber $course, int $instructorid) {
         parent::__construct($course, $instructorid);
         $this->is_student = false;
-    }
-
-    /**
-     * Get students assigned to an instructor.
-     *
-     * @return {Object}[]   Array of students.
-     */
-    public function get_assigned_students() {
-
-        if (!isset($this->assigned_students)) {
-            $studentrecs = $this->vault->get_assigned_students($this->course->get_id(), $this->userid);
-            if ($studentrecs) {
-                foreach ($studentrecs as $studentrec) {
-                    $student = $this->course->get_student($studentrec->userid);
-                    $this->assigned_students[$student->userid] = $student;
-                }
-            } else {
-                $this->assigned_students = [];
-            }
-        }
-        return $this->assigned_students;
     }
 
     /**

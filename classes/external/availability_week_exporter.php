@@ -42,7 +42,7 @@ use moodle_url;
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class week_exporter extends exporter {
+class availability_week_exporter extends exporter {
 
     /**
      * @var \calendar_information $calendar The calendar to be rendered.
@@ -50,7 +50,7 @@ class week_exporter extends exporter {
     protected $calendar;
 
     /**
-     * @var array $days An array of week_timeslot_exporter objects.
+     * @var array $days An array of availability_week_timeslot_exporter objects.
      */
     protected $days = [];
 
@@ -257,7 +257,7 @@ class week_exporter extends exporter {
                 'multiple' => true,
             ],
             'timeslots' => [
-                'type' => week_timeslot_exporter::read_properties_definition(),
+                'type' => availability_week_timeslot_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
             'maxlanes' => [
@@ -469,7 +469,7 @@ class week_exporter extends exporter {
             $daydata['timeslot'] = substr('00' . $i, -2) . ':00';
             $daydata['usertimeslot'] = substr('00' . ($i + $usertimezoneoffset) % 24, -2) . ':00';
             $daydata['hour'] = $i;
-            $timeslot = new week_timeslot_exporter($this->calendar, $data, $daydata, $weeklanes, $this->related);
+            $timeslot = new availability_week_timeslot_exporter($this->calendar, $data, $daydata, $weeklanes, $this->related);
 
             $slots[] = $timeslot->export($output);
         }

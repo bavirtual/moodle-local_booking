@@ -37,7 +37,7 @@ use renderer_base;
  * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class week_day_exporter extends day_exporter {
+class availability_week_day_exporter extends availability_day_exporter {
 
     /**
      * @var {object} $slotdata dataobjects.

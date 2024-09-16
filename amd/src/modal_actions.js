@@ -122,14 +122,12 @@ function(
         root.on('click', BookingSelectors.actions.deleteLogentry, function(e) {
             // Fetch the logentry title, and pass them into the new dialogue.
             const target = e.target;
-            var logentrySource = root.find(BookingSelectors.logentryitem),
-                logentryId = logentrySource.data('logentryId') ||
-                target.closest(BookingSelectors.containers.summaryForm).dataset.logentryId,
-                userId = logentrySource.data('userId') ||
-                target.closest(BookingSelectors.containers.summaryForm).dataset.userId,
-                courseId = logentrySource.data('courseId') || $(BookingSelectors.logbookwrapper).data('courseid'),
-                cascade = logentrySource.data('cascade') ||
-                target.closest(BookingSelectors.containers.summaryForm).dataset.cascade;
+            let logentrySource = root.find(BookingSelectors.logentryitem),
+            logentryId = logentrySource.data('logentryId') || target.closest(BookingSelectors.containers.summaryForm).dataset.logentryId,
+            userId = logentrySource.data('userId') || target.closest(BookingSelectors.containers.summaryForm).dataset.userId,
+            courseId = logentrySource.data('courseId') || $(BookingSelectors.logbookwrapper).data('courseid'),
+            cascade = logentrySource.data('cascade') || target.closest(BookingSelectors.containers.summaryForm).dataset.cascade;
+
             confirmDeletion(logentryId, userId, courseId, cascade);
 
             e.preventDefault();

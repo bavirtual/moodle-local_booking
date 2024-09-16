@@ -44,7 +44,7 @@ use moodle_url;
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class instructor_profile_exporter extends exporter {
+class profile_instructor_exporter extends exporter {
 
     /**
      * @var subscriber $subscriber The plugin subscribing course
@@ -116,11 +116,11 @@ class instructor_profile_exporter extends exporter {
     protected static function define_other_properties() {
         return [
             'coursemodules' => [
-                'type' => exercise_name_exporter::read_properties_definition(),
+                'type' => list_exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
             'sessions' => [
-                'type' => exercise_name_exporter::read_properties_definition(),
+                'type' => list_exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
             'fullname' => [

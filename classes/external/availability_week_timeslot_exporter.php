@@ -41,7 +41,7 @@ use renderer_base;
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class week_timeslot_exporter extends exporter {
+class availability_week_timeslot_exporter extends exporter {
 
     /**
      * @var \calendar_information $calendar The calendar to be rendered.
@@ -79,7 +79,7 @@ class week_timeslot_exporter extends exporter {
     protected $hour;
 
     /**
-     * @var array $days - An array of day_exporter objects.
+     * @var array $days - An array of availability_day_exporter objects.
      */
     protected $days = [];
 
@@ -148,7 +148,7 @@ class week_timeslot_exporter extends exporter {
     protected static function define_other_properties() {
         return [
             'days' => [
-                'type' => week_day_exporter::read_properties_definition(),
+                'type' => availability_week_day_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
         ];
@@ -200,7 +200,7 @@ class week_timeslot_exporter extends exporter {
                 $slotdata['slotavailable']  = !$resticted && !$this->alreadybooked;
                 $slotdata['slot']           = $this->get_slot_info($laneslots, $slotdaydata);
 
-                $day = new week_day_exporter($this->calendar, $this->groupview, $slotdaydata, $slotdata, $this->related);
+                $day = new availability_week_day_exporter($this->calendar, $this->groupview, $slotdaydata, $slotdata, $this->related);
 
                 $days[] = $day->export($output);
             }

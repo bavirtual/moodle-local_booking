@@ -69,6 +69,10 @@ define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);
  */
 define('LOCAL_BOOKING_OVERDUE_PERIOD', 10);
 /**
+ * LOCAL_BOOKING_MIN_SLOT_PERIOD - minimum amout of hours allowed to book an availability slot
+ */
+define('LOCAL_BOOKING_MIN_SLOT_PERIOD', 2);
+/**
  * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades) - (3 years)
  */
 define('LOCAL_BOOKING_PASTDATACUTOFF', 1095);

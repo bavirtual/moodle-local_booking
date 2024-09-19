@@ -928,7 +928,7 @@ class student extends participant {
                 $this->graduateddate = $record->graduateddate;
         }
         // set status
-        if ($this->lessonscomplete) {
+        if ($this->lessonscomplete || !$this->course->requires_lesson_completion()) {
             $this->progressionstatus = $this->total_posts > 0 ? 'posts_completed' : 'noposts_completed';
         } else {
             $this->progressionstatus = 'not_completed';

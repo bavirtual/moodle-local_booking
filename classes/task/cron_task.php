@@ -92,13 +92,13 @@ class cron_task extends \core\task\scheduled_task {
                         mtrace('    Students to evaluate: ' . count($students));
 
                         // PROCESS POSTING RESTRICTION
-                        $this->processon_student_notifications($course, $students);
+                        $this->process_student_notifications($course, $students);
 
                         // PROCESS ON-HOLD RESTRICTION
-                        $this->processon_onhold_restriction($course, $students, $seniorinstructors);
+                        $this->process_onhold_restriction($course, $students, $seniorinstructors);
 
                         // PROCESS SUSPENSION RESTRICTION
-                        $this->processon_suspension_restriction($course, $students, $seniorinstructors);
+                        $this->process_suspension_restriction($course, $students, $seniorinstructors);
 
                         // note instructors
                         mtrace('    Instructors to evaluate: ' . count($instructors));
@@ -125,7 +125,7 @@ class cron_task extends \core\task\scheduled_task {
      * @param subscriber $course    The subscribed course
      * @param array      $students  Array of all course students to be evaluated
      */
-    private function processon_student_notifications($course, $students) {
+    private function process_student_notifications($course, $students) {
 
         // check if wait-period restriction is enabled
         $postingwait = intval($course->postingwait);
@@ -182,7 +182,7 @@ class cron_task extends \core\task\scheduled_task {
      * @param array      $students  Array of all course students to be evaluated
      * @param array      $seniorinstructors An array of senior instructors to notify
      */
-    private function processon_onhold_restriction($course, $students, $seniorinstructors) {
+    private function process_onhold_restriction($course, $students, $seniorinstructors) {
 
         // check if on-hold restriction is enabled
         $onholddays = intval($course->onholdperiod);
@@ -258,7 +258,7 @@ class cron_task extends \core\task\scheduled_task {
      * @param array      $students  Array of all course students to be evaluated
      * @param array      $seniorinstructors An array of senior instructors to notify
      */
-    private function processon_suspension_restriction($course, $students, $seniorinstructors) {
+    private function process_suspension_restriction($course, $students, $seniorinstructors) {
 
         // check for suspension restriction is enabled
         $suspensiondays = intval($course->suspensionperiod);

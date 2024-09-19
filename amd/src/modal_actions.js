@@ -29,6 +29,7 @@ define([
     'core/pending',
     'local_booking/repository',
     'local_booking/modal_delete',
+    'local_booking/modal_warning',
     'local_booking/events',
     'local_booking/selectors',
     'local_booking/booking_actions',
@@ -41,6 +42,7 @@ function(
     Pending,
     Repository,
     ModalDelete,
+    ModalWarning,
     BookingSessions,
     BookingSelectors,
     BookingActions,
@@ -113,6 +115,58 @@ function(
     };
 
     /**
+     * Displays a warning message.
+     *
+     * @method  showWarning
+     * @param   {String} message The warning message to display.
+     * @param   {String} data    Any additional message parameters.
+     * @return  {Promise}
+     */
+    var showWarning = (message, data) => {
+        var pendingPromise = new Pending('local_booking/booking_actions:showWarning');
+        var warningPromise;
+        var warningStrings = [
+            {
+                key: message + 'title',
+                component: 'local_booking'
+            },
+            {
+                key: message,
+                component: 'local_booking',
+                param: data
+            }];
+
+
+        warningPromise = ModalWarning.create();
+
+        var stringsPromise = Str.get_strings(warningStrings);
+
+        // Setup modal delete prompt form
+        var finalPromise = $.when(stringsPromise, warningPromise)
+        .then(function(strings, warningModal) {
+            warningModal.setRemoveOnClose(true);
+            warningModal.setTitle(strings[0]);
+            warningModal.setBody(strings[1]);
+
+            warningModal.show();
+
+            warningModal.getRoot().on(ModalEvents.save, function() {
+                var pendingPromise = new Pending('local_booking/booking_actions:initModal:showWarning');
+            });
+
+            return warningModal;
+        })
+        .then(function(modal) {
+            pendingPromise.resolve();
+
+            return modal;
+        })
+        .catch(Notification.exception);
+
+        return finalPromise;
+    };
+
+    /**
      * Register the listeners required to delete the logentry.
      *
      * @method  registerDelete
@@ -152,6 +206,7 @@ function(
 
     return {
         registerDelete: registerDelete,
-        registerRedirect: registerRedirect
+        registerRedirect: registerRedirect,
+        showWarning: showWarning
     };
 });

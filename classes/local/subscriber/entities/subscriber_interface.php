@@ -304,13 +304,12 @@ interface subscriber_interface {
     public static function get_next_exerciseid(int $courseid, int $exerciseid);
 
     /**
-     * Whether the student still has lessons to complete prior to the next exercise
+     * Whether the course requires students to complete lessons
+     * prior to an air exercise
      *
-     * @param int $courseid
-     * @param int $userid
      * @return bool
      */
-    public static function has_incomplete_lessons(int $courseid, int $userid);
+    public function requires_lesson_completion();
 
     /**
      * Checks if there is a database integration

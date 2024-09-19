@@ -144,12 +144,20 @@ class participant_vault implements participant_vault_interface {
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @param int $offset           The offset record for pagination
      * @param bool &$count          Reference to the count of students count before pagination
+     * @param bool $requirescompletion Whether the course has lesson completion restriction
      * @return {Object}[]           Array of database records.
      */
-    public static function get_students(int $courseid, string $filter = 'active', bool $includeonhold = false, int $offset = 0, int &$count = 0) {
+    public static function get_students(
+        int $courseid,
+        string $filter = 'active',
+        bool $includeonhold = false,
+        int $offset = 0,
+        int &$count = 0,
+        bool $requirescompletion = true) {
+
         global $DB;
 
-        list($sql, $countsql) = self::get_criteria_sql($filter, $includeonhold, false, 'student');
+        list($sql, $countsql) = self::get_criteria_sql($filter, $includeonhold, false, 'student', null, $requirescompletion);
 
         $params = [
             'courseid'  => $courseid,
@@ -192,14 +200,22 @@ class participant_vault implements participant_vault_interface {
     /**
      * Get all active students from the database.
      *
-     * @param  string $filter          The filter to show students, inactive (including graduates), suspended, and default to active.
-     * @param  bool   $includeonhold   Whether to include on-hold students as well
-     * @param  bool   $simple          To return sql for html Select user ids & names only
-     * @param  ?      $roles           The roles of the participants
-     * @param  string $wildcard        Wildcard criteria value
-     * @return string $sql             The query SQL string
+     * @param  string $filter             The filter to show students, inactive (including graduates), suspended, and default to active.
+     * @param  bool   $includeonhold      Whether to include on-hold students as well
+     * @param  bool   $simple             To return sql for html Select user ids & names only
+     * @param  ?      $roles              The roles of the participants
+     * @param  string $wildcard           Wildcard criteria value
+     * @param  bool   $requirescompletion Whether the course has lesson completion restriction
+     * @return string $sql                The query SQL string
      */
-    private static function get_criteria_sql(string $filter = 'active', bool $includeonhold = false, bool $simple = false, $roles = null, $wildcard = null) {
+    private static function get_criteria_sql(
+        string $filter = 'active',
+        bool $includeonhold = false,
+        bool $simple = false,
+        $roles = null,
+        $wildcard = null,
+        bool $requirescompletion = true) {
+
         global $DB;
 
         $isstudent = !empty($roles) && $roles == 'student';
@@ -234,7 +250,8 @@ class participant_vault implements participant_vault_interface {
         $outerwhere = !empty($roles) ? " WHERE roles " . ($isstudent ? "like '%$roles%'" : "REGEXP '$roles'") : '';
 
         // outer select order by statement
-        $orderby = 'ORDER BY ' . ($simple ? 'fullname' : ($isstudent ? 'lessonscomplete DESC, hasposts DESC, lastsessiondate ASC' : 'userid'));
+        $orderby = 'ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') . ' hasposts DESC, lastsessiondate ASC' : 'userid');
+        $orderby = $simple ? 'ORDER BY fullname' : $orderby;
 
         // inner select group by statement
         $innergroupby = ' GROUP BY u.id)  participants';

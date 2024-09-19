@@ -27,12 +27,16 @@ define([
     'core/notification',
     'local_booking/repository',
     'local_booking/calendar_view_manager',
+    'local_booking/modal_actions',
+    'core/modal',
     ],
     function(
         $,
         Notification,
         Repository,
-        CalendarViewManager
+        CalendarViewManager,
+        ModalActions,
+        Modal,
     ) {
 
     var SELECTORS = {
@@ -66,38 +70,51 @@ define([
         const course = root.find(SELECTORS.CALENDAR_WRAPPER).data('courseid');
         const year = root.find(SELECTORS.CALENDAR_WRAPPER).data('year');
         const week = root.find(SELECTORS.CALENDAR_WRAPPER).data('week');
+        const minslotperiod = root.find(SELECTORS.CALENDAR_WRAPPER).data('minslotperiod');
+        const unixtshr = 3600;
+        const lastminute = 60;
+
 
         // Get marked availability slots
         getUISlots(root);
 
-        let serverCall = null;
-        if (Slots.length != 0) {
-            // Evaluate slots to make sure they all have an end time (i.e. single 1hr slot case
-            $.map( Slots, function(val, i) {
-console.log('value='+val);
-console.log('index='+i);
-            });
-            serverCall = Repository.saveSlots(Slots, course, year, week);
-        } else {
-            serverCall = Repository.clearSlots(course, year, week);
-        }
+        // Evaluate each slot to ensure it is a minimum of 2hrs if minimum slots is required (minslotperiod!=0)
+        let minSlotPeriodMet = true;
+        $.map( Slots, function(val) {
+            if ((val.endtime - val.starttime + lastminute) < (minslotperiod * unixtshr) && minslotperiod != 0) {
+                minSlotPeriodMet = false;
+            }
+        });
 
-        // Send a request to the server to clear slots.
-        return serverCall
-            .then(function(response) {
-                if (response.validationerror) {
-                    // eslint-disable-next-line no-alert
-                    alert('Errors encountered: Unable to process availability posting action!');
+        if (minSlotPeriodMet) {
+            let serverCall = null;
+            if (Slots.length != 0) {
+                serverCall = Repository.saveSlots(Slots, course, year, week);
+            } else {
+                serverCall = Repository.clearSlots(course, year, week);
+            }
+
+            // Send a request to the server to clear slots.
+            return serverCall
+                .then(function(response) {
+                    if (response.validationerror) {
+                        // eslint-disable-next-line no-alert
+                        alert('Errors encountered: Unable to process availability posting action!');
+                    }
+                    return;
                 }
-                return;
-            }
-            )
-            .always(function() {
-                Notification.fetchNotifications();
-                return CalendarViewManager.stopLoading(root);
-            }
-            )
-            .fail(Notification.exception);
+                )
+                .always(function() {
+                    Notification.fetchNotifications();
+                    return CalendarViewManager.stopLoading(root);
+                }
+                )
+                .fail(Notification.exception);
+        } else {
+            // Show warning message
+            CalendarViewManager.stopLoading(root);
+            ModalActions.showWarning('minslotperiodwarning', minslotperiod);
+        }
     }
 
     /**

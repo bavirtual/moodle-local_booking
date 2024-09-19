@@ -158,6 +158,10 @@ function create_course_customfields() {
         ',"visibility":"0","defaultvalue":"","displaysize":5,"maxlength":2,"ispassword":"0","link":""', get_string('suspensionperioddesc', 'local_booking'));
     save_course_customfield($category, 'text', 'overdueperiod',  get_string('overdueperiod', 'local_booking'),
         ',"visibility":"0","defaultvalue":"","displaysize":5,"maxlength":2,"ispassword":"0","link":""', get_string('overdueperioddesc', 'local_booking'));
+    save_course_customfield($category, 'text', 'minslotperiod',  get_string('minslotperiod', 'local_booking'),
+        ',"visibility":"0","defaultvalue":"2","displaysize":5,"maxlength":2,"ispassword":"0","link":""', get_string('minslotperioddesc', 'local_booking'));
+    save_course_customfield($category, 'checkbox', 'requirelessoncompletion', get_string('requirelessoncompletion', 'local_booking'),
+        ',"visibility":"0","checkbydefault":"0"', get_string('requirelessoncompletiondesc', 'local_booking'));
     save_course_customfield($category, 'text', 'homeicao',  get_string('homeicao', 'local_booking'),
         ',"visibility":"0","defaultvalue":"","displaysize":5,"maxlength":4,"ispassword":"0","link":""');
     save_course_customfield($category, 'textarea', 'aircrafticao', get_string('trainingaircraft', 'local_booking'),

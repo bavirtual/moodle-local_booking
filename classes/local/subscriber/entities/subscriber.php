@@ -31,7 +31,6 @@ require_once($CFG->libdir . '/completionlib.php');
 require_once($CFG->dirroot . '/group/lib.php');
 
 use ArrayObject;
-use completion_completion;
 use completion_info;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\subscriber\data_access\subscriber_vault;
@@ -169,6 +168,16 @@ class subscriber implements subscriber_interface {
      * @var string $outcomerating The type of VATSIM rating for the subscribing course.
      */
     public $outcomerating;
+
+    /**
+     * @var int $minslotperiod The minimum amount of hours required to book an availability slot.
+     */
+    public $minslotperiod;
+
+    /**
+     * @var int $requirelessoncompletion Whether lesson completion is required perior to an air exercise.
+     */
+    public $requirelessoncompletion;
 
     /**
      * @var string $homeicao The ICAO code of the training airport.
@@ -422,7 +431,7 @@ class subscriber implements subscriber_interface {
             $filter,
             $includeonhold,
             ($page * LOCAL_BOOKING_DASHBOARDPAGESIZE),
-            $this->activestudentscount);
+            $this->activestudentscount, $this->requirelessoncompletion);
         $colors = LOCAL_BOOKING_SLOTCOLORS;
 
         if ($rawdata) {
@@ -885,19 +894,13 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Whether the student still has lessons to complete prior to the next exercise
+     * Whether the course requires students to complete lessons
+     * prior to an air exercise
      *
-     * @param int $courseid
-     * @param int $userid
      * @return bool
      */
-    public static function has_incomplete_lessons(int $courseid, int $userid) {
-        // get last lesson completion
-
-        // check if next exercise (assign mod) is the next exercise or an exercise completed before
-        $coursemodinfo = get_fast_modinfo($courseid);
-        $cms = $coursemodinfo->get_cms();
-        $modules = array_filter($cms, function($property) { return ($property->modname == 'assign' || $property->modname == 'lesson');});
+    public function requires_lesson_completion() {
+        return count($this->lessonmods) > 0 && $this->requirelessoncompletion;
     }
 
     /**

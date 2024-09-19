@@ -26,9 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-use \core_customfield\api;
-use local_booking\local\subscriber\entities\subscriber;
-
 /**
  * upgrade the logentry - this function could be skipped but it will be needed later
  * @param int $oldversion The old version of session booking
@@ -41,6 +38,51 @@ function xmldb_local_booking_upgrade($oldversion) {
 
     // Automatically generated Moodle v3.11.0 release upgrade line.
     // Put any upgrade step following this.
+
+    // add minium slot period course setting
+    if ($oldversion < 2024092000) {
+
+        // get Session booking category
+        $categories = \core_customfield\api::get_categories_with_fields('core_course', 'course', 0);
+        $category = array_values(array_filter(array_map(function($category) {
+                if ($category->get('name') == get_string('pluginname', 'local_booking')) return $category;
+            }, $categories)))[0];
+
+        // get the insert before field 'homeicao'
+        $fields = $category->get_fields();
+        $beforeid = array_key_first(array_filter(array_map(function($field) {
+                if ($field->get('shortname') == 'homeicao') return $field;
+            }, $fields)));
+
+        // create the minimum slot time period field (minslotperiod)
+        $fieldrec = new \stdClass();
+        $fieldrec->type = 'text';
+        $field = \core_customfield\field_controller::create(0, $fieldrec, $category);
+        $field->set('shortname', 'minslotperiod');
+        $field->set('name', get_string('minslotperiod', 'local_booking'));
+        $field->set('description', '<p dir="ltr" style="text-align:left;">' . get_string('minslotperioddesc', 'local_booking') . '</p>');
+        $field->set('descriptionformat', 1);
+        $field->set('configdata', '{"required":"0","uniquevalues":"0","locked":"0","visibility":"0","defaultvalue":"2","displaysize":5,"maxlength":2,"ispassword":"0","link":""}');
+        $field->save();
+        \core_customfield\api::move_field($field, $category->get('id'), $beforeid);
+        \core_customfield\event\field_created::create_from_object($field)->trigger();
+
+        // create the lesson completion required field (requirelessoncompletion)
+        $fieldrec = new \stdClass();
+        $fieldrec->type = 'checkbox';
+        $field = \core_customfield\field_controller::create(0, $fieldrec, $category);
+        $field->set('shortname', 'requirelessoncompletion');
+        $field->set('name', get_string('requirelessoncompletion', 'local_booking'));
+        $field->set('description', '<p dir="ltr" style="text-align:left;">' . get_string('requirelessoncompletiondesc', 'local_booking') . '</p>');
+        $field->set('descriptionformat', 1);
+        $field->set('configdata', '{"required":"0","uniquevalues":"0","locked":"0","visibility":"0","checkbydefault":"0"}');
+        $field->save();
+        \core_customfield\api::move_field($field, $category->get('id'), $beforeid);
+        \core_customfield\event\field_created::create_from_object($field)->trigger();
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2024092000, 'local', 'booking');
+    }
 
     // add sessionid column in logbooks to link log entries to sessions
     if ($oldversion < 2024090600) {
@@ -71,7 +113,7 @@ function xmldb_local_booking_upgrade($oldversion) {
         // add data to the stats table for each course
         $courses = $DB->get_records_sql("SELECT instanceid AS id FROM mdl_customfield_data cd INNER JOIN mdl_customfield_field cf ON cf.id = cd.fieldid WHERE cf.shortname = 'subscribed' AND cd.value = 1");
         foreach ($courses as $course) {
-            subscriber::add_new_enrolments($course->id);
+            \local_booking\local\subscriber\entities\subscriber::add_new_enrolments($course->id);
         }
 
         // Add duplicate slots to add unique key for a slot with specific start end for a user in a course

@@ -55,9 +55,18 @@ interface participant_vault_interface {
      * @param int $courseid         The course id.
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
+     * @param int $offset           The offset record for pagination
+     * @param bool &$count          Reference to the count of students count before pagination
+     * @param bool $requirescompletion Whether the course has lesson completion restriction
      * @return {Object}[]           Array of database records.
      */
-    public static function get_students(int $courseid, string $filter = 'active', bool $includeonhold = false);
+    public static function get_students(
+        int $courseid,
+        string $filter = 'active',
+        bool $includeonhold = false,
+        int $offset = 0,
+        int &$count = 0,
+        bool $requirescompletion = true);
 
     /**
      * Get all active participants for a course for UI select controls (ids & fullname)

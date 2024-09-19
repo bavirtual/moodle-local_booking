@@ -178,6 +178,7 @@ class availability_week_exporter extends exporter {
             'editing'     => $this->view == 'user' && $this->actiondata['action'] != 'book',    // Editing is not allowed if user id is passed for booking
             'alreadybooked' => !empty($this->activebooking),
             'alreadybookedmsg' => !empty($activebookinginstrname) ? get_string('activebookingmsg', 'local_booking', $activebookinginstrname) : '',
+            'minslotperiod' => $this->course->minslotperiod,
             'groupview'   => $this->view == 'all',                                              // Group view no editing or booking buttons
             'viewallurl'  => $CFG->httpswwwroot . '/local/booking/availability.php?courseid=' . $this->calendar->courseid . '&view=all',
             'hiddenclass' => $this->actiondata['action'] != 'book' && $this->view == 'user',
@@ -214,6 +215,9 @@ class availability_week_exporter extends exporter {
             'alreadybookedmsg' => [
                 'type' => PARAM_RAW,
                 'default' => null,
+            ],
+            'minslotperiod' => [
+                'type' => PARAM_INT,
             ],
             'groupview' => [
                 'type' => PARAM_BOOL,
@@ -328,7 +332,7 @@ class availability_week_exporter extends exporter {
             if ($this->student->is_onhold()) {
                 \core\notification::ERROR(get_string('studentonhold', 'local_booking'));
             }
-            if (!$this->student->has_completed_lessons()) {
+            if ($this->course->requires_lesson_completion() && !$this->student->has_completed_lessons()) {
                 \core\notification::WARNING(get_string('lessonsincomplete', 'local_booking', \implode(', ', $this->student->get_pending_lessons(true))));
             }
         }

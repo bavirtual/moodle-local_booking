@@ -42,7 +42,7 @@ interface subscriber_interface {
      * @param int  $courseid  The courseid id.
      * @return string
      */
-    public function get_course(int $courseid);
+    public function get_course(int $courseid = 0);
 
     /**
      * Get the subscriber's course context.
@@ -105,11 +105,10 @@ interface subscriber_interface {
      * Get a student.
      *
      * @param int  $studentid   A participant user id.
-     * @param bool $populate    Whether to get the student data.
-     * @param string $filter    the filter to select the student.
+     * @param bool $courseid    Course id for student from different course required for instructor's mybookings w/ muultiple courses.
      * @return student          The student object
      */
-    public function get_student(int $studentid, bool $populate = false, string $filter = 'active');
+    public function get_student(int $studentid, int $courseid = 0);
 
     /**
      * Get students based on filter.
@@ -232,12 +231,13 @@ interface subscriber_interface {
     /**
      * Returns the settings from config.xml
      *
-     * @param  string $key      The key to look up the value for
+     * @param  string $root     The root to look up the key
+     * @param  string $key      The key to look up the value
      * @param  bool   $toarray  Whether to converted json file to class or an array
      * @param  string $filename The filename and path of the JSON config file
      * @return mixed  $config   The requested setting value.
      */
-    public static function get_booking_config(string $key, bool $toarray = false, string $filename = '/local/booking/config.json');
+    public static function get_booking_config(string $root, string $key = null, bool $toarray = false, string $filename = null);
 
     /**
      * Returns an array of records from integrated external database
@@ -257,26 +257,6 @@ interface subscriber_interface {
      * @return bool
      */
     public function requires_skills_evaluation();
-
-    /**
-     * Updates the stats table with a specific value
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @param string $stat      The stat field being update
-     * @param string $value     The field value being update
-     * @return bool             The result
-     */
-    public static function update_stat(int $courseid, int $userid, string $stat, $value);
-
-    /**
-     * Updates the stats table with a lastest lesson completed
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @return bool             The result
-     */
-    public static function update_lessonscomplete_stat(int $courseid, int $userid);
 
     /**
      * Checks if the passed course is a subscriber 'enabled'

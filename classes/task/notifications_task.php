@@ -27,6 +27,7 @@ namespace local_booking\task;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/group/lib.php');
 require_once($CFG->dirroot . '/local/booking/lib.php');
 
 use local_booking\local\logbook\entities\logbook;
@@ -221,23 +222,57 @@ class notifications_task extends \core\task\scheduled_task {
 
         if (!empty($course->gradmsgsubject) && !empty($course->gradmsgbody)) {
 
-            $graduationnotify = get_user_preferences('local_booking_' . $course->get_id() . '_graduationnotify', false, $student->get_id());
+            $graduationnotify = $student->get_notify('graduation');
 
             if (!empty($graduationnotify)) {
 
-                $coursemembers = array_merge($course->get_students('active', true), $course->get_instructors());
+                // get message data
                 $grade = $student->get_grade($course->get_graduation_exercise());
                 $examiner = new instructor($course, $grade->usermodified);
                 $logbook = new logbook($course->get_id(), $student->get_id());
                 $logbook->load();
                 $logentry = $logbook->get_logentry_by_exericseid($course->get_graduation_exercise());
                 $summary = $logbook->get_summary(true);
+
+                // get core recipients CFIs and examiner
+                $recipients = $course->get_flight_training_managers(false);
+                $recipients[] = $examiner;
+
+                // additional recipients based on course plugin settings
+                if ($course->participantstonotify == 1) {
+
+                    // send to all course members or active participants
+                    $recipients = array_merge($recipients, $course->get_students('active', true), $course->get_instructors());
+
+                } elseif ($course->participantstonotify == 2) {
+
+                    // send to course members or active participants with the same group as the student
+                    // get student groups
+                    $groups = groups_get_user_groups($course->get_id(), $student->get_id());
+                    $groupids = $groups[0];
+
+                    // add members of the same group as recipients
+                    $samegrouprecipients = [];
+                    foreach ($groupids as $groupid) {
+                        if (!$course->reserved_group($groupid)) {
+                            // get all active group members
+                            $groupmembers = groups_get_members($groupid);
+                            foreach ($groupmembers as $groupmember) {
+                                $samegrouprecipients[] = $course->get_participant($groupmember->id);
+                            }
+                        }
+                    }
+
+                    // merge all together
+                    $recipients = array_merge($recipients, $samegrouprecipients);
+                }
+
                 $data = [
                     'graduateid'      => $student->get_id(),
                     'firstname'       => $student->get_profile_field('firstname', true),
                     'fullname'        => $student->get_name(),
                     'exercisename'    => $course->get_graduation_exercise(true),
-                    'completiondate'  => date_format((new \DateTime('@'.$logentry->get_flightdate())), 'F j, Y'),
+                    'completiondate'  => (!empty($logentry) ? date_format((new \DateTime('@'.$logentry->get_flightdate())), 'F j, Y') : ''),
                     'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
                     'simulator'       => $student->get_profile_field('simulator'),
                     'totallessons'    => count($course->get_lessons()),
@@ -253,12 +288,12 @@ class notifications_task extends \core\task\scheduled_task {
                     'examinername'    => $examiner->get_name(false),
                 ];
 
-                notification::send_graduation_notification($coursemembers, $data, $course->gradmsgsubject, $course->gradmsgbody);
+                notification::send_graduation_notification($recipients, $data, $course->gradmsgsubject, $course->gradmsgbody);
 
                 mtrace('                graduation notifications sent...');
 
                 // reset notification setting
-                set_user_preference('local_booking_' . $course->get_id() . '_graduationnotify', false, $student->get_id());
+                $student->set_notify('graduation', false);
             }
         }
     }

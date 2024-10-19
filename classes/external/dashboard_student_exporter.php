@@ -69,8 +69,9 @@ class dashboard_student_exporter extends exporter {
         switch ($related['filter']) {
             case 'active':
             case 'onhold':
-                $data['dayssincelast'] = $this->student->get_priority()->get_recency_days();
-                $data['recencytooltip'] = $this->student->get_priority()->get_recency_info();
+                $source = !empty($this->student->get_last_booking_date()) ? 'book' : 'enrol';
+                $data['dayssincelast'] = $this->student->get_recency_days();
+                $data['recencytooltip'] = get_string('bookingrecencyfrom' . $source . 'tooltip', 'local_booking', $this->student->get_wait_date()->format('j M \'y'));
                 break;
             case 'graduates':
                 $graduatedate = $this->student->get_graduated_date();

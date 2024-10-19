@@ -49,6 +49,11 @@ class participant implements participant_interface {
     protected $course;
 
     /**
+     * @var int $courseid The participant user id.
+     */
+    protected $courseid;
+
+    /**
      * @var \stdClass $user The participant Moodle user object.
      */
     protected $user;
@@ -156,13 +161,14 @@ class participant implements participant_interface {
     /**
      * Constructor.
      *
-     * @param subscriber $course The subscribing course the participant is enrolled in.
+     * @param $course     The subscribing course object or id the participant is enrolled in.
      * @param int $userid The user id.
      */
-    public function __construct(subscriber $course, int $userid) {
+    public function __construct($course, int $userid) {
 
         $this->vault = new participant_vault();
-        $this->course = $course;
+        $this->course = is_numeric($course) ? (new subscriber(intval($course))) : $course;
+        $this->courseid = $this->course->get_id();
         $this->userid = $userid;
         $this->user = \core_user::get_user($this->userid);
 
@@ -234,7 +240,7 @@ class participant implements participant_interface {
      * @return int $course->id
      */
     public function get_courseid() {
-        return $this->course->get_id();
+        return $this->courseid;
     }
 
     /**
@@ -518,7 +524,7 @@ class participant implements participant_interface {
      * @return bool        Whether the participant has the role.
      */
     public function has_role(string $role) {
-        return in_array($role, $this->get_roles(true));
+        return in_array($role, $this->get_roles());
     }
 
     /**

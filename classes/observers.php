@@ -43,12 +43,15 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_booking\local\session\entities\booking;
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\local\participant\entities\participant;
+use local_booking\local\participant\entities\student;
+use local_booking\local\session\entities\booking;
 use core\event\user_enrolment_created;
 use core\event\user_enrolment_deleted;
 use core\event\course_module_completion_updated;
 use core\event\course_updated;
+use core\session\exception;
 use mod_assign\event\submission_graded;
 use mod_lesson\event\lesson_ended;
 use grade_grade;
@@ -65,8 +68,15 @@ class observers {
 
         // check if the user is enroled to a subscribing course
         if (subscriber::is_subscribed($event->courseid)) {
-            list($currentexerciseid, $nextexerciseid) = subscriber::get_next_exerciseid($event->courseid);
-            subscriber::update_stat($event->courseid, $event->relateduserid, 'currentexerciseid', $currentexerciseid);
+
+            // check if the user being enrolled is a student and update statistics if so
+            $participant = new participant($event->courseid, $event->relateduserid);
+
+            if ($participant->is_student()) {
+                // add stats record for the newly enroled student
+                $student = new student($event->courseid, $event->relateduserid);
+                $student->update_statistic();
+            }
         }
     }
 
@@ -109,9 +119,18 @@ class observers {
 
         // check if the user is enroled to a subscribing course
         if (subscriber::is_subscribed($event->courseid)) {
+
             // update stats with the student's last lesson completion
             $data = $event->get_data();
-            subscriber::update_lessonscomplete_stat($event->courseid, $data['userid']);
+
+            // check if the user being enrolled is a student and update statistics if so
+            $participant = new participant($event->courseid, $data['userid']);
+
+            if ($participant->is_student()) {
+                // add stats record for the newly graded student
+                $student = new student($event->courseid, $data['userid']);
+                $student->update_lessonscomplete_stat();
+            }
         }
     }
 
@@ -160,15 +179,31 @@ class observers {
             if ($gradeitem) {
                 $gradegrade = grade_grade::fetch(array('userid' => $studentid, 'itemid' => $gradeitem->id));
 
-                // update current & next exercise stats if the grade is passed
-                if ($gradegrade && ($gradegrade->is_passed())) {
-                    list($exerciseid, $nextexerciseid) = subscriber::get_next_exerciseid($courseid, $exerciseid);
-                    $lastsessiondate = booking::get_last_session_date($courseid, $studentid)->lastbookedsession;
-                    subscriber::update_stat($courseid, $studentid, 'currentexerciseid', $exerciseid);
-                    subscriber::update_stat($courseid, $studentid, 'nextexerciseid', $nextexerciseid);
-                    subscriber::update_stat($courseid, $studentid, 'lastsessiondate', $lastsessiondate);
-                    subscriber::update_lessonscomplete_stat($courseid, $studentid);
+                // update current & next exercise stats,
+                // update last completed session date (confirming the session had took place)
+                // reset required lesson completed if the grade is passed
+                if (!empty($gradegrade)) {
+                    $student = new student($event->courseid, $studentid);
+                    if ($gradegrade->is_passed()) {
+
+                        // get last session
+                        list($exerciseid, $nextexerciseid) = subscriber::get_next_exerciseid($courseid, $exerciseid);
+                        $lastsessiondate = booking::get_last_session_date($courseid, $studentid)->lastbookedsession;
+
+                        // add stats record for the newly graded student
+                        $student->update_statistic('currentexerciseid', $exerciseid);
+                        $student->update_statistic('nextexerciseid', $nextexerciseid);
+                        $student->update_statistic('lastsessiondate', $lastsessiondate);
+                        $student->update_lessonscomplete_stat($courseid, $studentid);
+
+                    } else {
+                        $student->update_statistic('currentexerciseid', $exerciseid);
+                    }
+                } else {
+                    throw new exception(get_string('errorgradenotfound', 'local_booking'));
                 }
+            } else {
+                throw new exception(get_string('errorgradeitemnotfound', 'local_booking'));
             }
         }
     }

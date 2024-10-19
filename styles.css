@@ -18,11 +18,17 @@
 .posts_completed {
     border-left: .3rem solid green !important;
 }
+.posts_grade {
+    border-left: .3rem solid cornflowerblue !important;
+}
 .noposts_completed {
     border-left: .3rem solid orange !important;
 }
 .not_completed {
     border-left: .3rem solid red !important;
+}
+.graduate {
+    border-left: .3rem solid black !important;
 }
 .booking-title {
     width: 100%;

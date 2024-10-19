@@ -368,7 +368,7 @@ class logbook_vault implements logbook_vault_interface {
         $logentryobj->nighttime = $logentry->get_nighttime();
         $logentryobj->ifrtime = $logentry->get_ifrtime();
         $logentryobj->checkpilottime = $logentry->get_checkpilottime();
-        $logentryobj->remarks = $logentry->get_remarks();
+        $logentryobj->remarks = substr($logentry->get_remarks(), 1, 1000);
         $logentryobj->linkedlogentryid = $logentry->get_linkedlogentryid();
         if ($newrec) {
             $logentryobj->createdby = $USER->id;

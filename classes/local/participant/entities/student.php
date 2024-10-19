@@ -30,6 +30,7 @@ require_once($CFG->dirroot . '/mod/assign/externallib.php');
 use ArrayObject;
 use DateTime;
 use Exception;
+use local_booking\local\subscriber\data_access\subscriber_vault;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\session\entities\priority;
@@ -126,6 +127,16 @@ class student extends participant {
     protected $priority;
 
     /**
+     * @var int $waitdate The date from which the student was waiting since (enroled or last booked).
+     */
+    protected $waitdate;
+
+    /**
+     * @var int $recencydays The amount of days since the waiting date.
+     */
+    protected $recencydays;
+
+    /**
      * @var array $incompletelessons the list of pending lessons.
      * @var array $incompletelessons the list of pending lessons.
      */
@@ -160,10 +171,10 @@ class student extends participant {
     /**
      * Constructor.
      *
-     * @param subscriber $course The subscribing course the student is enrolled in.
+     * @param $course The subscribing course the student is enrolled in.
      * @param int $studentid     The student id.
      */
-    public function __construct(subscriber $course, int $studentid, string $studentname = '', int $enroldate = 0) {
+    public function __construct($course, int $studentid, string $studentname = '', int $enroldate = 0) {
         parent::__construct($course, $studentid);
         $this->fullname = $studentname;
         $this->enroldate = $enroldate;
@@ -185,21 +196,19 @@ class student extends participant {
         $slots = $params['slots'];
         $year = $params['year'];
         $week = $params['week'];
-        $userid = $this->userid;
-        $courseid = $this->course->get_id();
 
         // start transaction
         $transaction = $DB->start_delegated_transaction();
 
         try {
             // remove all week/year slots for the user to avoid updates
-            $result = slot_vault::delete_slots($this->course->get_id(), $year, $week, $this->userid);
+            $result = slot_vault::delete_slots($this->courseid, $year, $week, $this->userid);
 
             if ($result) {
                 foreach ($slots as $slot) {
                     $newslot = new slot(0,
-                        $userid,
-                        $courseid,
+                        $this->userid,
+                        $this->courseid,
                         $slot['starttime'],
                         $slot['endtime'],
                         $year,
@@ -215,9 +224,7 @@ class student extends participant {
 
             if ($result) {
                 // update student stats slot count
-                slot_vault::update_slot_count($courseid, $userid);
-                $lastslotdate = booking_vault::get_last_booked_session($courseid, $userid)->lastbookedsession;
-                subscriber::update_stat($courseid, $userid, 'lastsessiondate', $lastslotdate);
+                slot_vault::update_slot_count($this->courseid, $this->userid);
 
                 // commit transaction
                 $transaction->allow_commit();
@@ -242,20 +249,18 @@ class student extends participant {
 
         $year = $params['year'];
         $week = $params['week'];
-        $courseid = $this->course->get_id();
-        $userid = $this->userid;
 
         // start transaction
         $transaction = $DB->start_delegated_transaction();
 
         // remove all week/year slots for the user to avoid updates
-        $result = slot_vault::delete_slots($courseid, $userid, $year, $week);
+        $result = slot_vault::delete_slots($this->courseid, $this->userid, $year, $week);
 
         if (empty($this->lastbookeddatets)) {
-            $lastbookeddate = self::get_last_booked_date($courseid, $userid);
+            $this->lastbookeddatets = self::get_last_booked_date($this->courseid, $this->userid);
         }
 
-        subscriber::update_stat($courseid, $userid, 'lastsessiondate', $this->lastbookeddatets);
+        $this->update_statistic('lastsessiondate', $this->lastbookeddatets);
 
         if ($result) {
             $transaction->allow_commit();
@@ -264,6 +269,26 @@ class student extends participant {
         }
 
         return $result;
+    }
+
+    /**
+     * Updates the student statistics with a specific value
+     *
+     * @param string $stat      The stat field being update
+     * @param string $value     The field value being update
+     * @return bool             The result
+     */
+    public function update_statistic(string $stat = null, $value = null) {
+        return subscriber_vault::update_subscriber_stat($this->courseid, $this->userid, $stat, $value);
+    }
+
+    /**
+     * Updates the stats table with a lastest lesson completed
+     *
+     * @return bool             The result
+     */
+    public function update_lessonscomplete_stat() {
+        return subscriber_vault::update_subscriber_lessonscomplete_stat($this->courseid, $this->userid);
     }
 
     /**
@@ -619,6 +644,30 @@ class student extends participant {
     }
 
     /**
+     * Returns the student's days waiting
+     *
+     * @return int
+     */
+    public function get_recency_days() {
+
+        if (!isset($this->recencydays)) {
+            $today = new DateTime('@' . time());
+            $this->recencydays =  (date_diff($this->get_wait_date(), $today))->days;
+        }
+
+        return $this->recencydays;
+    }
+
+    /**
+     * Returns the date the student was waiting since
+     *
+     * @return DateTime
+     */
+    public function get_wait_date() {
+        return new DateTime('@' . $this->waitdate);
+    }
+
+    /**
      * Returns the total number of active posts.
      *
      * @return int The number of active posts
@@ -654,7 +703,7 @@ class student extends participant {
      * @return int The last booked session datetime
      */
     public function get_last_booking_date() {
-        return slot::get_last_booking_date($this->course->get_id(), $this->userid);
+        return slot::get_last_booked_slot_date($this->course->get_id(), $this->userid);
     }
 
     /**
@@ -756,6 +805,56 @@ class student extends participant {
      */
     public function set_next_lesson(string $nextlesson) {
         $this->nextlesson = $nextlesson;
+    }
+
+    /**
+     * Get data from student statistics
+     *
+     * @param string $stat
+     * @param $value
+     */
+    public function get_statistic(string $stat) {
+        return subscriber_vault::get_subscriber_stat($this->course->get_id(), $this->userid, $stat);
+    }
+
+    /**
+     * Get a specific notification scheduled to be sent
+     *
+     * @param string $notification
+     * @return bool  $enable
+     */
+    public function get_notify(string $notification) {
+        $enabled = false;
+        $notifyjson = json_decode($this->get_statistic("notifyflags"), true);
+
+        // verify the JSON string
+        if (!empty($notifyjson)) {
+            $enabled = array_key_exists($notification, $notifyjson) ? $notifyjson[$notification] : false;
+        }
+
+        // encode notifications
+        return $enabled;
+    }
+
+    /**
+     * Set student notification to schedule a notification for
+     * the participant depending on the type of notification.
+     *
+     * @param string $notification
+     * @param bool   $enable
+     */
+    public function set_notify(string $notification, bool $enabled = true) {
+        $notifications = array();
+        $notifyjson = json_decode($this->get_statistic("notifyflags"), true);
+
+        // verify the JSON string
+        if (!empty($notifyjson)) {
+            $notifications = $notifyjson;
+        }
+        $notifications[$notification] = $enabled;
+
+        // encode notifications
+        $this->update_statistic("notifyflags", json_encode($notifications));
     }
 
     /**
@@ -898,13 +997,13 @@ class student extends participant {
     }
 
     /**
-     * Returns whether the student has graduated
-     * and in the graduates group.
+     * Returns whether the student has completed the course.
      *
-     * @return  bool    Whether the student had graduated.
+     * @param  bool? $getcompletion forces lookup of course completion
+     * @return bool  Whether the student had graduated.
      */
-    public function graduated() {
-        return !empty($this->graduateddate);
+    public function graduated(bool $getcompletion = false) {
+        return $getcompletion ? (new \completion_info($this->course->get_course()))->is_course_complete($this->userid) : !empty($this->graduateddate);
     }
 
     /**
@@ -916,8 +1015,6 @@ class student extends participant {
         // call extended method first
         parent::populate($record);
         if (!empty($record)) {
-            if (!empty($record->activeposts))
-                $this->total_posts = $record->activeposts;
             if (!empty($record->currentexerciseid))
                 $this->currentexerciseid = $record->currentexerciseid;
             if (!empty($record->nextexerciseid))
@@ -926,10 +1023,18 @@ class student extends participant {
                 $this->lessonscomplete = $record->lessonscomplete;
             if (!empty($record->graduateddate))
                 $this->graduateddate = $record->graduateddate;
+            if (!empty($record->waitdate))
+                $this->waitdate = $record->waitdate;
         }
         // set status
-        if ($this->lessonscomplete || !$this->course->requires_lesson_completion()) {
-            $this->progressionstatus = $this->total_posts > 0 ? 'posts_completed' : 'noposts_completed';
+        if ($this->has_completed_coursework()) {
+            $this->progressionstatus = 'graduate';
+        } elseif ($this->lessonscomplete || !$this->course->requires_lesson_completion()) {
+            if ($record->booked) {
+                $this->progressionstatus = 'posts_grade';
+            } else {
+                $this->progressionstatus = $record->hasactiveposts ? 'posts_completed' : 'noposts_completed';
+            }
         } else {
             $this->progressionstatus = 'not_completed';
         }

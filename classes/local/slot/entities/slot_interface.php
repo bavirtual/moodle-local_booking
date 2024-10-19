@@ -114,4 +114,13 @@ interface slot_interface {
      * @return string
      */
     public function get_bookinginfo();
+
+    /**
+     * Get the date of the last booked availability slot
+     *
+     * @param int $courseid
+     * @param int $studentid
+     * @return int
+     */
+    public static function get_last_booked_slot_date(int $courseid, int $studentid);
 }

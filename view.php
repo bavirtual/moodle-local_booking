@@ -56,7 +56,7 @@ $navbartext = $action == 'book' ? get_string('bookingdashboard', 'local_booking'
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('admin');   // wide page layout
 $PAGE->set_title($COURSE->shortname . ': ' . get_string('pluginname', 'local_booking'), 'local_booking');
-$PAGE->set_heading(get_string('bookingdashboard', 'local_booking'), 'local_booking');
+$PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-local-booking');
 
 // instructor object

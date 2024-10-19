@@ -1,5 +1,32 @@
 # Change log
 
+## [2024101900] - RELEASED 2024-10-19
+
+### Fixed
+- external api filter (passed==null)
+- sort order: completion, posts, booked, then wait days
+- recency days and recency info logic
+- current & next exercise ids logic for new enrollment (cid=0, nid=1st)
+
+### Added
+
+- notify field to store student scheduled notification flags in JSON format
+- graduation notification options to send to all active participants or same group participants
+- cron job to send graduation notifications basde on 'graduation_notification' flag (0=course admins and examiner, 1=active users, 2=same group)
+- new attempt added for failed attempts when grading
+
+### Changed
+
+- droped activeposts field from student statistics, when slot date passes the count is no longer valid
+- course completion & graduation retrieved from completionlib is_course_complete()
+- removed GRADUATES group references, group and groupmember records
+- force completion part of graduation processing
+- removed sort_student function from bookings_exporter
+- instructor participation 'Elapsed days' to use last booked session vs last graded
+- progression grid flag is indicated by a blue strip for students to be graded and a black stripe to be graduated
+- moved notifications flag from user preferences to stats
+- extended logbook entry remarks to VARCHAR(1000) from VARCHAR(500)
+
 ## [202409xxxx] - RELEASED 2024-09-xx
 
 ### Fixed
@@ -54,9 +81,6 @@
 ### Changed
 
 - reverted session_id field in latest upgrade.php
-
-### Fixed
-
 - removed ‘no-show counter’ and ‘no-show date’ from install
 
 ## [2024061000] - UNRELEASED 2024-06-10

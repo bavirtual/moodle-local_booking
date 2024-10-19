@@ -160,6 +160,15 @@ class subscriber implements subscriber_interface {
     public $gradmsgbody;
 
     /**
+     * @var int $participantstonotify Which participants to notify:
+     *      0 = core group (CFI and examiner)
+     *      1 = all active participants
+     *      2 = active participants from of the same course group
+     */
+    public $participantstonotify = 0;
+
+
+    /**
      * @var string $trainingtype The type of training of the subscribing course.
      */
     public $trainingtype;
@@ -274,6 +283,11 @@ class subscriber implements subscriber_interface {
             }
         }
 
+        // get graduation notification type: 0 = notify all active participants, 1 = notify active participants with same group
+        if ($graduationnotifications = self::get_booking_config('graduation_notification')) {
+            $this->participantstonotify = array_key_exists($this->courseid, $graduationnotifications) ? $graduationnotifications[$this->courseid] : 0;
+        }
+
         // verify that the subscribing course has needed course groups for Session Booking
         if ($this->subscribed)
             // verify groups exist
@@ -296,7 +310,8 @@ class subscriber implements subscriber_interface {
      * @param int  $courseid  The course id.
      * @return string
      */
-    public function get_course(int $courseid) {
+    public function get_course(int $courseid = 0) {
+        $courseid = $courseid ?: $this->courseid;
         if (!isset($this->courses)) {
             $this->courses = \get_courses();
         }
@@ -393,15 +408,14 @@ class subscriber implements subscriber_interface {
      * Get a student.
      *
      * @param int  $studentid   A participant user id.
-     * @param bool $populate    Whether to get the student data.
-     * @param string $filter    the filter to select the student.
+     * @param bool $courseid    Course id for student from different course required for instructor's mybookings w/ muultiple courses.
      * @return student          The student object
      */
-    public function get_student(int $studentid, bool $populate = false, string $filter = 'active') {
+    public function get_student(int $studentid, int $courseid = 0) {
         $student = (!empty($this->activestudents) && !empty($studentid) && isset($this->activestudents[$studentid])) ? $this->activestudents[$studentid] : null;
 
         if (empty($student)) {
-            $studentrec = participant_vault::get_student($this->courseid, $studentid);
+            $studentrec = participant_vault::get_student(($courseid ?: $this->courseid), $studentid);
             $colors = LOCAL_BOOKING_SLOTCOLORS;
 
             // add a color for the student slots from the config.json file for each student
@@ -409,7 +423,10 @@ class subscriber implements subscriber_interface {
                 $student = new student($this, $studentrec->userid);
                 $student->populate($studentrec);
                 $student->set_slot_color(count($colors) > 0 ? array_values($colors)[1 % LOCAL_BOOKING_MAXLANES] : LOCAL_BOOKING_SLOTCOLOR);
-                $this->activestudents[$studentid] = $student;
+                // add student to active courses if from the same course
+                if ($courseid == 0) {
+                    $this->activestudents[$studentid] = $student;
+                }
             }
         }
 
@@ -522,13 +539,23 @@ class subscriber implements subscriber_interface {
     /**
      * Get subscribing course Flight Training Managers.
      *
+     * @param bool $associative returns an array of objects for users holding the course manager role
      * @return array The Flight Training Manager users.
      */
-    public function get_flight_training_managers() {
+    public function get_flight_training_managers(bool $associative = true) {
+        $activemgrs = array();
         $mgrs = \get_enrolled_users($this->context, 'moodle/site:approvecourse');
-        $activemgrs = array_filter($mgrs, function($v, $k) {
+        $mgrs = array_filter($mgrs, function($v, $k) {
             return $v->suspended == 0;
         }, ARRAY_FILTER_USE_BOTH);
+
+        if ($associative) {
+            $activemgrs = $mgrs;
+        } else {
+            foreach ($mgrs as $mgr) {
+                $activemgrs[] = new participant($this, $mgr->id);
+            }
+        }
         return $activemgrs;
     }
 
@@ -592,6 +619,35 @@ class subscriber implements subscriber_interface {
             if ($module->modname == 'assign') $exercises[$module->id] = $module->name;
         }
         return $exercises;
+    }
+
+    /**
+     * Retrieves the next exercise (assign module) id in the subscribed course
+     *
+     * @param int $courseid
+     * @return int
+     */
+    public static function get_next_exerciseid(int $courseid, int $exerciseid = 0) {
+        $currentexerciseid = 0;
+        $nextexerciseid = 0;
+        $coursemodinfo = get_fast_modinfo($courseid);
+        $cms = $coursemodinfo->get_cms();
+        $modules = array_filter($cms, function($property) { return ($property->modname == 'assign');});
+        $keys = array_keys($modules);
+        $idx = $exerciseid != 0 ? array_search($exerciseid, $keys) : 0;
+
+        if (!empty($modules)) {
+            // get the current exercise if it's not the last otherwise return first exercise in the course
+            $currentexercise = $modules[$keys[$idx]];
+            $currentexerciseid = $currentexercise->id;
+
+            // get the next exercise if it's not the last otherwise 0 (no more exercises (null exercise))
+            $nextexercise = $exerciseid != array_key_last($modules) ? $modules[$keys[$idx+1]] : null;
+            $nextexerciseid = !empty($nextexercise) ? $nextexercise->id : 0;
+        }
+
+        // return both current and next exercise ids
+        return [$currentexerciseid, $nextexerciseid];
     }
 
     /**
@@ -703,20 +759,35 @@ class subscriber implements subscriber_interface {
     /**
      * Returns the settings from config.xml
      *
-     * @param  string $key      The key to look up the value for
+     * @param  string $root     The root to look up the key
+     * @param  string $key      The key to look up the value
      * @param  bool   $toarray  Whether to converted json file to class or an array
      * @param  string $filename The filename and path of the JSON config file
      * @return mixed  $config   The requested setting value.
      */
-    public static function get_booking_config(string $key, bool $toarray = false, string $filename = null) {
+    public static function get_booking_config(string $root, string $key = null, bool $toarray = false, string $filename = null) {
         $config = null;
+        $lookup = $key ?: $root;
 
         try {
-
+            // read config content
             $jsoncontent = $filename ? file_get_contents($filename) : \get_config('local_booking', 'configsjson');
-            if (!empty($jsoncontent)) {
-                $configdata = json_decode($jsoncontent, $toarray);
-                $config = $toarray ? $configdata[$key] : $configdata->{$key};
+            $configdata = json_decode($jsoncontent, true);
+
+            if (!empty($configdata)) {
+
+                // recursively go through the config data for nested content
+                $iterator  = new \RecursiveArrayIterator($configdata);
+                $recursive = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::SELF_FIRST);
+
+                // iterate recursively to find the key
+                foreach ($recursive as $item => $value) {
+                    if ($item === $lookup) {
+                        $config = $value;
+                        break;
+                    }
+                }
+
             }
         } catch(\Exception $e) {
             echo get_string('configmissing', 'local_booking') + '\n' + $e;
@@ -779,7 +850,7 @@ class subscriber implements subscriber_interface {
      */
     public static function has_integration($root, $key = '') {
         $hasintegration = false;
-        $integrations = self::get_booking_config($root);
+        $integrations = self::get_booking_config($root, $key);
         // TODO: PHP9 deprecates dynamic properties
         if ($integrations) {
             $hasintegration = !empty($key) ? !empty($integrations->$key->enabled) : !empty($integrations->enabled);
@@ -828,30 +899,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Updates the stats table with a specific value
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @param string $stat      The stat field being update
-     * @param string $value     The field value being update
-     * @return bool             The result
-     */
-    public static function update_stat(int $courseid, int $userid, string $stat, $value) {
-        return subscriber_vault::update_subscriber_stat($courseid, $userid, $stat, $value);
-    }
-
-    /**
-     * Updates the stats table with a lastest lesson completed
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @return bool             The result
-     */
-    public static function update_lessonscomplete_stat(int $courseid, int $userid) {
-        return subscriber_vault::update_subscriber_lessonscomplete_stat($courseid, $userid);
-    }
-
-    /**
      * Checks if the passed course is a subscriber 'enabled'
      *
      * @param int $courseid
@@ -873,27 +920,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Retrieves the next exercise (assign module) id in the subscribed course
-     *
-     * @param int $courseid
-     * @return int
-     */
-    public static function get_next_exerciseid(int $courseid, int $exerciseid = 0) {
-        $coursemodinfo = get_fast_modinfo($courseid);
-        $cms = $coursemodinfo->get_cms();
-        $modules = array_filter($cms, function($property) { return ($property->modname == 'assign');});
-        $keys = array_keys($modules);
-        $idx = $exerciseid != 0 ? array_search($exerciseid, $keys) : 0;
-
-        // return the current exercise if it's not the last otherwise return first exercise in the course
-        $currentexercise = ($exerciseid == array_key_last($modules) ?: $modules[$keys[$idx]]);
-        // return the next exercise if it's not the last otherwise return second exercise in the course
-        $nextexercise = ($exerciseid != array_key_last($modules) ? $modules[$keys[$idx+1]] : 0);
-
-        return [$currentexercise->id, $nextexercise->id];
-    }
-
-    /**
      * Whether the course requires students to complete lessons
      * prior to an air exercise
      *
@@ -904,6 +930,20 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Verifies whether the group id passed is a reserved
+     * group for session booking
+     *
+     * @return bool
+     */
+    public function reserved_group(int $groupid) {
+        $reserved = $groupid == groups_get_group_by_name($this->courseid, LOCAL_BOOKING_ONHOLDGROUP) ||
+                    $groupid == groups_get_group_by_name($this->courseid, LOCAL_BOOKING_INACTIVEGROUP) ||
+                    $groupid == groups_get_group_by_name($this->courseid, LOCAL_BOOKING_KEEPACTIVEGROUP);
+
+        return $reserved;
+    }
+
+    /**
      * Verifies custom groups are exist otherwise create them.
      *
      * @return bool
@@ -911,7 +951,7 @@ class subscriber implements subscriber_interface {
     protected function verify_groups() {
         $onholdgroupid = true;
         $inactivegroupid = true;
-        $graduatesgroupid = true;
+        $keepactivegroupid = true;
 
         // check if LOCAL_BOOKING_ONHOLDGROUP exists otherwise create it
         $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_ONHOLDGROUP);
@@ -935,18 +975,7 @@ class subscriber implements subscriber_interface {
             $inactivegroupid = groups_create_group($data);
         }
 
-        // check if LOCAL_BOOKING_GRADUATESGROUP exists otherwise create it
-        $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_GRADUATESGROUP);
-        if (empty($groupid)) {
-            $data = new \stdClass();
-            $data->courseid = $this->courseid;
-            $data->name = LOCAL_BOOKING_GRADUATESGROUP;
-            $data->description = get_string('groupgraduatesdesc', 'local_booking');
-            $data->descriptionformat = FORMAT_HTML;
-            $graduatesgroupid = groups_create_group($data);
-        }
-
-        // check if LOCAL_BOOKING_GRADUATESGROUP exists otherwise create it
+        // check if LOCAL_BOOKING_KEEPACTIVEGROUP exists otherwise create it
         $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_KEEPACTIVEGROUP);
         if (empty($groupid)) {
             $data = new \stdClass();
@@ -954,10 +983,10 @@ class subscriber implements subscriber_interface {
             $data->name = LOCAL_BOOKING_KEEPACTIVEGROUP;
             $data->description = get_string('groupkeepactivedesc', 'local_booking');
             $data->descriptionformat = FORMAT_HTML;
-            $graduatesgroupid = groups_create_group($data);
+            $keepactivegroupid = groups_create_group($data);
         }
 
-        return !empty($onholdgroupid) && !empty($inactivegroupid) && !empty($graduatesgroupid);
+        return !empty($onholdgroupid) && !empty($inactivegroupid) && !empty($keepactivegroupid);
     }
 
     /**

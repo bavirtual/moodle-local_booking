@@ -79,7 +79,7 @@ class profile_student_exporter extends exporter {
         $data['contextid'] = $related['context']->id;
         $data['courseid'] = $this->courseid;
         $data['userid'] = $data['userid'];
-        $this->student = $this->subscriber->get_student($data['userid'], true);
+        $this->student = $this->subscriber->get_student($data['userid']);
 
         parent::__construct($data, $related);
     }
@@ -443,7 +443,7 @@ class profile_student_exporter extends exporter {
             'sim2'                     => $this->student->get_simulator(false),
             'noshows'                  => $noshows,
             'moodleprofileurl'         => $moodleprofile->out(false),
-            'recency'                  => $this->student->get_priority()->get_recency_days(),
+            'recency'                  => $this->student->get_recency_days(),
             'courseactivity'           => $this->student->get_priority()->get_activity_count(false),
             'slots'                    => $this->student->get_total_posts(),
             'modulescompleted'         => get_string('modscompletemsg', 'local_booking', $modsinfo),

@@ -151,7 +151,7 @@ class event {
             $this->studentid    = $eventinfo->stdid;
             $this->student      = participant::get_fullname($eventinfo->stdid);
             $this->start        = $eventinfo->start;
-            $this->end          = $eventinfo->end + ($extend ? (60 * 60) : 0); // TODO: 1 hr addition to end time is needed as the slot end time is incorrect
+            $this->end          = $eventinfo->end + ($extend ? : 0); // TODO: 1 hr addition to end time is needed as the slot end time is incorrect
 
             // get DateTime objects
             $this->startDateTime= new \DateTime('@' . $this->start);

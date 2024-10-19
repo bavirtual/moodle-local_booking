@@ -184,7 +184,7 @@ class logbook_exporter extends exporter {
             ],
             'canedit' => [
                 'type' => PARAM_BOOL,
-                'default' => true
+                'default' => false
             ],
             'dualops' => [
                 'type' => PARAM_BOOL,

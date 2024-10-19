@@ -107,6 +107,7 @@ if (empty($format)) {
 // get logbook view data
 $pilot   = $COURSE->subscriber->get_participant($userid);
 $editor  = $COURSE->subscriber->get_instructor($USER->id);
+$admin = has_capability('moodle/site:config', $context);
 $logbook = $pilot->get_logbook(true, $format == 'easa');
 $totals  = (array) $logbook->get_summary(true, $format == 'easa', $COURSE->subscriber->get_graduation_exercise());
 $data    = [
@@ -119,7 +120,7 @@ $data    = [
     'isstudent'     => $pilot->is_student(),
     'isinstructor'  => $pilot->is_instructor(),
     'isexaminer'    => $pilot->is_examiner(),
-    'canedit'       => $editor->is_instructor(),
+    'canedit'       => $editor->is_instructor() || $admin,
     'hasfindpirep'  => $COURSE->subscriber->has_integration('external_data', 'pireps'),
     'format'        => $format,
     'easaformaturl' => $PAGE->url . '&format=easa',

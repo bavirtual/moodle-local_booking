@@ -131,7 +131,7 @@ class action implements action_interface {
 
                 // get exercise to be graded
                 if ($grade = $student->get_current_grade()) {
-                    $exerciseid = $grade->finalgrade > 1 ? $exerciseid : $student->get_current_exercise();
+                    $exerciseid = $grade->is_passed() ? $exerciseid : $student->get_current_exercise();
                 } else {
                     $exerciseid = $student->get_current_exercise();
                 }
@@ -139,6 +139,7 @@ class action implements action_interface {
                 // set grading url
                 $actionurl = '/local/booking/assign.php';
                 $params = ['exeid' => $exerciseid];
+                if (!empty($grade) && !$grade->is_passed()) $params['passed'] = 0;
                 $name = get_string('grade', 'local_booking');
                 $tooltip = get_string('actiongradesession', 'local_booking');
 
@@ -168,14 +169,14 @@ class action implements action_interface {
                     $examinerid = $student->get_grade($gradexercise)->usermodified;
                     $logbook = $student->get_logbook(true);
                     $hasexamlogentry = !empty($logbook->get_logentry_by_sessionid($refid));
-                    $enabled = (\has_capability('mod/assign:grade', \context_module::instance($gradexercise)) && $examinerid == $USER->id && $hasexamlogentry) || $isadmin;
+                    $enabled = has_capability('mod/assign:grade', \context_module::instance($gradexercise)) && ($examinerid == $USER->id || $isadmin) && $hasexamlogentry && !$student->graduated(true);
 
                     // evaluate tooltip based on ability to graduate the student
                     if (!$enabled) {
                         if ($examinerid != $USER->id)
                             $tooltip = get_string('actiondisabledwrongexaminerstooltip', 'local_booking', participant::get_fullname($examinerid));
                         elseif (!$hasexamlogentry)
-                            $tooltip = get_string('actiondisablednologentrytooltip', 'local_booking', participant::get_fullname($examinerid));
+                            $tooltip = get_string('actiondisablednologentrytooltip', 'local_booking', $course->get_shortname());
                         else
                             $tooltip = get_string('actiondisabledexaminersonlytooltip', 'local_booking');
                     } else

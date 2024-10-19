@@ -24,8 +24,9 @@
 
 namespace local_booking\local\slot\entities;
 
+use local_booking\local\participant\entities\participant;
+use local_booking\local\participant\entities\student;
 use local_booking\local\slot\data_access\slot_vault;
-use local_booking\local\subscriber\entities\subscriber;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -153,8 +154,12 @@ class slot implements slot_interface {
         $vault = new slot_vault();
         $result = $vault->delete_slot($this->courseid, $this->userid, $this->id);
 
-        // update stats
-        $result &= subscriber::update_stat($this->courseid, $this->userid, 'lastsessiondate', self::get_last_booking_date($this->courseid, $this->userid));
+        // update stats if the owner is a student
+        $participant = new participant($this->courseid, $this->userid);
+        if ($participant->is_student()) {
+            $student = new student($this->courseid, $this->userid);
+            $result &= $student->update_statistic('lastsessiondate', self::get_last_booked_slot_date($this->courseid, $this->userid));
+        }
 
         return $result;
     }
@@ -256,7 +261,7 @@ class slot implements slot_interface {
      * @param int $studentid
      * @return int
      */
-    public static function get_last_booking_date(int $courseid, int $studentid) {
+    public static function get_last_booked_slot_date(int $courseid, int $studentid) {
         list($lastsession, $beforelastsession) = slot_vault::get_last_booked_slot($courseid, $studentid);
         return $lastsession;
     }

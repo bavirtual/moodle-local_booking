@@ -509,7 +509,8 @@ class create extends \moodleform {
 
             case 'remarks':
                 // Remarks advanced element
-                $mform->addElement('textarea', $element, get_string($element, "local_booking"), 'wrap="virtual" rows="20" cols="50"');
+                $remarks = get_string($element, "local_booking").'<br/>(1000 characters)';
+                $mform->addElement('textarea', $element, $remarks, 'wrap="virtual" rows="20" cols="50"');
                 $mform->setType($element, PARAM_TEXT);
                 break;
 

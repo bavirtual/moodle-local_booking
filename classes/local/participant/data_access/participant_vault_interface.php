@@ -107,16 +107,6 @@ interface participant_vault_interface {
     public function get_enrol_date(int $courseid, int $studentid);
 
     /**
-     * Returns the module id of the current lesson for
-     * a student in a subscribed course
-     *
-     * @param   int The user id
-     * @param   int The course id
-     * @return  int The lesson id
-     */
-    public function get_current_lesson_id(int $userid, int $courseid);
-
-    /**
      * Returns the timestamp of the last
      * graded session.
      *

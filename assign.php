@@ -25,6 +25,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use \local_booking\local\participant\entities\student;
+
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
@@ -34,6 +36,7 @@ $courseid     = optional_param('courseid', 0, PARAM_INT);
 $exerciseid   = optional_param('exeid', 0, PARAM_INT);
 $studentid    = optional_param('userid', 0, PARAM_INT);
 $sessionpassed= optional_param('passed', 1, PARAM_INT);
+$addattmept   = !$sessionpassed;
 
 list ($course, $cm) = get_course_and_cm_from_cmid($exerciseid, 'assign');
 
@@ -60,14 +63,37 @@ $prefs = array(
     'i_first' => '',
     'i_last' => '',
     'textsort' => array());
+
 // clear any set filters
 set_user_preference('flextable_' . $uniqueid, json_encode($prefs));
+
+if ($addattmept) {
+
+    $params = [
+        'id'=>$exerciseid,
+        'userid'=>$studentid,
+        'action'=>'addattempt',
+        'sesskey'=>sesskey()
+    ];
+    $url = new moodle_url('/mod/assign/view.php',$params);
+
+    $curl = new \curl();
+    $curl->get($url->out_omit_querystring(), $url->params());
+    $info = $curl->get_info();
+
+    // The base cURL seems fine, let's press on.
+    if ($curl->get_errno() || $curl->error) {
+        throw new exception(get_string('errornewattemptunable', 'local_booking'));
+    }
+}
+
 
 // redirect to the assignment feedback page, check for progressing/objective not met feedback
 $redirecturl = new moodle_url('/mod/assign/view.php', [
     'id' => $exerciseid,
     'rownum' => 0,
     'userid' => $studentid,
-    'action' => ($sessionpassed ? 'grader' : 'grade'),
+    'sesskey'=> sesskey(),
+    'action' => 'grader',
 ]);
 redirect($redirecturl);

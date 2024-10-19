@@ -285,8 +285,7 @@ class dashboard_bookings_exporter extends exporter {
             $i++;
 
             // data for the student's exporter
-            $waringflag = $this->get_warning($this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_priority()->get_recency_days() : -1);
-            $waringflag = $this->get_warning($this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_priority()->get_recency_days() : -1);
+            $waringflag = $this->get_warning($this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_recency_days() : -1);
             $data = [
                 'sequence'        => $i,
                 'instructor'      => $this->instructor,
@@ -303,7 +302,7 @@ class dashboard_bookings_exporter extends exporter {
                 } elseif ($sorttype == 's') {
                     $sequencetooltip = [
                         'score'     => $student->get_priority()->get_score(),
-                        'recency'   => $student->get_priority()->get_recency_days(),
+                        'recency'   => $student->get_recency_days(),
                         'slots'     => $student->get_total_posts(),
                         'activity'  => $student->get_priority()->get_activity_count(false),
                         'completion'=> $student->get_priority()->get_completions(),
@@ -326,7 +325,7 @@ class dashboard_bookings_exporter extends exporter {
                 'filter'        => $this->filter,
             ]);
             $this->activestudentsexports[] = $studentexporter->export($output);
-            $totaldays += $this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_priority()->get_recency_days() : 0;
+            $totaldays += $this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_recency_days() : 0;
         }
         $this->averagewait = !empty($totaldays) ? ceil($totaldays / $i) : 0;
 

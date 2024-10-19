@@ -69,6 +69,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
     $grade = $student->get_grade($exerciseid, true);
     $lastattempt = (count($grade->attempts) ?: 1) - 1;
     $examinerid = $grade->attempts[$lastattempt]->grader;
+    $badgecount = 0;
     $data = new stdClass();
     $data->userid = $studentid;
 
@@ -78,7 +79,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
         throw new \Error(get_string('errorcertifiernotexaminer', 'local_booking'));
 
     // perform student certification actions
-    if (!$student->graduated()) {
+    if (!$student->graduated(true)) {
         // send badges
         $badges = badges_get_badges(BADGE_TYPE_COURSE, $courseid, '', '' , 0, 0);
 
@@ -106,6 +107,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
                         // If badge was successfully awarded, review manual badge criteria.
                         $data->crit = $badge->criteria[BADGE_CRITERIA_TYPE_MANUAL];
                         badges_award_handle_manual_criteria_review($data);
+                        $badgecount++;
                     }
                 }
             }
@@ -113,11 +115,10 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
 
 
         // flag the student activating graduation notifications
-        set_user_preference('local_booking_' . $courseid . '_graduationnotify', true, $studentid);
+        $student->set_notify('graduation');
 
-        // add student to graduates group
-        $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_GRADUATESGROUP);
-        groups_add_member($groupid, $studentid);
+        // graduate student
+        $COURSE->subscriber->force_student_course_completion($studentid);
     }
 
     // output certification message
@@ -130,7 +131,9 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
     ];
     $hascongratsmsg = !empty($COURSE->subscriber->gradmsgsubject) && !empty($COURSE->subscriber->gradmsgbody);
     $gradmsg = get_string('graduationconfirmation', 'local_booking', $data);
-    $gradmsg .= $hascongratsmsg ? get_string('graduationconfirmationcongrat', 'local_booking') : '</ul>';
+    $gradmsg .= $badgecount > 0 ? get_string('graduationconfirmationbadges', 'local_booking', $data) : '';
+    $gradmsg .= $hascongratsmsg ? get_string('graduationconfirmationnotify'.$COURSE->subscriber->participantstonotify, 'local_booking') : '';
+    $gradmsg .= '</ul>';
 
     // output graduation process status
     $navbartext = $student->get_fullname($studentid);

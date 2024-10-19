@@ -60,7 +60,7 @@ $PAGE->set_url($url);
 if (empty($COURSE->subscriber))
     $COURSE->subscriber = new subscriber($courseid);
 
-$student = $COURSE->subscriber->get_student($userid, true);
+$student = $COURSE->subscriber->get_student($userid);
 
 // create and output the pdf report
 switch ($reporttype) {

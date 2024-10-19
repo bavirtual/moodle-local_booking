@@ -107,12 +107,12 @@ class dashboard_mybookings_exporter extends exporter {
         $instructorbookings = [];
 
         foreach ($this->mybookings as $booking) {
-            $student = $course->get_student($booking->get_studentid());
+            $student = $course->get_student($booking->get_studentid(), $booking->get_courseid());
             $action = new action($course, $student, 'cancel', $booking->get_exerciseid());
             $slot = $booking->get_slot();
             $starttime = new DateTime('@' . $slot->get_starttime());
             // TODO: end time should include the last hour
-            $endtime = new DateTime(('@' . ($slot->get_endtime()) + (60 * 60)));
+            $endtime = new DateTime('@' . ($slot->get_endtime()));
 
             $data = [
             'bookingid'     => $booking->get_id(),

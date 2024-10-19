@@ -36,10 +36,10 @@ class instructor extends participant {
     /**
      * Constructor.
      *
-     * @param subscriber $course The subscribing course the student is enrolled in.
+     * @param $course The subscribing course the student is enrolled in.
      * @param int $instructorid The instructor id.
      */
-    public function __construct(subscriber $course, int $instructorid) {
+    public function __construct($course, int $instructorid) {
         parent::__construct($course, $instructorid);
         $this->is_student = false;
     }

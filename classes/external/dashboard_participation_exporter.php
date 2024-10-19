@@ -99,7 +99,7 @@ class dashboard_participation_exporter extends exporter {
         foreach ($instructors as $instructor) {
             $lastgradeddate = $instructor->get_last_graded_date();
             $lastsessiondate = $instructor->get_last_booked_date();
-            $interval = !empty($lastgradeddate) ? date_diff($lastgradeddate, $today) : 0;
+            $interval = !empty($lastsessiondate) ? date_diff($lastsessiondate, $today) : 0;
             $courserole = implode(', ', $instructor->get_roles('name'));
 
             $participation[] = [
@@ -108,7 +108,7 @@ class dashboard_participation_exporter extends exporter {
                 'lastsessionts' => !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : 0,
                 'lastgradeddate' => !empty($lastgradeddate) ? $lastgradeddate->format('l M d, Y') : get_string('unknown', 'local_booking'),
                 'lastsessiondate' => !empty($lastsessiondate) ? $lastsessiondate->format('l M d, Y') : get_string('unknown', 'local_booking'),
-                'elapseddays' => !empty($lastgradeddate) ? $interval->days : '--',
+                'elapseddays' => !empty($lastsessiondate) ? $interval->days : '--',
                 'roles' => $courserole,
             ];
         }

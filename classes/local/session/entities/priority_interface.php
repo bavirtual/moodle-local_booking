@@ -36,13 +36,6 @@ defined('MOODLE_INTERNAL') || die();
 interface priority_interface {
 
     /**
-     * Get Session Recency in days for a particular student
-     *
-     * @return int  $recencydays    The number of days since last session
-     */
-    public function get_recency_days();
-
-    /**
      * Get course activity for a student from the logs.
      *
      * @return int  $activitycount  The number of activity events in the log.

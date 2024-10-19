@@ -95,7 +95,7 @@ class subscriber_vault implements subscriber_vault_interface {
     public static function get_subscriber_stat(int $courseid, int $userid, string $stat) {
         global $DB;
 
-        $sql = "SELECT $stat AS value FROM " . self::DB_STATS . " WHERE courseid = :courseid AND userid = :userid";
+        $sql = "SELECT $stat AS value FROM {" . self::DB_STATS . "} WHERE courseid = :courseid AND userid = :userid";
 
         $params = [
             'userid'   => $userid,
@@ -118,9 +118,9 @@ class subscriber_vault implements subscriber_vault_interface {
         global $DB;
 
         $sql = "INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, lessonscomplete, activeposts, lastsessiondate, currentexerciseid, nextexerciseid)
-                VALUES ($userid, $courseid, 0, 0, 0, 0, 0)
+                VALUES ($userid, $courseid, 0, 0, 0, 0, 0) " . (!empty($stat) ? "
                 ON DUPLICATE KEY UPDATE
-                    $stat = :value";
+                    $stat = :value" : "");
 
         $params = [
             'userid'   => $userid,

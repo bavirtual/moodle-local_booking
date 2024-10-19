@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/booking/db" VERSION="20240904" COMMENT="XMLDB file for Moodle local/booking"
+<XMLDB PATH="local/booking/db" VERSION="20241018" COMMENT="XMLDB file for Moodle local/booking"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -83,7 +83,7 @@
         <FIELD NAME="landingsnight" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Number of night landings for the flight"/>
         <FIELD NAME="nighttime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Operational night time is the portion of the flight flown in night time. Logged by all pilots flying the aircraft"/>
         <FIELD NAME="ifrtime" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Operational IFR time is the portion of the flight flown under Instrument Flight Rules, logged for all pilots flying the aircraft"/>
-        <FIELD NAME="remarks" TYPE="char" LENGTH="500" NOTNULL="true" SEQUENCE="false" COMMENT="Open remarks for the instructor"/>
+        <FIELD NAME="remarks" TYPE="char" LENGTH="1000" NOTNULL="true" SEQUENCE="false" COMMENT="Open remarks for the instructor"/>
         <FIELD NAME="linkedlogentryid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Linked to another logentry (instructor/student)"/>
         <FIELD NAME="createdby" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -104,11 +104,11 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="activeposts" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Total count of active posted slots"/>
         <FIELD NAME="lessonscomplete" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Whether the student completed lessons prior to upcoming exercise"/>
         <FIELD NAME="lastsessiondate" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Date timestamp of last session booked"/>
         <FIELD NAME="currentexerciseid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The current exercise assignment module id"/>
         <FIELD NAME="nextexerciseid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The next exercise assignment module id"/>
+        <FIELD NAME="notifyflags" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Flags to send notifications"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

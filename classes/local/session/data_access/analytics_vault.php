@@ -46,45 +46,6 @@ class analytics_vault implements analytics_vault_interface {
     const DB_LESSONCOMPLETION = 'lesson_timer';
 
     /**
-     * Returns the session recency in days for a particular student.
-     * If there is no record of a booking, the grade is returned, and
-     * in the case of new students, the enrolment date is returned.
-     *
-     * @param int   $courseid   The course id in reference
-     * @param int   $studentid  The student id in reference
-     * @return array            The number of days since last session and recency source information
-     */
-    public static function get_session_recency(int $courseid, int $studentid) {
-        global $COURSE;
-
-        list($lastsession, $beforelastsession) = slot_vault::get_last_booked_slot($courseid, $studentid);
-        $today = new DateTime('@' . time());
-        $info = [];
-
-        // check for sessions booked but not conducted yet, and if non are there then revert to previous session, otherwise
-        // use the last session booked date. If neither are available revert to last graded, then enrol date
-        // for the newly enrolled.
-        if (!empty($lastsession) && !empty($beforelastsession)) {
-            $lastsessiondate = new DateTime('@' . ($lastsession < time() ? $lastsession : $beforelastsession));
-            $info['source'] = 'booking';
-        } elseif (!empty($lastsession) && $lastsession < time()) {
-            $lastsessiondate = new DateTime('@' . $lastsession);
-            $info['source'] = 'booking';
-        } else {
-            $student = $COURSE->subscriber->get_student($studentid);
-            $lastgraded = $student->get_last_graded_date();
-            $lastsessiondate = $lastgraded ?: $student->get_enrol_date($studentid);
-            $info['source'] = empty($lastgraded) ? 'enrol' : 'grade';
-        }
-        $info['date'] = $lastsessiondate;
-
-        // get the difference between today and the date of the last booked or graded slot
-        $days =  (date_diff($lastsessiondate, $today))->days;
-
-        return [$days, $info];
-    }
-
-    /**
      * Get course activity for a student from the logs.
      *
      * @param int   $courseid   The course id in reference

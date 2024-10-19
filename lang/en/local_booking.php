@@ -16,7 +16,7 @@ $string['actiondisabledexaminersonlytooltip'] = 'Examiners only';
 $string['actiondisabledseniorsonlytooltip'] = 'Senior instructors only';
 $string['actiondisabledsubmissionmissingtooltip'] = 'Exercise submission missing.<br/>Request the student to submit the PLog to enable grading.';
 $string['actiondisabledwrongexaminerstooltip'] = 'Action reserved for examiner \'{$a}\'';
-$string['actiondisablednologentrytooltip'] = 'Please record logbook entry to enable student certification';
+$string['actiondisablednologentrytooltip'] = 'Missing logbook entry.<br/>Please add an entry for the exam from the student\'s profile (Logbook link > {$a} logbook)';
 $string['actiongradesession'] = 'Grade session';
 $string['actiongraduatetooltip'] = 'Graduate \'{$a->studentname}\' from the course';
 $string['activestudents'] = 'Active students progression';
@@ -42,8 +42,7 @@ $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instru
 $string['bookingnoposts'] = 'No posts';
 $string['bookingprogression'] = 'Student progression';
 $string['bookingrecencyfrombooktooltip'] = 'Last booking<br/>{$a}';
-$string['bookingrecencyfromenroltooltip'] = 'No booking<br/>days since enrollment<br/>{$a}';
-$string['bookingrecencyfromgradetooltip'] = 'No booking<br/>days since last graded<br/>{$a}';
+$string['bookingrecencyfromenroltooltip'] = 'No bookings.<br/>Days since enrollment<br/>{$a}';
 $string['bookings'] = 'Session booking';
 $string['bookingsavesuccess'] = 'Booking saved for \'{$a->exercise}\' with {$a->studentname} on {$a->sessiondate} zulu';
 $string['bookingsaveunable'] = 'Unable to save booking!';
@@ -109,8 +108,10 @@ $string['statusbooked'] = 'confirmed';
 $string['statustentative'] = 'tentative';
 $string['students'] = 'Students';
 $string['studentavailability'] = 'Student availability';
+$string['tag_graduate'] = 'Ready to graduate the course';
 $string['tag_posts_completed'] = 'Bookable and has posts';
-$string['tag_noposts_completed'] = 'Already booked or has no posts';
+$string['tag_posts_grade'] = 'Session booked ready to grade';
+$string['tag_noposts_completed'] = 'Students did not post availability';
 $string['tag_not_completed'] = 'Unbookable (has not completed lessons)';
 $string['taskcron'] = 'Background processing for session booking activity';
 $string['tasknotifications'] = 'Background processing of session booking scheduled notifications';
@@ -156,6 +157,7 @@ $string['weekprev'] = 'Previous week';
 $string['weeknext'] = 'Next week';
 
 // Logbook
+$string['addlognentry'] = 'Add log entry';
 $string['aircraft'] = 'Aircraft';
 $string['aircraft_help'] = 'Aircraft type, registration, and engine type';
 $string['aircraftgroup'] = 'Aircraft (type/reg\'n/eng.)';
@@ -324,9 +326,11 @@ $string['endorsementmgs'] = 'Recommended by {$a->endorser} on {$a->endorsedate}'
 $string['examinersince'] = 'Examiner since';
 $string['graduation'] = 'Certification';
 $string['graduationconfirmation'] = '<p><strong>Process completed successfully...</strong></p><p>&nbsp;\'{$a->fullname}\' certification is complete and the following actions were performed:</p><ul>
-    <li style="padding-bottom: 20px;"><strong>Badge</strong> for {$a->courseshortname} course completion was generate and sent via email to \'{$a->fullname}\'.&nbsp; A copy of the generated badge notification was sent to you as well.</li>
-    <li style="padding-bottom: 20px;">\'{$a->fullname}\' has been added to the <strong>Graduates</strong> group.</li>';
-$string['graduationconfirmationcongrat'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to active course participants.</li>';
+    <li style="padding-bottom: 20px;">\'{$a->fullname}\' <strong>course completion</strong> has been processed.</li>';
+$string['graduationconfirmationbadges'] = '<li style="padding-bottom: 20px;"><strong>Course badge</strong> for {$a->courseshortname} was generated and sent via email to \'{$a->fullname}\'.&nbsp; A copy of the generated badge notification was sent to you as well.</li>';
+$string['graduationconfirmationnotify0'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent informing course managers.</li>';
+$string['graduationconfirmationnotify1'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to active course participants.</li>';
+$string['graduationconfirmationnotify2'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to members of the same group.</li>';
 $string['feedbackreport'] = 'Feedback report';
 $string['forcecompletion'] = 'Force course completion';
 $string['forcecompletionconfirm'] = 'Forcing completion will flag all course requirements as complete. Are you sure you want to force course completion?';
@@ -710,8 +714,8 @@ $string['firstsessiondesc'] = 'first allowable session time';
 $string['lastsession'] = 'Last session time';
 $string['lastsessiondesc'] = 'last allowable session time';
 $string['pluginconfigssection'] = 'Integrations';
-$string['configsjson'] = 'External data configurations';
-$string['configsjsondesc'] = 'configurations for external data read access in JSON format (<a href="https://docs.moodle.org/400/en/Session_Booking#External_data_source_integration" target="_blank" rel="noopener noreferrer">External data source integration</a>)';
+$string['configsjson'] = 'Advanced configurations';
+$string['configsjsondesc'] = 'custom configuration to access external data and other hidden features in JSON format (<a href="https://docs.moodle.org/400/en/Session_Booking#Advanced_configurations" target="_blank" rel="noopener noreferrer">Advanced configurations</a>)';
 $string['postingsection'] = 'Availability posting';
 $string['prioritizationsection'] = 'Booking prioritization';
 $string['recencydaysweight'] = 'Recency prioritization';
@@ -723,7 +727,7 @@ $string['weeksaheaddesc'] = 'allowable weeks lookahead of availability posting. 
 
 // install
 $string['exercisetitles'] = 'Course exercise titles';
-$string['exercisetitlesdesc'] = 'Use to improve the display of long exercise titles on the instructor dashboard page (one title per line, use &lt;br/&gt; tag to break a title)';
+$string['exercisetitlesdesc'] = 'Use to improve the display of long exercise titles on the instructor dashboard page (one title per line, use &lt;br/&gt; tag to insert a line-break in a title)';
 $string['homeicao'] = 'Home airport ICAO';
 $string['postingwait'] = 'Posting wait restriction';
 $string['postingwaitdesc'] = 'A restriction period in days between the last conducted session and the next time a student can post availability (0 = disable restriction)';
@@ -736,7 +740,7 @@ $string['outcomeratingdesc'] = 'Course completion outcome if applicable (i.e. VA
 $string['overdueperiod'] = 'Instructor session overdue notification';
 $string['overdueperioddesc'] = 'A period in days after which inactive instructors will be automatically sent a notification (0 = disable restriction)';
 $string['requirelessoncompletion']= 'Requires lesson completion';
-$string['requirelessoncompletiondesc'] ='Whether lesson completion is required perior to an air exercise.';
+$string['requirelessoncompletiondesc'] ='Whether lesson completion is required prior to an air exercise.';
 $string['requiresskillseval']= 'Requires skills evaluation';
 $string['requiresskillsevaldesc'] ='Whether skills evaluation is required at the end of the course.';
 $string['suspensionperiod'] = 'Suspension restriction';
@@ -758,14 +762,16 @@ $string['errorcertifiernotexaminer'] = 'Permission denied. Only the examiner can
 $string['errorconflictingbooking'] = 'Conflicts with existing booking with {$a->studentname} for {$a->coursename} \'{$a->exercisename}\' on {$a->date}.';
 $string['errorcoresubscriber'] = 'The site can not be a Session Booking plugin subscriber';
 $string['errordelete'] = 'Failed to delete logentry';
-$string['errorexaminerevalmissinglogentry'] = 'Skill test log entry missing! Please enter a log entry for the skill test.';
 $string['errorexercisemissing'] = 'No exercise specified!';
+$string['errorgradeitemnotfound'] = 'Assignment grade item not found. Unable to update student statistics.';
+$string['errorgradenotfound'] = 'Assignment grade not found. Unable to update student statistics.';
 $string['errorinvaliddate'] = 'Flight date cannot be before booked session date';
 $string['errorinvalidarrtime'] = 'Arrival date/time must be greater than departure date/time';
 $string['errorlandings'] = 'Number from 1-9';
 $string['errorlinking'] = 'Failed to link instructor/student logentries';
 $string['errorlogentrycancel'] = 'Errors encountered: Unable to cancel booking!';
 $string['errorlogentryfetch'] = 'Error encountered while trying to fetch logbook entry with ID: ';
+$string['errornewattemptunable'] = 'Unable to add a new attempt.';
 $string['errorp1pirepnotfound'] = ' - PIREP not found.';
 $string['errorp1pirepnopilotintegration'] = ' - No pilot lookup integration.';
 $string['errorp1pirepwrongpilot'] = ' - PIREP belongs to a different user.';

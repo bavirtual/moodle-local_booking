@@ -88,45 +88,7 @@ class priority implements priority_interface {
      */
     public function __construct(student $student) {
         $this->student = $student;
-    }
-
-    /**
-     * Get Session Recency in days for a particular student
-     *
-     * @return int  $recencydays    The number of days since last session
-     */
-    public function get_recency_days() {
-        if (!isset($this->recencydays)) {
-            list($this->recencydays, $this->recencyinfo) = analytics_vault::get_session_recency($this->student->get_courseid(), $this->student->get_id());
-        }
-        return $this->recencydays;
-    }
-
-    /**
-     * Returns an array containing the source of the recency information
-     * The array contains the source and date information.
-     *
-     * @return array  $recencyinfo    Explains the source of the recency information
-     */
-    public function get_recency_info() {
-        $info = '';
-
-        if (!isset($this->recencydays)) {
-            $this->get_recency_days();
-        }
-
-        switch ($this->recencyinfo['source']) {
-            case 'booking':
-                $info = get_string('bookingrecencyfrombooktooltip', 'local_booking', ($this->recencyinfo['date'])->format('j M \'y'));
-                break;
-            case 'grade':
-                $info = get_string('bookingrecencyfromgradetooltip', 'local_booking', ($this->recencyinfo['date'])->format('j M \'y'));
-                break;
-            case 'enrol':
-                $info = get_string('bookingrecencyfromenroltooltip', 'local_booking', ($this->recencyinfo['date'])->format('j M \'y'));
-                break;
-        }
-        return $info;
+        $this->recencydays = $student->get_recency_days();
     }
 
     /**

@@ -83,19 +83,19 @@
         </pre>
 
         {{#canedit}}
-        <div style="float: right;"{{!
+        <div style="text-align: right;" {{!
             }} data-region="summary-modal-container"{{!
             }} data-flight-date="{{flightdate}}"{{!
             }} data-flight-type="{{flighttype}}"{{!
             }} data-find-pirep="{{hasfindpirep}}"{{!
             }} data-user-id="{{userid}}"{{!
             }}>
-            <button class="icon-no-margin logbook-button"
+            <button class="btn btn-primary"
                 type="button"
                 data-action="add"
                 data-region="add-button"
                 id="add_button">
-                <span>{{#pix}} i/addblock, moodle, {{#str}} add {{/str}} {{/pix}}</span>
+                <span>{{#str}} addlognentry, local_booking {{/str}}</span>
             </button>
         </div>
         {{/canedit}}

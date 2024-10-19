@@ -190,6 +190,7 @@ class booking implements booking_interface {
             }
         }
 
+
         // purge all slots not associated with bookings once the booking is saved
         if ($result) {
             $transaction->allow_commit();
@@ -242,8 +243,8 @@ class booking implements booking_interface {
      * @return {object?}
      */
     public static function conflicts(int $instructorid, int $studentid, array $slottobook) {
-        // check if there is a conflict, if no end time is specified, then substitude it with start time + 1 hr
-        return booking_vault::get_booking_conflict($instructorid, $studentid, $slottobook['starttime'], $slottobook['endtime'] ?: $slottobook['starttime'] + (60 * 60));
+        // check if there is a conflict
+        return booking_vault::get_booking_conflict($instructorid, $studentid, $slottobook['starttime'], $slottobook['endtime']);
     }
 
     /**
@@ -398,8 +399,9 @@ class booking implements booking_interface {
      * @return DateTime         The date of last session for that exercise
     */
     public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false) {
-        $lastbookedsessionts = booking_vault::get_last_booked_session($courseid, $userid, $isinstructor);
-        return $lastbookedsessionts ? new \DateTime('@' . $lastbookedsessionts->lastbookedsession) : null;
+        $lastbookedsession = booking_vault::get_last_booked_session($courseid, $userid, $isinstructor);
+        $lastbookedsessionts = $lastbookedsession->lastbookedsession;
+        return $lastbookedsessionts ? new \DateTime('@' . $lastbookedsessionts) : null;
     }
 
     /**

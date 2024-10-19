@@ -117,8 +117,8 @@ class subscriber_vault implements subscriber_vault_interface {
     public static function update_subscriber_stat(int $courseid, int $userid, string $stat, $value) {
         global $DB;
 
-        $sql = "INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, lessonscomplete, activeposts, lastsessiondate, currentexerciseid, nextexerciseid)
-                VALUES ($userid, $courseid, 0, 0, 0, 0, 0) " . (!empty($stat) ? "
+        $sql = "INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid)
+                VALUES ($userid, $courseid, 0, 0, 0, 0) " . (!empty($stat) ? "
                 ON DUPLICATE KEY UPDATE
                     $stat = :value" : "");
 
@@ -220,16 +220,6 @@ class subscriber_vault implements subscriber_vault_interface {
                 INNER JOIN {" . self::DB_ROLE . "} r on r.id = ra.roleid
                 WHERE ra.contextid = :contextid AND r.archetype = 'student'
                 )", ['courseid'=>$courseid, 'encourseid'=>$courseid, 'contextid'=>$contextid]);
-
-        // update stats total posts if applicable from slots if the course was subscribed before
-        $result &= $DB->execute("
-            UPDATE {" . self::DB_STATS . "} bs SET activeposts =
-                (
-                SELECT COUNT(s.id) FROM {" . self::DB_SLOTS . "} s
-                WHERE s.courseid = :scourseid AND s.userid = bs.userid AND
-                    slotstatus = '' AND starttime > " . time() . "
-                )
-            WHERE courseid = :courseid", ['courseid'=>$courseid, 'scourseid'=>$courseid]);
 
         // update stats with each student's current and next exercise/assignment id for the subscribing course
         $result &= $DB->execute("

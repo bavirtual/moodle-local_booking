@@ -188,7 +188,7 @@ class observers {
 
                         // get last session
                         list($exerciseid, $nextexerciseid) = subscriber::get_next_exerciseid($courseid, $exerciseid);
-                        $lastsessiondate = booking::get_last_session_date($courseid, $studentid)->lastbookedsession;
+                        $lastsessiondate = $booking->get_last_session_date($courseid, $studentid)->getTimestamp();
 
                         // add stats record for the newly graded student
                         $student->update_statistic('currentexerciseid', $exerciseid);

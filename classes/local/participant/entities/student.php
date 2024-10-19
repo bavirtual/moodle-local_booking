@@ -223,9 +223,6 @@ class student extends participant {
             }
 
             if ($result) {
-                // update student stats slot count
-                slot_vault::update_slot_count($this->courseid, $this->userid);
-
                 // commit transaction
                 $transaction->allow_commit();
             } else {

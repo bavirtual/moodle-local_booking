@@ -140,11 +140,7 @@ class slot_vault implements slot_vault_interface {
     public static function delete_slot($courseid, $userid, $slotid) {
         global $DB;
 
-        if ($result = $DB->delete_records(self::DB_SLOTS, ['id' => $slotid])) {
-            $result &= self::update_slot_count($courseid, $userid);
-        }
-
-        return $result;
+        return $DB->delete_records(self::DB_SLOTS, ['id' => $slotid]);
     }
 
     /**
@@ -173,12 +169,8 @@ class slot_vault implements slot_vault_interface {
                 'week'          => $week,
             ];
         }
-        // update student stats
-        if (!empty($result = $DB->delete_records(self::DB_SLOTS, $condition))) {
-            $result &= self::update_slot_count($course, $userid);
-        }
 
-        return $result;
+        return !empty($result = $DB->delete_records(self::DB_SLOTS, $condition));
     }
 
     /**
@@ -275,26 +267,4 @@ class slot_vault implements slot_vault_interface {
         $rc = $DB->get_record_sql($sql, $params);
         return $rc->slotcount;
     }
-
-    /**
-     * Returns the total number of active posts.
-     *
-     * @param   int     The course id
-     * @param   int     The user id
-     * @return  bool    The result
-     */
-    public static function update_slot_count(int $courseid, int $userid) {
-        global $DB;
-        return $DB->execute("UPDATE {" . self::DB_STATS . "} bs SET activeposts =
-                            (
-                                SELECT count(s.id)
-                                FROM {" . self::DB_SLOTS . "} s
-                                WHERE s.userid = $userid AND
-                                    s.courseid = $courseid AND
-                                    slotstatus = '' AND
-                                    starttime > UNIX_TIMESTAMP()
-                            )
-                            WHERE bs.userid = $userid AND bs.courseid = $courseid");
-    }
-
 }

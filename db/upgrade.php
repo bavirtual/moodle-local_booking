@@ -85,7 +85,7 @@ function xmldb_local_booking_upgrade($oldversion) {
     }
 
     // add minium slot period course setting
-    if ($oldversion < 2024101900) {
+    if ($oldversion < 2024101901) {
 
         // Define table local_booking_stats to be created.
         $table = new xmldb_table('local_booking_stats');
@@ -98,7 +98,7 @@ function xmldb_local_booking_upgrade($oldversion) {
 
         // Conditionally drop field activeposts.
         $field = new xmldb_field('activeposts');
-        if (!$dbman->field_exists($table, $field)) {
+        if ($dbman->field_exists($table, $field)) {
             $dbman->drop_field($table, $field);
         }
 
@@ -110,7 +110,7 @@ function xmldb_local_booking_upgrade($oldversion) {
         $DB->execute("ALTER TABLE mdl_local_booking_logbooks MODIFY COLUMN remarks VARCHAR(1000)");
 
         // Assignment savepoint reached.
-        upgrade_plugin_savepoint(true, 2024101900, 'local', 'booking');
+        upgrade_plugin_savepoint(true, 2024101901, 'local', 'booking');
     }
 
     return true;

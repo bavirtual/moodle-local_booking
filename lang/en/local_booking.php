@@ -40,7 +40,7 @@ $string['bookingdashboard'] = 'Instructor dashboard';
 $string['bookingfooter'] = '<p style="font-family:sans-serif"><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href="{$a->bookingurl}">Session Booking</a></p>';
 $string['bookinginfo'] = '{$a->status} session on \'{$a->exercise}\' with instructor {$a->instructor}';
 $string['bookingnoposts'] = 'No posts';
-$string['bookingprogression'] = 'Student progression';
+$string['bookingprogression'] = 'Progression';
 $string['bookingrecencyfrombooktooltip'] = 'Last booking<br/>{$a}';
 $string['bookingrecencyfromenroltooltip'] = 'No bookings.<br/>Days since enrollment<br/>{$a}';
 $string['bookings'] = 'Session booking';

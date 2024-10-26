@@ -1,5 +1,14 @@
 # Change log
 
+## [2024102600] - RELEASED 2024-10-26
+
+### Fixed
+- student view menu not showing 'My availability' option for posting
+- newly joined students not showing in the instructor dashboard
+
+### Changed
+- removed user enrolment triggered event to create student stats record
+
 ## [2024101900] - RELEASED 2024-10-19
 
 ### Fixed

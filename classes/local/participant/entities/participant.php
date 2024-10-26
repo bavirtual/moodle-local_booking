@@ -524,7 +524,7 @@ class participant implements participant_interface {
      * @return bool        Whether the participant has the role.
      */
     public function has_role(string $role) {
-        return in_array($role, $this->get_roles());
+        return in_array($role, $this->get_roles('shortname'));
     }
 
     /**

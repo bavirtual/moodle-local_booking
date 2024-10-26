@@ -65,19 +65,7 @@ class observers {
      * @return void
      */
     public static function user_enrolment_created(user_enrolment_created $event) {
-
-        // check if the user is enroled to a subscribing course
-        if (subscriber::is_subscribed($event->courseid)) {
-
-            // check if the user being enrolled is a student and update statistics if so
-            $participant = new participant($event->courseid, $event->relateduserid);
-
-            if ($participant->is_student()) {
-                // add stats record for the newly enroled student
-                $student = new student($event->courseid, $event->relateduserid);
-                $student->update_statistic();
-            }
-        }
+        // TODO: for future actions upon user enrolment
     }
 
     /**

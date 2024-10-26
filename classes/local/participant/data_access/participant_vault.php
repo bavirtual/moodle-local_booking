@@ -128,7 +128,7 @@ class participant_vault implements participant_vault_interface {
                 LEFT JOIN {' . self::DB_BOOKING . '} b ON b.studentid = u.id AND b.courseid = en.courseid
                 LEFT JOIN {' . self::DB_SLOTS . '} a ON a.userid = u.id AND a.courseid = en.courseid
                 LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid
-                WHERE en.courseid = :courseid AND s.courseid = :scourseid AND u.id = :userid
+                WHERE en.courseid = :courseid AND u.id = :userid
                 ORDER BY ue.timemodified DESC
                 LIMIT 1';
 
@@ -508,9 +508,7 @@ class participant_vault implements participant_vault_interface {
                    $innerfrom .= $isstudent ? ' LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid' : '';
 
         // inner select where statement
-        $innerwhere = ' WHERE ';
-        $innerwhere .= $isstudent ? 's.courseid = :scourseid AND ' : '';
-        $innerwhere .= 'en.courseid = :courseid AND u.deleted != 1 AND u.suspended = 0 ';
+        $innerwhere = ' WHERE en.courseid = :courseid AND u.deleted != 1 AND u.suspended = 0 ';
         $innerwhere .= !empty($wildcard) && $simple ? " AND CONCAT(u.firstname, ' ', u.lastname, ' ', u.alternatename) LIKE '%$wildcard%'" : '';
 
         // outer select where statement

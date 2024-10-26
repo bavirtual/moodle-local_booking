@@ -96,7 +96,7 @@ $calendar = calendar_information::create($time, $courseid, !empty($categoryid) ?
 $PAGE->navbar->add(userdate($time, get_string('weekinyear','local_booking', date('W', $time))));
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title($COURSE->shortname . ': ' . get_string('pluginname', 'local_booking'), 'local_booking');
-$PAGE->set_heading(get_string('availabilityinst', 'local_booking'), 'local_booking');
+$PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-availability');
 
 $calenderrenderer = $PAGE->get_renderer('core_calendar');

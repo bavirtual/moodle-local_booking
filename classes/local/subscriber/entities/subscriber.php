@@ -775,7 +775,7 @@ class subscriber implements subscriber_interface {
             // read config content
             $configdata = json_decode(\get_config('local_booking', 'configsjson'));
             // TODO: PHP9 deprecates dynamic properties
-            $config = $configdata->$key;
+            $config = \property_exists($configdata, $key) ? $configdata->$key : null;
         } catch(\Exception $e) {
             echo get_string('configmissing', 'local_booking') + '\n' + $e;
         }

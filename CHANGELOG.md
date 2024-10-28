@@ -1,6 +1,6 @@
 # Change log
 
-## [2024102800] - RELEASED 2024-10-28
+## [2024102801] - RELEASED 2024-10-28
 
 ### Fixed
 - course specific student stats (left outer join)

@@ -195,7 +195,6 @@ class participant_vault implements participant_vault_interface {
 
         $params = [
             'courseid'  => $courseid,
-            'scourseid' => $courseid,
             'gcourseid' => $courseid,
             'contextid' => \context_course::instance($courseid)->id
         ];
@@ -500,10 +499,10 @@ class participant_vault implements participant_vault_interface {
 
         // inner selectfrom tables statement
         $innerfrom = ' FROM {' . self::DB_USER . '} u';
-        $innerfrom .=  $isstudent ? ' INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id' : '';
-        $innerfrom .= ' INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = ' . ($isstudent ? 's.userid' : 'u.id') .
-                 ' INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid
-                   LEFT JOIN {' . self::DB_BOOKING . '} b ON b.studentid = u.id AND b.courseid = en.courseid
+        $innerfrom .= ' INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = u.id' .
+                 ' INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid ' .
+                 ($isstudent ? ' LEFT OUTER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id AND s.courseid = en.courseid' : '') .
+                 ' LEFT JOIN {' . self::DB_BOOKING . '} b ON b.studentid = u.id AND b.courseid = en.courseid
                    LEFT JOIN {' . self::DB_SLOTS . '} a ON a.userid = u.id AND a.courseid = en.courseid';
                    $innerfrom .= $isstudent ? ' LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid' : '';
 

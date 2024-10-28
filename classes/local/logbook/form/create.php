@@ -624,7 +624,7 @@ class create extends \moodleform {
             $aircrafticao = $aircrafts->current();
 
             if ($course->has_integration('external_data', 'aircraft')) {
-                $engintyperec = subscriber::get_external_data('aircraft', 'aircraftinfo', $aircrafticao);
+                $engintyperec = $course->get_external_data('aircraft', 'aircraftinfo', $aircrafticao);
                 $enginetype = $engintyperec['engine_type'] == 'single' ? 'SE' : 'ME';
             }
         }

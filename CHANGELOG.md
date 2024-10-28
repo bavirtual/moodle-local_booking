@@ -1,5 +1,11 @@
 # Change log
 
+## [2024102800] - RELEASED 2024-10-28
+
+### Fixed
+- course specific student stats (left outer join)
+- graduation notification config string vs int
+
 ## [2024102600] - RELEASED 2024-10-26
 
 ### Fixed

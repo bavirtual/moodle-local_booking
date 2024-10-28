@@ -231,13 +231,10 @@ interface subscriber_interface {
     /**
      * Returns the settings from config.xml
      *
-     * @param  string $root     The root to look up the key
      * @param  string $key      The key to look up the value
-     * @param  bool   $toarray  Whether to converted json file to class or an array
-     * @param  string $filename The filename and path of the JSON config file
      * @return mixed  $config   The requested setting value.
      */
-    public static function get_booking_config(string $root, string $key = null, bool $toarray = false, string $filename = null);
+    public static function get_booking_config(string $key);
 
     /**
      * Returns an array of records from integrated external database
@@ -248,7 +245,7 @@ interface subscriber_interface {
      * @param string $value  The data selection criteria
      * @return array
      */
-    public static function get_external_data($key, $data, $value);
+    public function get_external_data($key, $data, $value);
 
     /**
      * Checks if the subscribing course require

@@ -135,6 +135,11 @@ class subscriber implements subscriber_interface {
     protected $lessonmods;
 
     /**
+     * @var object $externaldataconfigs The external data conofigurations object.
+     */
+    protected $externaldataconfigs;
+
+    /**
      * @var bool $subscribed Whether the course is subscribed to Session Booking plugin.
      */
     public $subscribed;
@@ -285,7 +290,8 @@ class subscriber implements subscriber_interface {
 
         // get graduation notification type: 0 = notify all active participants, 1 = notify active participants with same group
         if ($graduationnotifications = self::get_booking_config('graduation_notification')) {
-            $this->participantstonotify = array_key_exists($this->courseid, $graduationnotifications) ? $graduationnotifications[$this->courseid] : 0;
+            $gradcourse = 'course_' . $this->courseid;
+            $this->participantstonotify = \property_exists($graduationnotifications, $gradcourse) ? $graduationnotifications->$gradcourse : 0;
         }
 
         // verify that the subscribing course has needed course groups for Session Booking
@@ -759,36 +765,17 @@ class subscriber implements subscriber_interface {
     /**
      * Returns the settings from config.xml
      *
-     * @param  string $root     The root to look up the key
      * @param  string $key      The key to look up the value
-     * @param  bool   $toarray  Whether to converted json file to class or an array
-     * @param  string $filename The filename and path of the JSON config file
      * @return mixed  $config   The requested setting value.
      */
-    public static function get_booking_config(string $root, string $key = null, bool $toarray = false, string $filename = null) {
+    public static function get_booking_config(string $key) {
         $config = null;
-        $lookup = $key ?: $root;
 
         try {
             // read config content
-            $jsoncontent = $filename ? file_get_contents($filename) : \get_config('local_booking', 'configsjson');
-            $configdata = json_decode($jsoncontent, true);
-
-            if (!empty($configdata)) {
-
-                // recursively go through the config data for nested content
-                $iterator  = new \RecursiveArrayIterator($configdata);
-                $recursive = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::SELF_FIRST);
-
-                // iterate recursively to find the key
-                foreach ($recursive as $item => $value) {
-                    if ($item === $lookup) {
-                        $config = $value;
-                        break;
-                    }
-                }
-
-            }
+            $configdata = json_decode(\get_config('local_booking', 'configsjson'));
+            // TODO: PHP9 deprecates dynamic properties
+            $config = $configdata->$key;
         } catch(\Exception $e) {
             echo get_string('configmissing', 'local_booking') + '\n' + $e;
         }
@@ -805,20 +792,22 @@ class subscriber implements subscriber_interface {
      * @param string $value  The data selection criteria
      * @return array
      */
-    public static function get_external_data($key, $data, $value) {
+    public function get_external_data($key, $data, $value) {
         global $CFG;
         $record = null;
 
         // get the integration object from settings
-        $external_data = self::get_booking_config('external_data');
+        if (!isset($this->externaldataconfigs)) {
+            $this->externaldataconfigs = (object) self::get_booking_config('external_data');
+        }
 
         // Moodle user/password must have read access to the target host, database, and tables
         // TODO: PHP9 deprecates dynamic properties
-        $conn = new \mysqli($external_data->$key->host, $CFG->dbuser, $CFG->dbpass, $external_data->$key->db);
+        $conn = new \mysqli($this->externaldataconfigs->$key->host, $CFG->dbuser, $CFG->dbpass, $this->externaldataconfigs->$key->db);
 
         if (!$conn->connect_errno) {
             // get configurations
-            $target = $external_data->$key->data;
+            $target = $this->externaldataconfigs->$key->data;
             $fieldnames = array_keys((array) $target->$data->fields);
             $fields = implode(',', (array) $target->$data->fields);
             $table = $target->$data->table;
@@ -850,10 +839,9 @@ class subscriber implements subscriber_interface {
      */
     public static function has_integration($root, $key = '') {
         $hasintegration = false;
-        $integrations = self::get_booking_config($root, $key);
-        // TODO: PHP9 deprecates dynamic properties
-        if ($integrations) {
-            $hasintegration = !empty($key) ? !empty($integrations->$key->enabled) : !empty($integrations->enabled);
+        if ($integrations = self::get_booking_config($root)) {
+            // TODO: PHP9 deprecates dynamic properties
+            $hasintegration = \property_exists($integrations, $key) ? (!empty($integrations->$key->enabled) ?: false) : false;
         }
         return $hasintegration;
     }

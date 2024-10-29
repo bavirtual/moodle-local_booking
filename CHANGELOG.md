@@ -1,5 +1,10 @@
 # Change log
 
+## [2024102900] - RELEASED 2024-10-29
+
+### Fixed
+- student profile w/o stats exception fix
+
 ## [2024102801] - RELEASED 2024-10-28
 
 ### Fixed

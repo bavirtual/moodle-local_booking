@@ -113,30 +113,29 @@ class participant_vault implements participant_vault_interface {
     public static function get_student(int $courseid, int $userid = 0) {
         global $DB;
 
-        $sql = 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . '
-                    AS fullname, s.lastsessiondate, s.lessonscomplete, s.currentexerciseid, s.nextexerciseid,
-                    IF(NOT s.lastsessiondate IS NULL, s.lastsessiondate, IF(NOT b.timemodified IS NULL, MAX(b.timemodified), ue.timecreated)) AS waitdate,
-                    IF(b.active IS NULL, 0, MAX(b.active)) AS booked, ue.timecreated AS enroldate, ue.timemodified AS suspenddate,
-                    cc.timecompleted AS graduateddate, en.courseid AS courseid, u.lastlogin AS lastlogin, IF(MAX(a.starttime) > UNIX_TIMESTAMP(), 1, 0) AS hasactiveposts,
-                        (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
-                         INNER JOIN {' . self::DB_ROLE . '}  r ON r.id = ra.roleid
-                         WHERE ra.userid = :ruserid AND ra.contextid = :contextid) AS roles
-                FROM {' . self::DB_USER . '} u
-                INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id
-                INNER JOIN {' . self::DB_USER_ENROL . '} ue on s.userid = ue.userid
-                INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
-                LEFT JOIN {' . self::DB_BOOKING . '} b ON b.studentid = u.id AND b.courseid = en.courseid
-                LEFT JOIN {' . self::DB_SLOTS . '} a ON a.userid = u.id AND a.courseid = en.courseid
-                LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid
-                WHERE en.courseid = :courseid AND u.id = :userid
-                ORDER BY ue.timemodified DESC
-                LIMIT 1';
+        $sql = self::get_criteria_sql('active', true, false, 'student', null, false, true)[0];
+        // 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . '
+        //             AS fullname, s.lastsessiondate, s.lessonscomplete, s.currentexerciseid, s.nextexerciseid,
+        //             IF(NOT s.lastsessiondate IS NULL, s.lastsessiondate, IF(NOT b.timemodified IS NULL, MAX(b.timemodified), ue.timecreated)) AS waitdate,
+        //             IF(b.active IS NULL, 0, MAX(b.active)) AS booked, ue.timecreated AS enroldate, ue.timemodified AS suspenddate,
+        //             cc.timecompleted AS graduateddate, en.courseid AS courseid, u.lastlogin AS lastlogin, IF(MAX(a.starttime) > UNIX_TIMESTAMP(), 1, 0) AS hasactiveposts,
+        //                 (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
+        //                  INNER JOIN {' . self::DB_ROLE . '}  r ON r.id = ra.roleid
+        //                  WHERE ra.userid = :ruserid AND ra.contextid = :contextid) AS roles
+        //         FROM {' . self::DB_USER . '} u
+        //         INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id
+        //         INNER JOIN {' . self::DB_USER_ENROL . '} ue on s.userid = ue.userid
+        //         INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
+        //         LEFT JOIN {' . self::DB_BOOKING . '} b ON b.studentid = u.id AND b.courseid = en.courseid
+        //         LEFT JOIN {' . self::DB_SLOTS . '} a ON a.userid = u.id AND a.courseid = en.courseid
+        //         LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid
+        //         WHERE en.courseid = :courseid AND u.id = :userid
+        //         ORDER BY ue.timemodified DESC
+        //         LIMIT 1';
 
         $params = [
             'courseid'  => $courseid,
-            'scourseid' => $courseid,
             'userid'    => $userid,
-            'ruserid'   => $userid,
             'contextid' => \context_course::instance($courseid)->id
         ];
 
@@ -463,6 +462,7 @@ class participant_vault implements participant_vault_interface {
      * @param  ?      $roles              The roles of the participants
      * @param  string $wildcard           Wildcard criteria value
      * @param  bool   $requirescompletion Whether the course has lesson completion restriction
+     * @param  bool   $byuserid           Whether to include a userid criteria
      * @return string $sql                The query SQL string
      */
     private static function get_criteria_sql(
@@ -471,7 +471,8 @@ class participant_vault implements participant_vault_interface {
         bool $simple = false,
         $roles = null,
         $wildcard = null,
-        bool $requirescompletion = true) {
+        bool $requirescompletion = true,
+        bool $byuserid = false) {
 
         global $DB;
 
@@ -511,10 +512,16 @@ class participant_vault implements participant_vault_interface {
         $innerwhere .= !empty($wildcard) && $simple ? " AND CONCAT(u.firstname, ' ', u.lastname, ' ', u.alternatename) LIKE '%$wildcard%'" : '';
 
         // outer select where statement
-        $outerwhere = !empty($roles) ? " WHERE roles " . ($isstudent ? "like '%$roles%'" : "REGEXP '$roles' ") : '';
+        $outerwhere = '';
+        if (!empty($roles) || $byuserid) {
+            $outerwhere = !empty($roles) ? "roles " . ($isstudent ? "like '%$roles%'" : "REGEXP '$roles'") : "";
+            $outerwhere .= !empty($outerwhere) && $byuserid ? " AND " : "";
+            $outerwhere .= $byuserid ? "userid = :userid " : "" ;
+            $outerwhere = !empty($outerwhere) ? " WHERE " . $outerwhere : "";
+        }
 
         // outer select order by statement
-        $orderby = 'ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') . 'hasactiveposts DESC, booked DESC, waitdate ASC' : 'userid');
+        $orderby = $byuserid ? '' : 'ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') . 'hasactiveposts DESC, booked DESC, waitdate ASC' : 'userid');
         $orderby = $simple ? 'ORDER BY fullname' : $orderby;
 
         // inner select group by statement

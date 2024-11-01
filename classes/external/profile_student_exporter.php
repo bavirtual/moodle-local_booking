@@ -294,7 +294,7 @@ class profile_student_exporter extends exporter {
 
         // module completion information
         $usermods = $this->student->get_priority()->get_completions();
-        $coursemods = count($this->subscriber->get_modules());
+        $coursemods = count($this->subscriber->get_modules(true));
         $modsinfo = [
             'usermods' => $usermods,
             'coursemods' => $coursemods,
@@ -431,7 +431,7 @@ class profile_student_exporter extends exporter {
             'readonly'     => true
         ];
         $this->related += [
-            'coursemodules' => $this->subscriber->get_modules(),
+            'coursemodules' => $this->subscriber->get_modules(true),
             'filter'        => 'active'
         ];
 

@@ -1,28 +1,39 @@
 # Change log
 
+## [2024110200] - RELEASED 2024-11-02
+
+### Fixed
+
+- progression grid to include visible assignment modules (air exercises)
+
 ## [2024102900] - RELEASED 2024-10-29
 
 ### Fixed
+
 - student profile w/o stats exception fix
 
 ## [2024102801] - RELEASED 2024-10-28
 
 ### Fixed
+
 - course specific student stats (left outer join)
 - graduation notification config string vs int
 
 ## [2024102600] - RELEASED 2024-10-26
 
 ### Fixed
+
 - student view menu not showing 'My availability' option for posting
 - newly joined students not showing in the instructor dashboard
 
 ### Changed
+
 - removed user enrolment triggered event to create student stats record
 
 ## [2024101900] - RELEASED 2024-10-19
 
 ### Fixed
+
 - external api filter (passed==null)
 - sort order: completion, posts, booked, then wait days
 - recency days and recency info logic

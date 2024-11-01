@@ -70,8 +70,6 @@ class booking_view extends base_view {
                 if ($course->get_students_count() > LOCAL_BOOKING_DASHBOARDPAGESIZE) {
 
                     // show autocomplete search form
-                    // $students = $course->get_participant_names('active', false, 'student');
-                    // $students = [0=>''] + $students; // add blank entry to avoid noselectiondefault for autocomplete
                     $params = array('courseid'=>$course->get_id());
                     $searchform = new booking_view_search(null, $params,'post','',array('id'=>'searchform'));
                     $output .= $searchform->render();

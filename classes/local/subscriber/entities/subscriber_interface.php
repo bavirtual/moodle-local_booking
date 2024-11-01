@@ -161,9 +161,10 @@ interface subscriber_interface {
     /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
+     * @param  bool $visible    Whether the modules to return are visible
      * @return array
      */
-    public function get_modules();
+    public function get_modules(bool $visibleonly = false);
 
     /**
      * Retrieves subscribing course lessons

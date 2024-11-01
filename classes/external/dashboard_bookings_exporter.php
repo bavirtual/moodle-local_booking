@@ -122,7 +122,7 @@ class dashboard_bookings_exporter extends exporter {
         $data['contextid'] = $related['context']->id;
         $data['courseid'] = $this->course->get_id();
         $this->viewtype = $data['view'];
-        $this->modules = $this->course->get_modules();
+        $this->modules = $this->course->get_modules(true);
         $data['trainingtype'] = $this->course->trainingtype;
         $data['findpirepenabled'] = $this->course->has_integration('external_data', 'pireps');
         $this->instructor = key_exists('instructor', $data) ? $data['instructor'] : null;

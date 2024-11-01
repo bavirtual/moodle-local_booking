@@ -580,10 +580,21 @@ class subscriber implements subscriber_interface {
     /**
      * Retrieves subscribing course modules (exercises & quizes)
      *
+     * @param  bool $visible    Whether the modules to return are visible
      * @return array
      */
-    public function get_modules() {
-        return $this->modules;
+    public function get_modules(bool $visibleonly = false) {
+        $mods = array();
+
+        if ($visibleonly) {
+            foreach ($this->modules as $mod) {
+                if ($mod->visible)
+                    $mods[$mod->id] = $mod;
+            }
+        } else {
+            $mods = $this->modules;
+        }
+        return $mods;
     }
 
     /**

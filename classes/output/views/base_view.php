@@ -129,7 +129,7 @@ abstract class base_view {
         $exercisetitles = 'exercisetitles';
         // TODO: PHP9 deprecates dynamic properties
         $titlevalues = array_values($subscriber->$exercisetitles);
-        $modules = $subscriber->get_modules();
+        $modules = $subscriber->get_modules(true);
 
         foreach($modules as $module) {
             // exclude quizes from interim booking view

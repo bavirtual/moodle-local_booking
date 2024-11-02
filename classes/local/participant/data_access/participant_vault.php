@@ -114,25 +114,6 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         $sql = self::get_criteria_sql('active', true, false, 'student', null, false, true)[0];
-        // 'SELECT u.id AS userid, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . '
-        //             AS fullname, s.lastsessiondate, s.lessonscomplete, s.currentexerciseid, s.nextexerciseid,
-        //             IF(NOT s.lastsessiondate IS NULL, s.lastsessiondate, IF(NOT b.timemodified IS NULL, MAX(b.timemodified), ue.timecreated)) AS waitdate,
-        //             IF(b.active IS NULL, 0, MAX(b.active)) AS booked, ue.timecreated AS enroldate, ue.timemodified AS suspenddate,
-        //             cc.timecompleted AS graduateddate, en.courseid AS courseid, u.lastlogin AS lastlogin, IF(MAX(a.starttime) > UNIX_TIMESTAMP(), 1, 0) AS hasactiveposts,
-        //                 (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
-        //                  INNER JOIN {' . self::DB_ROLE . '}  r ON r.id = ra.roleid
-        //                  WHERE ra.userid = :ruserid AND ra.contextid = :contextid) AS roles
-        //         FROM {' . self::DB_USER . '} u
-        //         INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id
-        //         INNER JOIN {' . self::DB_USER_ENROL . '} ue on s.userid = ue.userid
-        //         INNER JOIN {' . self::DB_ENROL . '} en on ue.enrolid = en.id
-        //         LEFT JOIN {' . self::DB_BOOKING . '} b ON b.studentid = u.id AND b.courseid = en.courseid
-        //         LEFT JOIN {' . self::DB_SLOTS . '} a ON a.userid = u.id AND a.courseid = en.courseid
-        //         LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid
-        //         WHERE en.courseid = :courseid AND u.id = :userid
-        //         ORDER BY ue.timemodified DESC
-        //         LIMIT 1';
-
         $params = [
             'courseid'  => $courseid,
             'userid'    => $userid,
@@ -477,6 +458,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         $isstudent = !empty($roles) && $roles == 'student';
+        $filter = $byuserid ? 'any' : $filter;
 
         // outer select statement
         $select = 'SELECT * FROM ';
@@ -501,7 +483,7 @@ class participant_vault implements participant_vault_interface {
         // inner selectfrom tables statement
         $innerfrom = ' FROM {' . self::DB_USER . '} u';
         $innerfrom .= ' INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = u.id' .
-                 ' INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid ' .
+                 ' INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid' .
                  ($isstudent ? ' LEFT OUTER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id AND s.courseid = en.courseid' : '') .
                  ' LEFT JOIN {' . self::DB_BOOKING . '} b ON b.studentid = u.id AND b.courseid = en.courseid
                    LEFT JOIN {' . self::DB_SLOTS . '} a ON a.userid = u.id AND a.courseid = en.courseid';
@@ -521,8 +503,8 @@ class participant_vault implements participant_vault_interface {
         }
 
         // outer select order by statement
-        $orderby = $byuserid ? '' : 'ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') . 'hasactiveposts DESC, booked DESC, waitdate ASC' : 'userid');
-        $orderby = $simple ? 'ORDER BY fullname' : $orderby;
+        $orderby = $byuserid ? '' : ' ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') . 'hasactiveposts DESC, booked DESC, waitdate ASC' : 'userid');
+        $orderby = $simple ? ' ORDER BY fullname' : $orderby;
 
         // inner select group by statement
         $innergroupby = ' GROUP BY u.id)  participants';
@@ -557,7 +539,15 @@ class participant_vault implements participant_vault_interface {
                 break;
 
             case 'graduates':
-                $innerwhere .= ' AND ue.status = 0 AND cc.timecompleted IS NOT NULL';
+                $innerwhere .= ' AND ue.status = 0 AND ( u.id IN (
+                            SELECT userid
+                            FROM {' . self::DB_GROUPS_MEM . '} gm
+                            INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                            WHERE g.courseid = :gcourseid AND g.name = "' . LOCAL_BOOKING_GRADUATESGROUP . '")
+                            OR cc.timecompleted IS NOT NULL)';
+                break;
+
+            case 'any':
                 break;
         }
 

@@ -97,6 +97,10 @@ define('LOCAL_BOOKING_KEEPACTIVEGROUP', 'Keep Active');
  */
 define('LOCAL_BOOKING_INACTIVEGROUP', 'Inactive Instructors');
 /**
+ * LOCAL_BOOKING_GRADUATESGROUP - constant string value for graduated students for group quering purposes
+ */
+define('LOCAL_BOOKING_GRADUATESGROUP', 'Graduates');
+/**
  * LOCAL_BOOKING_SLOTCOLOR - constant for standard slot color
  */
 define('LOCAL_BOOKING_SLOTCOLOR', '#00e676');

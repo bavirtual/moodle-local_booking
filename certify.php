@@ -117,6 +117,10 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
         // flag the student activating graduation notifications
         $student->set_notify('graduation');
 
+        // add student to graduates group
+        $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_GRADUATESGROUP);
+        groups_add_member($groupid, $studentid);
+
         // graduate student
         $COURSE->subscriber->force_student_course_completion($studentid);
     }

@@ -950,6 +950,7 @@ class subscriber implements subscriber_interface {
     protected function verify_groups() {
         $onholdgroupid = true;
         $inactivegroupid = true;
+        $graduatesgroupid = true;
         $keepactivegroupid = true;
 
         // check if LOCAL_BOOKING_ONHOLDGROUP exists otherwise create it
@@ -974,6 +975,17 @@ class subscriber implements subscriber_interface {
             $inactivegroupid = groups_create_group($data);
         }
 
+        // check if LOCAL_BOOKING_GRADUATESGROUP exists otherwise create it
+        $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_GRADUATESGROUP);
+        if (empty($groupid)) {
+            $data = new \stdClass();
+            $data->courseid = $this->courseid;
+            $data->name = LOCAL_BOOKING_GRADUATESGROUP;
+            $data->description = get_string('groupgraduatesdesc', 'local_booking');
+            $data->descriptionformat = FORMAT_HTML;
+            $graduatesgroupid = groups_create_group($data);
+        }
+
         // check if LOCAL_BOOKING_KEEPACTIVEGROUP exists otherwise create it
         $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_KEEPACTIVEGROUP);
         if (empty($groupid)) {
@@ -985,7 +997,7 @@ class subscriber implements subscriber_interface {
             $keepactivegroupid = groups_create_group($data);
         }
 
-        return !empty($onholdgroupid) && !empty($inactivegroupid) && !empty($keepactivegroupid);
+        return !empty($onholdgroupid) && !empty($inactivegroupid) && !empty($graduatesgroupid) && !empty($keepactivegroupid);
     }
 
     /**

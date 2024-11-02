@@ -6,6 +6,9 @@
 
 - changed last session booked date to revert to slot starttime when applicable
 
+### Changed
+
+- reintroduced graduates group
 
 ## [2024110200] - RELEASED 2024-11-02
 

@@ -290,9 +290,12 @@ class booking_vault implements booking_vault_interface {
     public static function get_last_booked_session(int $courseid, int $userid, bool $isinstructor = false) {
         global $DB;
 
-        $sql = 'SELECT MAX(b.timemodified) as lastbookedsession
-                FROM {' . static::DB_BOOKINGS. '} b
-                WHERE b.courseid = :courseid AND ' . ($isinstructor ? 'b.userid = :userid' : 'b.studentid = :userid');
+        $sql = 'SELECT IF(s.starttime > UNIX_TIMESTAMP(), b.timemodified, s.starttime) as lastbookedsession
+                FROM {' . static::DB_BOOKINGS . '} b
+                INNER JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
+                WHERE b.courseid = :courseid AND ' . ($isinstructor ? 'b.userid = :userid' : 'b.studentid = :userid') . '
+                ORDER BY b.id DESC
+                LIMIT 1';
 
         return $DB->get_record_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
     }

@@ -104,9 +104,14 @@ class participant implements participant_interface {
     protected $lastgraded;
 
     /**
-     * @var int $lastbookeddatets The participant last booked date information.
+     * @var int $lastbookeddatets The participant last booked date timestamp.
      */
     protected $lastbookeddatets;
+
+    /**
+     * @var int $lastsessiondatets The participant last session date timestamp.
+     */
+    protected $lastsessiondatets;
 
     /**
      * @var string $callsign The participant callsign.
@@ -380,9 +385,10 @@ class participant implements participant_interface {
     /**
      * Returns the date of the last booked session.
      *
-     * @return  \DateTime    The timestamp of the last booked session
+     * @param   bool        Whether to return the actual session date vs the date it was booked
+     * @return  \DateTime   The timestamp of the last booked session
      */
-    public function get_last_booked_date() {
+    public function get_last_booked_date(bool $sessiondate = false) {
 
         $lastbookeddate = null;
         if (!isset($this->lastbookeddatets) || empty($this->lastbookeddatets)) {

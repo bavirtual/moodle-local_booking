@@ -1,5 +1,12 @@
 # Change log
 
+## [2024110300] - RELEASED 2024-11-03
+
+### Fixed
+
+- changed last session booked date to revert to slot starttime when applicable
+
+
 ## [2024110200] - RELEASED 2024-11-02
 
 ### Fixed

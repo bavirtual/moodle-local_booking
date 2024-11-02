@@ -400,7 +400,7 @@ class booking implements booking_interface {
     */
     public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false) {
         $lastbookedsession = booking_vault::get_last_booked_session($courseid, $userid, $isinstructor);
-        $lastbookedsessionts = $lastbookedsession->lastbookedsession;
+        $lastbookedsessionts = !empty($lastbookedsession) ? $lastbookedsession->lastbookedsession : false;
         return $lastbookedsessionts ? new \DateTime('@' . $lastbookedsessionts) : null;
     }
 

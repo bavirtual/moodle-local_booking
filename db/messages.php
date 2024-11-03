@@ -30,7 +30,7 @@ $messageproviders = array(
     'booking_notification' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -43,7 +43,7 @@ $messageproviders = array(
     'instructor_notification' => array(
         'capability' => 'local/booking:instructornotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -51,7 +51,7 @@ $messageproviders = array(
     'logbook_notification' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -59,7 +59,7 @@ $messageproviders = array(
     'session_cancellation' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -67,7 +67,7 @@ $messageproviders = array(
     'noshow_notification' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -75,7 +75,7 @@ $messageproviders = array(
     'noshow_instructor_notification' => array(
         'capability' => 'local/booking:instructornotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -83,7 +83,7 @@ $messageproviders = array(
     'reinstatement_notification' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -91,7 +91,7 @@ $messageproviders = array(
     'reinstatement_instructor_notification' => array(
         'capability' => 'local/booking:instructornotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -99,7 +99,7 @@ $messageproviders = array(
     'inactive_warning' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -107,7 +107,7 @@ $messageproviders = array(
     'onhold_warning' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -115,7 +115,7 @@ $messageproviders = array(
     'onhold_notification' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -123,7 +123,7 @@ $messageproviders = array(
     'suspension_notification' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -131,7 +131,7 @@ $messageproviders = array(
     'sessionoverdue_notification' => array(
         'capability' => 'local/booking:instructornotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -139,7 +139,7 @@ $messageproviders = array(
     'availabilityposting_notification' => array(
         'capability' => 'local/booking:instructornotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -147,7 +147,7 @@ $messageproviders = array(
     'recommendation_notification' => array(
         'capability' => 'local/booking:instructornotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 
@@ -155,7 +155,7 @@ $messageproviders = array(
     'graduation_notification' => array(
         'capability' => 'local/booking:studentnotification',
         'defaults' => array(
-            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ),
     ),
 );

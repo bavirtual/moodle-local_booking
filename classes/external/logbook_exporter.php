@@ -248,6 +248,7 @@ class logbook_exporter extends exporter {
             $data['isstudent']       = $this->data['isstudent'];
             $data['isinstructor']    = $this->data['isinstructor'];
             $data['isexaminer']      = $this->data['isexaminer'];
+            $data['canedit']         = $this->data['canedit'];
             $data['shortdate']       = $this->data['shortdate'];
             $data['courseshortname'] = $this->data['courseshortname'];
             $entry = new logentry_exporter($data, $this->related);

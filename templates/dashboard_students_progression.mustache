@@ -43,7 +43,7 @@
         </tr>
     </table>
     <p>
-    </table><table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover table-bordered">
+    </table><table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover booking-table">
         <thead>
             <tr>
                 <th class="header booking-header booking-xsmall text-xs-center ">
@@ -98,7 +98,7 @@
                     <span class="media-body small" aria-hidden="true">{{fleet}}</span>
                 </td>
                 {{#sessions}}
-                <td class="text-sm-center" style="max-width: 20px;"
+                <td class="text-sm-center" style="max-width: 20px; padding: 0px;"
                     data-exercise-status="{{sessionstatus}}"{{!
                     }} {{^sessionempty}}
                         data-toggle="tooltip"

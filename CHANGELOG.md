@@ -2,6 +2,14 @@
 
 ## [2024110301] - RELEASED 2024-11-03
 
+### Added
+
+- moodle 4.5 compatility and upgrade notes
+- updated messages to MESSAGE_DEFAULT_ENABLED
+- rounded table style and progression views
+
+## [2024110301] - RELEASED 2024-11-03
+
 ### Fixed
 
 - changed last session booked date to revert to slot starttime when applicable

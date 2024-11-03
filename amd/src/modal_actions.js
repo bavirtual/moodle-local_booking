@@ -147,12 +147,7 @@ function(
             warningModal.setRemoveOnClose(true);
             warningModal.setTitle(strings[0]);
             warningModal.setBody(strings[1]);
-
             warningModal.show();
-
-            warningModal.getRoot().on(ModalEvents.save, function() {
-                var pendingPromise = new Pending('local_booking/booking_actions:initModal:showWarning');
-            });
 
             return warningModal;
         })
@@ -177,7 +172,8 @@ function(
             // Fetch the logentry title, and pass them into the new dialogue.
             const target = e.target;
             let logentrySource = root.find(BookingSelectors.logentryitem),
-            logentryId = logentrySource.data('logentryId') || target.closest(BookingSelectors.containers.summaryForm).dataset.logentryId,
+            logentryId = logentrySource.data('logentryId') ||
+                target.closest(BookingSelectors.containers.summaryForm).dataset.logentryId,
             userId = logentrySource.data('userId') || target.closest(BookingSelectors.containers.summaryForm).dataset.userId,
             courseId = logentrySource.data('courseId') || $(BookingSelectors.logbookwrapper).data('courseid'),
             cascade = logentrySource.data('cascade') || target.closest(BookingSelectors.containers.summaryForm).dataset.cascade;

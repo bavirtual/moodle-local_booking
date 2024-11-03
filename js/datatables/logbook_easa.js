@@ -55,31 +55,31 @@ $(document).ready(function() {
         "ordering": true,
         "lengthChange": true,
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        "autoWidth": "true",
+        "autoWidth": "false",
         "columnDefs": [
-            {"min-width": "40px", "targets": FLIGHTDATE}, // Column: flightdate
-            {"min-width": "35px", "targets": DEPICAO}, // Column: depicao
-            {"min-width": "35px", "targets": DEPTIME}, // Column: deptime
-            {"min-width": "50px", "targets": ARRICAO}, // Column: arricao
-            {"min-width": "45px", "targets": ARRTIME}, // Column: arrtime
-            {"min-width": "50px", "targets": AIRCRAFT}, // Column: aircraft
-            {"min-width": "50px", "targets": AIRCRAFTREG}, // Column: aircraftreg
-            {"min-width": "25px", "className": "dt-center", "targets": ENGINETYPE_SE}, // Column: enginetype 'SE'
-            {"min-width": "25px", "className": "dt-center", "targets": ENGINETYPE_ME}, // Column: enginetype 'ME'
-            {"min-width": "10px", "targets": MULTIPILOT}, // Column: multipilot
-            {"min-width": "10px", "targets": TOTALTIME}, // Column: totaltime
-            {"min-width": "130px", "targets": P1NAME}, // Column: p1name
-            {"min-width": "35px", "className": "dt-center", "targets": LANDINGSDAY}, // Column: landingsday
-            {"min-width": "35px", "className": "dt-center", "targets": LANDINGSNIGHT}, // Column: landingsnight
-            {"min-width": "35px", "targets": NIGHTTIME}, // Column: nighttime
-            {"min-width": "35px", "targets": IFRTIME}, // Column: ifrtime
-            {"min-width": "50px", "targets": PICTIME}, // Column: pictime
-            {"min-width": "45px", "targets": COPILOTTIME}, // Column: copilottime
-            {"min-width": "45px", "targets": DUALTIME}, // Column: dualtime
-            {"min-width": "50px", "targets": INSTTIME}, // Column: instructortime
-            {"min-width": "45px", "targets": PICUSTIME}, // Column: picustime
-            {"min-width": "15px", "targets": FSTD}, // Column: fstd
-            {"min-width": "160px", "targets": REMARKS} // Column: remarks
+            {"max-width": "40px", "targets": FLIGHTDATE}, // Column: flightdate
+            {"max-width": "35px", "targets": DEPICAO}, // Column: depicao
+            {"max-width": "35px", "targets": DEPTIME}, // Column: deptime
+            {"max-width": "50px", "targets": ARRICAO}, // Column: arricao
+            {"max-width": "45px", "targets": ARRTIME}, // Column: arrtime
+            {"max-width": "50px", "targets": AIRCRAFT}, // Column: aircraft
+            {"max-width": "50px", "targets": AIRCRAFTREG}, // Column: aircraftreg
+            {"max-width": "25px", "className": "dt-center", "targets": ENGINETYPE_SE}, // Column: enginetype 'SE'
+            {"max-width": "25px", "className": "dt-center", "targets": ENGINETYPE_ME}, // Column: enginetype 'ME'
+            {"max-width": "10px", "targets": MULTIPILOT}, // Column: multipilot
+            {"max-width": "10px", "targets": TOTALTIME}, // Column: totaltime
+            {"max-width": "130px", "targets": P1NAME}, // Column: p1name
+            {"max-width": "35px", "className": "dt-center", "targets": LANDINGSDAY}, // Column: landingsday
+            {"max-width": "35px", "className": "dt-center", "targets": LANDINGSNIGHT}, // Column: landingsnight
+            {"max-width": "35px", "targets": NIGHTTIME}, // Column: nighttime
+            {"max-width": "35px", "targets": IFRTIME}, // Column: ifrtime
+            {"max-width": "50px", "targets": PICTIME}, // Column: pictime
+            {"max-width": "45px", "targets": COPILOTTIME}, // Column: copilottime
+            {"max-width": "45px", "targets": DUALTIME}, // Column: dualtime
+            {"max-width": "50px", "targets": INSTTIME}, // Column: instructortime
+            {"max-width": "45px", "targets": PICUSTIME}, // Column: picustime
+            {"max-width": "15px", "targets": FSTD}, // Column: fstd
+            {"min-width": "220px", "targets": REMARKS} // Column: remarks
         ],
         "footerCallback": function(row, data, start, end, display) {
             var api = this.api();

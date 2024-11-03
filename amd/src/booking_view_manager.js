@@ -75,10 +75,10 @@ export const refreshBookingsContent = (root, courseId, contextId, userId = 0, ta
  * @param   {object} root The root element.
  * @param   {number} courseId The id of the course associated with the progression view shown
  * @param   {number} contextId The context id for the course
- * @param   {object} target The element being replaced. If not specified, the bookingwrapper is used.
+ * @param   {object} template The template to be used
  * @return  {promise}
  */
-export const refreshInstructorBookingsContent = (root, courseId, contextId, target = null, template = null) => {
+export const refreshInstructorBookingsContent = (root, courseId, contextId, template = null) => {
     startLoading(root);
 
     const mybookingstemplate = template || root.attr('data-template'),

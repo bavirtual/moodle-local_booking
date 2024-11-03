@@ -39,7 +39,7 @@
 }}>
 {{> core/overlay_loading}}
 <br/><p><h3>{{#str}} bookingactive, local_booking {{/str}}</h3></p>
-<table id="bookings-detail-{{uniqid}}" data-region="instructor-bookings" class="calendartable booking-table table-hover">
+<table id="bookings-detail-{{uniqid}}" data-region="instructor-bookings" class="booking-table table-hover">
     <thead>
         <tr>{{!
             }}{{#showallcourses}}
@@ -93,8 +93,8 @@
             <td class="booking-text booking-text-small text-sm-center" style="vertical-align: middle; width: 20px;">
                 <span>{{endtime}}</span>
             </td>
-            <td style="vertical-align: middle;">
-                <div class="singlebutton">
+            <td style="text-align: center;">
+                <div class="singlebutton" style="margin: auto;">
                     <button class="btn btn-primary"
                         data-region="cancel-button"
                         id="cancel_button"
@@ -106,7 +106,7 @@
                      </a>
                 </div>
             </td>
-            <td style="vertical-align: middle;">
+            <td style="text-align: center;">
                 <div class="singlebutton">
                     <button type="button" class="noshow-button btn btn-danger"
                         data-region="noshow-button"

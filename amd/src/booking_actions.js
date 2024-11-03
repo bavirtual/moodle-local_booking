@@ -29,7 +29,6 @@ define([
     'local_booking/repository',
     'local_booking/events',
     'local_booking/selectors',
-    'local_booking/booking_view_manager',
 ],
 function(
     $,
@@ -38,7 +37,6 @@ function(
     Repository,
     BookingSessions,
     BookingSelectors,
-    ViewManager,
 ) {
 
     /**

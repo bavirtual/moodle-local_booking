@@ -57,7 +57,7 @@
             </td>
         </tr>
     </table>
-    <table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover table-bordered">
+    <table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover booking-table">
         <thead>
             <tr>
                 <th class="header booking-header booking-xsmall text-xs-center ">
@@ -140,7 +140,7 @@
                 </td>
                 {{/showactive}}
                 {{#sessions}}
-                <td class="text-sm-center" style="max-width: 20px;"
+                <td class="text-sm-center" style="max-width: 20px; padding: 0px;"
                     {{#graded}}data-action="view-logentry"{{/graded}}
                     data-exercise-status="{{sessionstatus}}"
                     {{#graded}}{{^isquiz}}

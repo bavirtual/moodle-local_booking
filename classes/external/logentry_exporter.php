@@ -233,7 +233,7 @@ class logentry_exporter extends exporter {
             ],
             'canedit' => [
                 'type' => PARAM_BOOL,
-                'default' => true
+                'default' => false,
             ],
             'visible' => [
                 'type' => PARAM_INT

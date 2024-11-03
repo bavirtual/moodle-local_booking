@@ -28,7 +28,6 @@ define([
     'local_booking/repository',
     'local_booking/calendar_view_manager',
     'local_booking/modal_actions',
-    'core/modal',
     ],
     function(
         $,
@@ -36,7 +35,6 @@ define([
         Repository,
         CalendarViewManager,
         ModalActions,
-        Modal,
     ) {
 
     var SELECTORS = {

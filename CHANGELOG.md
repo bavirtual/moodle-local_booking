@@ -6,6 +6,7 @@
 
 - changed last session booked date to revert to slot starttime when applicable
 - error handling for absence of sessions
+- instructor participation sort order
 
 ### Changed
 

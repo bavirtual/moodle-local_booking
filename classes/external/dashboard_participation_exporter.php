@@ -112,7 +112,7 @@ class dashboard_participation_exporter extends exporter {
                 'roles' => $courserole,
             ];
         }
-        array_multisort (array_column($participation, 'lastsessionts'), SORT_DESC, $participation);
+        // array_multisort (array_column($participation, 'lastsessionts'), SORT_DESC, $participation);
 
         return ['participation' => $participation];
     }

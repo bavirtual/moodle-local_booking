@@ -477,16 +477,17 @@ class participant_vault implements participant_vault_interface {
                             cc.timecompleted AS graduateddate,
                             IF(MAX(a.starttime) > UNIX_TIMESTAMP(), 1, 0) AS hasactiveposts'
                             :
-                            ', 0 AS lessonscomplete, 0 AS lastsessiondate, 0 AS currentexerciseid, 0 AS nextexerciseid, 0 AS hasactiveposts, 0 AS graduateddate');
+                            ', 0 AS lessonscomplete, IF(MAX(a.starttime) > UNIX_TIMESTAMP(), MAX(b.timemodified), MAX(a.starttime)) AS lastsessiondate,
+                            0 AS currentexerciseid, 0 AS nextexerciseid, 0 AS hasactiveposts, 0 AS graduateddate');
         $innerselect .= ', en.courseid AS courseid, u.lastlogin AS lastlogin, ue.timecreated AS enroldate, ue.timemodified AS suspenddate';
 
         // inner selectfrom tables statement
         $innerfrom = ' FROM {' . self::DB_USER . '} u';
         $innerfrom .= ' INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = u.id' .
                  ' INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid' .
-                 ($isstudent ? ' LEFT OUTER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id AND s.courseid = en.courseid' : '') .
-                 ' LEFT JOIN {' . self::DB_BOOKING . '} b ON b.studentid = u.id AND b.courseid = en.courseid
-                   LEFT JOIN {' . self::DB_SLOTS . '} a ON a.userid = u.id AND a.courseid = en.courseid';
+                 ' LEFT JOIN {' . self::DB_BOOKING . '} b ON b.' . ($isstudent ? 'studentid' : 'userid') . ' = u.id AND b.courseid = en.courseid
+                   LEFT JOIN {' . self::DB_SLOTS . '} a ON a.id = b.slotid' .
+                   ($isstudent ? ' LEFT OUTER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id AND s.courseid = en.courseid' : '');
                    $innerfrom .= $isstudent ? ' LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid' : '';
 
         // inner select where statement
@@ -503,7 +504,7 @@ class participant_vault implements participant_vault_interface {
         }
 
         // outer select order by statement
-        $orderby = $byuserid ? '' : ' ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') . 'hasactiveposts DESC, booked DESC, waitdate ASC' : 'userid');
+        $orderby = $byuserid ? '' : ' ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') . 'hasactiveposts DESC, booked DESC, waitdate ASC' : 'lastsessiondate DESC');
         $orderby = $simple ? ' ORDER BY fullname' : $orderby;
 
         // inner select group by statement

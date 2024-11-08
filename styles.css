@@ -10,14 +10,14 @@
 /* Session Booking grid */
 .booking-table {
     border-collapse: separate;
-    border-radius: 1rem;
+    border-radius: .5rem;
     border: 1px solid lightgray;
     border-spacing: 0;
-    width: 100%;
 }
 .booking-table tr:not(:last-child),
 .booking-table tr:not(:first-child),
-.booking-table th, .booking-table tr {
+.booking-table th,
+.booking-table tr {
     border-collapse: separate;
     border-bottom: 1px solid lightgray;
 }

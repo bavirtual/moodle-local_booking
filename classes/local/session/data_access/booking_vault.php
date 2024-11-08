@@ -36,10 +36,13 @@ class booking_vault implements booking_vault_interface {
     /** Availability Slots table name for the persistent. */
     const DB_SLOTS = 'local_booking_slots';
 
+    /** Logbooks table name for the persistent. */
+    const DB_LOGBOOKS = 'local_booking_logbooks';
+
     /** Course modules for graded sessions */
     const DB_COURSE_MODS = 'course_modules';
 
-    /** Availability Slots table name for the persistent. */
+    /** Assignment grades table name for the persistent. */
     const DB_ASSIGN_GRADES = 'assign_grades';
 
     /** Course modules for graded sessions */
@@ -282,26 +285,55 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
-     * Get the date of the last booked session
+     * Get the date of the last booking date
      *
-     * @param int $isinstructor
-     * @param int $userid
+     * @param int $courseid      The associated course
+     * @param int $studentid     The student id conducted the session
+     * @param bool $isinstructor Whether the user is an instructor or not
+     * @param object
      */
-    public static function get_last_booked_session(int $courseid, int $userid, bool $isinstructor = false) {
+    public static function get_user_last_booked_date(int $courseid, int $userid, bool $isinstructor = false) {
         global $DB;
 
-        $sql = 'SELECT IF(s.starttime > UNIX_TIMESTAMP(), b.timemodified, s.starttime) as lastbookedsession
-                FROM {' . static::DB_BOOKINGS . '} b
-                INNER JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
-                WHERE b.courseid = :courseid AND ' . ($isinstructor ? 'b.userid = :userid' : 'b.studentid = :userid') . '
-                ORDER BY b.id DESC
-                LIMIT 1';
+        $sql = 'SELECT MAX(timemodified) AS bookingdatets
+                FROM {' . static::DB_BOOKINGS . '}
+                WHERE courseid = :courseid AND ' . ($isinstructor ? 'userid = :userid' : 'studentid = :userid');
 
         return $DB->get_record_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
     }
 
     /**
-     * Get the date of the last booked session
+     * Get the date of the last session date
+     *
+     * @param int $courseid      The associated course
+     * @param int $studentid     The student id conducted the session
+     * @param bool $isinstructor Whether the user is an instructor or not
+     * @param object
+     */
+    public static function get_user_last_session_date(int $courseid, int $userid, bool $isinstructor = false) {
+        global $DB;
+
+        // last booking w/ a slot starttime that had past, otherwise the booking before it (check for no booking / no slot)
+        $sql = 'SELECT b.timemodified as sessiondatets
+                FROM {' . static::DB_BOOKINGS . '} b
+                INNER JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
+                WHERE b.courseid = :courseid AND ' . ($isinstructor ? 'b.userid = :userid' : 'b.studentid = :userid') . '
+                ORDER BY b.id DESC
+                LIMIT 2';
+
+        $records = $DB->get_record_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
+        $sessiondatets = 0;
+        if ($records) {
+            $sessiondatets = $records[0]->sessiondatets;
+            if (!empty($records[1]) && $records[0]->sessiondatets > time()) {
+                $sessiondatets = $records[1]->sessiondatets;
+            }
+        }
+        return $sessiondatets;
+    }
+
+    /**
+     * Get the date of the last session date
      *
      * @param int $isinstructor
      * @param int $userid

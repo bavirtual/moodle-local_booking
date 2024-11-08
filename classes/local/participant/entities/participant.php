@@ -371,7 +371,7 @@ class participant implements participant_interface {
     /**
      * Returns the date of the last graded session.
      *
-     * @return  \DateTime    The timestamp of the last grading
+     * @return  \DateTime    The date of the last grading
      */
     public function get_last_graded_date() {
         if (!isset($this->lastgraded))
@@ -385,15 +385,15 @@ class participant implements participant_interface {
     /**
      * Returns the date of the last booked session.
      *
-     * @param   bool        Whether to return the actual session date vs the date it was booked
-     * @return  \DateTime   The timestamp of the last booked session
+     * @return  \DateTime   The date of the last booked session
      */
-    public function get_last_booked_date(bool $sessiondate = false) {
+    public function get_last_booked_date() {
 
         $lastbookeddate = null;
         if (!isset($this->lastbookeddatets) || empty($this->lastbookeddatets)) {
 
-            $lastbookeddate = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
+            $lastbookeddate = booking::get_last_booked_date($this->course->get_id(), $this->userid, !$this->is_student);
+
             if (!empty($lastbookeddate)) {
                 $this->lastbookeddatets = $lastbookeddate->getTimestamp();
             }
@@ -402,6 +402,25 @@ class participant implements participant_interface {
         }
 
         return $lastbookeddate;
+    }
+
+    /**
+     * Returns the date of the last session
+     *
+     * @return  \DateTime   The date of the last booked session
+     */
+    public function get_last_session_date() {
+
+        $lastsessiondate = null;
+        if (!isset($this->lastsessiondatets) || empty($this->lastsessiondatets)) {
+            $this->lastsessiondatets = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
+        }
+
+        if (!empty($this->lastsessiondatets)) {
+            $lastsessiondate  = new \DateTime('@' . $this->lastsessiondatets);
+        }
+
+        return $lastsessiondate;
     }
 
     /**
@@ -519,7 +538,7 @@ class participant implements participant_interface {
             if (!empty($record->roles))
                 $this->rolenames   = explode(',', $record->roles);
             if (!empty($record->lastsessiondate))
-                $this->lastbookeddatets = $record->lastsessiondate;
+                $this->lastsessiondatets = $record->lastsessiondate;
         }
     }
 

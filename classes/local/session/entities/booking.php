@@ -391,17 +391,30 @@ class booking implements booking_interface {
     }
 
     /**
-     * Get the date of the last booked session.
+     * Get the date of the last conducted session.
      *
-     * @param int $courseid     The associated course id
-     * @param int $userid       The user id for the booked session
-     * @param int $isinstructor Whether the user is an instructor
-     * @return DateTime         The date of last session for that exercise
+     * @param int  $courseid      The associated course id
+     * @param int  $userid        The user id for the booked session
+     * @param bool $isinstructor  Whether the user is an instructor
+     * @return DateTime           The date of last session for that exercise
     */
     public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false) {
-        $lastbookedsession = booking_vault::get_last_booked_session($courseid, $userid, $isinstructor);
-        $lastbookedsessionts = !empty($lastbookedsession) ? $lastbookedsession->lastbookedsession : false;
-        return $lastbookedsessionts ? new \DateTime('@' . $lastbookedsessionts) : null;
+        $lastbookeddatets = booking_vault::get_user_last_session_date($courseid, $userid, $isinstructor);
+        return $lastbookeddatets ? new \DateTime('@' . $lastbookeddatets) : null;
+    }
+
+    /**
+     * Get the date of the last booked session.
+     *
+     * @param int  $courseid      The associated course id
+     * @param int  $userid        The user id for the booked session
+     * @param bool $isinstructor  Whether the user is an instructor
+     * @return DateTime           The date of last session for that exercise
+    */
+    public static function get_last_booked_date(int $courseid, int $userid, bool $isinstructor = false) {
+        $lastbooked = booking_vault::get_user_last_booked_date($courseid, $userid, $isinstructor);
+        $lastbookeddatets = !empty($lastbooked) ? $lastbooked->bookingdatets : false;
+        return $lastbookeddatets ? new \DateTime('@' . $lastbookeddatets) : null;
     }
 
     /**

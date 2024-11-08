@@ -39,7 +39,7 @@
 }}>
 {{> core/overlay_loading}}
 <br/><p><h3>{{#str}} bookingactive, local_booking {{/str}}</h3></p>
-<table id="bookings-detail-{{uniqid}}" data-region="instructor-bookings" class="booking-table table-hover">
+<table id="bookings-detail-{{uniqid}}" data-region="instructor-bookings" class="booking-table table-hover" style="width:100%">
     <thead>
         <tr>{{!
             }}{{#showallcourses}}
@@ -48,7 +48,7 @@
             </th>{{/showallcourses}}{{!
             }}
             <th class="header booking-header text-xs-center">
-                <span class="media-body" aria-hidden="true">{{#str}} students, local_booking {{/str}}</span>
+                <span class="media-body" aria-hidden="true">{{#str}} student, local_booking {{/str}}</span>
             </th>
             <th class="header booking-header text-xs-center">
                 <span class="media-body" aria-hidden="true">{{#str}} exercise, local_booking {{/str}}</span>

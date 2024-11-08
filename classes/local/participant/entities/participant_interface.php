@@ -104,7 +104,7 @@ interface participant_interface {
     /**
      * Get student's last login date.
      *
-     * @return DateTime $lastlogindate  The participant's last login date.
+     * @return \DateTime $lastlogindate  The participant's last login date.
      */
     public function get_last_login_date();
 
@@ -112,16 +112,23 @@ interface participant_interface {
      * Returns the date of the last
      * graded session.
      *
-     * @return  DateTime    The timestamp of the last grading
+     * @return  \DateTime    The date of the last grading
      */
     public function get_last_graded_date();
 
     /**
      * Returns the date of the last booked session.
      *
-     * @return  \DateTime    The timestamp of the last booked session
+     * @return  \DateTime    The date of the last booked session
      */
     public function get_last_booked_date();
+
+    /**
+     * Returns the date of the last session
+     *
+     * @return  \DateTime   The date of the last booked session
+     */
+    public function get_last_session_date();
 
     /**
      * Returns participant's simulator user field

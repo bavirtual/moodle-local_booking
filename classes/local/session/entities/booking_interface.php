@@ -190,14 +190,24 @@ interface booking_interface {
     public static function get_exercise_date(int $courseid, int $studentid, int $exerciseid);
 
     /**
+     * Get the date of the last conducted session.
+     *
+     * @param int $courseid     The associated course id
+     * @param int $userid       The user id for the booked session
+     * @param int $isinstructor Whether the user is an instructor
+     * @return DateTime         The date of last session for that exercise
+    */
+    public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false);
+
+    /**
      * Get the date of the last booked session.
      *
      * @param int $courseid     The associated course id
      * @param int $userid       The user id for the booked session
      * @param int $isinstructor Whether the user is an instructor
      * @return DateTime         The date of last session for that exercise
-     */
-    public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false);
+    */
+    public static function get_last_booked_date(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
      * Get the total sessions for a user.

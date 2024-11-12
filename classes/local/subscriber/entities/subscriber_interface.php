@@ -265,6 +265,15 @@ interface subscriber_interface {
     public static function is_subscribed(int $courseid);
 
     /**
+     * Checks if the subscribed course has any student status or not.
+     * If not then the course is new subscriber.
+     *
+     * @param int $courseid
+     * @return bool
+     */
+    public static function stats_exist(int $courseid);
+
+    /**
      * Adds students stats for a newly enabled course subscriber
      *
      * @param int $courseid
@@ -273,13 +282,13 @@ interface subscriber_interface {
     public static function add_new_enrolments(int $courseid);
 
     /**
-     * Retrieves the next exercise (assign module) id in the subscribed course
+     * Removes user stats data once student is unenroled from the course
      *
-     * @param int $courseid
-     * @param int $exerciseid   The assign module id
-     * @return int
+     * @param int $courseid The subscribing course
+     * @param int $userid   The assign module id
+     * @return bool
      */
-    public static function get_next_exerciseid(int $courseid, int $exerciseid);
+    public static function delete_enrolment_stats(int $courseid, int $userid);
 
     /**
      * Whether the course requires students to complete lessons

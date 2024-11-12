@@ -639,35 +639,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Retrieves the next exercise (assign module) id in the subscribed course
-     *
-     * @param int $courseid
-     * @return int
-     */
-    public static function get_next_exerciseid(int $courseid, int $exerciseid = 0) {
-        $currentexerciseid = 0;
-        $nextexerciseid = 0;
-        $coursemodinfo = get_fast_modinfo($courseid);
-        $cms = $coursemodinfo->get_cms();
-        $modules = array_filter($cms, function($property) { return ($property->modname == 'assign');});
-        $keys = array_keys($modules);
-        $idx = $exerciseid != 0 ? array_search($exerciseid, $keys) : 0;
-
-        if (!empty($modules)) {
-            // get the current exercise if it's not the last otherwise return first exercise in the course
-            $currentexercise = $modules[$keys[$idx]];
-            $currentexerciseid = $currentexercise->id;
-
-            // get the next exercise if it's not the last otherwise 0 (no more exercises (null exercise))
-            $nextexercise = $exerciseid != array_key_last($modules) ? $modules[$keys[$idx+1]] : null;
-            $nextexerciseid = !empty($nextexercise) ? $nextexercise->id : 0;
-        }
-
-        // return both current and next exercise ids
-        return [$currentexerciseid, $nextexerciseid];
-    }
-
-    /**
      * Returns the subscribed course section id and lesson name that contains the exercise
      *
      * @param int $exerciseid The exercise id in the course inside the section
@@ -908,6 +879,17 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Checks if the subscribed course has any student status or not.
+     * If not then the course is new subscriber.
+     *
+     * @param int $courseid
+     * @return bool
+     */
+    public static function stats_exist(int $courseid) {
+        return subscriber_vault::course_stats_exist($courseid);
+    }
+
+    /**
      * Adds students stats for a newly enabled course subscriber
      *
      * @param int $courseid
@@ -916,6 +898,17 @@ class subscriber implements subscriber_interface {
     public static function add_new_enrolments(int $courseid) {
         // if not already a subscriber then add new enrolments
         return subscriber_vault::add_new_subscriber_enrolments($courseid);
+    }
+
+    /**
+     * Removes user stats data once student is unenroled from the course
+     *
+     * @param int $courseid The subscribing course
+     * @param int $userid   The assign module id
+     * @return bool
+     */
+    public static function delete_enrolment_stats(int $courseid, int $userid) {
+        return subscriber_vault::delete_subscriber_stat($courseid, $userid);
     }
 
     /**

@@ -174,7 +174,10 @@ class dashboard_bookings_exporter extends exporter {
                 'multiple' => true,
             ],
             'scoresort' => [
-                'type' => \PARAM_BOOL,
+                'type' => PARAM_BOOL,
+            ],
+            'totalstudents' => [
+                'type' => PARAM_INT,
             ],
             'avgwait' => [
                 'type' => PARAM_INT,
@@ -233,6 +236,7 @@ class dashboard_bookings_exporter extends exporter {
             'coursemodules' => base_view::get_modules($output, $this->course, $options),
             'activestudents'=> $this->get_students($output),
             'scoresort'     => $this->data['sorttype'] == 's',
+            'totalstudents' => $this->course->get_students_count(),
             'avgwait'       => $this->averagewait,
             'showaction'    => $this->filter == 'active',
             'showactive'    => $this->filter == 'active' || empty($this->filter) ? 'checked' : '',
@@ -287,7 +291,7 @@ class dashboard_bookings_exporter extends exporter {
             // data for the student's exporter
             $waringflag = $this->get_warning($this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_recency_days() : -1);
             $data = [
-                'sequence'        => $i,
+                'sequence'        => $i + ($this->data['page'] * LOCAL_BOOKING_DASHBOARDPAGESIZE),
                 'instructor'      => $this->instructor,
                 'student'         => $student,
                 'overduewarning'  => $waringflag == self::OVERDUEWARNING,

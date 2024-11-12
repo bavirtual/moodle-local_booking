@@ -52,6 +52,7 @@ $string['bookingsortbyscore'] = 'activity';
 $string['bookingsortbyscoretooltip'] = 'Sorts by student activity score';
 $string['bookingsortbyavailability'] = 'availability';
 $string['bookingsortbyavailabilitytooltip'] = 'Sorts by students with availability posts, then no posts, then incomplete lessons';
+$string['bookingtotalstudents'] = 'Total active students';
 $string['booksave'] = 'Save booking';
 $string['commentcancel'] = 'Please provide the student with a short comment on this cancellation:';
 $string['commentnoshow'] = 'Confirm student failed to show without a prior notice.';

@@ -75,10 +75,27 @@ interface subscriber_vault_interface {
     public static function is_course_enabled(int $courseid);
 
     /**
+     * Checks the stats table to check if the subscribed course has any student status or not.
+     *
+     * @param int   $courseid The course id
+     * @return bool Whether the course is subscribed or not
+     */
+    public static function course_stats_exist(int $courseid);
+
+    /**
      * Get a based on its id
      *
      * @param int   $courseid The course id
      * @return bool           Whether the course is subscribed or not
      */
     public static function add_new_subscriber_enrolments(int $courseid);
+
+    /**
+     * Removes user stats data once student is unenroled from the course
+     *
+     * @param int $courseid The course id
+     * @param int $userid   The assign module id
+     * @return bool
+     */
+    public static function delete_subscriber_stat(int $courseid, int $userid);
 }

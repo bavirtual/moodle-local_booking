@@ -27,62 +27,34 @@ namespace local_booking\local\subscriber\data_access;
 
 class subscriber_vault implements subscriber_vault_interface {
 
-    /** Table name for the persistent. */
-    const DB_STATS = 'local_booking_stats';
-
-    /** Table name for the persistent. */
-    const DB_SLOTS = 'local_booking_slots';
-
-    /** Table name for the persistent. */
+    /** Core tables. */
     const DB_USER = 'user';
+    const DB_ROLE = 'role';
+    const DB_ROLE_ASSIGN = 'role_assignments';
 
-    /** Table name for the persistent. */
-    const DB_CNTXT = 'context';
-
-    /** Table name for the persistent. */
-    const DB_MODS = 'modules';
-
-    /** Table name for the persistent. */
+    /** Course table & modules. */
     const DB_COURSE_CUSTOM_FIELD = 'customfield_field';
-
-    /** Table name for the persistent. */
     const DB_COURSE_CUSTOM_DATA = 'customfield_data';
-
-    /** Table name for the persistent. */
     const DB_COURSE_SECTIONS = 'course_sections';
-
-    /** Table name for the persistent. */
     const DB_COURSE_MODS = 'course_modules';
-
-    /** Table name for the persistent. */
+    const DB_MODS = 'modules';
+    const DB_COURSE_COMP = 'course_completions';
     const DB_COURSE_MODS_COMP = 'course_modules_completion';
 
-    /** Table name for the persistent. */
+    /** Enrolment tables. */
     const DB_ENROL = 'enrol';
-
-    /** Table name for the persistent. */
     const DB_USER_ENROL = 'user_enrolments';
 
-    /** Table name for the persistent. */
+    /** Grading tables. */
     const DB_ASSIGN_GRADE = 'assign_grades';
-
-    /** Table name for the persistent. */
     const DB_GRADE_GRADE = 'grade_grades';
-
-    /** Table name for the persistent. */
     const DB_GRADE_ITEMS = 'grade_items';
 
-    /** Table name for the persistent. */
+    /** Grouping tables. */
     const DB_GROUP = 'groups';
 
-    /** Table name for the persistent. */
-    const DB_GROUP_MEM = 'groups_members';
-
-    /** Table name for the persistent. */
-    const DB_ROLE = 'role';
-
-    /** Table name for the persistent. */
-    const DB_ROLE_ASSIGN = 'role_assignments';
+    /** Booking tables. */
+    const DB_STATS = 'local_booking_stats';
 
     /**
      * Retreive a data point from the stats table
@@ -117,8 +89,9 @@ class subscriber_vault implements subscriber_vault_interface {
     public static function update_subscriber_stat(int $courseid, int $userid, string $stat, $value) {
         global $DB;
 
+        // insert record on enrolment where $value is the first course exercise, otherwise update based on the field to be updated w/ the value
         $sql = "INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid)
-                VALUES ($userid, $courseid, 0, 0, 0, 0) " . (!empty($stat) ? "
+                VALUES ($userid, $courseid, 0, 0, 0, $value) " . (!empty($stat) ? "
                 ON DUPLICATE KEY UPDATE
                     $stat = :value" : "");
 
@@ -185,7 +158,7 @@ class subscriber_vault implements subscriber_vault_interface {
      * Get a based on its id
      *
      * @param int   $courseid The course id
-     * @return bool           Whether the course is subscribed or not
+     * @return bool Whether the course is subscribed or not
      */
     public static function is_course_enabled(int $courseid) {
         global $DB;
@@ -193,6 +166,42 @@ class subscriber_vault implements subscriber_vault_interface {
         $sql = "SELECT value FROM {" . self::DB_COURSE_CUSTOM_DATA . "} cd INNER JOIN {" . self::DB_COURSE_CUSTOM_FIELD . "} cf ON cf.id = cd.fieldid WHERE cf.shortname = :subscribename AND cd.instanceid = :courseid";
         $enabled = $DB->get_record_sql($sql, ['subscribename'=>'subscribed', 'courseid'=>$courseid]);
         return $enabled->value;
+    }
+
+    /**
+     * Checks the stats table to check if the subscribed course has any student status or not.
+     *
+     * @param int   $courseid The course id
+     * @return bool Whether the course is subscribed or not
+     */
+    public static function course_stats_exist(int $courseid) {
+        global $DB;
+
+        // get active users enrolled in the specified course
+        $sql = 'SELECT u.id AS enrolled
+                FROM {' . self::DB_USER . '} u
+                INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = u.id
+                INNER JOIN {' . self::DB_ENROL . '} e ON e.id = ue.enrolid
+                LEFT JOIN {' . self::DB_ROLE_ASSIGN . '} ra ON ra.userid = u.id
+                INNER JOIN {' . self::DB_ROLE . '} r ON r.id = ra.roleid
+                LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = ra.userid AND cc.course = e.courseid
+                WHERE e.courseid = :courseid
+                    AND ue.status = 0
+                    AND ra.contextid = :contextid
+                    AND archetype = :studentrole
+                    AND cc.timecompleted IS NULL
+                    AND u.deleted = 0
+                    AND u.suspended = 0';
+        $activeenrols = array_keys($DB->get_records_sql($sql, ['contextid'=>\context_course::instance($courseid)->id, 'courseid'=>$courseid, 'studentrole'=>'student']));
+
+        // get users enrolled with stats in the specified course
+        $sql = 'SELECT userid AS enrolled FROM {' . self::DB_STATS .'} WHERE courseid = :courseid';
+        $enroledstats = array_keys($DB->get_records_sql($sql, ['courseid'=>$courseid]));
+
+        // cross check that all active enrolled users have stats records
+        $nostatenrols = array_diff($activeenrols, $enroledstats);
+
+        return empty($nostatenrols);
     }
 
     /**
@@ -207,8 +216,8 @@ class subscriber_vault implements subscriber_vault_interface {
         $contextid = \context_course::instance($courseid)->id;
 
         // insert all new subscriber students from enrolment
-        $result = $DB->execute("INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid)
-            SELECT u.id, :courseid FROM {" . self::DB_USER . "} u
+        $result = $DB->execute("INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, currentexerciseid)
+            SELECT u.id, :courseid, 0 FROM {" . self::DB_USER . "} u
             INNER JOIN {" . self::DB_USER_ENROL . "} ue on u.id = ue.userid
             INNER JOIN {" . self::DB_ENROL . "} en on ue.enrolid = en.id
             INNER JOIN {" . self::DB_COURSE_CUSTOM_DATA . "} cd ON cd.instanceid = en.courseid
@@ -221,7 +230,7 @@ class subscriber_vault implements subscriber_vault_interface {
                 WHERE ra.contextid = :contextid AND r.archetype = 'student'
                 )", ['courseid'=>$courseid, 'encourseid'=>$courseid, 'contextid'=>$contextid]);
 
-        // update stats with each student's current and next exercise/assignment id for the subscribing course
+        // update stats with each student's current exercise/assignment id for the subscribing course
         $result &= $DB->execute("
             UPDATE {" . self::DB_STATS . "} bs SET currentexerciseid =
                 (
@@ -229,49 +238,40 @@ class subscriber_vault implements subscriber_vault_interface {
                 INNER JOIN {" . self::DB_GRADE_ITEMS . "} gi ON g.itemid = gi.id
                 INNER JOIN {" . self::DB_COURSE_MODS . "} cm ON cm.instance = gi.iteminstance
                 INNER JOIN {" . self::DB_MODS . "} m ON m.id = cm.module
-                WHERE g.userid = bs.userid AND gi.courseid = :gicourseid AND gi.itemmodule = 'assign' AND m.name = 'assign'
+                WHERE g.userid = bs.userid AND gi.courseid = $courseid AND gi.itemmodule = 'assign' AND m.name = 'assign'
                 ORDER BY g.timemodified DESC
                 LIMIT 1
                 )
-            WHERE courseid = :courseid", ['courseid'=>$courseid, 'gicourseid'=>$courseid]);
+            WHERE courseid = $courseid");
 
-        $result &= $DB->execute("
-            UPDATE {" . self::DB_STATS . "} bs SET currentexerciseid =
-                (
-                SELECT cm.id FROM {" . self::DB_COURSE_MODS . "} cm
-                INNER JOIN {" . self::DB_ENROL . "} e ON e.courseid = cm.course
-                INNER JOIN {" . self::DB_USER_ENROL . "} ue ON e.id = ue.enrolid
-                WHERE ue.userid = bs.userid AND cm.course = :cmcourseid AND module = 1 AND instance = 1
-                )
-            WHERE currentexerciseid = 0 AND courseid = :courseid", ['courseid'=>$courseid, 'cmcourseid'=>$courseid]);
-
+        // update stats with each student's current exercise/assignment id for the subscribing course
         $result &= $DB->execute("
             UPDATE {" . self::DB_STATS . "} bs SET nextexerciseid =
                 (
                 SELECT modid FROM
                     (
                         SELECT ROW_NUMBER() OVER w AS row_num, cm.id AS modid, cm.course, m.name
-                        FROM mdl_course_modules cm
-                        INNER JOIN mdl_course_sections s ON s.id = cm.section
-                        INNER JOIN mdl_modules m ON m.id = cm.module
-                        WHERE m.name = 'assign' AND cm.course = 10
+                        FROM {" . self::DB_COURSE_MODS . "} cm
+                        INNER JOIN {" . self::DB_COURSE_SECTIONS . "} s ON s.id = cm.section
+                        INNER JOIN {" . self::DB_MODS . "} m ON m.id = cm.module
+                        WHERE m.name = 'assign' AND cm.course = $courseid
                         WINDOW w AS (ORDER BY s.section, LOCATE(cm.id, s.sequence))
                     ) d
-                    WHERE d.course = 10 AND d.name = 'assign' AND row_num >
+                    WHERE d.course = $courseid AND d.name = 'assign' AND row_num >
                     (
                         SELECT row_num2 FROM
                             (
                                 SELECT ROW_NUMBER() OVER w AS row_num2, cm.id AS modid, cm.course
-                                FROM mdl_course_modules cm
-                                INNER JOIN mdl_course_sections s ON s.id = cm.section
-                                INNER JOIN mdl_modules m ON m.id = cm.module
-                                WHERE m.name = 'assign' AND cm.course = 10
+                                FROM {" . self::DB_COURSE_MODS . "} cm
+                                INNER JOIN {" . self::DB_COURSE_SECTIONS . "} s ON s.id = cm.section
+                                INNER JOIN {" . self::DB_MODS . "} m ON m.id = cm.module
+                                WHERE m.name = 'assign' AND cm.course = $courseid
                                 WINDOW w AS (ORDER BY s.section, LOCATE(cm.id, s.sequence))
                             ) r
-                        WHERE r.modid = bs.currentexerciseid AND r.course = 10
+                        WHERE r.modid = bs.currentexerciseid AND r.course = $courseid
                     ) LIMIT 1
                 )
-                WHERE courseid = :courseid", ['courseid'=>$courseid, 'cmcourseid'=>$courseid, 'cm2courseid'=>$courseid]);
+                WHERE courseid = $courseid");
 
         // Update next exercise for new joiners to the first exercise in the course
         $result &= $DB->execute("
@@ -284,7 +284,7 @@ class subscriber_vault implements subscriber_vault_interface {
                 WHERE cm.course = $courseid AND m.name = 'assign'
                 WINDOW w AS (ORDER BY s.section, LOCATE(cm.id, s.sequence)) LIMIT 1
             )
-            WHERE courseid = :courseid AND (nextexerciseid = 0 OR nextexerciseid IS NULL)", ['courseid'=>$courseid]);
+            WHERE courseid = $courseid AND (nextexerciseid = 0 OR nextexerciseid IS NULL)");
 
         /**
          *  Update stats with each student's current lesson for the subscribing course:
@@ -334,27 +334,40 @@ class subscriber_vault implements subscriber_vault_interface {
                         AND m.name = 'lesson'
                 )
             )
-            WHERE bs.courseid = :courseid", ['courseid'=>$courseid]);
+            WHERE bs.courseid = $courseid");
 
-        // update stats lastsession date from grading or enrolment for students that newly joind
-        $result &= $DB->execute("
-            UPDATE {" . self::DB_STATS . "} bs SET lastsessiondate =
-                (
-                SELECT MAX(ag.timemodified) FROM {" . self::DB_ASSIGN_GRADE . "} ag
-                INNER JOIN {" . self::DB_COURSE_MODS . "} cm ON cm.instance = ag.assignment
-                WHERE cm.course = :cmcourseid AND cm.deletioninprogress = 0 AND ag.userid = bs.userid
-                )
-            WHERE lastsessiondate = 0 AND courseid = :courseid", ['courseid'=>$courseid, 'cmcourseid'=>$courseid]);
+        // // update last session date from grading or enrolment for students that newly joind
+        // $result &= $DB->execute("
+        //     UPDATE {" . self::DB_STATS . "} bs SET lastsessiondate =
+        //         (
+        //         SELECT MAX(ag.timemodified) FROM {" . self::DB_ASSIGN_GRADE . "} ag
+        //         INNER JOIN {" . self::DB_COURSE_MODS . "} cm ON cm.instance = ag.assignment
+        //         WHERE cm.course = $courseid AND cm.deletioninprogress = 0 AND ag.userid = bs.userid
+        //         )
+        //     WHERE lastsessiondate = 0 AND courseid = $courseid");
 
-        $result &= $DB->execute("
-            UPDATE {" . self::DB_STATS . "} bs SET lastsessiondate =
-                (
-                SELECT MAX(ue.timecreated) FROM {" . self::DB_USER_ENROL . "} ue
-                INNER JOIN {" . self::DB_ENROL . "} e ON e.id = ue.enrolid
-                WHERE e.courseid = :ecourseid AND ue.userid = bs.userid
-                )
-            WHERE lastsessiondate = 0 AND courseid = :courseid", ['courseid'=>$courseid, 'ecourseid'=>$courseid]);
+        // $result &= $DB->execute("
+        //     UPDATE {" . self::DB_STATS . "} bs SET lastsessiondate =
+        //         (
+        //         SELECT MAX(ue.timecreated) FROM {" . self::DB_USER_ENROL . "} ue
+        //         INNER JOIN {" . self::DB_ENROL . "} e ON e.id = ue.enrolid
+        //         WHERE e.courseid = :ecourseid AND ue.userid = bs.userid
+        //         )
+        //     WHERE lastsessiondate = 0 AND courseid = :courseid", ['courseid'=>$courseid, 'ecourseid'=>$courseid]);
 
         return $result;
+    }
+
+    /**
+     * Removes user stats data once student is unenroled from the course
+     *
+     * @param int $courseid The course id
+     * @param int $userid   The assign module id
+     * @return bool
+     */
+    public static function delete_subscriber_stat(int $courseid, int $userid) {
+        global $DB;
+
+        return $DB->delete_records(self::DB_STATS, ['courseid'=>$courseid, 'userid'=>$userid]);
     }
 }

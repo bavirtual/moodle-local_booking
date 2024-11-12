@@ -1,5 +1,17 @@
 # Change log
 
+## [2024111201] - RELEASED 2024-11-12
+
+### Added
+
+- new enrollment and unenrolment hooks
+- total active students count on students progression page header
+
+### Changed
+
+- last_session_date to sample last 2 session records comparing future vs past sessions
+- progression view student sequence on multiple pages
+
 ## [2024110800] - RELEASED 2024-11-08
 
 ### Added

@@ -468,6 +468,7 @@ class participant_vault implements participant_vault_interface {
         $innerselect .= !empty($roles) ? ', (SELECT GROUP_CONCAT(shortname) FROM {' . self::DB_ROLE_ASSIGN . '} ra
                          INNER JOIN {' . self::DB_ROLE . '}  r ON r.id = ra.roleid
                          WHERE ra.userid = u.id AND ra.contextid = :contextid) AS roles' : '';
+        $innerselectcount = $innerselect;
         $innerselect .= $simple ? '' : ( $isstudent ? ', s.lessonscomplete,
                             s.lastsessiondate,
                             s.currentexerciseid,
@@ -554,7 +555,7 @@ class participant_vault implements participant_vault_interface {
 
         $sql = $select . $innerselect . $innerfrom . $innerwhere . $innergroupby . $outerwhere . $orderby . $limit;
 
-        $countsql = 'SELECT Count(*) FROM (SELECT u.id AS userid ' . $innerfrom . $innerwhere  . $innergroupby;
+        $countsql = 'SELECT Count(userid) FROM ' . $innerselectcount . $innerfrom . $innerwhere  . $innergroupby . $outerwhere;
 
         return [$sql, $countsql];
     }

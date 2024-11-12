@@ -15,15 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Session Booking Plugin
+ * Hook callbacks for local_booking
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  2024 Mustafa Hajjar <mustafahajjar@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2024111201;
-$plugin->component = 'local_booking';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '2.1';
+defined('MOODLE_INTERNAL') || die();
+
+$callbacks = [
+    [
+        'hook' => core_enrol\hook\after_user_enrolled::class,
+        'callback' => 'local_booking\user_enrolment_callbacks::user_enrolment_created',
+    ],
+    [
+        'hook' => core_enrol\hook\before_user_enrolment_removed::class,
+        'callback' => 'local_booking\user_enrolment_callbacks::user_enrolment_deleted',
+    ],
+];

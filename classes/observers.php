@@ -47,8 +47,6 @@ use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\session\entities\booking;
-use core\event\user_enrolment_created;
-use core\event\user_enrolment_deleted;
 use core\event\course_module_completion_updated;
 use core\event\course_updated;
 use core\session\exception;
@@ -59,31 +57,6 @@ use grade_grade;
 class observers {
 
     /**
-     * A user enrolment created in a course.
-     *
-     * @param \core\event\user_enrolment_created $event The event.
-     * @return void
-     */
-    public static function user_enrolment_created(user_enrolment_created $event) {
-        // TODO: for future actions upon user enrolment
-    }
-
-    /**
-     * A user enrolment deleted from a course.
-     *
-     * @param \core\event\user_enrolment_deleted $event The event.
-     * @return void
-     */
-    public static function user_enrolment_deleted(user_enrolment_deleted $event) {
-        global $DB;
-
-        // check if the user is enroled to a subscribing course
-        if (subscriber::is_subscribed($event->courseid)) {
-            $DB->execute("DELETE FROM mdl_local_booking_stats WHERE userid = $event->relateduserid AND courseid = $event->courseid");
-        }
-    }
-
-    /**
      * A course settings update.
      *
      * @param \core\event\course_updated $event The event.
@@ -92,7 +65,8 @@ class observers {
     public static function course_updated(course_updated $event) {
 
         // check if the user is enroled to a subscribing course
-        if (subscriber::is_subscribed($event->courseid)) {
+        if (subscriber::is_subscribed($event->courseid) && !subscriber::stats_exist($event->courseid)) {
+            // check if the course update
             subscriber::add_new_enrolments($event->courseid);
         }
     }
@@ -175,7 +149,8 @@ class observers {
                     if ($gradegrade->is_passed()) {
 
                         // get last session
-                        list($exerciseid, $nextexerciseid) = subscriber::get_next_exerciseid($courseid, $exerciseid);
+                        $exerciseid = $student->get_current_exercise();
+                        $nextexerciseid = $student->get_next_exercise();
                         $lastsessiondate = $booking->get_last_session_date($courseid, $studentid);
                         $lastsessiondatets = !empty($lastsessiondate) ? $lastsessiondate->getTimestamp() : 0;
 

@@ -217,23 +217,17 @@ class participant implements participant_interface {
     public function get_roles(string $roleattribute = null) {
 
         $roles = [];
+        if (!isset($this->roles) || count($this->roles) == 0) {
+            // assign roles if not already available
+            $this->roles = get_user_roles($this->course->get_context(), $this->userid);
+            $this->rolenames = array_column($this->roles, 'shortname');
+        }
 
-        // check if shortnames is requested
-        if ($roleattribute == 'shortname' && isset($this->rolenames)) {
-            $roles = $this->rolenames;
+        // get course named roles if requested
+        if ($roleattribute == 'course') {
+            $roles = explode(', ', strip_tags(get_user_roles_in_course($this->userid, $this->course->get_id())));
         } else {
-            if (!isset($this->roles)) {
-                // assign roles if not already available
-                $this->roles = get_user_roles($this->course->get_context(), $this->userid);
-                $this->rolenames = array_column($this->roles, 'shortname');
-            }
-
-            // get course named roles if requested
-            if ($roleattribute == 'course') {
-                $roles = explode(', ', strip_tags(get_user_roles_in_course($this->userid, $this->course->get_id())));
-            } else {
-                $roles = !empty($roleattribute) ? array_column($this->roles, $roleattribute) : $this->roles;
-            }
+            $roles = !empty($roleattribute) ? array_column($this->roles, $roleattribute) : $this->roles;
         }
 
         return $roles;

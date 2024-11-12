@@ -321,7 +321,7 @@ class booking_vault implements booking_vault_interface {
                 ORDER BY b.id DESC
                 LIMIT 2';
 
-        $records = $DB->get_record_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
+        $records = $DB->get_records_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
         $sessiondatets = 0;
         if ($records) {
             $sessiondatets = $records[0]->sessiondatets;

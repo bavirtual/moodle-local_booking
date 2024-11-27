@@ -107,11 +107,6 @@ class student extends participant {
     protected $currentexerciseid;
 
     /**
-     * @var booking $activebooking The currently active booking for the student.
-     */
-    protected $activebooking;
-
-    /**
      * @var DateTime $restrictiondate The student's end of restriction period date.
      */
     protected $restrictiondate;
@@ -548,21 +543,6 @@ class student extends participant {
     }
 
     /**
-     * Returns the student's currently active booking.
-     *
-     * @return booking
-     */
-    public function get_active_booking() {
-
-        if (!isset($this->activebooking)) {
-            $this->activebooking = new booking(0, $this->course->get_id(), $this->userid);
-            $this->activebooking->load();
-        }
-
-        return $this->activebooking;
-    }
-
-    /**
      * Returns the current exercise id for the student.
      *
      * @param bool $next  Whether to get the next exercise or current, default is next exercise
@@ -572,12 +552,10 @@ class student extends participant {
 
         if (empty($this->currentexerciseid)) {
 
-            // get last graded exercise
-            $this->currentexerciseid = array_key_last($this->get_exercise_grades());
+            // get last booked exercise
+            $booking = $this->get_last_booking();
+            $this->currentexerciseid = !empty($booking) ? $booking->get_exerciseid() : 0;
 
-            // check for newly enrolled student (boundry condition)
-            if (empty($this->currentexerciseid) )
-                $this->currentexerciseid = array_values($this->course->get_modules())[0]->id;
         }
 
         return $this->currentexerciseid;
@@ -588,13 +566,13 @@ class student extends participant {
      *
      * @return int The next exercise id
      */
-    public function get_next_exercise() {
+    public function get_next_exercise(int $afterexercise = 0) {
 
         if (empty($this->nextexerciseid)) {
 
             // get booking if exists otherwise pick the next exercise
             $booking = $this->get_active_booking();
-            if (!empty($booking->get_id())) {
+            if (!empty($booking)) {
 
                 $this->nextexerciseid = $booking->get_exerciseid();
 
@@ -602,23 +580,20 @@ class student extends participant {
 
                 // check for newly enrolled students (boundry condition)
                 if (empty($this->get_exercise_grades())) {
-                    return $this->get_current_exercise();
-                }
-
-                // get the current student's course modules then move to the next exercise
-                // filter out none 'assign' modules
-                $coursemodules = array_filter($this->course->get_modules(), function($mod) {
-                    return $mod->modname == 'assign';
-                });
-
-                $modids = array_keys($coursemodules);
-                $nextid = array_search($this->get_current_exercise(), $modids) + 1;
-
-                // check for graduated student (boundry condition)
-                if (isset($modids[$nextid])) {
-                    $this->nextexerciseid = ($nextmod = $coursemodules[$modids[$nextid]]) ? $nextmod->id : 0;
+                    $this->nextexerciseid = array_values($this->course->get_modules())[0]->id;
                 } else {
-                    $this->nextexerciseid = 0;
+                    // since there are no active sessions, the next exercise is the next course module after current exercise
+                    // filter out none 'assign' modules
+                    $coursemodules = $this->course->get_exercises();
+                    $modids = array_keys($coursemodules);
+                    $nextid = array_search(($afterexercise ?: $this->get_current_exercise()), $modids) + 1;
+
+                    // check for graduated student (boundry condition)
+                    if (isset($modids[$nextid])) {
+                        $this->nextexerciseid = $modids[$nextid];
+                    } else {
+                        $this->nextexerciseid = 0;
+                    }
                 }
             }
         }

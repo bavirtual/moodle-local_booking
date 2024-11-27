@@ -418,6 +418,32 @@ class booking implements booking_interface {
     }
 
     /**
+     * Get the current and next participant sessions.
+     * If there is no active session,
+     * only the current session is returned
+     *
+     * @param int $courseid      The associated course
+     * @param int $studentid     The student id conducted the session
+     * @param bool $isinstructor Whether the user is an instructor or not
+     * @param array
+    */
+    public static function get_recent_bookings(int $courseid, int $userid, bool $isinstructor = false) {
+        $lastbooking = $activebooking = null;
+        $bookings = booking_vault::get_user_recent_bookings($courseid, $userid, $isinstructor);
+
+        // check if there are current and active bookings
+        if (!empty($bookings)) {
+            $lastbooking = new booking();
+            $lastbooking->load($bookings[0]);
+            if (!empty($bookings[1])) {
+                $activebooking = new booking();
+                $activebooking->load($bookings[1]);
+            }
+        }
+        return [$lastbooking, $activebooking];
+    }
+
+    /**
      * Get the total sessions for a user.
      *
      * @param int $courseid     The associated course id

@@ -157,13 +157,13 @@ class availability_week_exporter extends exporter {
                 $this->student = $this->course->get_student($USER->id);
 
                 // push notification if the student is already booked
-                if (!empty($this->student->get_active_booking()->get_id()) && !$actiondata['confirm']) {
+                if (!empty($this->student->get_active_booking()) && !$actiondata['confirm']) {
                     \core\notification::INFO(get_string('alreadybooked', 'local_booking'));
                 }
             }
 
             // get student active booking and instructor id if exists
-            if (!empty($this->student->get_active_booking()->get_id())) {
+            if (!empty($this->student->get_active_booking())) {
                 $this->activebooking = $this->student->get_active_booking();
                 $this->activebooking = $activebookinginstrname = participant::get_fullname($this->activebooking->get_instructorid());
             }

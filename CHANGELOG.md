@@ -1,5 +1,19 @@
 # Change log
 
+## [2024112700] - RELEASED 2024-11-27
+
+### Fixed
+
+- wait days reverting to enrolment date
+
+### Added
+
+- Github Actions workflow yml
+
+### Changed
+
+- current and next exercises from booking recent sessions
+
 ## [2024111201] - RELEASED 2024-11-12
 
 ### Added

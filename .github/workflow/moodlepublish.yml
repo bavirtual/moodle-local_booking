@@ -1,0 +1,30 @@
+name: Trigger Moodle Docker
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+
+jobs:
+  build-moodle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: qoomon/actions--access-token@v3
+        id: access-token
+        with:
+          repository: bavirtual/moodle-docker
+          permissions: |
+            actions: write
+
+      - name: Trigger workflow
+        run: >-
+          gh workflow
+          run dockerpublish.yml
+          --repo bavirtual/moodle-docker
+          --ref main
+        env:
+          GITHUB_TOKEN: ${{steps.access-token.outputs.token}}

@@ -159,6 +159,16 @@ class participant implements participant_interface {
     protected $bookings;
 
     /**
+     * @var booking $activebooking The currently active booking for the participant.
+     */
+    protected $activebooking;
+
+    /**
+     * @var booking $lastbooking The last completed booking for the participant.
+     */
+    protected $lastbooking;
+
+    /**
      * @var logbook $logbook The student logbook.
      */
     protected $logbook;
@@ -305,6 +315,34 @@ class participant implements participant_interface {
         }
 
         return $this->bookings;
+    }
+
+    /**
+     * Returns the participant's currently active booking.
+     *
+     * @return booking
+     */
+    public function get_active_booking() {
+
+        if (!isset($this->activebooking)) {
+            $this->set_recent_bookings();
+        }
+
+        return $this->activebooking;
+    }
+
+    /**
+     * Returns the participant's last completed booking.
+     *
+     * @return booking
+     */
+    public function get_last_booking() {
+
+        if (!isset($this->lastbooking)) {
+            $this->set_recent_bookings();
+        }
+
+        return $this->lastbooking;
     }
 
     /**
@@ -495,6 +533,15 @@ class participant implements participant_interface {
      */
     public function get_comment() {
         return $this->get_profile_field('description', true);
+    }
+
+    /**
+     * Sets the participant's last completed and active bookings.
+     *
+     */
+    private function set_recent_bookings() {
+
+        [$this->lastbooking, $this->activebooking] = booking::get_recent_bookings($this->course->get_id(), $this->userid);
     }
 
     /**

@@ -79,6 +79,20 @@ interface participant_interface {
     public function get_bookings(bool $isstudent = true, bool $activeonly = false, bool $oldestfirst = false);
 
     /**
+     * Returns the participant's currently active booking.
+     *
+     * @return booking
+     */
+    public function get_active_booking();
+
+    /**
+     * Returns the participant's last completed booking.
+     *
+     * @return booking
+     */
+    public function get_last_booking();
+
+    /**
      * Get an a's active bookings
      *
      * @param  $loadentries Whether to load all enteries or not

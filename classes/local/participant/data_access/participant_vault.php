@@ -106,7 +106,7 @@ class participant_vault implements participant_vault_interface {
     /**
      * Get all active student from the database.
      *
-     * @param int $courseid     The course id.
+     * @param int  $courseid    The course id.
      * @param bool $userid      A specific student for booking confirmation
      * @return {Object}         Array of database records.
      */

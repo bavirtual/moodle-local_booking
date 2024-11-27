@@ -149,8 +149,7 @@ class observers {
                     if ($gradegrade->is_passed()) {
 
                         // get last session
-                        $exerciseid = $student->get_current_exercise();
-                        $nextexerciseid = $student->get_next_exercise();
+                        $nextexerciseid = $student->get_next_exercise($exerciseid);
                         $lastsessiondate = $booking->get_last_session_date($courseid, $studentid);
                         $lastsessiondatets = !empty($lastsessiondate) ? $lastsessiondate->getTimestamp() : 0;
 

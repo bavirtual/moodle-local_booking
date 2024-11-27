@@ -82,12 +82,24 @@ interface booking_vault_interface {
     public static function get_booking(booking $booking);
 
     /**
-     * Get the date of the booked exercise
+     * Get the current and next sessions.
+     * If there is no active session,
+     * only the current session is returned
      *
      * @param int $courseid      The associated course
      * @param int $studentid     The student id conducted the session
-     * @param int $exerciseid    The exercise id for the session
-     * @return DateTime $exercisedate The date of last session for that exercise
+     * @param bool $isinstructor Whether the user is an instructor or not
+     * @param array
+     */
+    public static function get_user_recent_bookings(int $courseid, int $userid, bool $isinstructor = false);
+
+    /**
+     * Get the date of the booked exercise
+     *
+     * @param  int  $courseid      The associated course
+     * @param  int  $studentid     The student id conducted the session
+     * @param  int  $exerciseid    The exercise id for the session
+     * @return int  $exercisedate  The date timestamp of last session for that exercise
      */
     public static function get_booked_exercise_date(int $courseid, int $studentid, int $exerciseid);
 

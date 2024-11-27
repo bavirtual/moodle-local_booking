@@ -202,12 +202,44 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
-     * Get the date of the booked exercise
+     * Get the current and next sessions.
+     * If there is no active session,
+     * only the current session is returned
      *
      * @param int $courseid      The associated course
      * @param int $studentid     The student id conducted the session
-     * @param int $exerciseid    The exercise id for the session
-     * @return DateTime $exercisedate The date of last session for that exercise
+     * @param bool $isinstructor Whether the user is an instructor or not
+     * @param array
+     */
+    public static function get_user_recent_bookings(int $courseid, int $userid, bool $isinstructor = false) {
+        global $DB;
+        $sessions = array();
+
+        // last booking w/ a slot starttime that had past, otherwise the booking before it (check for no booking / no slot)
+        $sql = 'SELECT *
+                FROM {' . static::DB_BOOKINGS . '} b
+                LEFT JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
+                WHERE b.courseid = :courseid AND ' . ($isinstructor ? 'b.userid = :userid' : 'b.studentid = :userid') . '
+                ORDER BY b.id DESC
+                LIMIT 2';
+
+        $records = $DB->get_records_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
+        if ($records) {
+            $sessions = array_values(array_reverse($records));
+            if (!empty($sessions[1]) && $sessions[1]->active != 1) {
+                $sessions[1] = null;
+            }
+        }
+        return $sessions;
+    }
+
+    /**
+     * Get the date of the booked exercise
+     *
+     * @param  int  $courseid      The associated course
+     * @param  int  $studentid     The student id conducted the session
+     * @param  int  $exerciseid    The exercise id for the session
+     * @return int  $exercisedate  The date timestamp of last session for that exercise
      */
     public static function get_booked_exercise_date(int $courseid, int $studentid, int $exerciseid) {
         global $DB;
@@ -230,58 +262,6 @@ class booking_vault implements booking_vault_interface {
 
         $booking = $DB->get_record_sql($sql, $params);
         return $booking ? $booking->exercisedate : 0;
-    }
-
-    /**
-     * Get an array of booked session count for each exercise for the user.
-     *
-     * @param int $courseid The associated course
-     * @param int $userid   The user id conducting the session
-     * @return array
-     */
-    public static function get_user_total_booked_sessions(int $courseid, int $userid) {
-        global $DB;
-
-        $sql = 'SELECT exerciseid, count(id) AS sessions
-                FROM {' . static::DB_BOOKINGS . '}
-                WHERE userid=:userid AND courseid = :courseid AND active = 0
-                GROUP BY exerciseid, userid, courseid';
-
-        $params = [
-            'courseid'  => $courseid,
-            'userid'    => $userid
-        ];
-
-        return $DB->get_records_sql($sql, $params);
-    }
-
-    /**
-     * Get an array of graded session count for each exercise for the user.
-     *
-     * @param int $isinstructor
-     * @param int $userid
-     * @return int
-     */
-    public static function get_user_total_graded_sessions(int $courseid, int $userid) {
-        global $DB;
-
-        $sql = 'SELECT cm.id AS exerciseid, count(cm.id) AS sessions FROM {' . static::DB_COURSE_MODS . '} cm
-        INNER JOIN {' . static::DB_ASSIGN_GRADES . '} ai ON ai.assignment = cm.instance
-        WHERE cm.course = :courseid
-            AND ai.grader = :userid
-        GROUP BY ai.grader, cm.instance, cm.id';
-        $sql = 'SELECT cm.id AS exerciseid, count(cm.id) AS sessions FROM {' . static::DB_COURSE_MODS . '} cm
-        INNER JOIN {' . static::DB_ASSIGN_GRADES . '} ai ON ai.assignment = cm.instance
-        WHERE cm.course = :courseid
-            AND ai.grader = :userid
-        GROUP BY ai.grader, cm.instance, cm.id';
-
-        $params = [
-            'courseid'  => $courseid,
-            'userid'    => $userid
-        ];
-
-        return $DB->get_records_sql($sql, $params);
     }
 
     /**
@@ -324,12 +304,60 @@ class booking_vault implements booking_vault_interface {
         $records = $DB->get_records_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
         $sessiondatets = 0;
         if ($records) {
-            $sessiondatets = $records[0]->sessiondatets;
-            if (!empty($records[1]) && $records[0]->sessiondatets > time()) {
-                $sessiondatets = $records[1]->sessiondatets;
+            $sessiontimes = array_values($records);
+            $sessiondatets = $sessiontimes[0]->sessiondatets;
+            if (!empty($sessiontimes[1]) && $sessiontimes[0]->sessiondatets > time()) {
+                $sessiondatets = $sessiontimes[1]->sessiondatets;
             }
         }
         return $sessiondatets;
+    }
+
+    /**
+     * Get an array of booked session count for each exercise for the user.
+     *
+     * @param int $courseid The associated course
+     * @param int $userid   The user id conducting the session
+     * @return object|null
+     */
+    public static function get_user_total_booked_sessions(int $courseid, int $userid) {
+        global $DB;
+
+        $sql = 'SELECT exerciseid, count(id) AS sessions
+                FROM {' . static::DB_BOOKINGS . '}
+                WHERE userid=:userid AND courseid = :courseid AND active = 0
+                GROUP BY exerciseid, userid, courseid';
+
+        $params = [
+            'courseid'  => $courseid,
+            'userid'    => $userid
+        ];
+
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
+     * Get an array of graded session count for each exercise for the user.
+     *
+     * @param int $isinstructor
+     * @param int $userid
+     * @return int
+     */
+    public static function get_user_total_graded_sessions(int $courseid, int $userid) {
+        global $DB;
+
+        $sql = 'SELECT cm.id AS exerciseid, count(cm.id) AS sessions FROM {' . static::DB_COURSE_MODS . '} cm
+        INNER JOIN {' . static::DB_ASSIGN_GRADES . '} ai ON ai.assignment = cm.instance
+        WHERE cm.course = :courseid
+            AND ai.grader = :userid
+        GROUP BY ai.grader, cm.instance, cm.id';
+
+        $params = [
+            'courseid'  => $courseid,
+            'userid'    => $userid
+        ];
+
+        return $DB->get_records_sql($sql, $params);
     }
 
     /**

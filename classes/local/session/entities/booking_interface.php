@@ -210,6 +210,18 @@ interface booking_interface {
     public static function get_last_booked_date(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
+     * Get the current and next participant sessions.
+     * If there is no active session,
+     * only the current session is returned
+     *
+     * @param int $courseid      The associated course
+     * @param int $studentid     The student id conducted the session
+     * @param bool $isinstructor Whether the user is an instructor or not
+     * @param array
+    */
+    public static function get_recent_bookings(int $courseid, int $userid, bool $isinstructor = false);
+
+    /**
      * Get the total sessions for a user.
      *
      * @param int $courseid     The associated course id

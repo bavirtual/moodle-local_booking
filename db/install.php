@@ -26,8 +26,8 @@
 
  defined('MOODLE_INTERNAL') || die();
 
- define('LOCAL_BOOKING_VATSIMCID', 'vatsimcid');
- define('LOCAL_BOOKING_VATSIMCIDLABEL', 'VATSIM CID');
+ define('LOCAL_BOOKING_VATSIMID', 'vatsimid');
+ define('LOCAL_BOOKING_VATSIMIDLABEL', 'VATSIM CID');
  define('LOCAL_BOOKING_PRIMARYSIMULATOR', 'simulator');
  define('LOCAL_BOOKING_PRIMARYSIMULATORLABEL', 'Primary Flight Simulator');
  define('LOCAL_BOOKING_SECONDARYSIMULATOR', 'simulator2');
@@ -91,9 +91,9 @@ function create_user_profile_customfields() {
     $lastcustomfield = array_shift($customfields);
     $fieldsortorder = !empty($lastcustomfield) ? $lastcustomfield->sortorder + 1 : 1;
 
-    // Add VATSIM PID  simulator field under the ATO category if it doesn't exist
-    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_VATSIMCID,
-    LOCAL_BOOKING_VATSIMCIDLABEL, 'text', 2);
+    // Add VATSIM CID  simulator field under the ATO category if it doesn't exist
+    $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_VATSIMID,
+    LOCAL_BOOKING_VATSIMIDLABEL, 'text', 2);
 
     // Add primary simulator field under the ATO category if it doesn't exist
     $fieldsortorder = save_user_customfield($categoryid, $fieldsortorder, LOCAL_BOOKING_PRIMARYSIMULATOR,

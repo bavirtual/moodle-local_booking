@@ -179,7 +179,7 @@ class participant_vault implements participant_vault_interface {
             'contextid' => \context_course::instance($courseid)->id
         ];
 
-        list($sql, $countsql) = self::get_criteria_sql($filter, $filter, true, $roles, $wildcard);
+        $sql = self::get_criteria_sql($filter, $filter, true, $roles, $wildcard)[0];
         return $DB->get_records_sql($sql, $params);
     }
 

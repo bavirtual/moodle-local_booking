@@ -28,6 +28,7 @@ namespace local_booking\external;
 defined('MOODLE_INTERNAL') || die();
 
 use ArrayObject;
+use \DateTime;
 use core\external\exporter;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
@@ -267,12 +268,12 @@ class dashboard_session_exporter extends exporter {
 
         // get grade info of this session if available
         if ($grade !== null) {
-            $sessiondate = new \DateTime('@' . (!empty($booking) ? $booking->get_slot()->get_starttime() : $grade->get_dategraded()));
+            $sessiondate = new DateTime('@' . (!empty($booking) ? $booking->get_slot()->get_starttime() : $grade->get_dategraded()));
             $sessionstatus = 'graded';
 
             $gradeinfo = [
                 'instructor'  => participant::get_fullname(!empty($booking) ? $booking->get_instructorid() : $grade->usermodified),
-                'gradedate'   => (new \DateTime('@' . $grade->get_dategraded()))->format('j M \'y'),
+                'gradedate'   => (new DateTime('@' . $grade->get_dategraded()))->format('j M \'y'),
                 'sessiondate' => !empty($sessiondate) ? $sessiondate->format('j M \'y') . '<br/>' : '',
                 'grade'       => intval($grade->finalgrade) . (!empty($grade->get_grade_max()) ? '/' . intval($grade->get_grade_max()) : '')
             ];
@@ -292,7 +293,7 @@ class dashboard_session_exporter extends exporter {
 
         // get booking info of this session if a booking is available - overrides grade
         if (!empty($booking)) {
-            $sessiondate = new \DateTime('@' . $booking->get_slot()->get_starttime());
+            $sessiondate = new DateTime('@' . $booking->get_slot()->get_starttime());
 
             if ($booking->active()) {
                 $sessionstatus = $this->student->is_active() && $booking->confirmed() ? 'booked' : 'tentative';

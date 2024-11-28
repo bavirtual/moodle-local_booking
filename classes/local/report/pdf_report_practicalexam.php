@@ -72,7 +72,7 @@ class pdf_report_practicalexam extends pdf_report {
         $this->SetTextColor(0,0,0);
         $this->SetFont($this->fontfamily, '', 12);
         $this->Ln(10);
-        $vatsimid = $this->student->get_profile_field('vatsimcid') ?: get_string('notfound', 'local_booking');
+        $vatsimid = $this->student->get_profile_field('vatsimid') ?: get_string('notfound', 'local_booking');
         $html = '<h3>' . $this->student->get_name() . '</h3>';
         $html .= '<span style="font-size: small;">' . get_string('vatsimid', 'local_booking') . ': ';
         $html .= (!empty($vatsimid) ? $vatsimid : get_string('vatsimidmissing', 'local_booking')) . '</span><br />';

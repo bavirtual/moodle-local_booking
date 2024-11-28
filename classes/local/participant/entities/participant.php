@@ -196,7 +196,7 @@ class participant implements participant_interface {
             $this->is_examiner = $this->has_role(LOCAL_BOOKING_EXAMINERROLE);
 
             // get active participant courses
-            $this->is_active = !$this->is_student ? !$this->is_member_of(LOCAL_BOOKING_INACTIVEGROUP) : true;
+            $this->is_active = !$this->is_student ? !$this->is_member_of(LOCAL_BOOKING_INACTIVEGROUP) : !$this->user->suspended;
         }
     }
 
@@ -574,6 +574,7 @@ class participant implements participant_interface {
             $this->fullname    = $record->fullname;
             $this->enroldate   = $record->enroldate;
             $this->suspenddate = $record->suspenddate;
+            $this->is_active   = !$record->suspenddate;
             $this->lastlogin   = $record->lastlogin;
             $this->simulator   = $this->get_simulator();
             if (!empty($record->roles))

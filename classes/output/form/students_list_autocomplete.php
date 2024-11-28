@@ -71,7 +71,6 @@ class students_list_autocomplete extends MoodleQuickForm_autocomplete {
      */
     public function setValue($value) {
         global $DB;
-        $values = (array) $value;
         $ids = array();
 
         if (empty($ids)) {

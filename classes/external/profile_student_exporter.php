@@ -288,9 +288,9 @@ class profile_student_exporter extends exporter {
         $studentid = $this->student->get_id();
         $moodleuser = \core_user::get_user($studentid, 'timezone');
 
-        // student current lesson
+        // student current lesson and consider new joiners that have no current exercise, their next exercise is the first
         $exerciseid = $this->student->get_current_exercise();
-        $currentlesson = array_values($this->subscriber->get_lesson_by_exerciseid($exerciseid))[1];
+        $currentlesson = $exerciseid ? array_values($this->subscriber->get_lesson_by_exerciseid($exerciseid))[1] : get_string('none');
 
         // module completion information
         $usermods = $this->student->get_priority()->get_completions();
@@ -343,9 +343,9 @@ class profile_student_exporter extends exporter {
 
         // Course activity section
         $lastlogindate = $this->student->get_last_login_date();
-        $lastlogindate = !empty($lastlogindate) ? $lastlogindate->format('M j\, Y') : '';
+        $lastlogindate = !empty($lastlogindate) ? $lastlogindate->format('M j\, Y') : get_string('none');
         $lastgradeddate = $this->student->get_last_graded_date();
-        $lastgradeddate = !empty($lastgradeddate) ? $lastgradeddate->format('M j\, Y') : '';
+        $lastgradeddate = !empty($lastgradeddate) ? $lastgradeddate->format('M j\, Y') : get_string('none');
 
         // graduation status
         if ($this->student->graduated()) {

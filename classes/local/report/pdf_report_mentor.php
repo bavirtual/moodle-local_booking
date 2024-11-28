@@ -64,7 +64,7 @@ class pdf_report_mentor extends pdf_report {
         $totalexercisegrades = count($exercisegrades);
         $examexercise = $this->course->get_graduation_exercise();
         $counter = 0;
-        $vatsimid = $this->student->get_profile_field('vatsimcid') ?: get_string('notfound', 'local_booking');
+        $vatsimid = $this->student->get_profile_field('vatsimid') ?: get_string('notfound', 'local_booking');
         $student = (object) ['vatsimid'=>$vatsimid, 'name'=>$this->student->get_name()];
 
         // go through student's exercise grades

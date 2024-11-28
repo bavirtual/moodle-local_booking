@@ -61,7 +61,7 @@ $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('admin');
 $PAGE->set_context($context);
 $PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
-$PAGE->set_heading($title, 'local_booking');
+$PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-local-booking');
 
 $renderer = $PAGE->get_renderer('local_booking');

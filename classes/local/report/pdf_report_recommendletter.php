@@ -81,7 +81,7 @@ class pdf_report_recommendletter extends pdf_report {
         // recommendation letter info
         $endorserid = get_user_preferences('local_booking_' . $this->course->get_id() . '_endorser', '', $this->student->get_id());
         $instructor = new instructor($this->course, $endorserid);
-        $vatsimid = $instructor->get_profile_field('vatsimcid') ?: get_string('notfound', 'local_booking');
+        $vatsimid = $instructor->get_profile_field('vatsimid') ?: get_string('notfound', 'local_booking');
 
         $recomendedby = !empty($instructor) ? $instructor->get_name() : get_string('notfound', 'local_booking');
         $recomendedbyVATSIM = $vatsimid;
@@ -92,7 +92,7 @@ class pdf_report_recommendletter extends pdf_report {
         $this->SetTextColor(0,0,0);
         $this->SetFont($this->fontfamily, '', 11);
         $this->Ln(25);
-        $vatsimid = $this->student->get_profile_field('vatsimcid') ?: get_string('notfound', 'local_booking');
+        $vatsimid = $this->student->get_profile_field('vatsimid') ?: get_string('notfound', 'local_booking');
 
         // start borderless table
         $html = '<table width="600" cellspacing="2" cellpadding="2">';

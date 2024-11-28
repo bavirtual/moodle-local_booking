@@ -68,7 +68,7 @@ $navbartext =get_string('bookingprogression', 'local_booking');
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('admin');   // wide page layout
 $PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
-$PAGE->set_heading($title, 'local_booking');
+$PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-local-booking');
 
 echo $OUTPUT->header();

@@ -1,5 +1,15 @@
 # Change log
 
+## [2024112800] - RELEASED 2024-11-28
+
+### Fixed
+
+- vatsimcid references replace with vatsimid
+
+### Changed
+
+- page headings to always show course title
+
 ## [2024112700] - RELEASED 2024-11-27
 
 ### Fixed

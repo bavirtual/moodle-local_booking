@@ -140,9 +140,17 @@
                     </dd></dt></dl>
                     {{/waitrestrictionenabled}}
                     {{#admin}}
-                    </br><span><a href="{{forcecompletionurl}}" onclick="return confirm('{{#str}} forcecompletionconfirm, local_booking {{/str}}');">{{#str}} forcecompletion, local_booking  {{/str}}</a></span>
-                    </br><span><a href="{{loginasurl}}">{{#str}} loginas {{/str}}</a></span>
+                    <dl><dt><dd>
+                        <span class="mb-3"><a href="{{loginasurl}}">{{#str}} loginas {{/str}}</a></span>
+                        <section class="node_category card d-inline-block w-100 mt-4 p-3">
+                            <h6 class="alert alert-danger">{{#str}} dangerarea, local_booking {{/str}}</h6>
+                            <span><a href="{{forcecompletionurl}}" onclick="return confirm('{{#str}} forcecompletionconfirm, local_booking {{/str}}');" title="{{#str}} forcecompletion_help, local_booking {{/str}}">
+                                {{#str}} forcecompletion, local_booking  {{/str}}</a>
+                            </span>
+                        </section>
+                    </dd></dt></dl>
                     {{/admin}}
+                    </dl>
                 </div>
             </section>
             {{! REPORTS SECTION }}

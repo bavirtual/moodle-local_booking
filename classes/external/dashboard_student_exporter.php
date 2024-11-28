@@ -65,7 +65,7 @@ class dashboard_student_exporter extends exporter {
         $data['simulator'] = $this->student->get_simulator();
         $data['profileurl'] = $CFG->wwwroot . '/local/booking/profile.php?courseid=' . $related['subscriber']->get_id() . '&userid=' . $this->student->get_id();
 
-        // get recency or relavent information dates depending on the filter view
+        // get recency or relevant information dates depending on the filter view
         switch ($related['filter']) {
             case 'active':
             case 'onhold':

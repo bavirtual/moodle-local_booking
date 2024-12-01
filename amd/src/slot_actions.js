@@ -17,8 +17,8 @@
  * Contain the logic for the quick add or update event modal.
  *
  * @module     local_booking/slot_actions
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @author     Mustafa Hajjar (mustafa.hajjar)
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

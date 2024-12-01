@@ -2,7 +2,7 @@
 /* stylelint-disable declaration-no-important */
 /**
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -21,19 +21,19 @@
     border-collapse: separate;
     border-bottom: 1px solid lightgray;
 }
-.posts_completed {
+.status_book {
     border-left: .3rem solid green !important;
 }
-.posts_grade {
+.status_grade {
     border-left: .3rem solid cornflowerblue !important;
 }
-.noposts_completed {
+.status_book_noposts {
     border-left: .3rem solid orange !important;
 }
-.not_completed {
+.status_lessons_incomplete {
     border-left: .3rem solid red !important;
 }
-.graduate {
+.status_graduating {
     border-left: .3rem solid black !important;
 }
 .booking-title {

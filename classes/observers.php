@@ -18,7 +18,7 @@
  * Grading observers.
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @category   event
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,7 +37,7 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
  * subscribed courses.
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @category   event handler
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

@@ -18,7 +18,7 @@
  * Session Booking Plugin
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,14 +27,20 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/group/lib.php');
 require_once($CFG->dirroot . '/local/booking/lib.php');
+require_once($CFG->dirroot . '/user/externallib.php');
 
+use context_course;
+use core_user_external;
 use core_external\external_api;
 use core_external\external_value;
 use core_external\external_warnings;
 use core_external\external_single_structure;
 use core_external\external_multiple_structure;
 use core_external\external_function_parameters;
+use local_booking\external\availability_week_exporter;
 use local_booking\external\logentry_exporter;
+use local_booking\external\dashboard_bookings_exporter;
+use local_booking\external\dashboard_mybookings_exporter;
 use local_booking\local\logbook\form\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\message\notification;
@@ -52,7 +58,7 @@ use local_booking\output\views\logentry_view;
  * Session Booking Plugin
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -106,7 +112,7 @@ class local_booking_external extends external_api {
      * @param int $userid    The user id for single user selection.
      * @param string $filter The filter to show students, inactive (including graduates), suspended, and default to active.
      * @return array         Array of booking objects.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function get_bookings_view(int $courseid, int $userid, string $filter) {
         global $USER;
@@ -146,7 +152,7 @@ class local_booking_external extends external_api {
      * @since Moodle 2.5
      */
     public static function get_bookings_view_returns() {
-        return \local_booking\external\dashboard_bookings_exporter::get_read_structure();
+        return dashboard_bookings_exporter::get_read_structure();
     }
 
     /**
@@ -166,9 +172,9 @@ class local_booking_external extends external_api {
     /**
      * Retrieve instructor's booking.
      *
-     * @param int $courseid          The course id for context.
-     * @return array                 Array of instructor booking objects.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @param int $courseid The course id for context.
+     * @return array Array of instructor booking objects.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function get_instructor_bookings_view(int $courseid) {
         global $USER;
@@ -200,7 +206,7 @@ class local_booking_external extends external_api {
      * @since Moodle 2.5
      */
     public static function get_instructor_bookings_view_returns() {
-        return \local_booking\external\dashboard_mybookings_exporter::get_read_structure();
+        return dashboard_mybookings_exporter::get_read_structure();
     }
 
     /**
@@ -213,7 +219,6 @@ class local_booking_external extends external_api {
         return new external_function_parameters(
             array(
                 'courseid'  => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
-                'wildcard'  => new external_value(PARAM_RAW, 'The search wildcard', VALUE_DEFAULT),
             )
         );
     }
@@ -221,39 +226,66 @@ class local_booking_external extends external_api {
     /**
      * Retrieve student names for autocomplete.
      *
-     * @param int $courseid          The course id for context.
-     * @param string $wildcard       The search wildcard.
-     * @return array                 Array of student names exported.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @param int $courseid The course id for context.
+     * @return array Array of student names exported.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
-    public static function get_student_names(int $courseid, string $wildcard) {
+    public static function get_student_names(int $courseid) {
+        global $PAGE;
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_student_names_parameters(), array(
                 'courseid' => $courseid,
-                'wildcard' => $wildcard,
                 )
             );
+
+        $warnings = [];
 
         // set the subscriber object
         $subscriber = self::get_course_subscriber_context('/local/booking/', $courseid);
 
-        // get student names data
-        $studentrecords = $subscriber->get_participant_names('active', true, 'student', $wildcard);
+        require_capability('local/booking:view', $subscriber->get_context());
 
-        $students = array_map(function($userid, $fullname){return ['userid'=>$userid, 'fullname'=>$fullname];},array_keys($studentrecords), array_values($studentrecords));
+        // get extra required fields for user combobox search
+        $userfieldsapi = \core_user\fields::for_identity($subscriber->get_context(), false)->with_userpic();
+        $extrauserfields = $userfieldsapi->get_required_fields([\core_user\fields::PURPOSE_IDENTITY]);
 
-        return $students;
+        // For the returned users, Add a couple of extra fields that we need for the search module.
+        $users = array_map(function ($user) use ($PAGE, $extrauserfields) {
+            $userforselector = new \stdClass();
+            $userforselector->id = $user->id;
+            $userforselector->fullname = fullname($user);
+            foreach (\core_user\fields::get_name_fields() as $field) {
+                $userforselector->$field = $user->$field ?? null;
+            }
+            $userpicture = new user_picture($user);
+            $userpicture->size = 1;
+            $userforselector->profileimageurl = $userpicture->get_url($PAGE)->out(false);
+            $userpicture->size = 0; // Size f2.
+            $userforselector->profileimageurlsmall = $userpicture->get_url($PAGE)->out(false);
+            foreach ($extrauserfields as $field) {
+                $userforselector->$field = $user->$field ?? null;
+            }
+            return $userforselector;
+        }, $subscriber->get_participant_names('active', true, 'student'));
+        sort($users);
+
+        return [
+            'users' => $users,
+            'warnings' => $warnings,
+        ];
     }
 
     /**
-     * Returns description of method result value.
+     * Returns description of what the users & warnings should return.
      *
-     * @return external_description.
-     * @since Moodle 2.5
+     * @return external_single_structure
      */
-    public static function get_student_names_returns() {
-        return new external_multiple_structure(\local_booking\external\list_student_name_exporter::get_read_structure());
+    public static function get_student_names_returns(): external_single_structure {
+        return new external_single_structure([
+            'users' => new external_multiple_structure(core_user_external::user_description()),
+            'warnings' => new external_warnings(),
+        ]);
     }
 
     /**
@@ -304,7 +336,7 @@ class local_booking_external extends external_api {
      * @param int $courseid The course id in context.
      * @param int $userid The user user id in context.
      * @return array array of slots created.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function get_logentry_by_id(int $logentryid, int $courseid, int $userid) {
         global $USER;
@@ -352,7 +384,7 @@ class local_booking_external extends external_api {
         return new external_function_parameters(
             array(
                 'pirep'  => new external_value(PARAM_TEXT, 'The PIREP id', VALUE_DEFAULT),
-                'courseid'  => new external_value(PARAM_INT, 'The cousre id', VALUE_DEFAULT),
+                'courseid'  => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
                 'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
                 'exerciseid'  => new external_value(PARAM_INT, 'The exercise id', VALUE_DEFAULT),
             )
@@ -367,7 +399,7 @@ class local_booking_external extends external_api {
      * @param int $userid The user id in context.
      * @param int $exerciseid The exerciseid id in context.
      * @return array array of slots created.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function get_pirep($pirep, $courseid, $userid, $exerciseid) {
 
@@ -498,7 +530,7 @@ class local_booking_external extends external_api {
      * @param int  $courseid The course id in context.
      * @param bool $cascade Whether to ignore cascading delete of linked logentry.
      * @return array array of slots created.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function delete_logentry($logentryid, $userid, $courseid, $cascade) {
         global $PAGE;
@@ -565,7 +597,7 @@ class local_booking_external extends external_api {
      * @param   int     $time       The timestamp of the first day in the week to be shown
      * @param   int     $courseid   The course to be included
      * @param   int     $categoryid The category to be included
-     * @param   string  $action     The action to be pefromed if in booking view
+     * @param   string  $action     The action to be performed if in booking view
      * @param   string  $view       The view to be displayed if user or all
      * @param   int     $studentid  The student id the action is performed on
      * @param   int     $exercise   The exercise id the action is associated with
@@ -609,7 +641,7 @@ class local_booking_external extends external_api {
      * @return external_description
      */
     public static function get_weekly_view_returns() {
-        return \local_booking\external\availability_week_exporter::get_read_structure();
+        return availability_week_exporter::get_read_structure();
     }
 
     /**
@@ -640,7 +672,7 @@ class local_booking_external extends external_api {
      *
      * @param {object} $bookedslot array containing booked slots.
      * @param int $exerciseid The exercise the session is for.
-     * @param int $studentid The student id assocaited with the slot.
+     * @param int $studentid The student id associated with the slot.
      * @param int $refslotid The session slot associated.
      * @return array array of slots created.
      */
@@ -685,7 +717,7 @@ class local_booking_external extends external_api {
         $result = $newbooking->save();
 
         if ($result) {
-            // remove restriciton override for the user
+            // remove restriction override for the user
             set_user_preference('local_booking_' .$courseid . '_availabilityoverride', false, $studentid);
 
             // remove instructor from inactive group where applicable
@@ -750,7 +782,7 @@ class local_booking_external extends external_api {
      * @param string $comment
      * @param bool $noshow
      * @return bool $result
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function cancel_booking($bookingid, $comment, $noshow) {
         global $COURSE;
@@ -782,7 +814,7 @@ class local_booking_external extends external_api {
             // cancel the booking
             if ($result = $booking->cancel($noshow)) {
 
-                // suspend the student in the case of repetetive noshows
+                // suspend the student in the case of repetitive noshows
                 if ($noshow) {
                     $student = new student($subscriber, $booking->get_studentid());
                     if (count($student->get_noshow_bookings()) > 1) {
@@ -867,7 +899,7 @@ class local_booking_external extends external_api {
      *
      * @param {object} $bookedslot array containing booked slots.
      * @return array array of slots created.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function is_conflicting_booking($studentid, $slottobook) {
         global $USER;
@@ -947,7 +979,7 @@ class local_booking_external extends external_api {
      * @param int $courseid      The course id.
      * @param int $userid        The user id.
      * @return bool $result      The result of the availability override operation.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function update_user_preferences($preference, $value, $courseid, $userid) {
 
@@ -994,7 +1026,7 @@ class local_booking_external extends external_api {
      *
      * @return external_function_parameters
      */
-    public static function update_enrolement_status_parameters() {
+    public static function update_enrolment_status_parameters() {
         return new external_function_parameters(array(
                 'status' => new external_value(PARAM_BOOL, 'The suspension status', VALUE_DEFAULT),
                 'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
@@ -1004,18 +1036,18 @@ class local_booking_external extends external_api {
     }
 
     /**
-     * Suspend or unsuspend a user course enrolement.
+     * Suspend or unsuspend a user course enrolment.
      *
      * @param bool $status       The suspend status true/false.
      * @param int $courseid      The course id.
      * @param int $studentid     The student id.
      * @return bool $result      The result of the availability override operation.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
-    public static function update_enrolement_status($status, $courseid, $studentid) {
+    public static function update_enrolment_status($status, $courseid, $studentid) {
 
         // Parameter validation.
-        $params = self::validate_parameters(self::update_enrolement_status_parameters(), array(
+        $params = self::validate_parameters(self::update_enrolment_status_parameters(), array(
             'status' => $status,
             'courseid' => $courseid,
             'userid'  => $studentid,
@@ -1042,7 +1074,7 @@ class local_booking_external extends external_api {
      * @return external_description.
      * @since Moodle 2.5
      */
-    public static function update_enrolement_status_returns() {
+    public static function update_enrolment_status_returns() {
         return new external_single_structure(
             array(
                 'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),
@@ -1074,7 +1106,7 @@ class local_booking_external extends external_api {
      * @param int $courseid      The course id.
      * @param int $studentid     The student id.
      * @return bool $result      The result of the availability override operation.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function update_user_group($group, $ismember, $courseid, $studentid) {
 
@@ -1139,7 +1171,7 @@ class local_booking_external extends external_api {
      * @param int    $userid     The user id.
      * @param string $comment    The comment text.
      * @return bool  $result     The comment save was successful.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function update_profile_comment(int $courseid, int $userid, string $comment) {
 
@@ -1212,7 +1244,7 @@ class local_booking_external extends external_api {
      * @param int $week the week in which the slot occur.
      * @return bool operation result.
      * @since Moodle 2.5
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function save_slots($slots, $courseid, $year, $week) {
         global $USER;
@@ -1289,7 +1321,7 @@ class local_booking_external extends external_api {
      * @param array $events A list of slots to create.
      * @return bool operation result.
      * @since Moodle 2.5
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function delete_slots($courseid, $year, $week) {
         global $USER;
@@ -1359,7 +1391,7 @@ class local_booking_external extends external_api {
      * @param int $courseid   The course id.
      * @param int $exerciseid The exerciser id.
      * @return string exercise name.
-     * @throws moodle_exception if user doesnt have the permission to create events.
+     * @throws moodle_exception if user doesn't have the permission to create events.
      */
     public static function get_exercise_name($courseid, $exerciseid, $returnempty) {
 

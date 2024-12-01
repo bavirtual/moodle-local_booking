@@ -19,7 +19,7 @@
  * instructor booked sessions, and instructor participation view.
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -34,7 +34,7 @@ require_once(__DIR__ . '/lib.php');
 // Get URL parameters
 $courseid   = optional_param('courseid', SITEID, PARAM_INT);
 $course     = get_course($courseid);
-$studentid  = optional_param('userid', 0, PARAM_INT);
+$studentid  = optional_param('studentid', 0, PARAM_INT);
 $sorttype   = optional_param('sort', '', PARAM_ALPHA);
 $action     = optional_param('action', 'book', PARAM_ALPHA);
 $filter     = optional_param('filter', 'active', PARAM_ALPHA);

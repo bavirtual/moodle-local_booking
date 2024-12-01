@@ -19,14 +19,14 @@ namespace local_booking\output\views;
 use local_booking\external\dashboard_bookings_exporter;
 use local_booking\external\dashboard_mybookings_exporter;
 use local_booking\external\dashboard_participation_exporter;
-use local_booking\output\form\booking_view_search;
+use moodle_url;
 use stdClass;
 
 /**
  * Class to output instructor dashboard & interim booking views.
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -68,14 +68,11 @@ class booking_view extends base_view {
                 // show page bar and search form if required
                 $course = $this->related['subscriber'];
                 if ($course->get_students_count() > LOCAL_BOOKING_DASHBOARDPAGESIZE) {
-
-                    // show autocomplete search form
-                    $params = array('courseid'=>$course->get_id());
-                    $searchform = new booking_view_search(null, $params,'post','',array('id'=>'searchform'));
-                    $output .= $searchform->render();
-
                     // show paging bar
+                    $output .= $this->users_selector($course->get_course());
                     $output .= $OUTPUT->paging_bar($course->get_students_count(), $this->data['page'], LOCAL_BOOKING_DASHBOARDPAGESIZE, $PAGE->url);
+                    $baseurl = new moodle_url('/local/booking/view.php', ['courseid' => $course->get_id()]);
+                    $PAGE->requires->js_call_amd('local_booking/user_search', 'init', [$baseurl->out(false)]);
                 }
             }
 
@@ -132,5 +129,35 @@ class booking_view extends base_view {
         }
 
         return $html ? $output : $this->exporteddata;
+    }
+    /**
+     * Renders the user selector trigger element.
+     *
+     * @param object $course The course object.
+     * @param int|null $userid The user ID.
+     * @param int|null $groupid The group ID.
+     * @return string The raw HTML to render.
+     */
+    public function users_selector(object $course, ?int $userid = null, ?int $groupid = null): string {
+        global $PAGE;
+
+        $courserenderer = $PAGE->get_renderer('core', 'course');
+        $resetlink = new moodle_url('/local/booking/view.php', ['courseid' => $course->id]);
+        $usersearch = '';
+
+        if ($userid) {
+            $user = core_user::get_user($userid);
+            $usersearch = fullname($user);
+        }
+
+        return $courserenderer->render(
+            new \core_course\output\actionbar\user_selector(
+                course: $course,
+                resetlink: $resetlink,
+                userid: $userid,
+                groupid: $groupid,
+                usersearch: $usersearch
+            )
+        );
     }
 }

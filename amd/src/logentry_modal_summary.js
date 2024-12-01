@@ -18,8 +18,8 @@
  * Improvised from core_calendar.
  *
  * @module     local_booking/logentry_modal_summary
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @author     Mustafa Hajjar (mustafa.hajjar)
+ * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

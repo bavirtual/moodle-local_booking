@@ -18,7 +18,7 @@
  * Graduates a student from the course
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2022
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

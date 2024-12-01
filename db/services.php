@@ -29,7 +29,7 @@
  *
  * @package    local_booking
  * @category   webservice
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -87,7 +87,7 @@ $functions = array(
         'classname' => 'local_booking_external',
         'classpath' => '/local/booking/externallib.php',
         'methodname' => 'cancel_booking',
-        'description' => 'Cancel intructor active booking',
+        'description' => 'Cancel instructor active booking',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => '',
@@ -194,7 +194,7 @@ $functions = array(
     'local_booking_update_suspended_status' => array(
         'classname' => 'local_booking_external',
         'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'update_enrolement_status',
+        'methodname' => 'update_enrolment_status',
         'description' => 'Suspended status update for the course',
         'type' => 'write',
         'capabilities' => '',
@@ -347,7 +347,7 @@ $services = array(
         'functions' => array('local_booking_update_suspended_status'), // Unused as we add the service in each function definition, third party services would use this.
         'enabled' => 1,         // if 0, then token linked to this service won't work
         'restrictedusers' => 0,
-        'shortname' => 'update_enrolement_status',
+        'shortname' => 'update_enrolment_status',
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),

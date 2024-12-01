@@ -17,7 +17,7 @@
  * This module handles session booking and logentry view changes.
  *
  * @module     local_booking/booking_view_manager
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

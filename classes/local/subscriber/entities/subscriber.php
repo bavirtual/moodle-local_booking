@@ -18,7 +18,7 @@
  * Subscribed course custom fields information
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -404,10 +404,10 @@ class subscriber implements subscriber_interface {
      * @param string $wildcard      Wildcard value for autocomplete
      * @return array                Array of student ids & names
      */
-    public function get_participant_names(string $filter = 'active', bool $includeonhold = false, string $roles = null, string $wildcard = null) {
-        $participantrecs = participant_vault::get_participants_simple($this->courseid, $filter, $includeonhold, $roles, $wildcard);
-        $participants = array_combine(array_keys($participantrecs), array_column($participantrecs, 'fullname'));
-        return $participants;
+    public function get_participant_names(string $filter = 'active', bool $includeonhold = false, string $roles = null) {
+        $participantrecs = participant_vault::get_participants_simple($this->courseid, $filter, $includeonhold, $roles);
+        // $participants = array_combine(array_keys($participantrecs), array_column($participantrecs, 'fullname'));
+        return $participantrecs;
     }
 
     /**

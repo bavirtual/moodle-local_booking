@@ -1,14 +1,20 @@
 # Change log
 
-## [2024112800] - RELEASED 2024-11-28
+## [2024120100] - RELEASED 2024-12-01
 
 ### Fixed
 
 - vatsimcid references replace with vatsimid
+- active booking edge cases (first/last bookings)
+
+### Added
+
+- new user search combo box
 
 ### Changed
 
 - page headings to always show course title
+- removed author email
 
 ## [2024112700] - RELEASED 2024-11-27
 

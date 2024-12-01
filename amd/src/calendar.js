@@ -23,8 +23,8 @@
  *  Improvised from core_calendar.
  *
  * @module     local_booking/calendar
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @author     Mustafa Hajjar (mustafa.hajjar)
+ * @copyright  BAVirtual.co.uk © 2022
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

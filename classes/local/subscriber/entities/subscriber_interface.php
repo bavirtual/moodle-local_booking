@@ -18,7 +18,7 @@
  * Class interface for data access of course participants
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -96,10 +96,9 @@ interface subscriber_interface {
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @param string $roles         The roles of the participants
-     * @param string $wildcard      Wildcard value for autocomplete
      * @return array                Array of student ids & names
      */
-    public function get_participant_names(string $filter = 'active', bool $includeonhold = false, string $roles = null, string $wildcard = null);
+    public function get_participant_names(string $filter = 'active', bool $includeonhold = false, string $roles = null);
 
     /**
      * Get a student.

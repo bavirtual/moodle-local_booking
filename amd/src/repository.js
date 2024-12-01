@@ -17,7 +17,7 @@
  * A javascript module to handle calendar ajax actions.
  *
  * @module     local_booking/repository
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -413,6 +413,23 @@ export const isConflictingBookings = (studentid, bookedslot) => {
             courseid: courseId,
             userid: userId,
             comment: comment
+        }
+    };
+
+    return Ajax.call([request])[0];
+ };
+
+/**
+ * Get student names.
+ *
+ * @param {Number} courseId The course id
+ * @return {Promise}
+ */
+export const userFetch = (courseId) => {
+    const request = {
+        methodname: 'local_booking_get_student_names',
+        args: {
+            courseid: courseId,
         }
     };
 

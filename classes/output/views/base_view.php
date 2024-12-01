@@ -26,7 +26,7 @@ use local_booking\local\subscriber\entities\subscriber;
  * Abstract class for the Session booking page view output.
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

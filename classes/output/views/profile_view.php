@@ -23,7 +23,7 @@ require_once($CFG->dirroot . '/local/booking/classes/external/profile_student_ex
  * Class to output student profile view.
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

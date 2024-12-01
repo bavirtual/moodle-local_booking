@@ -19,7 +19,7 @@
  * This module handles datatables for the logbook view.
  *
  * @module     local_booking/logbook_easa
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

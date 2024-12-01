@@ -18,7 +18,7 @@
  * Hook callbacks for local_booking
  *
  * @package    local_booking
- * @copyright  2024 Mustafa Hajjar <mustafahajjar@gmail.com>
+ * @copyright  2024 Mustafa Hajjar <mustafa.hajjar>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

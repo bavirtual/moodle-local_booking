@@ -18,7 +18,7 @@
  * Class containing Moodle callback functions and plugin constants
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -37,19 +37,19 @@ use local_booking\local\subscriber\entities\subscriber;
  */
 define('LOCAL_BOOKING_DASHBOARDPAGESIZE', 50);
 /**
- * LOCAL_BOOKING_RECENCYWEIGHT - constant value for session recency weight multipler
+ * LOCAL_BOOKING_RECENCYWEIGHT - constant value for session recency weight multiplier
  */
 define('LOCAL_BOOKING_RECENCYWEIGHT', 10);
 /**
- * LOCAL_BOOKING_SLOTSWEIGHT - constant value for session availability slots weight multipler
+ * LOCAL_BOOKING_SLOTSWEIGHT - constant value for session availability slots weight multiplier
  */
 define('LOCAL_BOOKING_SLOTSWEIGHT', 50);
 /**
- * LOCAL_BOOKING_ACTIVITYWEIGHT - constant value for course activity weight multipler
+ * LOCAL_BOOKING_ACTIVITYWEIGHT - constant value for course activity weight multiplier
  */
 define('LOCAL_BOOKING_ACTIVITYWEIGHT', 1);
 /**
- * LOCAL_BOOKING_COMPLETIONWEIGHT - constant value for lesson completion weight multipler
+ * LOCAL_BOOKING_COMPLETIONWEIGHT - constant value for lesson completion weight multiplier
  */
 define('LOCAL_BOOKING_COMPLETIONWEIGHT', 10);
 /**
@@ -69,7 +69,7 @@ define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);
  */
 define('LOCAL_BOOKING_OVERDUE_PERIOD', 10);
 /**
- * LOCAL_BOOKING_MIN_SLOT_PERIOD - minimum amout of hours allowed to book an availability slot
+ * LOCAL_BOOKING_MIN_SLOT_PERIOD - minimum amount of hours allowed to book an availability slot
  */
 define('LOCAL_BOOKING_MIN_SLOT_PERIOD', 2);
 /**
@@ -85,7 +85,7 @@ define('LOCAL_BOOKING_NOSHOWPERIOD', 90);
  */
 define('LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD', 1);
 /**
- * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group quering purposes
+ * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group querying purposes
  */
 define('LOCAL_BOOKING_ONHOLDGROUP', 'OnHold');
 /**
@@ -93,11 +93,11 @@ define('LOCAL_BOOKING_ONHOLDGROUP', 'OnHold');
  */
 define('LOCAL_BOOKING_KEEPACTIVEGROUP', 'Keep Active');
 /**
- * LOCAL_BOOKING_INACTIVEGROUP - constant string value for inactive instructors for group quering purposes
+ * LOCAL_BOOKING_INACTIVEGROUP - constant string value for inactive instructors for group querying purposes
  */
 define('LOCAL_BOOKING_INACTIVEGROUP', 'Inactive Instructors');
 /**
- * LOCAL_BOOKING_GRADUATESGROUP - constant string value for graduated students for group quering purposes
+ * LOCAL_BOOKING_GRADUATESGROUP - constant string value for graduated students for group querying purposes
  */
 define('LOCAL_BOOKING_GRADUATESGROUP', 'Graduates');
 /**
@@ -272,7 +272,7 @@ function local_booking_output_fragment_logentry_form($args) {
         parse_str($args['formdata'], $formdata);
     }
 
-    $context = \context_user::instance($USER->id);
+    $context = context_user::instance($USER->id);
 
     if (WS_SERVER) {
         // Request via WS, ignore sesskey checks in form library.

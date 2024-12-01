@@ -19,7 +19,7 @@
  * This module is compatible with core/form-autocomplete.
  *
  * @module     local_booking/students_datasource
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

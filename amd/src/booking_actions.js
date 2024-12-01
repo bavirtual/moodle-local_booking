@@ -18,8 +18,8 @@
  * including CRUD and UI events.
  *
  * @module     local_booking/booking_actions
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
- * @copyright  BAVirtual.co.uk © 2021
+ * @author     Mustafa Hajjar (mustafa.hajjar)
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define([

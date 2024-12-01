@@ -24,7 +24,7 @@ use local_booking\local\subscriber\entities\subscriber;
  * Hook callbacks to get the enrolment information.
  *
  * @package    local_booking
- * @copyright  2024 Mustafa Hajjar <mustafahajjar@gmail.com>
+ * @copyright  2024 Mustafa Hajjar <mustafa.hajjar>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class user_enrolment_callbacks {

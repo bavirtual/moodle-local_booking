@@ -18,7 +18,7 @@
  * Class representing all student course participants
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -34,10 +34,8 @@ use local_booking\local\subscriber\data_access\subscriber_vault;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\session\entities\priority;
-use local_booking\local\session\entities\booking;
 use local_booking\local\session\entities\grade;
 use local_booking\local\slot\entities\slot;
-use local_booking\local\subscriber\entities\subscriber;
 
 class student extends participant {
 
@@ -998,17 +996,29 @@ class student extends participant {
             if (!empty($record->waitdate))
                 $this->waitdate = $record->waitdate;
         }
-        // set status
+
+        // set activity status tag
+        // check graduating students first
         if ($this->has_completed_coursework()) {
-            $this->progressionstatus = 'graduate';
-        } elseif ($this->lessonscomplete || !$this->course->requires_lesson_completion()) {
-            if ($record->booked) {
-                $this->progressionstatus = 'posts_grade';
-            } else {
-                $this->progressionstatus = $record->hasactiveposts ? 'posts_completed' : 'noposts_completed';
-            }
-        } else {
-            $this->progressionstatus = 'not_completed';
+            $this->progressionstatus = 'status_graduating';
+            return;
         }
+
+        // checking for lesson completion (if enabled) and booked status
+        if ($this->lessonscomplete || !$this->course->requires_lesson_completion()) {
+
+            // status booked and is waiting to be graded next
+            if ($record->booked) {
+                $this->progressionstatus = 'status_grade';
+                return;
+            }
+
+            // status lessons completed (if enabled) and either has posts or not
+            $this->progressionstatus = $record->hasactiveposts ? 'status_book' : 'status_book_noposts';
+            return;
+        }
+
+        // status lessons incomplete
+        $this->progressionstatus = 'status_lessons_incomplete';
     }
 }

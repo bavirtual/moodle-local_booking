@@ -3,7 +3,7 @@
  * Session Booking plugin en language file
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -58,7 +58,7 @@ $string['commentcancel'] = 'Please provide the student with a short comment on t
 $string['commentnoshow'] = 'Confirm student failed to show without a prior notice.';
 $string['commentnoshow0'] = 'This is the student\'s first no-show, therefore they will be sent a warning.';
 $string['commentnoshow1'] = 'This is the student\'s second no-show within 3 months, therefore they will be suspended.';
-$string['commentnoshow2'] = 'This is the student\'s third no-show within 3 months, therefore they will be scheduled to be unenroled from the course.';
+$string['commentnoshow2'] = 'This is the student\'s third no-show within 3 months, therefore they will be scheduled to be unenrolled from the course.';
 $string['configmissing'] = 'Failed to open {$a}';
 $string['coursecompletion'] = 'course completion';
 $string['customfielddual'] = 'Dual';
@@ -110,11 +110,11 @@ $string['statusbooked'] = 'confirmed';
 $string['statustentative'] = 'tentative';
 $string['student'] = 'Student';
 $string['studentavailability'] = 'Student availability';
-$string['tag_graduate'] = 'Ready to graduate the course';
-$string['tag_posts_completed'] = 'Bookable and has posts';
-$string['tag_posts_grade'] = 'Session booked ready to grade';
-$string['tag_noposts_completed'] = 'Students did not post availability';
-$string['tag_not_completed'] = 'Unbookable (has not completed lessons)';
+$string['tag_status_graduating'] = 'Ready to graduate the course';
+$string['tag_status_book'] = 'Availability slots posted';
+$string['tag_status_grade'] = 'Session booked<br/>Ready to grade';
+$string['tag_status_book_noposts'] = 'No availability<br/>slots posted';
+$string['tag_status_lessons_incomplete'] = 'Can not book<br/>Did not complete lesson';
 $string['taskcron'] = 'Background processing for session booking activity';
 $string['tasknotifications'] = 'Background processing of session booking scheduled notifications';
 $string['unknown'] = 'No grading record!';
@@ -229,7 +229,7 @@ $string['logbookformatcourse'] = 'Course format';
 $string['logbookfunc'] = 'Function';
 $string['logbookfstd'] = 'FSTD';
 $string['logbookifr'] = 'IFR';
-$string['logbookistr'] = 'Instr-uctor';
+$string['logbookistr'] = 'Instructor';
 $string['logbooklabel'] = 'Logbook';
 $string['logbooklandings'] = 'Landings';
 $string['logbookmakemodel'] = 'Make, Model';
@@ -278,9 +278,9 @@ $string['p2multicrew_help'] = 'P2 commonly the trainee';
 $string['p2pirep'] = 'P2 PIREP';
 $string['pictime'] = 'PIC time';
 $string['pictime_help'] = 'Flight time logged for the pilot in command (PIC). As per the EASA <a href="https://www.easa.europa.eu/sites/default/files/dfu/Part-FCL.pdf">Part-FLC</a>
-    [pg30]. "the applicant for or the holder of a pilot licence may log as PIC time all solo flight time, flight time as SPIC and flight time under supervision..."';
+    [pg30]. "the applicant for or the holder of a pilot license may log as PIC time all solo flight time, flight time as SPIC and flight time under supervision..."';
 $string['picustime'] = 'PICUS time';
-$string['picustime_help'] = 'Flight time logged by the pilot in command under supervision (PICUS), which is the FO or the student that passes a checkride';
+$string['picustime_help'] = 'Flight time logged by the pilot in command under supervision (PICUS), which is the FO or the student that passes a check ride';
 $string['pilot'] = 'Pilot';
 $string['pilotlogbook'] = 'Pilot\'s Logbook';
 $string['pirep'] = 'PIREP';
@@ -336,7 +336,7 @@ $string['graduationconfirmationnotify1'] = '<li style="padding-bottom: 20px;">A 
 $string['graduationconfirmationnotify2'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to members of the same group.</li>';
 $string['feedbackreport'] = 'Feedback report';
 $string['forcecompletion'] = 'Force course completion';
-$string['forcecompletion_help'] = 'Intended to force course completion for legacy graduates';
+$string['forcecompletion_help'] = 'Intended for forcing course completion for legacy graduates';
 $string['forcecompletionconfirm'] = 'Forcing completion will flag all course requirements as complete. Are you sure you want to force course completion?';
 $string['instructorsince'] = 'In {$a} role since';
 $string['keepactive'] = 'Keep active';

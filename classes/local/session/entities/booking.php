@@ -18,7 +18,7 @@
  * Session Booking Plugin
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -435,9 +435,11 @@ class booking implements booking_interface {
         if (!empty($bookings)) {
             $lastbooking = new booking();
             $lastbooking->load($bookings[0]);
-            if (!empty($bookings[1])) {
+
+            // active booking is either the same for edge (first/last exercise)
+            if (!empty($bookings[1]) || $lastbooking->active()) {
                 $activebooking = new booking();
-                $activebooking->load($bookings[1]);
+                $activebooking->load($bookings[($lastbooking->active() ? 0 : 1)]);
             }
         }
         return [$lastbooking, $activebooking];

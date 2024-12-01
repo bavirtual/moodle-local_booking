@@ -18,12 +18,12 @@
  * Session Booking Plugin
  *
  * @package    local_booking
- * @author     Mustafa Hajjar (mustafahajjar@gmail.com)
+ * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2024112800;
+$plugin->version = 2024120100;
 $plugin->component = 'local_booking';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '2.1';

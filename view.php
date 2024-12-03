@@ -34,6 +34,7 @@ require_once(__DIR__ . '/lib.php');
 // Get URL parameters
 $courseid   = optional_param('courseid', SITEID, PARAM_INT);
 $course     = get_course($courseid);
+$userid  = optional_param('userid', 0, PARAM_INT);
 $studentid  = optional_param('studentid', 0, PARAM_INT);
 $sorttype   = optional_param('sort', '', PARAM_ALPHA);
 $action     = optional_param('action', 'book', PARAM_ALPHA);
@@ -68,7 +69,7 @@ $instructor = $COURSE->subscriber->get_instructor($USER->id);
 // get booking view data
 $data = [
     'instructor' => $instructor,
-    'studentid'  => $studentid,
+    'studentid'  => $studentid ?: $userid,
     'action'     => $action,
     'view'       => $action == 'confirm' ? $action : 'sessions',
     'sorttype'   => $sorttype,

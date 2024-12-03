@@ -1,5 +1,11 @@
 # Change log
 
+## [2024120300] - RELEASED 2024-12-03
+
+### Fixed
+
+- booking confirm page duplicate entries
+
 ## [2024120100] - RELEASED 2024-12-01
 
 ### Fixed

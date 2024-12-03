@@ -160,7 +160,7 @@ abstract class base_view {
 
         // pop exams
         if (array_key_exists('excludeexams', $options) && $options['excludeexams']) {
-            unset($modsexport[array_search($subscriber->get_graduation_exercise(), array_column($modsexport, 'exerciseid'))]);
+            unset($modsexport[array_search($subscriber->get_graduation_exercise_id(), array_column($modsexport, 'exerciseid'))]);
         }
 
         // // pop quizes

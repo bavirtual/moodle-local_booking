@@ -42,7 +42,7 @@ class user_enrolment_callbacks {
             // check for enrolment role
             if (get_all_roles()[$hook->roleid]->archetype == 'student') {
                 $student = new student($instance->courseid, $hook->get_userid());
-                $nextexerciseid = $student->get_next_exercise();
+                $nextexerciseid = $student->get_next_exercise()->id;
                 $student->update_statistic('nextexerciseid', $nextexerciseid);
             }
         }

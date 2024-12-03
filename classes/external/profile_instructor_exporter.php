@@ -246,7 +246,7 @@ class profile_instructor_exporter extends exporter {
         $moodleuser = \core_user::get_user($instructorid, 'timezone');
 
         // sessions summary data
-        $examid = $this->subscriber->get_graduation_exercise();
+        $examid = $this->subscriber->get_graduation_exercise_id();
         $logbook = $this->instructor->get_logbook(true);
         $summary = $logbook->get_summary(false, false, $examid);
 

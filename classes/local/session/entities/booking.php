@@ -318,7 +318,7 @@ class booking implements booking_interface {
      *
      * @return int
      */
-    public function get_exerciseid() {
+    public function get_exercise_id() {
         return $this->exerciseid;
     }
 

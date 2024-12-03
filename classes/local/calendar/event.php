@@ -145,7 +145,7 @@ class event {
             $this->courseid     = $eventinfo->id;
             $this->coursename   = $eventinfo->name;
             $this->exerciseid   = $eventinfo->cmid;
-            $this->exercise     = $COURSE->subscriber->get_exercise_name($eventinfo->cmid);
+            $this->exercise     = $COURSE->subscriber->get_exercise($eventinfo->cmid)->name;
             $this->instructorid = $eventinfo->instid;
             $this->instructor   = participant::get_fullname($eventinfo->instid);
             $this->studentid    = $eventinfo->stdid;

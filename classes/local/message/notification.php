@@ -151,7 +151,7 @@ class notification extends \core\message\message {
             'coursename'    => $COURSE->shortname,
             'student'       => student::get_fullname($studentid),
             'sessiondate'   => $sessiondatetime,
-            'exercise'      => $COURSE->subscriber->get_exercise_name($exerciseid),
+            'exercise'      => $COURSE->subscriber->get_exercise($exerciseid)->name,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=>$courseid)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=>$courseid)))->out(false),
             'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=>$exerciseid)))->out(false),
@@ -187,7 +187,9 @@ class notification extends \core\message\message {
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
             'logbookurl'    => (new \moodle_url('/local/booking/logbook.php', array('courseid'=>$COURSE->id, 'format'=>'std')))->out(false),
-            'title'         => $logentry->get_flighttype() == 'solo' ? get_string('soloflight', 'local_booking') : $COURSE->subscriber->get_exercise_name($logentry->get_exerciseid()),
+            'title'         => $logentry->get_flighttype() == 'solo' ?
+                get_string('soloflight', 'local_booking') :
+                $COURSE->subscriber->get_exercise($logentry->get_exercise_id())->name,
             'student'       => student::get_fullname($logentry->get_userid()),
             'instructor'    => instructor::get_fullname($USER->id),
             'groundtime'    => $logentry->get_groundtime(false),
@@ -232,7 +234,7 @@ class notification extends \core\message\message {
             'instructorname'=> instructor::get_fullname($USER->id),
             'studentname'   => student::get_fullname($booking->get_studentid()),
             'sessiondate'   => (new \DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
-            'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
+            'exercise'      => $COURSE->subscriber->get_exercise($booking->get_exercise_id())->name,
             'comment'       => $comment,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
         );
@@ -286,7 +288,7 @@ class notification extends \core\message\message {
             'coursename'    => $COURSE->shortname,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
-            'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
+            'exercise'      => $COURSE->subscriber->get_exercise($booking->get_exercise_id())->name,
             'studentname'   => $student->get_name(),
             'instructorname'=> $instructor->get_name(),
             'sessiondate'   => (new \DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
@@ -329,7 +331,7 @@ class notification extends \core\message\message {
             'coursename'    => $course->get_shortname(),
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
-            'exercise'      => $course->get_exercise_name($exerciseid),
+            'exercise'      => $course->get_exercise($exerciseid)->name,
             'studentname'   => $student->get_name(),
         );
 
@@ -699,7 +701,7 @@ class notification extends \core\message\message {
 
         // get the course object
         if (!empty($COURSE->subscriber)) {
-            $exercisename = $COURSE->subscriber->get_exercise_name($exerciseid);
+            $exercisename = $COURSE->subscriber->get_exercise($exerciseid)->name;
         } else {
             $coursemodinfo = get_fast_modinfo($courseid);
             $exercisename = $coursemodinfo->get_cm($exerciseid)->name;

@@ -25,6 +25,8 @@
 
 namespace local_booking\local\subscriber\entities;
 
+use stdClass;
+
 require_once($CFG->dirroot . '/local/booking/lib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
@@ -626,16 +628,71 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Retrieves subscribing course modules (exercises & quizes)
+     * Retrieves subscribing course modules (exercises)
      *
      * @return array
      */
     public function get_exercises() {
-        $exercises = [];
-        foreach ($this->modules as $module) {
-            if ($module->modname == 'assign') $exercises[$module->id] = $module->name;
+        return array_filter($this->modules, function ($exercise) {
+            if ($exercise->modname == 'assign') {
+                return $exercise;
+            }
+        });
+    }
+
+    /**
+     * Retrieves a specific exercise object
+     * based on its id, and optionally course.
+     *
+     * @param int  $exerciseid The exercise id.
+     * @param int  $courseid   The course id the exercise belongs to.
+     * @param int  $offset     Returns the next or previous exercise (offset=+1/-1)
+     * @return object
+     */
+    public function get_exercise(int $exerciseid, int $courseid = 0, int $offset = 0) {
+
+        $exercise = new stdClass();
+        $exercise->id = 0;
+        $exercise->name = '';
+
+        if ($offset) {
+            // get offset exercise id
+            $mods = array_values($this->get_exercises());
+            $exerciseidx = array_search($exerciseid, array_column($mods,'id'));
+            return $mods[$exerciseidx + $offset];
         }
-        return $exercises;
+
+        // look in another course
+        if (!empty($exerciseid)) {
+
+            // return this course's exercise
+            if ($courseid != 0 && $courseid != $this->courseid) {
+                $coursemodinfo = get_fast_modinfo($courseid);
+                $mods = $coursemodinfo->get_cms();
+                $exercise = $mods[$exerciseid];
+            }
+
+            // return this course's exercise
+            $exercise = $this->modules[$exerciseid];
+        }
+
+        return $exercise;
+    }
+
+    /**
+     * Returns the course graduation exercise as specified in the settings
+     * otherwise retrieves the last exercise.
+     *
+     * @param bool $nameonly Whether to return the name instead of the id
+     * @return object The last exericse id
+     */
+    public function get_graduation_exercise_id(bool $nameonly = false) {
+        if ($this->graduationexerciseid == 0) {
+            $modulesIterator = (new ArrayObject($this->modules))->getIterator();
+            $modulesIterator->seek(count($this->modules)-1);
+            $this->graduationexerciseid = $modulesIterator->current()->id;
+        }
+        return $nameonly ? $this->get_exercise($this->graduationexerciseid)->name : $this->graduationexerciseid;
     }
 
     /**
@@ -644,7 +701,7 @@ class subscriber implements subscriber_interface {
      * @param int $exerciseid The exercise id in the course inside the section
      * @return array  The section name of a course associated with the exercise
      */
-    public function get_lesson_by_exerciseid(int $exerciseid) {
+    public function get_lesson_by_exercise_id(int $exerciseid) {
         $idx = array_search($this->modules[$exerciseid]->section, array_column($this->lessons, 'id'));
         return [$this->modules[$exerciseid]->section, $this->lessons[$idx]->name];
     }
@@ -671,48 +728,6 @@ class subscriber implements subscriber_interface {
             $gradeitem = $this->gradeitems[$idx];
         }
         return $gradeitem;
-    }
-
-    /**
-     * Returns the course graduation exercise as specified in the settings
-     * otherwise retrieves the last exercise.
-     *
-     * @param bool $nameonly Whether to return the name instead of the id
-     * @return int The last exericse id
-     */
-    public function get_graduation_exercise(bool $nameonly = false) {
-        if ($this->graduationexerciseid == 0) {
-            $modulesIterator = (new ArrayObject($this->modules))->getIterator();
-            $modulesIterator->seek(count($this->modules)-1);
-            $this->graduationexerciseid = $modulesIterator->current()->id;
-        }
-        return $nameonly ? $this->get_exercise_name($this->graduationexerciseid) : $this->graduationexerciseid;
-    }
-
-    /**
-     * Retrieves the exercise name of a specific exercise
-     * based on its id statically.
-     *
-     * @param int  $exerciseid The exercise id.
-     * @param int  $courseid   The course id the exercise belongs to.
-     * @return string
-     */
-    public function get_exercise_name(int $exerciseid, int $courseid = 0, $returnempty = false) {
-
-        // look in another course
-        if (!empty($exerciseid)) {
-            if ($courseid != 0 && $courseid != $this->courseid) {
-                $coursemodinfo = get_fast_modinfo($courseid);
-                $mods = $coursemodinfo->get_cms();
-                $modname = $mods[$exerciseid]->name;
-            } else {
-                $modname = $this->modules[$exerciseid]->name;
-            }
-        } else {
-            $modname = $returnempty ? '' : get_string('errorexercisemissing', 'local_booking');
-        }
-
-        return $modname;
     }
 
     /**

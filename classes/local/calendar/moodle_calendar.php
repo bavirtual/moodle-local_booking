@@ -145,7 +145,7 @@ class moodle_calendar implements calendar_interface {
             'userid'=> $usedid,
             'id'    => $this->booking->get_courseid(),
             'name'  => $COURSE->shortname,
-            'cmid'  => $this->booking->get_exerciseid(),
+            'cmid'  => $this->booking->get_exercise_id(),
             'instid'=> $this->booking->get_instructorid(),
             'stdid' => $this->booking->get_studentid(),
             'start' => $this->booking->get_slot()->get_starttime(),

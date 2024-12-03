@@ -134,7 +134,7 @@ interface booking_interface {
      *
      * @return int
      */
-    public function get_exerciseid();
+    public function get_exercise_id();
 
     /**
      * Get the instructor user id of the booking.

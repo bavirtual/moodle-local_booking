@@ -180,7 +180,7 @@ class logbook implements logbook_interface {
     public function get_logentry_by_exericseid(int $exerciseid) {
         $logentry = null;
         foreach ($this->entries as $entry) {
-            if ($entry->get_exerciseid() == $exerciseid) {
+            if ($entry->get_exercise_id() == $exerciseid) {
                 $logentry = $entry;
                 break;
             }

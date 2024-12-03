@@ -80,8 +80,8 @@ class action implements action_interface {
      */
     public function __construct(subscriber $course, student $student, string $actiontype, int $refid = 0) {
 
-        $gradexercise = $course->get_graduation_exercise();
-        $exerciseid = $student->get_next_exercise();
+        $gradexerciseid = $course->get_graduation_exercise_id();
+        $exerciseid = $student->get_next_exercise()->id;
         $enabled =  $student->is_active();
         $tooltip = '';
         $params = [];
@@ -95,7 +95,7 @@ class action implements action_interface {
                 // check if the session to book is the next exercise after passing the current session or the same
                 $lastgrade = $student->get_last_grade();
                 $passedlastexercise = (!empty($lastgrade) ? $lastgrade->is_passed() : true);
-                $exerciseid = $passedlastexercise ? $exerciseid : $student->get_current_exercise();
+                $exerciseid = $passedlastexercise ? $exerciseid : $student->get_current_exercise()->id;
                 $tooltip = get_string('actionbooksession', 'local_booking');
 
                 // get action enabled status by checking if there are more exercises to book and
@@ -111,7 +111,7 @@ class action implements action_interface {
                 } else {
 
                     if (!$enabled = \has_capability('mod/assign:grade', \context_module::instance($exerciseid))) {
-                        $tooltip = get_string(($exerciseid == $gradexercise ? 'actiondisabledexaminersonlytooltip' : 'actiondisabledseniorsonlytooltip'), 'local_booking');
+                        $tooltip = get_string(($exerciseid == $gradexerciseid ? 'actiondisabledexaminersonlytooltip' : 'actiondisabledseniorsonlytooltip'), 'local_booking');
                     }
 
                 }
@@ -131,9 +131,9 @@ class action implements action_interface {
 
                 // get exercise to be graded
                 if ($grade = $student->get_current_grade()) {
-                    $exerciseid = $grade->is_passed() ? $exerciseid : $student->get_current_exercise();
+                    $exerciseid = $grade->is_passed() ? $exerciseid : $student->get_current_exercise()->id;
                 } else {
-                    $exerciseid = $student->get_current_exercise();
+                    $exerciseid = $student->get_current_exercise()->id;
                 }
 
                 // set grading url
@@ -146,7 +146,7 @@ class action implements action_interface {
                 // check if the instructor can grade the exercise
                 $submissionsatisfied = $student->has_submitted_assignment($exerciseid);
                 if (!$enabled = \has_capability('mod/assign:grade', \context_module::instance($exerciseid)) && $submissionsatisfied) {
-                    $tag = !$submissionsatisfied ? 'actiondisabledsubmissionmissingtooltip' : ($exerciseid == $gradexercise ? 'actiondisabledexaminersonlytooltip' : 'actiondisabledseniorsonlytooltip');
+                    $tag = !$submissionsatisfied ? 'actiondisabledsubmissionmissingtooltip' : ($exerciseid == $gradexerciseid ? 'actiondisabledexaminersonlytooltip' : 'actiondisabledseniorsonlytooltip');
                     $tooltip = get_string($tag, 'local_booking');
                 }
 
@@ -160,16 +160,16 @@ class action implements action_interface {
                 $name = get_string($actiontype, 'local_booking');
 
                 // check if the certifer is the examiner
-                if ($student->has_completed_coursework() || $student->get_current_exercise() == $gradexercise) {
+                if ($student->has_completed_coursework() || $student->get_current_exercise()->id == $gradexerciseid) {
                     global $USER;
 
                     // check if graduation capability is allowed
                     $context = \context_system::instance();
                     $isadmin = has_capability('moodle/site:config', $context);
-                    $examinerid = $student->get_grade($gradexercise)->usermodified;
+                    $examinerid = $student->get_grade($gradexerciseid)->usermodified;
                     $logbook = $student->get_logbook(true);
                     $hasexamlogentry = !empty($logbook->get_logentry_by_sessionid($refid));
-                    $enabled = has_capability('mod/assign:grade', \context_module::instance($gradexercise)) && ($examinerid == $USER->id || $isadmin) && $hasexamlogentry && !$student->graduated(true);
+                    $enabled = has_capability('mod/assign:grade', \context_module::instance($gradexerciseid)) && ($examinerid == $USER->id || $isadmin) && $hasexamlogentry && !$student->graduated(true);
 
                     // evaluate tooltip based on ability to graduate the student
                     if (!$enabled) {
@@ -180,7 +180,7 @@ class action implements action_interface {
                         else
                             $tooltip = get_string('actiondisabledexaminersonlytooltip', 'local_booking');
                     } else
-                        $tooltip = get_string('action' . $actiontype . 'tooltip', 'local_booking', ['studentname'=>$student->get_name(false), 'examname'=>$course->get_graduation_exercise(true)]);
+                        $tooltip = get_string('action' . $actiontype . 'tooltip', 'local_booking', ['studentname'=>$student->get_name(false), 'examname'=>$course->get_graduation_exercise_id(true)]);
                 }
 
                 break;
@@ -240,7 +240,7 @@ class action implements action_interface {
      *
      * @return int
      */
-    public function get_exerciseid() {
+    public function get_exercise_id() {
         return $this->exerciseid;
     }
 

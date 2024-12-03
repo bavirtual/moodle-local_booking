@@ -186,7 +186,7 @@ interface subscriber_interface {
      * @param int $exerciseid The exercise id in the course inside the section
      * @return array  The section name of a course associated with the exercise
      */
-    public function get_lesson_by_exerciseid(int $exerciseid);
+    public function get_lesson_by_exercise_id(int $exerciseid);
 
     /**
      * Retrieves subscribing course modules (exercises & quizes)
@@ -196,12 +196,14 @@ interface subscriber_interface {
     public function get_exercises();
 
     /**
-     * Get subscribing course grading item for a module
+     * Retrieves a specific exercise object
+     * based on its id, and optionally course.
      *
-     * @param int  $modid The exercise id requiring the grade item
-     * @return array
+     * @param int  $exerciseid The exercise id.
+     * @param int  $courseid   The course id the exercise belongs to.
+     * @return object
      */
-    public function get_grading_item(int $modid);
+    public function get_exercise(int $exerciseid);
 
     /**
      * Returns the course graduation exercise the last exercise
@@ -209,16 +211,15 @@ interface subscriber_interface {
      *
      * @return int The last exericse id
      */
-    public function get_graduation_exercise();
+    public function get_graduation_exercise_id();
 
     /**
-     * Retrieves the exercise name of a specific exercise
-     * based on its id statically.
+     * Get subscribing course grading item for a module
      *
-     * @param int $exerciseid The exercise id.
-     * @return string
+     * @param int  $modid The exercise id requiring the grade item
+     * @return array
      */
-    public function get_exercise_name(int $exerciseid);
+    public function get_grading_item(int $modid);
 
     /**
      * Retrieves an array with the moodle file path and file name of a course file resource.

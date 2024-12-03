@@ -45,14 +45,14 @@ class student extends participant {
     const SLOT_COLOR = '#00e676';
 
     /**
-     * @var array $exercises The student graded exercise.
+     * @var array $exercisesgrades The student graded exercise.
      */
-    protected $exercises = [];
+    protected $exercisesgrades = [];
 
     /**
-     * @var array $quizes The student graded quizes.
+     * @var array $quizesgrades The student graded quizes.
      */
-    protected $quizes = [];
+    protected $quizesgrades = [];
 
     /**
      * @var array $grades The student exercise/quiz grades.
@@ -95,9 +95,19 @@ class student extends participant {
     protected $nextlesson;
 
     /**
-     * @var array $nextexerciseid The student's next exercise id.
+     * @var object $nextexercise The student's next exercise.
+     */
+    protected $nextexercise;
+
+    /**
+     * @var int $nextexerciseid The student's next exercise id.
      */
     protected $nextexerciseid;
+
+    /**
+     * @var object $currentexercise The student's current exercise.
+     */
+    protected $currentexercise;
 
     /**
      * @var int $currentexerciseid The student's current exercise id.
@@ -286,7 +296,7 @@ class student extends participant {
      *
      */
     public function load_grades() {
-        $this->grades = $this->get_exercise_grades() + $this->get_quize_grades();
+        $this->grades = $this->get_exercise_grades() + $this->get_quizzes_grades();
         $this->gradesloaded = true;
     }
 
@@ -297,11 +307,11 @@ class student extends participant {
      */
     public function get_exercise_grades() {
 
-        if (empty($this->exercises)) {
-            $this->exercises = $this->get_mod_grades('assign');
+        if (empty($this->exercisesgrades)) {
+            $this->exercisesgrades = $this->get_mod_grades('assign');
         }
 
-        return $this->exercises;
+        return $this->exercisesgrades;
     }
 
     /**
@@ -309,13 +319,13 @@ class student extends participant {
      *
      * @return {object}[]   The exam grade objects.
      */
-    public function get_quize_grades() {
+    public function get_quizzes_grades() {
 
-        if (empty($this->quizes)) {
-            $this->quizes = $this->get_mod_grades('quiz');
+        if (empty($this->quizesgrades)) {
+            $this->quizesgrades = $this->get_mod_grades('quiz');
         }
 
-        return $this->quizes;
+        return $this->quizesgrades;
     }
 
     /**
@@ -328,7 +338,7 @@ class student extends participant {
 
         if (!$this->gradesloaded) {
             // join both graded assignments and attempted quizes into one grades array
-            $this->grades = $this->get_exercise_grades() + $this->get_quize_grades();
+            $this->grades = $this->get_exercise_grades() + $this->get_quizzes_grades();
         }
 
         return $this->grades;
@@ -374,7 +384,7 @@ class student extends participant {
      * @return grade The student exercise grade.
      */
     public function get_current_grade() {
-        return $this->get_grade($this->get_current_exercise());;
+        return $this->get_current_exercise()->id ? $this->get_grade($this->get_current_exercise()->id) : null;
     }
 
     /**
@@ -543,60 +553,64 @@ class student extends participant {
     /**
      * Returns the current exercise id for the student.
      *
-     * @param bool $next  Whether to get the next exercise or current, default is next exercise
-     * @return int The current exercise id
+     * @return object The current exercise (mod)
      */
     public function get_current_exercise() {
 
-        if (empty($this->currentexerciseid)) {
+        if (empty($this->currentexercise)) {
 
             // get last booked exercise
             $booking = $this->get_last_booking();
-            $this->currentexerciseid = !empty($booking) ? $booking->get_exerciseid() : 0;
+            $this->currentexercise = !empty($booking) ? $this->course->get_exercise($booking->get_exercise_id()) : null;
+            $this->currentexerciseid = !empty($this->currentexercise) ? $this->currentexercise->id : 0;
 
         }
 
-        return $this->currentexerciseid;
+        return $this->currentexercise;
     }
 
     /**
-     * Returns the next exercise id for the student.
+     * Returns the next exercise for the student.
      *
-     * @return int The next exercise id
+     * @return object The next exercise
      */
-    public function get_next_exercise(int $afterexercise = 0) {
+    public function get_next_exercise() {
 
-        if (empty($this->nextexerciseid)) {
+        if (empty($this->nextexercise)) {
 
-            // get booking if exists otherwise pick the next exercise
+            $this->nextexerciseid = 0;
+            $this->nextexercise = null;
+
+            // check first for newly enrolled students (boundary condition) based on graded exercises
+            // if so the next exercise is the first
+            if (empty($this->get_exercise_grades())) {
+                $this->nextexerciseid = array_values($this->course->get_modules())[0]->id;
+                return $this->nextexercise = array_values($this->course->get_modules())[0];
+            }
+
+            // check if there is an active booking, the next exercise is the booking's exercise
             $booking = $this->get_active_booking();
             if (!empty($booking)) {
+                // make sure current exercise is not the last course exercise
+                if ($this->get_current_exercise()->id != $this->course->get_graduation_exercise_id()) {
+                    $this->nextexerciseid = $booking->get_exercise_id();
+                    return $this->nextexercise = $this->course->get_exercise($this->nextexerciseid);
+                }
+            }
 
-                $this->nextexerciseid = $booking->get_exerciseid();
-
-            } else {
-
-                // check for newly enrolled students (boundry condition)
-                if (empty($this->get_exercise_grades())) {
-                    $this->nextexerciseid = array_values($this->course->get_modules())[0]->id;
-                } else {
-                    // since there are no active sessions, the next exercise is the next course module after current exercise
-                    // filter out none 'assign' modules
-                    $coursemodules = $this->course->get_exercises();
-                    $modids = array_keys($coursemodules);
-                    $nextid = array_search(($afterexercise ?: $this->get_current_exercise()), $modids) + 1;
-
-                    // check for graduated student (boundry condition)
-                    if (isset($modids[$nextid])) {
-                        $this->nextexerciseid = $modids[$nextid];
-                    } else {
-                        $this->nextexerciseid = 0;
-                    }
+            // since this is not a new enrolment and no active booking, the next exercise is the one after the graded exercise
+            $lastgrade = $this->get_last_grade();
+            if (!empty($lastgrade)) {
+                // make sure last graded exercise is not the last course exercise
+                if ($lastgrade->get_exercise_id() != $this->course->get_graduation_exercise_id()) {
+                    $this->course->get_exercise($lastgrade->get_exercise_id());
+                    $this->nextexercise = $this->course->get_exercise($lastgrade->get_exercise_id(), 0, 1);
+                    $this->nextexerciseid = $this->nextexercise->id;
                 }
             }
         }
 
-        return $this->nextexerciseid;
+        return $this->nextexercise;
     }
 
     /**
@@ -714,12 +728,12 @@ class student extends participant {
             if (!$this->has_completed_coursework()) {
 
                 // exercise associated with completed lessons depends on whether the student passed the current exercise
-                $grade = $this->get_grade($this->get_current_exercise());
+                $grade = $this->get_grade($this->get_current_exercise()->id);
                 if (!empty($grade))
                     // check if passed exercise or received a progressing or objective not met grade
-                    $exerciseid = $grade->is_passed() ? $this->get_next_exercise() : $this->get_current_exercise();
+                    $exerciseid = $grade->is_passed() ? $this->get_next_exercise()->id : $this->get_current_exercise()->id;
                 else
-                    $exerciseid = $this->get_current_exercise();
+                    $exerciseid = $this->get_current_exercise()->id;
 
                 // get lessons complete
                 $this->incompletelessons = $this->vault->get_student_incomplete_lesson_ids($this->userid, $this->course->get_id(), $exerciseid);
@@ -918,7 +932,7 @@ class student extends participant {
 
             // get qualification exercise id
             $modkeys = array_keys($this->course->get_modules());
-            $qualifyexerciseidx = array_search($this->course->get_graduation_exercise(), $modkeys);
+            $qualifyexerciseidx = array_search($this->course->get_graduation_exercise_id(), $modkeys);
             $qualifyexerciseid = $modkeys[$qualifyexerciseidx - 1];
 
             // check grade for the qualifying exercise
@@ -946,7 +960,7 @@ class student extends participant {
             $this->tested = false;
 
             // check grade for the qualifying exercise
-            $grade = $this->get_grade($this->course->get_graduation_exercise());
+            $grade = $this->get_grade($this->course->get_graduation_exercise_id());
             if ($this->tested = !empty($grade)) {
                 $this->finalgrade = $grade->gradeinfo->grades[$this->userid]->str_grade;
                 $this->passed = $grade->is_passed();

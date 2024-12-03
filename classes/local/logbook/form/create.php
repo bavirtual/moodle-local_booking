@@ -80,7 +80,7 @@ class create extends \moodleform {
         }
 
         // identify the flight type based on the exercise
-        $graduationexerciseid = $COURSE->subscriber->get_graduation_exercise();
+        $graduationexerciseid = $COURSE->subscriber->get_graduation_exercise_id();
         $flighttype = $newentry ? ($this->_customdata['exerciseid'] == $graduationexerciseid ? 'check' : 'training') : $logentry->get_flighttype();
         $this->add_default_hidden_elements($mform, $COURSE->subscriber->trainingtype, $flighttype, $graduationexerciseid);
         $this->add_elements($mform, $COURSE->subscriber, $logentry, $flighttype, $exerciseempty);
@@ -135,7 +135,7 @@ class create extends \moodleform {
         global $USER;
         $integratedpireps = $subscriber->has_integration('external_data', 'pireps');
         $newlogentry = empty($logentry) || empty($logentry->get_id());
-        $graduationexerciseid = $subscriber->get_graduation_exercise();
+        $graduationexerciseid = $subscriber->get_graduation_exercise_id();
 
         // set core logentry data
         if ($newlogentry) {

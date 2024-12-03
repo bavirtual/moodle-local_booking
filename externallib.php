@@ -696,7 +696,7 @@ class local_booking_external extends external_api {
 
         // add a new tentatively booked slot for the student.
         $sessiondata = [
-            'exercise'  => $subscriber->get_exercise_name($exerciseid),
+            'exercise'  => $subscriber->get_exercise($exerciseid)->name,
             'instructor'=> student::get_fullname($instructorid),
             'status'    => ucwords(get_string('statustentative', 'local_booking')),
         ];
@@ -926,7 +926,7 @@ class local_booking_external extends external_api {
             $warninginfo = [
                 'studentname'   => participant::get_fullname($conflictingbooking->studentid),
                 'coursename'    => $subscriber->get_shortname(),
-                'exercisename'  => $subscriber->get_exercise_name($conflictingbooking->exerciseid),
+                'exercisename'  => $subscriber->get_exercise($conflictingbooking->exerciseid)->name,
                 'date'          => (new \DateTime('@' . $conflictingbooking->starttime))->format('l M j \a\t H:i \z\u\l\u'),
             ];
             $warnings[] = [
@@ -1380,7 +1380,6 @@ class local_booking_external extends external_api {
             array(
                 'courseid'  => new external_value(PARAM_INT, 'The course id in context', VALUE_DEFAULT),
                 'exerciseid'  => new external_value(PARAM_INT, 'The exercise id', VALUE_DEFAULT),
-                'returnempty'  => new external_value(PARAM_BOOL, 'Wether the return value can be empty or an exception', VALUE_DEFAULT),
             )
         );
     }
@@ -1390,16 +1389,15 @@ class local_booking_external extends external_api {
      *
      * @param int $courseid   The course id.
      * @param int $exerciseid The exerciser id.
-     * @return string exercise name.
+     * @return array exercise name.
      * @throws moodle_exception if user doesn't have the permission to create events.
      */
-    public static function get_exercise_name($courseid, $exerciseid, $returnempty) {
+    public static function get_exercise_name($courseid, $exerciseid) {
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_exercise_name_parameters(), array(
                 'courseid' => $courseid,
                 'exerciseid' => $exerciseid,
-                'returnempty' => $returnempty,
                 )
             );
 
@@ -1408,7 +1406,7 @@ class local_booking_external extends external_api {
 
         $warnings = array();
 
-        return array('exercisename' => $subscriber->get_exercise_name($exerciseid, $courseid, $returnempty), 'warnings' => $warnings);
+        return ['exercisename' => $subscriber->get_exercise($exerciseid, $courseid)->name, 'warnings' => $warnings];
     }
 
     /**

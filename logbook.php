@@ -109,7 +109,7 @@ $pilot   = $COURSE->subscriber->get_participant($userid);
 $editor  = $COURSE->subscriber->get_instructor($USER->id);
 $admin = has_capability('moodle/site:config', $context);
 $logbook = $pilot->get_logbook(true, $format == 'easa');
-$totals  = (array) $logbook->get_summary(true, $format == 'easa', $COURSE->subscriber->get_graduation_exercise());
+$totals  = (array) $logbook->get_summary(true, $format == 'easa', $COURSE->subscriber->get_graduation_exercise_id());
 $data    = [
     'contextid'     => $context->id,
     'courseid'      => $courseid,

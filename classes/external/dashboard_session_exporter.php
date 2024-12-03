@@ -196,8 +196,8 @@ class dashboard_session_exporter extends exporter {
 
         if ($this->related['filter'] == 'active' || $this->related['filter'] == 'onhold') {
             // get student posts for active and onhold students
-            $nextexercise = $this->student->get_next_exercise();
-            $noposts = ($nextexercise == $this->data['exerciseid'] && $this->student->get_total_posts() == 0) ? get_string('bookingnoposts', 'local_booking') : '';
+            $nextexerciseid = $this->student->get_next_exercise()->id;
+            $noposts = ($nextexerciseid == $this->data['exerciseid'] && $this->student->get_total_posts() == 0) ? get_string('bookingnoposts', 'local_booking') : '';
         }
 
         if (!empty($this->session)) {
@@ -328,7 +328,7 @@ class dashboard_session_exporter extends exporter {
         if (count($bookings) > 0) {
             $bookingsarr = array_filter($bookings,
                 function ($b) use (&$exerciseid) {
-                    return $b->get_exerciseid() == $exerciseid;
+                    return $b->get_exercise_id() == $exerciseid;
                 }
             );
             if (count($bookingsarr) > 0) {

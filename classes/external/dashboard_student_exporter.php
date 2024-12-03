@@ -260,7 +260,7 @@ class dashboard_student_exporter extends exporter {
             else
                 $actiontype = 'book';
 
-            $graduationsessionidx = array_search($this->related['subscriber']->get_graduation_exercise(), array_column($sessions, 'exerciseid'));
+            $graduationsessionidx = array_search($this->related['subscriber']->get_graduation_exercise_id(), array_column($sessions, 'exerciseid'));
             $action = new action($this->related['subscriber'], $this->student, $actiontype, $sessions[$graduationsessionidx]->sessionid);
             $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;
 
@@ -326,7 +326,7 @@ class dashboard_student_exporter extends exporter {
         $logbook = $student->get_logbook();
 
         $studentname = $student->get_name();
-        $gradexercise = $related['subscriber']->get_graduation_exercise();
+        $gradexercise = $related['subscriber']->get_graduation_exercise_id();
 
         // export all exercise sessions, quizes, and exams
         $coursemods = $related['coursemodules'];
@@ -380,8 +380,8 @@ class dashboard_student_exporter extends exporter {
                     // show the graduation exercise booking option for examiners only
                     if (\has_capability('mod/assign:grade', \context_module::instance($coursemod->id))) {
                         $sessionoptions[] = [
-                            'nextsession' => ($action->get_exerciseid() == $coursemod->id ? "checked" : ""),
-                            'bordered' => $action->get_exerciseid() == $coursemod->id,
+                            'nextsession' => ($action->get_exercise_id() == $coursemod->id ? "checked" : ""),
+                            'bordered' => $action->get_exercise_id() == $coursemod->id,
                             'graded'  => isset($grades[$coursemod->id]),
                             'exerciseid'  => $coursemod->id
                         ];

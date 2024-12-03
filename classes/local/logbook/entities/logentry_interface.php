@@ -77,7 +77,7 @@ interface logentry_interface {
      *
      * @return int
      */
-    public function get_exerciseid();
+    public function get_exercise_id();
 
     /**
      * Get the session id for the log entry.

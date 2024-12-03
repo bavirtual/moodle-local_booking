@@ -143,7 +143,7 @@ class grade extends \grade_grade {
      *
      * @return int
      */
-    public function get_exerciseid() {
+    public function get_exercise_id() {
         return $this->exerciseid;
     }
 

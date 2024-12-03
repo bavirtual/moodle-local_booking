@@ -65,7 +65,7 @@ class booking_vault implements booking_vault_interface {
             ] : [
             'courseid'  => $booking->get_courseid(),
             'studentid' => $booking->get_studentid(),
-            'exerciseid'=> $booking->get_exerciseid()
+            'exerciseid'=> $booking->get_exercise_id()
         ];
 
         // start a transaction
@@ -97,7 +97,7 @@ class booking_vault implements booking_vault_interface {
         $sessionrecord->userid       = $booking->get_instructorid();
         $sessionrecord->courseid     = $booking->get_courseid();
         $sessionrecord->studentid    = $booking->get_studentid();
-        $sessionrecord->exerciseid   = $booking->get_exerciseid();
+        $sessionrecord->exerciseid   = $booking->get_exercise_id();
         $sessionrecord->slotid       = ($booking->get_slot())->get_id();
         $sessionrecord->timemodified = time();
 
@@ -191,8 +191,8 @@ class booking_vault implements booking_vault_interface {
         if (!empty($booking->get_studentid())) {
             $conditions['studentid'] = $booking->get_studentid();
         }
-        if (!empty($booking->get_exerciseid())) {
-            $conditions['exerciseid'] = $booking->get_exerciseid();
+        if (!empty($booking->get_exercise_id())) {
+            $conditions['exerciseid'] = $booking->get_exercise_id();
         }
         if (!empty($booking->active())) {
             $conditions['active'] = '1';

@@ -59,7 +59,7 @@ class pdf_report_theoryexam extends pdf_report {
         parent::WriteContent();
 
         // get the the exams for a user
-        $studentexams = $this->student->get_quize_grades();
+        $studentexams = $this->student->get_quizzes_grades();
         $vatsimid = $this->student->get_profile_field('vatsimid') ?: get_string('notfound', 'local_booking');
 
         // iterate through all the attempts

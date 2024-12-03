@@ -114,14 +114,14 @@ class notifications_task extends \core\task\scheduled_task {
                 'coursename'    => $course->get_shortname(),
                 'studentname'   => $student->get_name(),
                 'firstname'     => $student->get_profile_field('firstname', true),
-                'skilltest'     => $course->get_graduation_exercise(true),
+                'skilltest'     => $course->get_graduation_exercise_id(true),
                 'instructorname'=> instructor::get_fullname(get_user_preferences('local_booking_' . $course->get_id() . '_endorser', 0, $student->get_id())),
                 'recommendltrurl'=> (new \moodle_url('/local/booking/report.php', array('courseid'=>$course->get_id(), 'userid'=>$student->get_id(), 'report'=>'recommendation')))->out(false),
                 'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$course->get_id())))->out(false),
                 'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
                 'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
-                'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_current_exercise())))->out(false),
-                'exercise'      => $course->get_exercise_name($student->get_current_exercise()),
+                'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_current_exercise()->id)))->out(false),
+                'exercise'      => $course->get_exercise($student->get_current_exercise()->id)->name,
             );
 
             // send recommendation message
@@ -193,13 +193,13 @@ class notifications_task extends \core\task\scheduled_task {
                     'bookingurl'    => (new \moodle_url('/local/booking/availability.php', array(
                         'courseid'      => $course->get_id(),
                         'userid'        => $student->get_id(),
-                        'exid'          => $student->get_next_exercise(),
+                        'exid'          => $student->get_next_exercise()->id,
                         'action'        => 'book'
                         )))->out(false),
                     'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
                     'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
-                    'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise())))->out(false),
-                    'exercise'      => $course->get_exercise_name($student->get_next_exercise()),
+                    'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise()->id)))->out(false),
+                    'exercise'      => $course->get_exercise($student->get_next_exercise()->id)->name,
                 );
 
                 notification::send_availability_posting_notification($course->get_instructors(), $data);
@@ -227,11 +227,11 @@ class notifications_task extends \core\task\scheduled_task {
             if (!empty($graduationnotify)) {
 
                 // get message data
-                $grade = $student->get_grade($course->get_graduation_exercise());
+                $grade = $student->get_grade($course->get_graduation_exercise_id());
                 $examiner = new instructor($course, $grade->usermodified);
                 $logbook = new logbook($course->get_id(), $student->get_id());
                 $logbook->load();
-                $logentry = $logbook->get_logentry_by_exericseid($course->get_graduation_exercise());
+                $logentry = $logbook->get_logentry_by_exericseid($course->get_graduation_exercise_id());
                 $summary = $logbook->get_summary(true);
 
                 // get core recipients CFIs and examiner
@@ -271,7 +271,7 @@ class notifications_task extends \core\task\scheduled_task {
                     'graduateid'      => $student->get_id(),
                     'firstname'       => $student->get_profile_field('firstname', true),
                     'fullname'        => $student->get_name(),
-                    'exercisename'    => $course->get_graduation_exercise(true),
+                    'exercisename'    => $course->get_graduation_exercise_id(true),
                     'completiondate'  => (!empty($logentry) ? date_format((new \DateTime('@'.$logentry->get_flightdate())), 'F j, Y') : ''),
                     'enroldate'       => date_format($student->get_enrol_date(), 'F j, Y'),
                     'simulator'       => $student->get_profile_field('simulator'),

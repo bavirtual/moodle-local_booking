@@ -337,7 +337,7 @@ class logbook_vault implements logbook_vault_interface {
 
         $logentryobj->id = $logentry->get_id();
         $logentryobj->courseid = $courseid;
-        $logentryobj->exerciseid = $logentry->get_exerciseid();
+        $logentryobj->exerciseid = $logentry->get_exercise_id();
         $logentryobj->sessionid = $logentry->get_sessionid();
         $logentryobj->userid = $userid;
         $logentryobj->flightdate = $logentry->get_flightdate();

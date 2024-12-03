@@ -47,7 +47,7 @@ interface grade_interface {
      *
      * @return int
      */
-    public function get_exerciseid();
+    public function get_exercise_id();
 
     /**
      * Get the studnet user id of the grade.

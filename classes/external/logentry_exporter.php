@@ -317,11 +317,11 @@ class logentry_exporter extends exporter {
     protected function get_other_values(renderer_base $output) {
         global $COURSE;
 
-        $exerciseid = !empty($this->logentry) ? ($this->logentry->get_exerciseid() ?: $this->data['exerciseid']) : $this->data['exerciseid'];
+        $exerciseid = !empty($this->logentry) ? ($this->logentry->get_exercise_id() ?: $this->data['exerciseid']) : $this->data['exerciseid'];
         $flightdate = !empty($this->logentry) ? $this->logentry->get_flightdate(isset($this->data['view']) && $this->data['view'] == 'summary') : $this->data['flightdate'];
         $p1id = !empty($this->logentry) ? $this->logentry->get_p1id() : $this->data['p1id'];
         $p2id = !empty($this->logentry) ? $this->logentry->get_p2id() : $this->data['p2id'];
-        $sectionname = !empty($this->logentry) ? '' : array_values($COURSE->subscriber->get_lesson_by_exerciseid($exerciseid))[1];
+        $sectionname = !empty($this->logentry) ? '' : array_values($COURSE->subscriber->get_lesson_by_exercise_id($exerciseid))[1];
         $dualops = $this->data['trainingtype'] == 'Dual';
         $haspictime = !empty($this->logentry) ? !empty($this->logentry->get_pictime()) : false;
         $flighttype = !empty($this->logentry) ? $this->logentry->get_flighttype() : 'training';
@@ -351,7 +351,7 @@ class logentry_exporter extends exporter {
         }
 
         return [
-            'exercisename' => $COURSE->subscriber->get_exercise_name($exerciseid, $this->logentry->get_courseid()),
+            'exercisename' => $COURSE->subscriber->get_exercise($exerciseid, $this->logentry->get_courseid())->name,
             'formattedtime' => $flightdate,
             'p1label' => $p1label,
             'p2label' => $p2label,

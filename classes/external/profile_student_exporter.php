@@ -289,8 +289,8 @@ class profile_student_exporter extends exporter {
         $moodleuser = \core_user::get_user($studentid, 'timezone');
 
         // student current lesson and consider new joiners that have no current exercise, their next exercise is the first
-        $exerciseid = $this->student->get_current_exercise();
-        $currentlesson = $exerciseid ? array_values($this->subscriber->get_lesson_by_exerciseid($exerciseid))[1] : get_string('none');
+        $exerciseid = $this->student->get_current_exercise()->id;
+        $currentlesson = $exerciseid ? array_values($this->subscriber->get_lesson_by_exercise_id($exerciseid))[1] : get_string('none');
 
         // module completion information
         $usermods = $this->student->get_priority()->get_completions();
@@ -316,7 +316,7 @@ class profile_student_exporter extends exporter {
         $requiresevaluation = $this->subscriber->requires_skills_evaluation();
         $endorsed = false;
         $endorsementmsg = '';
-        $hasexams = count($this->student->get_quize_grades()) > 0;
+        $hasexams = count($this->student->get_quizzes_grades()) > 0;
 
         if ($requiresevaluation) {
 
@@ -354,11 +354,11 @@ class profile_student_exporter extends exporter {
 
         } elseif ($this->student->tested()) {
 
-            $graduationstatus = get_string(($this->student->passed() ? 'checkpassed' : 'checkfailed'), 'local_booking') . ' ' .  $this->subscriber->get_graduation_exercise(true);
+            $graduationstatus = get_string(($this->student->passed() ? 'checkpassed' : 'checkfailed'), 'local_booking') . ' ' .  $this->subscriber->get_graduation_exercise_id(true);
 
         } else {
             $graduationstatus = ($qualified ? get_string('qualified', 'local_booking') . ' ' .
-                $this->subscriber->get_graduation_exercise(true) : get_string('notqualified', 'local_booking'));
+                $this->subscriber->get_graduation_exercise_id(true) : get_string('notqualified', 'local_booking'));
         }
 
         // log in as url

@@ -98,7 +98,7 @@ import Ajax from 'core/ajax';
 };
 
 /**
- * Get sesison booking, my bookings, and my students data to view.
+ * Get session booking, my bookings, and my students data to view.
  *
  * @method getExerciseName
  * @param {number} courseId   The course id.
@@ -111,7 +111,6 @@ import Ajax from 'core/ajax';
         args: {
             courseid: courseId,
             exerciseid: exerciseId,
-            returnempty: true,
         }
     };
 
@@ -143,7 +142,7 @@ import Ajax from 'core/ajax';
 };
 
 /**
- * Cancel a sepcific booking for a student.
+ * Cancel a specific booking for a student.
  *
  * @method cancelBooking
  * @param {int} bookingId   The booking id to cancel

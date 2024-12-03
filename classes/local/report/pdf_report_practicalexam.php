@@ -59,14 +59,14 @@ class pdf_report_practicalexam extends pdf_report {
         parent::WriteContent();
 
         // get the exercise id (assignment id) for the practical exam assignment and its grade
-        $exerciseid = $this->course->get_graduation_exercise();
+        $exerciseid = $this->course->get_graduation_exercise_id();
         $grade = $this->student->get_grade($exerciseid, true);
         $attemptcount = count($grade->attempts);
 
         // write course name
         $this->SetFont($this->fontfamily, 'B', 18);
         $this->SetTextColor(255, 255, 255);
-        $this->Cell(0, 0, $this->course->get_exercise_name($exerciseid), 0, 1, 'C', 1);
+        $this->Cell(0, 0, $this->course->get_exercise($exerciseid)->name, 0, 1, 'C', 1);
 
         // write student name and VATSIM ID
         $this->SetTextColor(0,0,0);

@@ -185,13 +185,11 @@ class notification extends \core\message\message {
 
         // notification message data
         $data = (object) array(
-            'coursename'    => $this->course->get_shortname(),
-            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $this->course->get_id())))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $this->course->get_id())))->out(false),
-            'logbookurl'    => (new \moodle_url('/local/booking/logbook.php', array('courseid'=>$this->course->get_id(), 'format'=>'std')))->out(false),
-            'title'         => $logentry->get_flighttype() == 'solo' ?
-                get_string('soloflight', 'local_booking') :
-                $this->course->get_exercise($logentry->get_exercise_id())->name,
+            'coursename'    => $COURSE->shortname,
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
+            'logbookurl'    => (new \moodle_url('/local/booking/logbook.php', array('courseid'=>$COURSE->id, 'format'=>'std')))->out(false),
+            'title'         => $logentry->get_flighttype() == 'solo' ? get_string('soloflight', 'local_booking') : $COURSE->subscriber->get_exercise_name($logentry->get_exerciseid()),
             'student'       => student::get_fullname($logentry->get_userid()),
             'instructor'    => instructor::get_fullname($USER->id),
             'groundtime'    => $logentry->get_groundtime(false),
@@ -235,8 +233,8 @@ class notification extends \core\message\message {
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $this->course->get_id())))->out(false),
             'instructorname'=> instructor::get_fullname($USER->id),
             'studentname'   => student::get_fullname($booking->get_studentid()),
-            'sessiondate'   => (new DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
-            'exercise'      => $this->course->get_exercise($booking->get_exercise_id())->name,
+            'sessiondate'   => (new \DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
+            'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
             'comment'       => $comment,
         );
 
@@ -285,10 +283,10 @@ class notification extends \core\message\message {
 
         // No show message data
         $data = (object) array(
-            'coursename'    => $this->course->get_shortname(),
-            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $this->course->get_id())))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $this->course->get_id())))->out(false),
-            'exercise'      => $this->course->get_exercise($booking->get_exercise_id())->name,
+            'coursename'    => $COURSE->shortname,
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $COURSE->id)))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $COURSE->id)))->out(false),
+            'exercise'      => $COURSE->subscriber->get_exercise_name($booking->get_exerciseid()),
             'studentname'   => $student->get_name(),
             'instructorname'=> $instructor->get_name(),
             'sessiondate'   => (new DateTime('@' . ($booking->get_slot())->get_starttime()))->format('l M j \a\t H:i \z\u\l\u'),
@@ -327,10 +325,10 @@ class notification extends \core\message\message {
 
         // No show message data
         $data = (object) array(
-            'coursename'    => $this->course->get_shortname(),
-            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $this->course->get_id())))->out(false),
-            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $this->course->get_id())))->out(false),
-            'exercise'      => $this->course->get_exercise($exerciseid)->name,
+            'coursename'    => $course->get_shortname(),
+            'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
+            'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
+            'exercise'      => $course->get_exercise_name($exerciseid),
             'studentname'   => $student->get_name(),
         );
 

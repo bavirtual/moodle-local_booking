@@ -197,8 +197,10 @@ class notifications_task extends \core\task\scheduled_task {
                         'exid'          => $student->get_next_exercise()->id,
                         'action'        => 'book'
                         )))->out(false),
-                    'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise()->id)))->out(false),
-                    'exercise'      => $course->get_exercise($student->get_next_exercise()->id)->name,
+                    'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
+                    'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
+                    'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise())))->out(false),
+                    'exercise'      => $course->get_exercise_name($student->get_next_exercise()),
                 );
 
                 $message = new notification($course);

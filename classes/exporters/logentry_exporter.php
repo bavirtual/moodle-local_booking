@@ -370,7 +370,7 @@ class logentry_exporter extends exporter {
         }
 
         return [
-            'exercisename' => $this->course->get_exercise($exerciseid, $this->logentry->get_courseid())->name,
+            'exercisename' => $COURSE->subscriber->get_exercise_name($exerciseid, $this->logentry->get_courseid()),
             'formattedtime' => $flightdate,
             'p1label' => $p1label,
             'p2label' => $p2label,

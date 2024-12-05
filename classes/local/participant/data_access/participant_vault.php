@@ -79,7 +79,7 @@ class participant_vault implements participant_vault_interface {
         $activeclause = $active ? ' AND ue.status = 0' : '';
 
         $sql = "SELECT u.id AS userid, " . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . " AS fullname,
-                    MAX(ue.timecreated) AS enroldate, $statssql, ue.timemodified AS suspenddate,
+                    MAX(ue.timecreated) AS enroldate, $statssql, ue.timemodified AS suspenddate, ue.status AS enrolstatus,
                     en.courseid AS courseid, u.lastlogin AS lastlogin,
                         (SELECT GROUP_CONCAT(shortname) FROM {" . self::DB_ROLE_ASSIGN . "} ra
                          INNER JOIN {" . self::DB_ROLE . "}  r ON r.id = ra.roleid
@@ -487,7 +487,7 @@ class participant_vault implements participant_vault_interface {
                 ', @maxbooktime := (SELECT MAX(b.timemodified) FROM mdl_local_booking_sessions b WHERE b.userid = u.id AND b.courseid = en.courseid),
                             @maxlogentrytime := (SELECT MAX(l.flightdate) FROM mdl_local_booking_logbooks l WHERE l.userid = u.id AND l.courseid = en.courseid),
     	                    IF(@maxlogentrytime > @maxbooktime, @maxlogentrytime, @maxbooktime) AS lastsessiondate';
-            $innerselect .= ', en.courseid AS courseid, u.lastlogin AS lastlogin, ue.timecreated AS enroldate, ue.timemodified AS suspenddate';
+            $innerselect .= ', en.courseid AS courseid, u.lastlogin AS lastlogin, ue.timecreated AS enroldate, ue.timemodified AS suspenddate, ue.status AS enrolstatus';
         }
 
         // inner selectfrom tables statement

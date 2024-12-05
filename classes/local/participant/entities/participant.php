@@ -574,7 +574,7 @@ class participant implements participant_interface {
             $this->fullname    = $record->fullname;
             $this->enroldate   = $record->enroldate;
             $this->suspenddate = $record->suspenddate;
-            $this->is_active   = !$record->suspenddate;
+            $this->is_active   = !$record->enrolstatus;
             $this->lastlogin   = $record->lastlogin;
             $this->simulator   = $this->get_simulator();
             if (!empty($record->roles))

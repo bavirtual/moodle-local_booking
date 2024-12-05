@@ -165,7 +165,7 @@ class subscriber_vault implements subscriber_vault_interface {
 
         $sql = "SELECT value FROM {" . self::DB_COURSE_CUSTOM_DATA . "} cd INNER JOIN {" . self::DB_COURSE_CUSTOM_FIELD . "} cf ON cf.id = cd.fieldid WHERE cf.shortname = :subscribename AND cd.instanceid = :courseid";
         $enabled = $DB->get_record_sql($sql, ['subscribename'=>'subscribed', 'courseid'=>$courseid]);
-        return $enabled->value;
+        return !empty($enabled) ? $enabled->value : false;
     }
 
     /**

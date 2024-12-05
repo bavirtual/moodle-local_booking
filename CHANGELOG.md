@@ -1,5 +1,12 @@
 # Change log
 
+## [2024120500] - RELEASED 2024-12-05
+
+### Fixed
+
+- confirmed sessions showing tentative
+- empty subscriber enabled value
+
 ## [2024120300] - RELEASED 2024-12-03
 
 ### Fixed

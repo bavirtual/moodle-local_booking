@@ -28,7 +28,9 @@ namespace local_booking\local\logbook\form;
 
 use ArrayObject;
 use DateTimeImmutable;
+use MoodleQuickForm;
 use local_booking\local\logbook\entities\logbook;
+use local_booking\local\logbook\entities\logentry;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\session\entities\booking;
 use local_booking\local\subscriber\entities\subscriber;
@@ -53,9 +55,10 @@ class create extends \moodleform {
      * The form definition
      */
     public function definition() {
-        global $PAGE, $COURSE;
+        global $PAGE;
 
         $mform = $this->_form;
+        $subscriber = $this->_customdata['subscriber'];
         $logentry = isset($this->_customdata['logentry']) ? $this->_customdata['logentry'] : null;
 
         // check for new entry
@@ -75,15 +78,15 @@ class create extends \moodleform {
         $exerciseempty = $this->_customdata['exerciseid'] == 0;
         if ($exerciseempty) {
             $exercises[] = '';
-            $exercises = $exercises + $COURSE->subscriber->get_exercises();
+            $exercises = $exercises + $subscriber->get_exercises();
             $this->add_element($mform, 'exercises', [$exercises]);
         }
 
         // identify the flight type based on the exercise
-        $graduationexerciseid = $COURSE->subscriber->get_graduation_exercise_id();
+        $graduationexerciseid = $subscriber->get_graduation_exercise_id();
         $flighttype = $newentry ? ($this->_customdata['exerciseid'] == $graduationexerciseid ? 'check' : 'training') : $logentry->get_flighttype();
-        $this->add_default_hidden_elements($mform, $COURSE->subscriber->trainingtype, $flighttype, $graduationexerciseid);
-        $this->add_elements($mform, $COURSE->subscriber, $logentry, $flighttype, $exerciseempty);
+        $this->add_default_hidden_elements($mform, $subscriber->trainingtype, $flighttype, $graduationexerciseid);
+        $this->add_elements($mform, $subscriber, $logentry, $flighttype, $exerciseempty);
 
         // Add the javascript required to enhance this mform.
         $PAGE->requires->js_call_amd('local_booking/logentry_modal_form');
@@ -133,6 +136,7 @@ class create extends \moodleform {
      */
     protected function add_elements($mform, $subscriber, $logentry, $flighttype, $exerciseempty) {
         global $USER;
+
         $integratedpireps = $subscriber->has_integration('external_data', 'pireps');
         $newlogentry = empty($logentry) || empty($logentry->get_id());
         $graduationexerciseid = $subscriber->get_graduation_exercise_id();
@@ -298,7 +302,7 @@ class create extends \moodleform {
                     $mform->hideIf($element, 'flighttype', 'eq', 'check');
                     $mform->hideIf($element, 'trainingtype', 'noteq', 'Dual');
                 }
-                // freeze chaning flight type in a solo flight edit
+                // freeze changing flight type in a solo flight edit
                 if ($options[2]) {
                     $mform->freeze('flighttype');
                 }
@@ -536,7 +540,7 @@ class create extends \moodleform {
      * @param string $trainingtype   The type of training (Dual or Multi-crew)
      * @param string $flighttype     The flight type (training, solo, or check)
      */
-    protected function add_default_hidden_elements($mform, string $trainingtype, string $flighttype, int $graduationexerciseid) {
+    protected function add_default_hidden_elements(MoodleQuickForm $mform, string $trainingtype, string $flighttype, int $graduationexerciseid) {
 
         // Add some hidden fields.
         $mform->addElement('hidden', 'id');
@@ -614,14 +618,14 @@ class create extends \moodleform {
      * Get the engine type of the default aircraft
      *
      * @param subscriber $course   The subscriber course
-     * @return array $enginetype The engine type of the default aircraft
+     * @return string $enginetype The engine type of the default aircraft
      */
     protected function get_enginetype(subscriber $course) {
         $enginetype = 'SE';
 
         if (!empty($course->aircrafticao)) {
-            $aircrafts = (new ArrayObject($course->aircrafticao))->getIterator();
-            $aircrafticao = $aircrafts->current();
+            $aircraft = (new ArrayObject($course->aircrafticao))->getIterator();
+            $aircrafticao = $aircraft->current();
 
             if ($course->has_integration('external_data', 'aircraft')) {
                 $engintyperec = $course->get_external_data('aircraft', 'aircraftinfo', $aircrafticao);

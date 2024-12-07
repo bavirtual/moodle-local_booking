@@ -1052,7 +1052,7 @@ class logentry implements logentry_interface {
         $this->landingsday  = $landingsdayrule ? $formdata->landingsp1day : $formdata->landingsp2day;
         $this->landingsnight = $landingsnightrule ? $formdata->landingsp1night : $formdata->landingsp2night;
 
-        $this->nighttime    = logbook::convert_time($formdata->nighttime, 'MINS_TO_NUM');
+        $this->nighttime    = $formdata->nighttime ? logbook::convert_time($formdata->nighttime, 'MINS_TO_NUM') : 0;
         $this->remarks      = $formdata->remarks;
         $this->fstd         = $formdata->fstd;
         $this->flighttype   = $formdata->flighttypehidden;

@@ -32,15 +32,15 @@ require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 
 // Get URL parameters
-$courseid   = optional_param('courseid', SITEID, PARAM_INT);
-$course     = get_course($courseid);
-$userid  = optional_param('userid', 0, PARAM_INT);
-$studentid  = optional_param('studentid', 0, PARAM_INT);
-$sorttype   = optional_param('sort', '', PARAM_ALPHA);
-$action     = optional_param('action', 'book', PARAM_ALPHA);
-$filter     = optional_param('filter', 'active', PARAM_ALPHA);
-$page       = optional_param('page', 0, PARAM_INT);
-$context     = context_course::instance($courseid);
+$courseid = optional_param('courseid', SITEID, PARAM_INT);
+$course   = get_course($courseid);
+$userid   = optional_param('userid', 0, PARAM_INT);
+$studentid= optional_param('studentid', 0, PARAM_INT);
+$sorttype = optional_param('sort', '', PARAM_ALPHA);
+$action   = optional_param('action', 'book', PARAM_ALPHA);
+$filter   = optional_param('filter', 'active', PARAM_ALPHA);
+$page     = optional_param('page', 0, PARAM_INT);
+$context   = context_course::instance($courseid);
 
 require_login($course, false);
 require_capability('local/booking:view', $context);
@@ -56,7 +56,7 @@ $PAGE->requires->js( new moodle_url($CFG->wwwroot . '/local/booking/js/inputmask
 $navbartext = $action == 'book' ? get_string('bookingdashboard', 'local_booking') : get_string('bookingsessionselection', 'local_booking');
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('admin');   // wide page layout
-$PAGE->set_title($COURSE->shortname . ': ' . get_string('pluginname', 'local_booking'), 'local_booking');
+$PAGE->set_title($COURSE->shortname . ': ' . get_string('pluginname', 'local_booking'));
 $PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-local-booking');
 

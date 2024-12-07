@@ -20,11 +20,11 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\external;
+namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -71,7 +71,7 @@ class profile_instructor_exporter extends exporter {
 
         $this->subscriber = $related['subscriber'];
         $this->courseid = $this->subscriber->get_id();
-        $this->instructor = $this->subscriber->get_instructor($data['userid'], true);
+        $this->instructor = $this->subscriber->get_instructor($data['userid']);
 
         $url = new moodle_url('/local/booking/view.php', [
                 'courseid' => $this->courseid
@@ -80,10 +80,21 @@ class profile_instructor_exporter extends exporter {
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
         $data['courseid'] = $this->courseid;
-        $data['userid'] = $data['userid'];
         $data['ato'] = get_config('local_booking', 'atoname');
 
         parent::__construct($data, $related);
+    }
+
+    /**
+     * Returns a list of objects that are related.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        return array(
+            'context' => 'context',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
+        );
     }
 
     protected static function define_properties() {
@@ -116,12 +127,38 @@ class profile_instructor_exporter extends exporter {
     protected static function define_other_properties() {
         return [
             'coursemodules' => [
-                'type' => list_exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
+                'type' => [
+                    'exerciseid' => [
+                        'type' => PARAM_INT,
+                    ],
+                    'exercisename' => [
+                        'type' => PARAM_RAW,
+                    ],
+                    'exercisetype' => [
+                        'type' => PARAM_RAW,
+                    ],
+                    'exercisetitle' => [
+                        'type' => PARAM_RAW,
+                    ],
+                ]
             ],
             'sessions' => [
-                'type' => list_exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
+                'type' => [
+                    'exerciseid' => [
+                        'type' => PARAM_INT,
+                    ],
+                    'exercisename' => [
+                        'type' => PARAM_RAW,
+                    ],
+                    'exercisetype' => [
+                        'type' => PARAM_RAW,
+                    ],
+                    'exercisetitle' => [
+                        'type' => PARAM_RAW,
+                    ],
+                ]
             ],
             'fullname' => [
                 'type' => PARAM_RAW,
@@ -253,6 +290,7 @@ class profile_instructor_exporter extends exporter {
         // get booked session totals
         $bookedsessions = $this->instructor->get_booked_sessions_count();
         $totalbookedsessions = array_sum(array_column($bookedsessions, 'sessions'));
+
         // get graded session totals
         $gradedsessions = $this->instructor->get_graded_sessions_count();
         $totalexams = $this->instructor->is_examiner() && !empty($gradedsessions[$examid]) ? $gradedsessions[$examid]->sessions : 0;
@@ -270,7 +308,7 @@ class profile_instructor_exporter extends exporter {
             'excludequizes'=> true
         ];
         $exercisenames = base_view::get_modules($output, $this->subscriber, $options);
-        $sessions = $exercisenames;
+        $sessions = array_map(function($exercise) { return (object) $exercise;}, $exercisenames);
 
         // add graded sessions count
         foreach ($sessions as $session) {
@@ -343,17 +381,5 @@ class profile_instructor_exporter extends exporter {
         ];
 
         return $return;
-    }
-
-    /**
-     * Returns a list of objects that are related.
-     *
-     * @return array
-     */
-    protected static function define_related() {
-        return array(
-            'context' => 'context',
-            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
-        );
     }
 }

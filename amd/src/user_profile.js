@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -66,34 +67,39 @@ function(
             } else {
                 $('#endorsement-letter').addClass('hidden');
             }
-
             return message;
         })
         .fail(Notification.exception);
 
+         let result = endorsemsgPromise.trim().length !== 0;
+
         // Persist endorsement in user preferences
-        processUserPreference('endorse', endorse, courseId, userId, 'endorse');
-        processUserPreference('endorser', endorse ? endorser : '', courseId, userId, 'endorse');
-        processUserPreference('endorsedate', endorse ? endorsedatets : '', courseId, userId, 'endorse');
-        processUserPreference('endorsenotify', endorse, courseId, userId, 'endorse');
+        result &= processUserPreference('endorse', endorse, courseId, userId, 'endorse');
+        result &= processUserPreference('endorser', endorse ? endorser : '', courseId, userId, 'endorse');
+        result &= processUserPreference('endorsedate', endorse ? endorsedatets : '', courseId, userId, 'endorse');
+        result &= processUserPreference('endorsenotify', endorse, courseId, userId, 'endorse');
+
+         return result;
     };
 
     /**
      * Process the user setting preference depending on the passed
      * preference and value pairs.
      *
-     * @param  {string} preference  The  preferencekey of the setting.
+     * @param  {string} preference  The preference key of the setting.
      * @param  {string} value       The value data.
      * @param  {string} courseId    The course id for suspension.
      * @param  {string} userId      The user id to be suspended.
-     * @param  {string} element     The element to handl GUI.
+     * @param  {string} element     The element to handle GUI.
      * @method processUserPreference
      * @return {bool}
      */
      const processUserPreference = function(preference, value, courseId, userId, element) {
-        // eslint-disable-next-line promise/valid-params
-        return Repository.updateUserPreferences(preference, value, courseId, userId)
-        .then()
+
+        return Repository.setUserPreferences(preference, value, courseId, userId)
+        .then(function(result) {
+            return result.saved;
+        })
         .always(function() {
             Notification.fetchNotifications();
         })
@@ -101,7 +107,7 @@ function(
             Notification.exception(ex);
             // Handle toggle failure
             $('#' + element).prop('checked', !$('#' + element).prop('checked'));
-            return;
+            return true;
         });
     };
 
@@ -125,38 +131,41 @@ function(
             Notification.exception(ex);
             // Handle toggle failure
             $('#suspended').prop('checked', !$('#suspended').prop('checked'));
-            return;
+            return true;
         });
     };
 
     /**
      * Process the user group membership status on-hold and keep active.
      *
-     * @param  {string} key         The key of the setting.
-     * @param  {string} value      Join or leave true/false.
-     * @param  {string} courseId    The course id for suspension.
-     * @param  {string} userId      The user id to be suspended.
-     * @param  {object} root        The root element.
+     * @param  {string} key      The key of the setting.
+     * @param  {bool}   add      Join or leave true/false.
+     * @param  {string} courseId The course id for suspension.
+     * @param  {string} userId   The user id to be suspended.
+     * @param  {object} root     The root element.
      * @method processGroup
      * @return {bool}
      */
-     const processGroup = function(key, value, courseId, userId, root) {
-        // Get the group name from the template
-        let userProfile = root.find(Selectors.userprofilewrapper),
-        group = userProfile.data(key + 'group');
+    const processGroup = function(key, add, courseId, userId, root) {
 
-        // eslint-disable-next-line promise/valid-params
-        return Repository.updateGroup(group, value, courseId, userId)
-        .then()
-        .always(function() {
-            Notification.fetchNotifications();
-        })
-        .fail(function(ex) {
-            Notification.exception(ex);
-            // Handle toggle failure
-            $('#' + key).prop('checked', !$('#' + key).prop('checked'));
-            return;
-        });
+        // Get the group name from the template
+        const userProfile = root.find(Selectors.userprofilewrapper),
+        groupName = userProfile.data(key + 'group');
+
+        // Add or remove the user from the group
+        return Repository.groupAddRemove(courseId, userId, groupName, add)
+            .then(function(response) {
+                return response.result;
+            })
+            .always(function() {
+                Notification.fetchNotifications();
+            })
+            .fail(function(ex) {
+                Notification.exception(ex);
+                // Handle toggle failure
+                $('#' + key).prop('checked', !$('#' + key).prop('checked'));
+                return false;
+            });
     };
 
     /**
@@ -174,33 +183,36 @@ function(
         // Show progressing icon
         startLoading($('#' + key + '-region'));
 
+        let response;
         // Process the different toggle actions
         switch (key) {
             case 'endorse':
                 // Process student endorsement and handle UI
-                setEndorsement(courseId, userId, value, root);
+                response = setEndorsement(courseId, userId, value, root);
                 break;
             case 'xcoursebookings':
                 // Process availability override in user preferences and handle UI, site level courseid=1
-                processUserPreference(key, value, 1, userId, key);
+                response = processUserPreference(key, value, 1, userId, key);
                 break;
             case 'availabilityoverride':
                 // Process availability override in user preferences and handle UI
-                processUserPreference(key, value, courseId, userId, key);
+                response = processUserPreference(key, value, courseId, userId, key);
                 break;
             case 'suspend':
                 // Toggle enrolment status suspension on/off and handle UI
-                processSuspendedStatus(value, courseId, userId);
+                response = processSuspendedStatus(value, courseId, userId);
                 break;
             case 'onhold':
             case 'keepactive':
                 // Process keep active in user preferences and handle UI
-                processGroup(key, value, courseId, userId, root);
+                response = processGroup(key, value, courseId, userId, root);
                 break;
         }
 
         // Stop showing progressing icon
         stopLoading($('#' + key + '-region'));
+
+        return response;
     };
 
     /**
@@ -229,10 +241,10 @@ function(
                 $('#status').addClass('comment-status-' + (result ? 'success' : 'error'));
                 $('#status').removeClass('comment-status-' + (!result ? 'success' : 'error'));
                 $('#status').text(string).slideDown(1000).delay(2000).slideUp(1000);
-                return;
+                return true;
             })
             .fail(Notification.exception);
-            return;
+            return false;
         })
         .always(function() {
             Notification.fetchNotifications();
@@ -266,10 +278,17 @@ function(
 
         // Handle on-hold toggle clicks
         $('#onhold').click(function() {
-            processSetting(courseId, userId, 'onhold', this.checked, root);
-            // Toggle 'Keep Alive' so the student is not automatically placed on-hold again
-            $('#keepactive').prop("checked", !this.checked);
-            processSetting(courseId, userId, 'keepactive', !this.checked, root);
+            // Add to OnHold group then trigger Keep Active if successful
+            processSetting(courseId, userId, 'onhold', this.checked, root)
+                .then((response) => {
+                    if (0 !== response) {
+                        // Toggle 'Keep Alive' so the student is not automatically placed on-hold again
+                        $('#keepactive').prop("checked", !this.checked);
+                        return processSetting(courseId, userId, 'keepactive', !this.checked, root);
+                    }
+                    return true;
+                })
+                .fail(Notification.exception);
         });
 
         // Handle keep active toggle clicks

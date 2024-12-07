@@ -30,361 +30,208 @@
  * @package    local_booking
  * @category   webservice
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
 $functions = array(
-    'local_booking_get_bookings_view' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'get_bookings_view',
-        'description' => 'Retrieve student progression view',
-        'type' => 'read',
-        'ajax' => true,
-        'capabilities' => '',
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
-    'local_booking_get_instructor_bookings_view' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'get_instructor_bookings_view',
-        'description' => 'Retrieve instructor active bookings views',
-        'type' => 'read',
-        'ajax' => true,
-        'capabilities' => '',
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
-    'local_booking_get_student_names' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'get_student_names',
-        'description' => 'Retrieve student names for autocomplete',
-        'type' => 'read',
-        'ajax' => true,
-        'capabilities' => '',
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
-    'local_booking_save_booking' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'save_booking',
-        'description' => 'Save a session booking',
-        'type' => 'write',
-        'ajax' => true,
-        'capabilities' => '',
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
     'local_booking_cancel_booking' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'cancel_booking',
+        'classname' => '\local_booking\external\cancel_booking',
+        'classpath' => 'local/booking/external/cancel_booking.php',
+        'methodname' => 'execute',
         'description' => 'Cancel instructor active booking',
         'type' => 'write',
         'ajax' => true,
-        'capabilities' => '',
+        'capabilities' => 'local/booking:view',
         'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
-
-    'local_booking_is_conflicting_booking' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'is_conflicting_booking',
-        'description' => 'Checks for conflicting bookings',
+    'local_booking_delete_logentry' => array(
+        'classname' => '\local_booking\external\delete_logentry',
+        'classpath' => 'local/booking/external/delete_logentry.php',
+        'methodname' => 'execute',
+        'description' => 'Delete a logbook entry by its id',
         'type' => 'write',
-        'ajax' => true,
-        'capabilities' => '',
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
-    'local_booking_get_weekly_view' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'get_weekly_view',
-        'description' => 'Fetch the weekly view data for a calendar',
-        'type' => 'read',
-        'capabilities' => '',
+        'capabilities' => 'local/booking:view',
         'ajax' => true,
         'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
-
-    'local_booking_save_slots' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'save_slots',
-        'description' => 'Save marked availability slots',
-        'type' => 'write',
-        'ajax' => true,
-        'capabilities' => '',
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
     'local_booking_delete_slots' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'delete_slots',
+        'classname' => '\local_booking\external\delete_slots',
+        'classpath' => 'local/booking/external/delete_slots.php',
+        'methodname' => 'execute',
         'description' => 'Delete slots of a user week for a course',
         'type' => 'write',
         'ajax' => true,
-        'capabilities' => '',
+        'capabilities' => 'local/booking:availabilityview',
         'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
-
-    'local_booking_submit_logentry_form' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'submit_logentry_form',
+    'local_booking_get_bookings_view' => array(
+        'classname' => '\local_booking\external\get_bookings_view',
+        'classpath' => 'local/booking/external/get_bookings_view.php',
+        'methodname' => 'execute',
+        'description' => 'Retrieve student progression view',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/booking:view',
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_get_exercise_name' => array(
+        'classname' => '\local_booking\external\get_exercise_name',
+        'classpath' => 'local/booking/external/get_exercise_name.php',
+        'methodname' => 'execute',
+        'description' => 'Retrieves a course exercise name',
+        'type' => 'read',
+        'capabilities' => 'local/booking:view',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_get_instructor_bookings_view' => array(
+        'classname' => '\local_booking\external\get_instructor_bookings_view',
+        'classpath' => 'local/booking/external/get_instructor_bookings.php',
+        'methodname' => 'execute',
+        'description' => 'Retrieve instructor active bookings views',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/booking:view',
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_get_logentry' => array(
+        'classname' => '\local_booking\external\get_logentry',
+        'classpath' => 'local/booking/external/get_logentry.php',
+        'methodname' => 'execute',
+        'description' => 'Fetch the logbook entry by its id',
+        'type' => 'read',
+        'capabilities' => 'local/booking:view',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_get_pirep' => array(
+        'classname' => '\local_booking\external\get_pirep',
+        'classpath' => 'local/booking/external/get_pirep.php',
+        'methodname' => 'execute',
+        'description' => 'Retrieves PIREP information',
+        'type' => 'read',
+        'capabilities' => 'local/booking:view',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_get_student_names' => array(
+        'classname' => '\local_booking\external\get_student_names',
+        'classpath' => 'local/booking/external/get_student_names.php',
+        'methodname' => 'execute',
+        'description' => 'Retrieve student names for autocomplete',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/booking:view',
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_get_weekly_view' => array(
+        'classname' => '\local_booking\external\get_weekly_view',
+        'classpath' => 'local/booking/external/get_weekly_view.php',
+        'methodname' => 'execute',
+        'description' => 'Fetch the weekly view data for a calendar',
+        'type' => 'read',
+        'capabilities' => 'local/booking:availabilityview',
+        'ajax' => true,
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_has_conflicting_booking' => array(
+        'classname' => '\local_booking\external\has_conflicting_booking',
+        'classpath' => 'local/booking/external/has_conflicting_booking.php',
+        'methodname' => 'execute',
+        'description' => 'Checks for conflicting bookings',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/booking:view',
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_save_booking' => array(
+        'classname' => '\local_booking\external\save_booking',
+        'classpath' => 'local/booking/external/save_booking.php',
+        'methodname' => 'execute',
+        'description' => 'Save a session booking',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/booking:view',
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_save_logentry' => array(
+        'classname' => '\local_booking\external\save_logentry',
+        'classpath' => 'local/booking/external/save_logentry.php',
+        'methodname' => 'execute',
         'description' => 'submit or create logbook entry form elements',
         'type' => 'write',
         'ajax' => true,
-        'capabilities' => '',
+        'capabilities' => 'local/booking:view',
         'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
-
-    'local_booking_get_logentry_by_id' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'get_logentry_by_id',
-        'description' => 'Fetch the logbook entry by its id',
-        'type' => 'read',
-        'capabilities' => '',
-        'ajax' => true,
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
-    'local_booking_delete_logentry' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'delete_logentry',
-        'description' => 'Delete a logbook entry by its id',
+    'local_booking_save_slots' => array(
+        'classname' => '\local_booking\external\save_slots',
+        'classpath' => 'local/booking/external/save_slots.php',
+        'methodname' => 'execute',
+        'description' => 'Save marked availability slots',
         'type' => 'write',
-        'capabilities' => '',
+        'ajax' => true,
+        'capabilities' => 'local/booking:availabilityview',
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ),
+    'local_booking_set_student_group' => array(
+        'classname' => '\local_booking\external\set_student_group',
+        'classpath' => 'local/booking/external/set_student_group.php',
+        'methodname' => 'execute',
+        'description' => 'Add/remove student to/from a group',
+        'type' => 'write',
+        'capabilities' => 'local/booking:view',
         'ajax' => true,
         'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
-
-    'local_booking_get_pirep' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'get_pirep',
-        'description' => 'Retrieves PIREP information',
-        'type' => 'read',
-        'capabilities' => '',
+    'local_booking_set_student_preferences' => array(
+        'classname' => '\local_booking\external\set_student_preferences',
+        'classpath' => 'local/booking/external/set_student_preferences.php',
+        'methodname' => 'execute',
+        'description' => 'Persist a student preference',
+        'type' => 'write',
+        'capabilities' => 'local/booking:view',
         'ajax' => true,
         'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
-
-    'local_booking_update_suspended_status' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'update_enrolment_status',
+    'local_booking_set_suspended_status' => array(
+        'classname' => '\local_booking\external\set_suspended_status',
+        'classpath' => 'local/booking/external/set_suspended_status.php',
+        'methodname' => 'execute',
         'description' => 'Suspended status update for the course',
         'type' => 'write',
-        'capabilities' => '',
+        'capabilities' => 'local/booking:view',
         'ajax' => true,
         'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
-
-    'local_booking_update_user_preferences' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'update_user_preferences',
-        'description' => 'Update user preferences for the course',
-        'type' => 'write',
-        'capabilities' => '',
-        'ajax' => true,
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
-    'local_booking_update_group_status' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'update_user_group',
-        'description' => 'Update user group membership add/remove for the course',
-        'type' => 'write',
-        'capabilities' => '',
-        'ajax' => true,
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
     'local_booking_update_profile_comment' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'update_profile_comment',
+        'classname' => '\local_booking\external\update_profile_comment',
+        'classpath' => 'local/booking/external/update_profile_comment.php',
+        'methodname' => 'execute',
         'description' => 'Update user comment field (description) for a user',
         'type' => 'write',
-        'capabilities' => '',
+        'capabilities' => 'local/booking:view',
         'ajax' => true,
         'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
-    'local_booking_get_exercise_name' => array(
-        'classname' => 'local_booking_external',
-        'classpath' => '/local/booking/externallib.php',
-        'methodname' => 'get_exercise_name',
-        'description' => 'Retrieves a course exercise name',
-        'type' => 'read',
-        'capabilities' => '',
-        'ajax' => true,
-        'loginrequired' => true,
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-);
-
-$services = array(
-    'Session Booking retrieve instructor active bookings web service'  => array(
-        'functions' => array('local_booking_get_bookings_view'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'get_bookings_view',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Session Booking save booked session web service'  => array(
-        'functions' => array('local_booking_save_booking'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'save_booking',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Cancel a session booking for an instructor with a student web service'  => array(
-        'functions' => array('local_booking_cancel_booking'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'cancel_booking',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Checks for a conflicting booking when an instructor attempts to save a booking web service'  => array(
-        'functions' => array('local_booking_is_conflicting_booking'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'is_conflicting_booking',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Student Availability save slots web service'  => array(
-        'functions' => array('local_booking_save_slots'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'save_slots',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Student Availability delete slots web service'  => array(
-        'functions' => array('local_booking_delete_slots'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'delete_slots',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Student form submission web service'  => array(
-        'functions' => array('local_booking_submit_logentry_form'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'submit_logentry_form',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Session Booking retrieve logbook entry by id web service'  => array(
-        'functions' => array('local_booking_get_logentry_by_id'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'get_logentry_by_id',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Session Booking delete logbook entry by id web service'  => array(
-        'functions' => array('local_booking_delete_logentry'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'delete_logentry',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Session Booking get pirep web service'  => array(
-        'functions' => array('local_booking_get_pirep'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'get_pirep',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Session Booking update user suspension for a course status'  => array(
-        'functions' => array('local_booking_update_suspended_status'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'update_enrolment_status',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Session Booking update user preferences for a course'  => array(
-        'functions' => array('local_booking_update_user_preferences'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'update_user_preferences',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Session Booking update user group membership add/remove for the course'  => array(
-        'functions' => array('local_booking_update_group_status'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'update_user_group',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Session Booking update user comment field (description)'  => array(
-        'functions' => array('local_booking_update_profile_comment'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'update_profile_comment',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
-    ),
-
-    'Session Booking get exercise name for the course'  => array(
-        'functions' => array('local_booking_get_exercise_name'), // Unused as we add the service in each function definition, third party services would use this.
-        'enabled' => 1,         // if 0, then token linked to this service won't work
-        'restrictedusers' => 0,
-        'shortname' => 'get_exercise_name',
-        'downloadfiles' => 0,
-        'uploadfiles' => 0
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
 );

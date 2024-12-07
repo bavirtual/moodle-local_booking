@@ -67,7 +67,7 @@ $bookingview = new booking_view($data, ['subscriber'=>$COURSE->subscriber, 'cont
 $navbartext =get_string('bookingprogression', 'local_booking');
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('admin');   // wide page layout
-$PAGE->set_title($COURSE->shortname . ': ' . $title, 'local_booking');
+$PAGE->set_title($COURSE->shortname . ': ' . $title);
 $PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-local-booking');
 

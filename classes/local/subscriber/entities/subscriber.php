@@ -87,7 +87,7 @@ class subscriber implements subscriber_interface {
     protected $coursemodules;
 
     /**
-     * @var course_modinfo $coursemodinfo The Moodle course modules information.
+     * @var \course_modinfo $coursemodinfo The Moodle course modules information.
      */
     protected $coursemodinfo;
 
@@ -102,7 +102,7 @@ class subscriber implements subscriber_interface {
     protected $activestudentscount = 0;
 
     /**
-     * @var array $activeinstructorss An array of course active instructors.
+     * @var array $activeinstructors An array of course active instructors.
      */
     protected $activeinstructors;
 
@@ -137,7 +137,7 @@ class subscriber implements subscriber_interface {
     protected $lessonmods;
 
     /**
-     * @var object $externaldataconfigs The external data conofigurations object.
+     * @var object $externaldataconfigs The external data configuration object.
      */
     protected $externaldataconfigs;
 
@@ -157,12 +157,12 @@ class subscriber implements subscriber_interface {
     public $gradeitems;
 
     /**
-     * @var string $gradmsgsubject A congratulary message subject for graduating students.
+     * @var string $gradmsgsubject A congratulatory message subject for graduating students.
      */
     public $gradmsgsubject;
 
     /**
-     * @var string $gradmsgbody A congratulary message body for graduating students.
+     * @var string $gradmsgbody A congratulatory message body for graduating students.
      */
     public $gradmsgbody;
 
@@ -191,7 +191,7 @@ class subscriber implements subscriber_interface {
     public $minslotperiod;
 
     /**
-     * @var int $requirelessoncompletion Whether lesson completion is required perior to an air exercise.
+     * @var int $requirelessoncompletion Whether lesson completion is required prior to an air exercise.
      */
     public $requirelessoncompletion;
 
@@ -273,7 +273,7 @@ class subscriber implements subscriber_interface {
                     // array callback function to strip html
                     array_walk($fieldvalues,
                         function(&$item) {
-                            // strp html tags
+                            // strip html tags
                             $item = strip_tags($item);
                             // put back <br/> tags if exist for exercise titles
                             $item = str_replace("&lt;br/&gt;", "<br/>", $item);
@@ -684,7 +684,7 @@ class subscriber implements subscriber_interface {
      * otherwise retrieves the last exercise.
      *
      * @param bool $nameonly Whether to return the name instead of the id
-     * @return object The last exericse id
+     * @return string|int The last exericse id
      */
     public function get_graduation_exercise_id(bool $nameonly = false) {
         if ($this->graduationexerciseid == 0) {

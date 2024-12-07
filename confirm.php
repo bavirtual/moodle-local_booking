@@ -62,8 +62,8 @@ if (!empty($booking->get_id())) {
     ];
     if ($booking->confirm(get_string('bookingconfirmmsg', 'local_booking', $strdata))) {
         // notify the instructor of the student's confirmation
-        $message = new notification();
-        $result = $message->send_instructor_notification($courseid, $studentid, $exerciseid, $sessiondatetime, $instructorid);
+        $message = new notification($COURSE->subscriber);
+        $result = $message->send_instructor_notification($studentid, $exerciseid, $sessiondatetime, $instructorid);
     }
     $time = ($booking->get_slot())->get_starttime();
     $week = ($booking->get_slot())->get_week();

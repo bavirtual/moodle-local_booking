@@ -16,9 +16,9 @@
 
 namespace local_booking\output\views;
 
-use local_booking\external\dashboard_bookings_exporter;
-use local_booking\external\dashboard_mybookings_exporter;
-use local_booking\external\dashboard_participation_exporter;
+use local_booking\exporters\dashboard_bookings_exporter;
+use local_booking\exporters\dashboard_mybookings_exporter;
+use local_booking\exporters\dashboard_participation_exporter;
 use moodle_url;
 use stdClass;
 

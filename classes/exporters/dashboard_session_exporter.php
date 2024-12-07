@@ -19,11 +19,11 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\external;
+namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -81,6 +81,20 @@ class dashboard_session_exporter extends exporter {
             ];
         }
         parent::__construct($data, $related);
+    }
+
+    /**
+     * Returns a list of objects that are related.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        return array(
+            'context'=>'context',
+            'coursemodules'=>'cm_info[]?',
+            'subscriber'=>'local_booking\local\subscriber\entities\subscriber',
+            'filter'=>'string',
+        );
     }
 
     /**
@@ -232,20 +246,6 @@ class dashboard_session_exporter extends exporter {
         ];
 
         return $return;
-    }
-
-    /**
-     * Returns a list of objects that are related.
-     *
-     * @return array
-     */
-    protected static function define_related() {
-        return array(
-            'context'=>'context',
-            'coursemodules'=>'cm_info[]?',
-            'subscriber'=>'local_booking\local\subscriber\entities\subscriber',
-            'filter'=>'string',
-        );
     }
 
     /**

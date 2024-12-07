@@ -135,16 +135,18 @@ define([
         getUISlots(root, 'book');
 
         // Check if the instructor has conflicting bookings
-        return Repository.isConflictingBookings(studentid, BookedSlot)
+        return Repository.hasConflictingBooking(studentid, BookedSlot)
             .then(function(response) {
                 if (response.validationerror) {
                     // eslint-disable-next-line no-alert
                     alert('Errors encountered: Unable to check conflicting bookings!');
+                    CalendarViewManager.stopLoading(root);
                 } else {
                     // Check if there are no conflicting messages
                     if (response.result) {
                         // eslint-disable-next-line no-alert
                         alert(response.warnings[0].message);
+                        CalendarViewManager.stopLoading(root);
                     } else {
                         // No conflicting bookings, save the booking.
                         // eslint-disable-next-line promise/no-nesting
@@ -153,15 +155,11 @@ define([
                                 if (response.validationerror) {
                                     // eslint-disable-next-line no-alert
                                     alert('Errors encountered: Unable to save slot!');
+                                    CalendarViewManager.stopLoading(root);
                                 } else {
                                     // Redirect to bookings view
                                     location.href = M.cfg.wwwroot + '/local/booking/view.php?courseid=' + course;
                                 }
-                                return;
-                            }
-                            )
-                            .always(function() {
-                                CalendarViewManager.stopLoading(root);
                                 return;
                             }
                             )
@@ -170,10 +168,6 @@ define([
                     return !response.result;
                 }
                 return false;
-            }
-            )
-            .always(function() {
-                CalendarViewManager.stopLoading(root);
             })
             .fail(Notification.exception);
         }

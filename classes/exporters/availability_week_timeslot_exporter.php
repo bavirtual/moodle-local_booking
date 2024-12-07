@@ -20,11 +20,11 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\external;
+namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -121,6 +121,17 @@ class availability_week_timeslot_exporter extends exporter {
         $this->hour          = $daydata['hour'];
 
         parent::__construct([], $related);
+    }
+
+    /**
+     * Returns a list of objects that are related.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        return [
+            'type' => '\core_calendar\type_base',
+        ];
     }
 
     /**
@@ -305,16 +316,5 @@ class availability_week_timeslot_exporter extends exporter {
         $numberofdaysinweek = count($this->days);
 
         return !!($weekend & (1 << ($date['wday'] % $numberofdaysinweek)));
-    }
-
-    /**
-     * Returns a list of objects that are related.
-     *
-     * @return array
-     */
-    protected static function define_related() {
-        return [
-            'type' => '\core_calendar\type_base',
-        ];
     }
 }

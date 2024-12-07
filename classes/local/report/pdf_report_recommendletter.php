@@ -63,12 +63,12 @@ class pdf_report_recommendletter extends pdf_report {
         parent::WriteContent();
 
         // get course aircraft information
-        $aircraftsused = $this->course->aircrafticao;
-        $aircraftslabel = array_values($aircraftsused)[0];
+        $aircraftused = $this->course->aircrafticao;
+        $aircraftlabel = array_values($aircraftused)[0];
         if ($this->course->has_integration('external_data', 'aircraft')) {
-            foreach ($aircraftsused as $aircrafticao) {
+            foreach ($aircraftused as $aircrafticao) {
                 $aircraft = (object) $this->course->get_external_data('aircraft', 'aircraftinfo', $aircrafticao);
-                $aircraftslabel .= ', ' . $aircraft->description;
+                $aircraftlabel .= ', ' . $aircraft->description;
             }
         }
 
@@ -115,7 +115,7 @@ class pdf_report_recommendletter extends pdf_report {
         $html .= '</tr><tr>';
         $html .= '<td style="font-weight: bold;">' . get_string('datecompleted', 'local_booking') . ':</td><td>' . $this->student->get_last_graded_date()->format('M j\, Y') . '</td>';
         $html .= '</tr><tr>';
-        $html .= '<td style="font-weight: bold;">' . get_string('aircrafttypelabel', 'local_booking') . ':</td><td>' . $aircraftslabel . '</td>';
+        $html .= '<td style="font-weight: bold;">' . get_string('aircrafttypelabel', 'local_booking') . ':</td><td>' . $aircraftlabel . '</td>';
         $html .= '</tr><tr><br />';
 
         // Candidate Flying Hours

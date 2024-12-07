@@ -27,6 +27,8 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
 
+use local_booking\local\views\base_action_bar;
+
 /**
  * The primary renderer for the calendar.
  */
@@ -56,7 +58,7 @@ class local_booking_renderer extends plugin_renderer_base {
      * @param base_action_bar $actionbar
      * @return bool|string
      */
-    public function render_tertiary_navigation(\local_booking\local\views\base_action_bar $actionbar) {
+    public function render_tertiary_navigation(base_action_bar $actionbar) {
         return $this->render_from_template($actionbar->get_template(), $actionbar->export_for_template($this));
     }
 

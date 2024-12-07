@@ -19,11 +19,11 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\external;
+namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -31,6 +31,8 @@ use renderer_base;
 use moodle_url;
 use core\external\exporter;
 use local_booking\local\participant\entities\participant;
+use local_booking\local\logbook\entities\logentry;
+use \local_booking\local\subscriber\entities\subscriber;
 
 /**
  * Class for displaying a logbook entry.
@@ -43,7 +45,12 @@ use local_booking\local\participant\entities\participant;
 class logentry_exporter extends exporter {
 
     /**
-     * @var logentry_interface $logentry
+     * @var subscriber $course
+     */
+    protected $course;
+
+    /**
+     * @var logentry $logentry
      */
     protected $logentry;
 
@@ -55,6 +62,7 @@ class logentry_exporter extends exporter {
      */
     public function __construct($data, $related = []) {
         $this->logentry = $data['logentry'];
+        $this->course = $related['subscriber'];
         $nullable = !isset($data['nullable']) || $data['nullable'];
 
         // add logentry properties to the exporter's data and remove the exiting logentry object. Maintain scalar flightdate.
@@ -67,6 +75,18 @@ class logentry_exporter extends exporter {
         $data['visible'] = 1;
 
         parent::__construct($data, $related);
+    }
+
+    /**
+     * Returns a list of objects that are related.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        return array(
+            'context' => 'context',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
+        );
     }
 
     /**
@@ -315,13 +335,12 @@ class logentry_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
-        global $COURSE;
 
         $exerciseid = !empty($this->logentry) ? ($this->logentry->get_exercise_id() ?: $this->data['exerciseid']) : $this->data['exerciseid'];
         $flightdate = !empty($this->logentry) ? $this->logentry->get_flightdate(isset($this->data['view']) && $this->data['view'] == 'summary') : $this->data['flightdate'];
         $p1id = !empty($this->logentry) ? $this->logentry->get_p1id() : $this->data['p1id'];
         $p2id = !empty($this->logentry) ? $this->logentry->get_p2id() : $this->data['p2id'];
-        $sectionname = !empty($this->logentry) ? '' : array_values($COURSE->subscriber->get_lesson_by_exercise_id($exerciseid))[1];
+        $sectionname = !empty($this->logentry) ? '' : array_values($this->course->get_lesson_by_exercise_id($exerciseid))[1];
         $dualops = $this->data['trainingtype'] == 'Dual';
         $haspictime = !empty($this->logentry) ? !empty($this->logentry->get_pictime()) : false;
         $flighttype = !empty($this->logentry) ? $this->logentry->get_flighttype() : 'training';
@@ -351,7 +370,7 @@ class logentry_exporter extends exporter {
         }
 
         return [
-            'exercisename' => $COURSE->subscriber->get_exercise($exerciseid, $this->logentry->get_courseid())->name,
+            'exercisename' => $this->course->get_exercise($exerciseid, $this->logentry->get_courseid())->name,
             'formattedtime' => $flightdate,
             'p1label' => $p1label,
             'p2label' => $p2label,
@@ -365,17 +384,5 @@ class logentry_exporter extends exporter {
             'passedcheck' => $passed,
             'haspictime' => $haspictime,
         ];
-    }
-
-    /**
-     * Returns a list of objects that are related.
-     *
-     * @return array
-     */
-    protected static function define_related() {
-        return array(
-            'context' => 'context',
-            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
-        );
     }
 }

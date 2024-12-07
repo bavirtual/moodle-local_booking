@@ -20,11 +20,11 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\external;
+namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -78,10 +78,21 @@ class profile_student_exporter extends exporter {
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
         $data['courseid'] = $this->courseid;
-        $data['userid'] = $data['userid'];
         $this->student = $this->subscriber->get_student($data['userid']);
 
         parent::__construct($data, $related);
+    }
+
+    /**
+     * Returns a list of objects that are related.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        return array(
+            'context' => 'context',
+            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
+        );
     }
 
     protected static function define_properties() {
@@ -261,8 +272,21 @@ class profile_student_exporter extends exporter {
                 'default' => false,
             ],
             'coursemodules' => [
-                'type' => list_exercise_name_exporter::read_properties_definition(),
                 'multiple' => true,
+                'type' => [
+                    'exerciseid' => [
+                        'type' => PARAM_INT,
+                    ],
+                    'exercisename' => [
+                        'type' => PARAM_RAW,
+                    ],
+                    'exercisetype' => [
+                        'type' => PARAM_RAW,
+                    ],
+                    'exercisetitle' => [
+                        'type' => PARAM_RAW,
+                    ],
+                ]
             ],
             'sessions' => [
                 'type' => dashboard_session_exporter::read_properties_definition(),
@@ -486,17 +510,5 @@ class profile_student_exporter extends exporter {
         ];
 
         return $return;
-    }
-
-    /**
-     * Returns a list of objects that are related.
-     *
-     * @return array
-     */
-    protected static function define_related() {
-        return array(
-            'context' => 'context',
-            'subscriber' => 'local_booking\local\subscriber\entities\subscriber',
-        );
     }
 }

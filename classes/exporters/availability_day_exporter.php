@@ -19,11 +19,11 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\external;
+namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -112,6 +112,17 @@ class availability_day_exporter extends exporter {
     }
 
     /**
+     * Returns a list of objects that are related.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        return [
+            'type' => '\core_calendar\type_base',
+        ];
+    }
+
+    /**
      * Return the list of additional properties.
      *
      * @return array
@@ -147,17 +158,6 @@ class availability_day_exporter extends exporter {
         ];
 
         return $return;
-    }
-
-    /**
-     * Returns a list of objects that are related.
-     *
-     * @return array
-     */
-    protected static function define_related() {
-        return [
-            'type' => '\core_calendar\type_base',
-        ];
     }
 
     /**

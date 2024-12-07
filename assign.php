@@ -15,17 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Assigment feedback redirect
+ * Assignment feedback redirect
  * Clears preset filters and redirects to correct exercise
- * for intructor provided feedback submission
+ * for instructor provided feedback submission
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-use \local_booking\local\participant\entities\student;
 
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');

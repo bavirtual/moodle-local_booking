@@ -91,7 +91,7 @@ class grading_vault implements grading_vault_interface {
      *
      * @param  int The user id
      * @param  int The course id
-     * @return int
+     * @return array
      */
     public static function get_user_total_graded_sessions(int $courseid, int $userid) {
         global $DB;

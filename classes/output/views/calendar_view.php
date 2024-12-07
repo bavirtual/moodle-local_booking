@@ -16,7 +16,7 @@
 
 namespace local_booking\output\views;
 
-use local_booking\external\availability_week_exporter;
+use local_booking\exporters\availability_week_exporter;
 
 /**
  * Class to output calendar view.

@@ -19,11 +19,11 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\external;
+namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -117,7 +117,7 @@ class availability_week_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($actiondata, $related) {
-        global $CFG, $COURSE, $USER;
+        global $CFG, $USER;
 
         // Use core calendar and action
         $calendar = $related['calendar'];
@@ -143,7 +143,7 @@ class availability_week_exporter extends exporter {
 
         if ($this->calendar->course && SITEID !== $this->calendar->course->id) {
             $this->url->param('courseid', $this->calendar->course->id);
-            $this->course = $COURSE->subscriber;
+            $this->course = $related['subscriber'];
         }
 
         // identify the student to view the slots (single student view 'user' or 'all' students)
@@ -188,6 +188,16 @@ class availability_week_exporter extends exporter {
         parent::__construct($data, $related);
     }
 
+    /**
+     * Returns a list of objects that are related.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        return [
+            'type' => '\core_calendar\type_base',
+        ];
+    }
     protected static function define_properties() {
         return [
             'url' => [
@@ -444,7 +454,6 @@ class availability_week_exporter extends exporter {
      * @return  $timeslots[]
      */
     protected function get_time_slots(renderer_base $output) {
-        global $COURSE;
 
         // Get daily slots from settings
         $firstsessionhour = get_config('local_booking', 'firstsession');
@@ -456,7 +465,7 @@ class availability_week_exporter extends exporter {
         $usertimezoneoffset = (int)$usertz->getOffset($usertime) / 3600;
 
         // get the lanes containing student(s) slots
-        $weeklanes = $this->get_week_slot_lanes($COURSE->subscriber);
+        $weeklanes = $this->get_week_slot_lanes($this->course);
 
         $data = [
             'student'   => $this->student,
@@ -599,16 +608,5 @@ class availability_week_exporter extends exporter {
         }
 
         return [$newperioddate, $periodlink];
-    }
-
-    /**
-     * Returns a list of objects that are related.
-     *
-     * @return array
-     */
-    protected static function define_related() {
-        return [
-            'type' => '\core_calendar\type_base',
-        ];
     }
 }

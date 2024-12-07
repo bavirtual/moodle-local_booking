@@ -18,8 +18,6 @@ namespace local_booking\output\views;
 
 use stdClass;
 use renderer_base;
-use local_booking_renderer;
-use local_booking\external\list_exercise_name_exporter;
 use local_booking\local\subscriber\entities\subscriber;
 
 /**
@@ -33,7 +31,7 @@ use local_booking\local\subscriber\entities\subscriber;
 abstract class base_view {
 
     /**
-     * @var \renderer_base $renderer The course contenxt.
+     * @var \renderer_base $renderer The course context.
      */
     protected $renderer;
 
@@ -62,7 +60,7 @@ abstract class base_view {
      *
      * @param \context  $context   The course context.
      * @param int       $courseid  The course id for context.
-     * @param stClass   $data      The data class.
+     * @param \stdClass $data      The data class.
      * @param string    $template  The template used for output.
      */
     public function __construct(array $data, array $related, string $template) {
@@ -86,7 +84,7 @@ abstract class base_view {
     /**
      * Returns the renderer object.
      *
-     * @return local_booking_renderer
+     * @return \renderer_base
      */
     public function get_renderer() {
         return $this->renderer;
@@ -119,7 +117,7 @@ abstract class base_view {
      *
      * @param renderer_base $output     The renderer for output
      * @param subscriber    $subscriber The subscribing course
-     * @param array         $options    The options for selecitng returend modules
+     * @param array         $options    The options for selecting returned modules
      * @return array
      */
     public static function get_modules(renderer_base $output, subscriber $subscriber, array $options) {
@@ -152,8 +150,7 @@ abstract class base_view {
             if ($options['isinstructor'] || $options['readonly']) {
                 if ((has_capability('mod/assign:grade', \context_module::instance($module->id)) &&
                     $options['viewtype'] == 'confirm') || $options['viewtype'] != 'confirm') {
-                        $exercisename = new list_exercise_name_exporter($data);
-                        $modsexport[] = $exercisename->export($output);
+                        $modsexport[] = $data;
                 }
             }
         }
@@ -165,7 +162,7 @@ abstract class base_view {
 
         // // pop quizes
         if (array_key_exists('excludequizes', $options) && $options['excludequizes']) {
-            $filtered = array_filter($modsexport, function($property) { return ($property->exercisetype == 'assign');});
+            $filtered = array_filter($modsexport, function($property) { return $property['exercisetype'] == 'assign';});
             $modsexport = array_values($filtered);
         }
 

@@ -1,5 +1,12 @@
 # Change log
 
+## [2024120700] - RELEASED 2024-12-07
+
+### Changed
+
+- refactored external api services and output exporters
+- handling of current and next exercises
+
 ## [2024120500] - RELEASED 2024-12-05
 
 ### Fixed

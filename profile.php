@@ -67,7 +67,7 @@ if (has_capability('enrol/apply:manage', $context) && $forcecompletion) {
 $navbartext = participant::get_fullname($userid);
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('standard');
-$PAGE->set_title($COURSE->shortname . ': ' . $title . ' - ' . participant::get_fullname($userid), 'local_booking');
+$PAGE->set_title($COURSE->shortname . ': ' . $title . ' - ' . participant::get_fullname($userid));
 $PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-local-booking');
 

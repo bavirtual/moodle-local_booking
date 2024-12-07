@@ -83,7 +83,7 @@ function(
 
         // Call redirect to assignment feedback page
         if (Source.length !== 0) {
-            // get from logentry modal
+            // Get from logentry modal
             courseId = Source.data('courseId');
             exerciseId = Source.data('exerciseId');
             userId = Source.data('userId');

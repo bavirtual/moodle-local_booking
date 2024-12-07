@@ -25,112 +25,84 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/group/lib.php');
-
 use local_booking\local\logbook\form\create as create_logentry_form;
 use local_booking\local\logbook\form\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
 
-/**
- * LOCAL_BOOKING_DASHBOARDPAGESIZE - constant value for the instructor dashboard page size
- */
+// LOCAL_BOOKING_DASHBOARDPAGESIZE - constant value for the instructor dashboard page size
 define('LOCAL_BOOKING_DASHBOARDPAGESIZE', 50);
-/**
- * LOCAL_BOOKING_RECENCYWEIGHT - constant value for session recency weight multiplier
- */
+
+// LOCAL_BOOKING_RECENCYWEIGHT - constant value for session recency weight multiplier
 define('LOCAL_BOOKING_RECENCYWEIGHT', 10);
-/**
- * LOCAL_BOOKING_SLOTSWEIGHT - constant value for session availability slots weight multiplier
- */
+
+// LOCAL_BOOKING_SLOTSWEIGHT - constant value for session availability slots weight multiplier
 define('LOCAL_BOOKING_SLOTSWEIGHT', 50);
-/**
- * LOCAL_BOOKING_ACTIVITYWEIGHT - constant value for course activity weight multiplier
- */
+
+// LOCAL_BOOKING_ACTIVITYWEIGHT - constant value for course activity weight multiplier
 define('LOCAL_BOOKING_ACTIVITYWEIGHT', 1);
-/**
- * LOCAL_BOOKING_COMPLETIONWEIGHT - constant value for lesson completion weight multiplier
- */
+
+// LOCAL_BOOKING_COMPLETIONWEIGHT - constant value for lesson completion weight multiplier
 define('LOCAL_BOOKING_COMPLETIONWEIGHT', 10);
-/**
- * LOCAL_BOOKING_MINLANES - constant value for minimum number of lanes in a weekday in the availability view
- */
+
+// LOCAL_BOOKING_MINLANES - constant value for minimum number of lanes in a weekday in the availability view
 define('LOCAL_BOOKING_MINLANES', 4);
-/**
- * LOCAL_BOOKING_MAXLANES - constant value for maximum number of student slots shown in parallel a day
- */
+
+// LOCAL_BOOKING_MAXLANES - constant value for maximum number of student slots shown in parallel a day
 define('LOCAL_BOOKING_MAXLANES', 20);
-/**
- * LOCAL_BOOKING_WEEKSLOOKAHEAD - default value of the first slot of the day
- */
+
+// LOCAL_BOOKING_WEEKSLOOKAHEAD - default value of the first slot of the day
 define('LOCAL_BOOKING_WEEKSLOOKAHEAD', 5);
-/**
- * LOCAL_BOOKING_OVERDUE_PERIOD - days from posting wait period to sent student inactivity warning
- */
+
+// LOCAL_BOOKING_OVERDUE_PERIOD - days from posting wait period to sent student inactivity warning
 define('LOCAL_BOOKING_OVERDUE_PERIOD', 10);
-/**
- * LOCAL_BOOKING_MIN_SLOT_PERIOD - minimum amount of hours allowed to book an availability slot
- */
+
+// LOCAL_BOOKING_MIN_SLOT_PERIOD - minimum amount of hours allowed to book an availability slot
 define('LOCAL_BOOKING_MIN_SLOT_PERIOD', 2);
-/**
- * LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades) - (3 years)
- */
+
+// LOCAL_BOOKING_PASTDATACUTOFF - default value of days in processing past data (i.e. past grades) - (3 years)
 define('LOCAL_BOOKING_PASTDATACUTOFF', 1095);
-/**
- * LOCAL_BOOKING_NOSHOWPERIOD - constant for the period within which student no-shows are evaluated
- */
+
+// LOCAL_BOOKING_NOSHOWPERIOD - constant for the period within which student no-shows are evaluated
 define('LOCAL_BOOKING_NOSHOWPERIOD', 90);
-/**
- * LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD - constant for the period of suspension due to no-show
- */
+
+// LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD - constant for the period of suspension due to no-show
 define('LOCAL_BOOKING_NOSHOWSUSPENSIONPERIOD', 1);
-/**
- * LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group querying purposes
- */
+
+// LOCAL_BOOKING_ONHOLDGROUP - constant string value for students placed on-hold for group querying purposes
 define('LOCAL_BOOKING_ONHOLDGROUP', 'OnHold');
-/**
- * LOCAL_BOOKING_KEEPACTIVEGROUP - constant string value for students to stay active even if they match on-hold criteria
- */
+
+// LOCAL_BOOKING_KEEPACTIVEGROUP - constant string value for students to stay active even if they match on-hold criteria
 define('LOCAL_BOOKING_KEEPACTIVEGROUP', 'Keep Active');
-/**
- * LOCAL_BOOKING_INACTIVEGROUP - constant string value for inactive instructors for group querying purposes
- */
+
+// LOCAL_BOOKING_INACTIVEGROUP - constant string value for inactive instructors for group querying purposes
 define('LOCAL_BOOKING_INACTIVEGROUP', 'Inactive Instructors');
-/**
- * LOCAL_BOOKING_GRADUATESGROUP - constant string value for graduated students for group querying purposes
- */
+
+// LOCAL_BOOKING_GRADUATESGROUP - constant string value for graduated students for group querying purposes
 define('LOCAL_BOOKING_GRADUATESGROUP', 'Graduates');
-/**
- * LOCAL_BOOKING_SLOTCOLOR - constant for standard slot color
- */
+
+// LOCAL_BOOKING_SLOTCOLOR - constant for standard slot color
 define('LOCAL_BOOKING_SLOTCOLOR', '#00e676');
-/**
- * LOCAL_BOOKING_INSTRUCTORROLE - constant for Instructor role shortname
- */
+
+// LOCAL_BOOKING_INSTRUCTORROLE - constant for Instructor role shortname
 define('LOCAL_BOOKING_INSTRUCTORROLE', 'instructor');
-/**
- * LOCAL_BOOKING_SENIORINSTRUCTORROLE - constant for the Senior Instructor role shortname
- */
+
+// LOCAL_BOOKING_SENIORINSTRUCTORROLE - constant for the Senior Instructor role shortname
 define('LOCAL_BOOKING_SENIORINSTRUCTORROLE', 'seniorinstructor');
-/**
- * LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE - constant for the Flight Training Manager role shortname
- */
+
+// LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE - constant for the Flight Training Manager role shortname
 define('LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE', 'flighttrainingmanager');
-/**
- * LOCAL_BOOKING_EXAMINERROLE - constant for the Examiner role shortname
- */
+
+// LOCAL_BOOKING_EXAMINERROLE - constant for the Examiner role shortname
 define('LOCAL_BOOKING_EXAMINERROLE', 'examiner');
-/**
- * LOCAL_BOOKING_FAILINGPERCENTAGE - constant for the percentage of failing grade for rubric assessments
- */
+
+// LOCAL_BOOKING_FAILINGPERCENTAGE - constant for the percentage of failing grade for rubric assessments
 define('LOCAL_BOOKING_FAILINGPERCENTAGE', .33);
-/**
- * LOCAL_BOOKING_PASTDATACUTOFFDAYS - Past cutoff date (timestamp) for data retrieval
- */
+
+// LOCAL_BOOKING_PASTDATACUTOFFDAYS - Past cutoff date (timestamp) for data retrieval
 define('LOCAL_BOOKING_PASTDATACUTOFFDAYS', LOCAL_BOOKING_PASTDATACUTOFF * 60 * 60 * 24);
-/**
- * LOCAL_BOOKING_SLOTCOLORS - constant array for slot colors for students availability grid
- */
+
+// LOCAL_BOOKING_SLOTCOLORS - constant array for slot colors for students availability grid
 define('LOCAL_BOOKING_SLOTCOLORS', [
     "red"         => "#d50000",
     "green"       => "#689f38",
@@ -162,22 +134,17 @@ define('LOCAL_BOOKING_SLOTCOLORS', [
 function local_booking_extend_navigation_course(navigation_node $navigation) {
     global $COURSE, $USER;
 
-    $courseid = $COURSE->id;
-    $context = context_course::instance($courseid);
+    $course = get_course_subscriber_context('/local/booking/', $COURSE->id);
 
-    // define subscriber globally
-    if (empty($COURSE->subscriber))
-        $COURSE->subscriber = new subscriber($courseid);
-
-    if ($COURSE->subscriber->subscribed) {
+    if ($course->subscribed) {
         // for checking if the participant is active
-        $participant = $COURSE->subscriber->get_participant($USER->id);
+        $participant = $course->get_participant($USER->id);
 
         // Add instructor dashboard node
-        if (has_capability('local/booking:view', $context)) {
+        if (has_capability('local/booking:view', $course->get_context())) {
             $node = $navigation->find('bookings', navigation_node::TYPE_SETTING);
-            if (!$node && $courseid!==SITEID) {
-                $url = new moodle_url('/local/booking/view.php', array('courseid'=>$courseid));
+            if (!$node && $course->get_id()!==SITEID) {
+                $url = new moodle_url('/local/booking/view.php', array('courseid'=>$course->get_id()));
                 $node = navigation_node::create(get_string('bookings', 'local_booking'), $url,
                 navigation_node::TYPE_SETTING,
                 null,
@@ -189,21 +156,21 @@ function local_booking_extend_navigation_course(navigation_node $navigation) {
 
         // Add student availability navigation and students progression nodes for active participants
         if ($participant->is_active()) {
-            if (has_capability('local/booking:availabilityview', $context)) {
+            if (has_capability('local/booking:availabilityview', $course->get_context())) {
                 $activeparticipant = true;
                 $nodename = '';
                 $node = $navigation->find('availability', navigation_node::TYPE_SETTING);
 
-                if (!$node && $courseid!==SITEID) {
+                if (!$node && $course->get_id()!==SITEID) {
 
                     // form URL and parameters
-                    $params = array('courseid'=>$courseid);
+                    $params = array('courseid'=>$course->get_id());
 
                     // get proper link for instructors
-                    if (has_capability('local/booking:view', $context)) {
+                    if (has_capability('local/booking:view', $course->get_context())) {
                         $nodename = get_string('availabilityinst', 'local_booking');
                     } else {
-                        $student = $COURSE->subscriber->get_student($USER->id);
+                        $student = $course->get_student($USER->id);
                         $params['time'] = !empty($student) ? $student->get_next_allowed_session_date()->getTimestamp() : time();
                         // $params['action'] = 'post';
                         $nodename = get_string('availability', 'local_booking');
@@ -224,8 +191,8 @@ function local_booking_extend_navigation_course(navigation_node $navigation) {
                 // show for students only
                 if (!$participant->is_instructor()) {
                     $node = $navigation->find('progression', navigation_node::TYPE_SETTING);
-                    if (!$node && $courseid!==SITEID) {
-                        $url = new moodle_url('/local/booking/progression.php', array('courseid'=>$courseid));
+                    if (!$node && $course->get_id()!==SITEID) {
+                        $url = new moodle_url('/local/booking/progression.php', array('courseid'=>$course->get_id()));
                         $node = navigation_node::create(get_string('bookingprogression', 'local_booking'), $url,
                         navigation_node::TYPE_SETTING,
                         null,
@@ -239,11 +206,11 @@ function local_booking_extend_navigation_course(navigation_node $navigation) {
 
         // Add student log book navigation node for active participants
         if ($participant->is_active()) {
-            if (has_capability('local/booking:logbookview', $context)) {
+            if (has_capability('local/booking:logbookview', $course->get_context())) {
                 $node = $navigation->find('logbook', navigation_node::TYPE_SETTING);
-                if (!$node && $courseid!==SITEID) {
+                if (!$node && $course->get_id()!==SITEID) {
                     // form URL and parameters
-                    $params = array('courseid'=>$courseid, 'userid'=>$USER->id);
+                    $params = array('courseid'=>$course->get_id(), 'userid'=>$USER->id);
                     $url = new moodle_url('/local/booking/logbook.php', $params);
                     $node = navigation_node::create(ucfirst(get_string('logbookmy', 'local_booking')), $url,
                     navigation_node::TYPE_SETTING,
@@ -272,7 +239,8 @@ function local_booking_output_fragment_logentry_form($args) {
         parse_str($args['formdata'], $formdata);
     }
 
-    $context = context_user::instance($USER->id);
+    // set the subscriber object
+    $subscriber = get_course_subscriber_context('/local/booking/', $args['courseid']);
 
     if (WS_SERVER) {
         // Request via WS, ignore sesskey checks in form library.
@@ -286,12 +254,13 @@ function local_booking_output_fragment_logentry_form($args) {
     $flightdate = $args['flightdate'] ?: 0;
 
     $formoptions = [
-        'context'   => $context,
+        'context'   => $subscriber->get_context(),
+        'subscriber'=> $subscriber,
         'courseid'  => $courseid,
         'exerciseid'=> $exerciseid,
-        'sessionid'=> $sessionid,
-        'userid' => $userid,
-        'flightdate' => $flightdate,
+        'sessionid' => $sessionid,
+        'userid'    => $userid,
+        'flightdate'=> $flightdate,
     ];
 
     $logbook = new logbook($courseid, $userid);
@@ -362,4 +331,25 @@ function local_booking_get_fontawesome_icon_map() {
         'local_booking:user-times'      => 'fa-user-times',
         'local_booking:window-close'    => 'fa-window-close',
     ];
+}
+
+/**
+ * Sets the course subscriber and context url
+ *
+ * @param string $url       PAGE url
+ * @param int $courseid  course id for context
+ * @return subscriber
+ */
+function get_course_subscriber_context(string $url, int $courseid) {
+    global $PAGE, $COURSE;
+
+    // define subscriber globally
+    if (empty($COURSE->subscriber)) {
+        $context = context_course::instance($courseid);
+        $PAGE->set_url($url);
+        $PAGE->set_context($context);
+        $COURSE->subscriber = new subscriber($courseid);
+    }
+
+    return $COURSE->subscriber;
 }

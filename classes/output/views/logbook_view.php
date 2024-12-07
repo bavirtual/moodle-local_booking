@@ -16,7 +16,7 @@
 
 namespace local_booking\output\views;
 
-use local_booking\external\logbook_exporter;
+use local_booking\exporters\logbook_exporter;
 
 /**
  * Class to output logbook view.

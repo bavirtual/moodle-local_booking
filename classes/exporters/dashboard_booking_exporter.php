@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Class for displaying student names.
+ * Class for displaying availability view exercise names.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
@@ -23,21 +23,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\external;
+namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 
 /**
- * Class for displaying student names for autocomplete.
+ * Class for displaying each instructor booking in the instructor dashboard view.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class list_student_name_exporter extends exporter {
+class dashboard_booking_exporter extends exporter {
 
     /**
      * Constructor.
@@ -55,11 +55,41 @@ class list_student_name_exporter extends exporter {
      */
     protected static function define_properties() {
         return [
-            'userid' => [
+            'bookingid' => [
                 'type' => PARAM_INT,
             ],
-            'fullname' => [
+            'studentid' => [
+                'type' => \PARAM_INT,
+            ],
+            'studentname' => [
                 'type' => PARAM_RAW,
+            ],
+            'exerciseid' => [
+                'type' => \PARAM_INT,
+            ],
+            'noshows' => [
+                'type' => \PARAM_INT,
+            ],
+            'exercise' => [
+                'type' => \PARAM_RAW,
+            ],
+            'sessiondate' => [
+                'type' => \PARAM_RAW,
+            ],
+            'starttime' => [
+                'type' => \PARAM_RAW,
+            ],
+            'endtime' => [
+                'type' => \PARAM_RAW,
+            ],
+            'actionname' => [
+                'type' => \PARAM_RAW,
+            ],
+            'actionurl' => [
+                'type' => \PARAM_RAW,
+            ],
+            'coursename' => [
+                'type' => \PARAM_RAW,
             ],
         ];
     }

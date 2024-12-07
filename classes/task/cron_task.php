@@ -34,6 +34,7 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
 
 use DateTime;
 use local_booking\local\participant\entities\participant;
+use local_booking\local\participant\entities\instructor;
 use local_booking\local\message\notification;
 use local_booking\local\subscriber\entities\subscriber;
 
@@ -163,10 +164,10 @@ class cron_task extends \core\task\scheduled_task {
                     // notify student a week before being placed
                     mtrace('            posting overdue warning date: ' . $postingoverduedate->format('M d, Y'));
                     mtrace('            on-hold date: ' . $onholddate->format('M d, Y'));
-                    $message = new notification();
+                    $message = new notification($course);
                     if (getdate($postingoverduedate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$isactive) {
                         mtrace('        Sending student inactivity warning (10 days inactive after posting wait period)');
-                        $message->send_inactive_warning($student->get_id(), $lastsessiondate, $onholddate, $course->get_id(), $course->get_shortname());
+                        $message->send_inactive_warning($student->get_id(), $lastsessiondate, $onholddate);
                     }
                 } else {
                     mtrace('            last session: NONE ON RECORD!');
@@ -225,10 +226,10 @@ class cron_task extends \core\task\scheduled_task {
                     mtrace('            on-hold date: ' . $onholddate->format('M d, Y'));
                     mtrace('            on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
                     mtrace('            keep active status: ' . ($keepactive ? 'ON' : 'OFF'));
-                    $message = new notification();
+                    $message = new notification($course);
                     if (getdate($onholdwarningdate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$keepactive && !$isactive && !$booked) {
                         mtrace('        Notifying student of becoming on-hold in a week');
-                        $message->send_onhold_warning($student->get_id(), $onholddate, $course->get_id(), $course->get_shortname());
+                        $message->send_onhold_warning($student->get_id(), $onholddate);
                     }
 
                     // ON-HOLD PLACEMENT NOTIFICATION
@@ -240,7 +241,7 @@ class cron_task extends \core\task\scheduled_task {
                         groups_add_member($onholdgroupid, $student->get_id());
 
                         // send notification of upcoming placement on-hold to student and senior instructor roles
-                        if ($message->send_onhold_notification($student->get_id(), $lastsessiondate, $suspenddate, $course->get_shortname(), $seniorinstructors)) {
+                        if ($message->send_onhold_notification($student->get_id(), $lastsessiondate, $suspenddate, $seniorinstructors)) {
                             mtrace('                Placed \'' . $studentname . '\' on-hold (notified)...');
                         }
                     }
@@ -287,13 +288,13 @@ class cron_task extends \core\task\scheduled_task {
                     // SUSPENSION NOTIFICATION
                     // suspend when passed on-hold by 9x wait days process suspension and notify student and senior instructor roles
                     mtrace('            suspension date: ' . $suspenddate->format('M d, Y'));
-                    $message = new notification();
+                    $message = new notification($course);
                     if ($suspenddate->getTimestamp() <= time() && !$keepactive) {
                         // unenrol the student from the course
                         if ($student->suspend()) {
                             mtrace('                Suspended!');
                             // send notification of unenrolment from the course and senior instructor roles
-                            if ($message->send_suspension_notification($student->get_id(), $lastsessiondate, $course->get_shortname(), $seniorinstructors)) {
+                            if ($message->send_suspension_notification($student->get_id(), $lastsessiondate, $seniorinstructors)) {
                                 mtrace('                Student notified of suspension');
                             }
                         }
@@ -338,8 +339,8 @@ class cron_task extends \core\task\scheduled_task {
                     // notify the instructors of overdue status
                     if ($sendnotification) {
                         mtrace('                inactivity notification sent (retry=' . round($dayssincelast / $overdueperiod) . ')...');
-                        $message = new notification();
-                        $message->send_session_overdue_notification($instructor->get_id(), $status, $course->get_id(), $course->get_shortname(), $seniorinstructors);
+                        $message = new notification($course);
+                        $message->send_session_overdue_notification($instructor->get_id(), $status, $seniorinstructors);
                     }
                 }
                 else {
@@ -383,8 +384,8 @@ class cron_task extends \core\task\scheduled_task {
 
                     // notify the student and senior instructors of reinstatement
                     mtrace('                no-show student reinstated');
-                    $message = new notification();
-                    $message->send_noshow_reinstatement_notification($course, $student, $exerciseid, $seniorinstructors);
+                    $message = new notification($course);
+                    $message->send_noshow_reinstatement_notification($student, $exerciseid, $seniorinstructors);
                 }
             }
         }

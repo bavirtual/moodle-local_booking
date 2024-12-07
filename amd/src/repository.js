@@ -166,14 +166,14 @@ import Ajax from 'core/ajax';
 /**
  * Checks if the booking conflicts with another booking.
  *
- * @method isConflictingBookings
+ * @method hasConflictingBooking
  * @param {int}   studentid    The student id the booking is for
  * @param {array} bookedslot   The array of booked slots
  * @return {promise}
  */
-export const isConflictingBookings = (studentid, bookedslot) => {
+export const hasConflictingBooking = (studentid, bookedslot) => {
     const request = {
-        methodname: 'local_booking_is_conflicting_booking',
+        methodname: 'local_booking_has_conflicting_booking',
         args: {
             studentid: studentid,
             bookedslot: bookedslot,
@@ -242,7 +242,7 @@ export const isConflictingBookings = (studentid, bookedslot) => {
  */
  export const submitCreateUpdateLogentryForm = (formArgs, formData) => {
     const request = {
-        methodname: 'local_booking_submit_logentry_form',
+        methodname: 'local_booking_save_logentry',
         args: {
             formargs: formArgs,
             formdata: formData
@@ -264,7 +264,7 @@ export const isConflictingBookings = (studentid, bookedslot) => {
  export const getLogentryById = (logentryId, courseId, userId) => {
 
     const request = {
-        methodname: 'local_booking_get_logentry_by_id',
+        methodname: 'local_booking_get_logentry',
         args: {
             logentryid: logentryId,
             courseid: courseId,
@@ -336,7 +336,7 @@ export const isConflictingBookings = (studentid, bookedslot) => {
  */
  export const updateSuspendedStatus = (status, courseId, userId) => {
     const request = {
-        methodname: 'local_booking_update_suspended_status',
+        methodname: 'local_booking_set_suspended_status',
         args: {
             status: status,
             courseid: courseId,
@@ -348,23 +348,41 @@ export const isConflictingBookings = (studentid, bookedslot) => {
 };
 
 /**
- * Update group membership status for Onhold and Keep Active groups for the user profile.
+ * Get course groups to get the group needed
  *
- * @method updateGroup
- * @param  {string} group    Group name.
- * @param  {bool}   ismember Membership true or false.
+ * @method getCourseGroups
  * @param  {number} courseId The profile user id.
- * @param  {number} userId   The profile course id.
  * @return {promise}         Resolved with group membership true/false promise
  */
- export const updateGroup = (group, ismember, courseId, userId) => {
+ export const getCourseGroups = (courseId) => {
     const request = {
-        methodname: 'local_booking_update_group_status',
+        methodname: 'core_group_get_course_groups',
         args: {
-            group: group,
-            ismember: ismember,
             courseid: courseId,
-            userid: userId
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
+ * Adds or removes a student to a course's group.
+ *
+ * @method addToGroup
+ * @param  {number} courseId  The course id to add to.
+ * @param  {number} userId    The user to add.
+ * @param  {string} groupName The name of the group.
+ * @param  {bool}   add       Whether to add or remove from the course's group.
+ * @return {promise}          Resolved with group membership true/false promise
+ */
+ export const groupAddRemove = (courseId, userId, groupName, add) => {
+    const request = {
+        methodname: 'local_booking_set_student_group',
+        args: {
+            courseid: courseId,
+            studentid: userId,
+            groupname: groupName,
+            add: add
         }
     };
 
@@ -375,16 +393,16 @@ export const isConflictingBookings = (studentid, bookedslot) => {
  * Update user preferences for restrictions override or
  * endorsement status.
  *
- * @method updateUserPreferences
- * @param  {string} preference  Preference name.
- * @param  {string} value       User preference value.
- * @param  {number} courseId    The profile user id.
- * @param  {number} userId      The profile course id.
- * @return {promise}            Resolved with preference set promise
+ * @method setUserPreferences
+ * @param  {string} preference The preference tag
+ * @param  {string} value      The value of the preference
+ * @param  {int} courseId      The course id
+ * @param  {int} userId        The student's user id
+ * @return {promise}  Resolved with preference set promise
  */
- export const updateUserPreferences = (preference, value, courseId, userId) => {
+ export const setUserPreferences = (preference, value, courseId, userId) => {
     const request = {
-        methodname: 'local_booking_update_user_preferences',
+        methodname: 'local_booking_set_student_preferences',
         args: {
             preference: preference,
             value: value,

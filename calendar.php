@@ -46,7 +46,7 @@ if (empty($COURSE->subscriber)) {
 // get the event from the URL parameters.
 $event = new event((object) $_GET, $extendendtime);
 
-// add an event to the target provider denoted in type paramenter
+// add an event to the target provider denoted in type parameter
 if ($event->type == 'ics') {
     $event->download();
 } else {

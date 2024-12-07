@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Class for displaying availability view exercise names.
+ * Contains event class for displaying the day name.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
@@ -23,28 +23,50 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\external;
+namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 
 /**
- * Class for displaying each exercise session in progression view.
+ * Class for displaying the day names view.
  *
- * @package    local_booking
- * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   core_calendar
+ * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class list_exercise_name_exporter extends exporter {
+class day_name_exporter extends exporter {
+
+    /**
+     * @var int $dayno The day number.
+     */
+    protected $dayno;
+
+    /**
+     * @var int $dayno The day number.
+     */
+    protected $dayofmonth;
+
+    /**
+     * @var string $shortname The formatted short name of the day.
+     */
+    protected $shortname;
+
+    /**
+     * @var string $fullname The formatted full name of the day.
+     */
+    protected $fullname;
 
     /**
      * Constructor.
      *
-     * @param array $names The list of exercise names.
+     * @param int $dayno The day number.
+     * @param array $names The list of names.
      */
-    public function __construct($data) {
+    public function __construct($dayno, $dayofmonth, $names) {
+        $data = $names + ['dayno' => $dayno] +  ['dayofmonth' => $dayofmonth] ;
+
         parent::__construct($data, []);
     }
 
@@ -55,16 +77,18 @@ class list_exercise_name_exporter extends exporter {
      */
     protected static function define_properties() {
         return [
-            'exerciseid' => [
+            'dayno' => [
                 'type' => PARAM_INT,
             ],
-            'exercisename' => [
+            'dayofmonth' => [
                 'type' => PARAM_RAW,
             ],
-            'exercisetype' => [
+            'shortname' => [
+                // Note: The calendar type class has already formatted the names.
                 'type' => PARAM_RAW,
             ],
-            'exercisetitle' => [
+            'fullname' => [
+                // Note: The calendar type class has already formatted the names.
                 'type' => PARAM_RAW,
             ],
         ];

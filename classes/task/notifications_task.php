@@ -127,6 +127,8 @@ class notifications_task extends \core\task\scheduled_task {
             // send recommendation message
             $message = new notification($course);
             $message->send_recommendation_notification($data);
+            $message = new notification($course);
+            $message->send_recommendation_notification($data);
 
             mtrace('                recommendation notifications sent...');
 
@@ -197,12 +199,12 @@ class notifications_task extends \core\task\scheduled_task {
                         'exid'          => $student->get_next_exercise()->id,
                         'action'        => 'book'
                         )))->out(false),
-                    'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
-                    'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=> $course->get_id())))->out(false),
-                    'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise())))->out(false),
-                    'exercise'      => $course->get_exercise_name($student->get_next_exercise()),
+                    'exerciseurl'   => (new \moodle_url('/mod/assign/view.php', array('id'=> $student->get_next_exercise()->id)))->out(false),
+                    'exercise'      => $course->get_exercise($student->get_next_exercise()->id)->name,
                 );
 
+                $message = new notification($course);
+                $message->send_availability_posting_notification($data);
                 $message = new notification($course);
                 $message->send_availability_posting_notification($data);
 
@@ -290,6 +292,8 @@ class notifications_task extends \core\task\scheduled_task {
                     'examinername'    => $examiner->get_name(false),
                 ];
 
+                $message = new notification($course);
+                $message->send_graduation_notification($recipients, $data, $course->gradmsgsubject, $course->gradmsgbody);
                 $message = new notification($course);
                 $message->send_graduation_notification($recipients, $data, $course->gradmsgsubject, $course->gradmsgbody);
 

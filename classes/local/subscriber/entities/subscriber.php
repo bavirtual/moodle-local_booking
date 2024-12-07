@@ -684,7 +684,7 @@ class subscriber implements subscriber_interface {
      * otherwise retrieves the last exercise.
      *
      * @param bool $nameonly Whether to return the name instead of the id
-     * @return object The last exericse id
+     * @return string|int The last exericse id
      */
     public function get_graduation_exercise_id(bool $nameonly = false) {
         if ($this->graduationexerciseid == 0) {

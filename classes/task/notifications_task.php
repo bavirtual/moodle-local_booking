@@ -127,8 +127,6 @@ class notifications_task extends \core\task\scheduled_task {
             // send recommendation message
             $message = new notification($course);
             $message->send_recommendation_notification($data);
-            $message = new notification($course);
-            $message->send_recommendation_notification($data);
 
             mtrace('                recommendation notifications sent...');
 
@@ -203,8 +201,6 @@ class notifications_task extends \core\task\scheduled_task {
                     'exercise'      => $course->get_exercise($student->get_next_exercise()->id)->name,
                 );
 
-                $message = new notification($course);
-                $message->send_availability_posting_notification($data);
                 $message = new notification($course);
                 $message->send_availability_posting_notification($data);
 
@@ -292,8 +288,6 @@ class notifications_task extends \core\task\scheduled_task {
                     'examinername'    => $examiner->get_name(false),
                 ];
 
-                $message = new notification($course);
-                $message->send_graduation_notification($recipients, $data, $course->gradmsgsubject, $course->gradmsgbody);
                 $message = new notification($course);
                 $message->send_graduation_notification($recipients, $data, $course->gradmsgsubject, $course->gradmsgbody);
 

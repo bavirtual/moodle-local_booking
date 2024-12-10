@@ -231,6 +231,9 @@ class profile_student_exporter extends exporter {
             'waitrestrictionenabled' => [
                 'type'  => PARAM_BOOL,
             ],
+            'postingwait' => [
+                'type'  => PARAM_INT,
+            ],
             'restrictionoverride' => [
                 'type'  => PARAM_BOOL,
             ],
@@ -492,6 +495,7 @@ class profile_student_exporter extends exporter {
             'keepactive'               => $this->student->is_member_of(LOCAL_BOOKING_KEEPACTIVEGROUP),
             'keepactivegroup'          => LOCAL_BOOKING_KEEPACTIVEGROUP,
             'waitrestrictionenabled'   => $this->subscriber->postingwait != 0,
+            'postingwait'              => $this->subscriber->postingwait,
             'restrictionoverride'      => get_user_preferences('local_booking_' . $this->courseid . '_availabilityoverride', false, $studentid),
             'admin'                    => has_capability('moodle/user:loginas', $this->related['context']),
             'hasexams'                 => $hasexams,

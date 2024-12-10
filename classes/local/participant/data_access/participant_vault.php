@@ -58,67 +58,24 @@ class participant_vault implements participant_vault_interface {
     const DB_BOOKING = 'local_booking_sessions';
     const DB_SLOTS = 'local_booking_slots';
     const DB_STATS = 'local_booking_stats';
+    const DB_LOGBOOKS = 'local_booking_logbooks';
 
     /**
      * Get a participant from the database.
      *
      * @param int  $courseid The course id.
      * @param int  $userid   A specific user.
-     * @param bool $active   Whether the user is actively enrolled.
-     * @param bool $student  Whether the user is a student or not
      * @return {Object}      Array of database records.
      */
-    public static function get_participant(int $courseid, int $userid = 0, bool $active = true, bool $student = true) {
+    public static function get_participant(int $courseid, int $userid) {
         global $DB;
 
-        $statssql = $student ? 's.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid,
-            IF(MAX(a.starttime) > UNIX_TIMESTAMP(), 1, 0) AS hasactiveposts, scc.timecompleted AS graduateddate,' :
-            '0 AS lessonscomplete, 0 AS lastsessiondate, 0 AS currentexerciseid, 0 AS nextexerciseid, 0 AS hasactiveposts, 0 AS graduateddate';
-        $conditionaljoin = $student ? 'INNER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid' : '';
-        $statsclause = $student ? ' AND s.courseid = :scourseid AND cc.timecompleted IS NULL' : '';
-        $activeclause = $active ? ' AND ue.status = 0' : '';
+        $enrolledsql = self::get_sql($courseid);
 
-        $sql = "SELECT u.id AS userid, " . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . " AS fullname,
-                    MAX(ue.timecreated) AS enroldate, $statssql, ue.timemodified AS suspenddate, ue.status AS enrolstatus,
-                    en.courseid AS courseid, u.lastlogin AS lastlogin,
-                        (SELECT GROUP_CONCAT(shortname) FROM {" . self::DB_ROLE_ASSIGN . "} ra
-                         INNER JOIN {" . self::DB_ROLE . "}  r ON r.id = ra.roleid
-                         WHERE ra.userid = :ruserid AND ra.contextid = :contextid) AS roles
-                FROM {" . self::DB_USER . "} u
-                $conditionaljoin
-                INNER JOIN {" . self::DB_USER_ENROL . "} ue on u.id = ue.userid
-                INNER JOIN {" . self::DB_ENROL . "} en on ue.enrolid = en.id
-                LEFT JOIN {" . self::DB_SLOTS . "} a ON a.userid = u.id AND a.courseid = en.courseid
-                WHERE en.courseid = :courseid $statsclause
-                    AND u.id = :userid $activeclause";
+        $sql = "SELECT * FROM (SELECT u.id AS userid, $enrolledsql->fields $enrolledsql->from $enrolledsql->where $enrolledsql->groupby) AS participants
+                WHERE roles like '%student%' AND userid = $userid $enrolledsql->orderby";
 
-        $params = [
-            'courseid'  => $courseid,
-            'scourseid' => $courseid,
-            'userid'    => $userid,
-            'ruserid'   => $userid,
-            'contextid' => \context_course::instance($courseid)->id
-        ];
-
-        return $DB->get_record_sql($sql, $params);
-    }
-
-    /**
-     * Get all active student from the database.
-     *
-     * @param int  $courseid    The course id.
-     * @param bool $userid      A specific student for booking confirmation
-     * @return {Object}         Array of database records.
-     */
-    public static function get_student(int $courseid, int $userid = 0) {
-        global $DB;
-
-        list($sql, $countsql) = self::get_criteria_sql($courseid, 'active', true, false, 'student', false, true);
-        $params = [
-            'userid'    => $userid,
-        ];
-
-        return $DB->get_record_sql($sql, $params);
+        return $DB->get_record_sql($sql);
     }
 
     /**
@@ -128,59 +85,58 @@ class participant_vault implements participant_vault_interface {
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @param int $offset           The offset record for pagination
-     * @param bool &$count          Reference to the count of students count before pagination
      * @param bool $requirescompletion Whether the course has lesson completion restriction
-     * @return {Object}[]           Array of database records.
+     * @return array Array of database records and total count.
      */
     public static function get_students(
         int $courseid,
         string $filter = 'active',
         bool $includeonhold = false,
         int $offset = 0,
-        int &$count = 0,
         bool $requirescompletion = true) {
 
         global $DB;
 
-        list($sql, $countsql) = self::get_criteria_sql($courseid, $filter, $includeonhold, false, 'student', $requirescompletion);
+        // get enrolled students sql object
+        $enrolledsql = self::get_sql($courseid, $filter, $includeonhold, 'student', $requirescompletion);
+
+        // sql string for enrolled students
+        $sql = "SELECT * FROM (SELECT u.id AS userid, $enrolledsql->fields $enrolledsql->from $enrolledsql->where $enrolledsql->groupby) AS participants
+                WHERE roles like '%student%' $enrolledsql->orderby";
+
+        // enrolled students count sql
+        $countsql = "SELECT Count(userid) FROM (SELECT u.id AS userid, $enrolledsql->roles_field $enrolledsql->from $enrolledsql->where $enrolledsql->groupby) AS participants
+                WHERE roles like '%student%'";
 
         // get filtered students and their total count
         $count = $DB->count_records_sql($countsql);
         $students = $DB->get_records_sql($sql, null, $offset, LOCAL_BOOKING_DASHBOARDPAGESIZE);
 
-        return $students;
+        return [$students, $count];
     }
 
     /**
      * Get all active participants for a course for UI select controls (ids & fullname)
      *
-     * @param int $courseid         The course id.
-     * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
-     * @param bool $includeonhold   Whether to include on-hold students as well
-     * @param string $roles         The roles of the participants
-     * @return {Object}[]           Array of database records.
+     * @param int $courseid       The course id.
+     * @param string $filter      The filter to show students, inactive (including graduates), suspended, and default to active.
+     * @param bool $includeonhold Whether to include on-hold students as well
+     * @param string $roles       The roles of the participants
+     * @return array              Array of database records.
      */
-    public static function get_participants_simple(int $courseid, string $filter = 'active', bool $includeonhold = false, string $roles = null) {
+    public static function get_student_names(int $courseid, string $filter = 'active', bool $includeonhold = false, string $roles = null) {
         global $DB;
 
-        // $context = \context_course::instance($courseid);
-        // list($enrolledsql, $enrolledparams) = get_enrolled_sql($context, 'local/booking:availabilityview', 0, true);
+        $context = \context_course::instance($courseid);
 
-        // // Fields we need from the user table.
-        // $userfieldsapi = \core_user\fields::for_identity($context)->with_userpic();
-        // $userfieldssql = $userfieldsapi->get_sql('u', true, '', '', false);
+        // Fields we need from the user table.
+        $userfieldsapi = \core_user\fields::for_identity($context)->with_userpic();
+        $userfieldssql = $userfieldsapi->get_sql('u', true, '', '', false);
+        $enrolledsql = self::get_sql($courseid, $filter, $includeonhold, 'student', false);
 
-        // // We want to query both the current context and parent contexts.
-        // list($relatedctxsql, $relatedctxparams) = $DB->get_in_or_equal($context->get_parent_context_ids(true), SQL_PARAMS_NAMED, 'relatedctx');
-
-
-        // $params = array_merge($userfieldssql->params, $enrolledparams, $relatedctxparams);
-        // $sql = "SELECT {$userfieldssql->selects}
-        //         FROM {user} u
-        //             {$userfieldssql->joins}
-        //         JOIN ($enrolledsql) je ON je.id = u.id";
-
-        list($sql, $countsql) = self::get_criteria_sql($courseid, $filter, true, true, $roles);
+        $sql =  "SELECT $userfieldssql->selects FROM {" . self::DB_USER . "} u JOIN ";
+        $sql .= "(SELECT u.id AS userid, $enrolledsql->roles_field $enrolledsql->from $enrolledsql->where $enrolledsql->groupby) AS participants ON userid = u.id " .
+                "WHERE roles like '%student%'";
 
         return $DB->get_records_sql($sql);
     }
@@ -195,45 +151,19 @@ class participant_vault implements participant_vault_interface {
     public static function get_instructors(int $courseid, bool $courseadmins = false) {
         global $DB;
 
+        // get roles
         $roles = $courseadmins ?  LOCAL_BOOKING_SENIORINSTRUCTORROLE . '|' . LOCAL_BOOKING_FLIGHTTRAININGMANAGERROLE : LOCAL_BOOKING_INSTRUCTORROLE;
 
-        list($sql, $countsql) = self::get_criteria_sql($courseid,'active', false, false, $roles);
+        // get enrolled students sql object
+        $enrolledsql = self::get_sql($courseid, 'active', false, $roles, false);
+
+        // sql string for enrolled students
+        $sql = "SELECT * FROM (SELECT u.id AS userid, $enrolledsql->fields $enrolledsql->from $enrolledsql->where $enrolledsql->groupby) AS participants
+                WHERE roles REGEXP '$roles' $enrolledsql->orderby";
 
         $instructors = $DB->get_records_sql($sql);
+
         return $instructors;
-    }
-
-    /**
-     * Returns full username
-     *
-     * @param int       $userid           The user id.
-     * @param bool      $includealternate Whether to include the user's alternate name.
-     * @return string   $fullusername     The full participant username
-     */
-    public static function get_participant_name(int $userid, bool $includealternate = true) {
-        global $DB;
-
-        $fullusername = '';
-        if ($userid != 0) {
-            // Get the full user name
-            $sql = 'SELECT ' . $DB->sql_concat('u.firstname', '" "',
-                        'u.lastname', '" "', 'u.alternatename') . ' AS bavname, '
-                        . $DB->sql_concat('u.firstname', '" "',
-                        'u.lastname') . ' AS username
-                    FROM {' . self::DB_USER . '} u
-                    WHERE u.id = :userid';
-
-            $param = ['userid'=>$userid];
-            $userinfo = $DB->get_record_sql($sql ,$param);
-
-            if (!empty($userinfo)) {
-                $fullusername = $includealternate ? $userinfo->bavname : $userinfo->username;
-            }
-        }
-
-
-
-        return $fullusername;
     }
 
     /**
@@ -266,7 +196,7 @@ class participant_vault implements participant_vault_interface {
      *
      * @param   int The user id
      * @param   int The course id
-     * @return  stdClass The record containing timestamp of the last grading
+     * @return  \stdClass The record containing timestamp of the last grading
      */
     public function get_last_graded_date(int $userid, int $courseid, bool $is_student) {
         global $DB;
@@ -376,7 +306,7 @@ class participant_vault implements participant_vault_interface {
     /**
      * Returns the section containing the next exercise.
      *
-     * @return  stClass   Section
+     * @return \stdClass Section
      */
     private static function get_course_next_exercise_section(int $nextexercise) {
         global $DB;
@@ -432,134 +362,268 @@ class participant_vault implements participant_vault_interface {
     }
 
     /**
-     * Get all active students from the database.
+     * Get sql query object to retrieve participants from the database.
      *
+     * @param  int    $courseid           The course id.
      * @param  string $filter             The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param  bool   $includeonhold      Whether to include on-hold students as well
-     * @param  bool   $simple             To return sql for html Select user ids & names only
-     * @param  ?      $roles              The roles of the participants
+     * @param  string $roles              The roles of the participants
      * @param  bool   $requirescompletion Whether the course has lesson completion restriction
-     * @param  bool   $byuserid           Whether to include a userid criteria
-     * @return array  [$sql, $countsql]   The query SQL string
+     * @return object The query SQL object
      */
-    private static function get_criteria_sql(
+    private static function get_sql(
         int $courseid,
         string $filter = 'active',
         bool $includeonhold = false,
-        bool $simple = false,
-        $roles = null,
-        bool $requirescompletion = true,
-        bool $byuserid = false) {
+        string $roles = 'student',
+        bool $requirescompletion = true) {
 
+        $isstudent = !empty($roles) && $roles == 'student';
+
+        $sql = [
+            'fields'  => self::get_sql_select_fields($roles, $courseid),
+            'roles_field'  => self::sql_roles_field($courseid),
+            'from'    => self::get_sql_from($isstudent),
+            'where'   => self::get_sql_where($filter, $courseid, $isstudent, $includeonhold),
+            'groupby' => self::get_sql_groupby(),
+            'orderby' => self::get_sql_orderby($isstudent, $filter == 'suspended', $requirescompletion)
+        ];
+
+        return (object) $sql;
+    }
+
+    /**
+     * Get select fields.
+     *
+     * @param  string $roles   The roles of the participants
+     * @param  int    $course  The course id
+     * @return string $selects The SELECT SQL query string
+     */
+    private static function get_sql_select_fields(string $roles, int $courseid) {
         global $DB;
 
-        $context = \context_course::instance($courseid);
-        $isstudent = !empty($roles) && $roles == 'student';
-        $filter = $byuserid ? 'any' : $filter;
+        // basic user fields
+        $selects = 'u.lastlogin, ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . ' AS fullname, ';
 
-        // outer select statement
-        $select = 'SELECT * FROM ';
-        if ($simple) {
-            // Fields we need from the user table.
-            $userfieldsapi = \core_user\fields::for_identity($context)->with_userpic();
-            $userfieldssql = $userfieldsapi->get_sql('u', true, '', '', false);
-            $select = "SELECT $userfieldssql->selects FROM {" . self::DB_USER . "} u JOIN ";
-        }
+        // course roles
+        $selects .= !empty($roles) ? self::sql_roles_field($courseid) . ', ': '';
 
-        // inner select fields statement
-        $innerselect = '(SELECT u.id AS userid' . ($simple ? '' : ', ' . $DB->sql_concat('u.firstname', '" "', 'u.lastname', '" "', 'u.alternatename') . ' AS fullname');
-        $innerselect .= !empty($roles) ? ", (SELECT GROUP_CONCAT(shortname) FROM {" . self::DB_ROLE_ASSIGN . "} ra
-                         INNER JOIN {" . self::DB_ROLE . "}  r ON r.id = ra.roleid
-                         WHERE ra.userid = u.id AND ra.contextid = $context->id) AS roles" : "";
-        $innerselectcount = $innerselect;
+        // get student statistics if the role is a student
+        $corestudentfields = 's.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid, cc.timecompleted AS graduateddate,
+                        IF(s.lastsessiondate IS NULL OR s.lastsessiondate = 0, ue.timecreated, s.lastsessiondate) AS waitdate, ';
 
-        if (!$simple) {
-            $innerselect .= $isstudent ? ', s.lessonscomplete,
-                            s.lastsessiondate,
-                            s.currentexerciseid,
-                            s.nextexerciseid,
-                            IF(s.lastsessiondate IS NULL OR s.lastsessiondate = 0, ue.timecreated, s.lastsessiondate) AS waitdate,
-                            cc.timecompleted AS graduateddate,
-                            @hasbooking := (SELECT b.active FROM {' . self::DB_STATS . '} st LEFT OUTER JOIN {' . self::DB_BOOKING . '} b ON b.studentid = st.userid
-                                AND b.courseid = st.courseid WHERE b.studentid = u.id AND b.courseid = en.courseid ORDER BY b.id DESC LIMIT 1) AS booked,
-                            IF((SELECT MAX(a.starttime) FROM {' . self::DB_SLOTS . '} a WHERE a.userid = u.id AND a.courseid = en.courseid) > UNIX_TIMESTAMP(), IF(@hasbooking=1, 0, 1), 0) AS hasactiveposts'
+        $selects .= !empty($roles) && $roles == 'student' ?
+                $corestudentfields .
+                self::sql_booked_field() . ' AS booked, ' .
+                self::sql_hasactiveposts_field() . ' AS hasactiveposts, '
                 :
-                ', @maxbooktime := (SELECT MAX(b.timemodified) FROM mdl_local_booking_sessions b WHERE b.userid = u.id AND b.courseid = en.courseid),
-                            @maxlogentrytime := (SELECT MAX(l.flightdate) FROM mdl_local_booking_logbooks l WHERE l.userid = u.id AND l.courseid = en.courseid),
-    	                    IF(@maxlogentrytime > @maxbooktime, @maxlogentrytime, @maxbooktime) AS lastsessiondate';
-            $innerselect .= ', en.courseid AS courseid, u.lastlogin AS lastlogin, ue.timecreated AS enroldate, ue.timemodified AS suspenddate, ue.status AS enrolstatus';
+                self::sql_maxbooktime_var() . ', ' .
+                self::sql_maxlogentrytime_var() . ', ' .
+                'IF(@maxlogentrytime > @maxbooktime, @maxlogentrytime, @maxbooktime) AS lastsessiondate, ';
+
+        // include user enrolment fields
+        $selects .= 'en.courseid AS courseid, ue.timecreated AS enroldate, ue.timemodified AS suspenddate, ue.status AS enrolstatus';
+
+        return $selects;
+    }
+
+    /**
+     * Get roles for participants.
+     *
+     * @param  int $course The course id
+     * @return string The SELECT roles field SQL query string
+     */
+    private static function sql_roles_field(int $courseid) {
+
+        $context = \context_course::instance($courseid);
+        $rolesclause = "(SELECT GROUP_CONCAT(shortname) FROM {" . self::DB_ROLE_ASSIGN . "} ra " .
+                        "INNER JOIN {" . self::DB_ROLE . "} r ON r.id = ra.roleid " .
+                        "WHERE ra.userid = u.id AND ra.contextid = $context->id) AS roles";
+
+        return $rolesclause;
+    }
+    /**
+     * Get from tables for enroled participants.
+     * Include stats for students.
+     *
+     * @param  bool $isstudent Whether the participant is a student
+     * @return string $selects The FROM SQL query string
+     */
+    private static function get_sql_from(bool $isstudent) {
+
+        // inner select from tables statement
+        $from =  'FROM {' . self::DB_USER . '} u ';
+        $from .= 'INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = u.id ';
+        $from .= 'INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid ';
+
+        // get status for student role
+        if ($isstudent) {
+            $from .= 'LEFT OUTER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id AND s.courseid = en.courseid ';
+            $from .= 'LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid ';
         }
 
-        // inner selectfrom tables statement
-        $innerfrom = ' FROM {' . self::DB_USER . '} u';
-        $innerfrom .= ' INNER JOIN {' . self::DB_USER_ENROL . '} ue ON ue.userid = u.id' .
-                 ' INNER JOIN {' . self::DB_ENROL . '} en ON en.id = ue.enrolid' .
-                   ($isstudent && !$simple ? ' LEFT OUTER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id AND s.courseid = en.courseid' : '');
-                   $innerfrom .= $isstudent ? ' LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid' : '';
+        return $from;
+    }
 
-        // inner select where statement
-        $innerwhere = " WHERE en.courseid = $courseid AND u.deleted != 1 AND u.suspended = 0 ";
+    /**
+     * Get where clause base on filter criteria.
+     * Include stats for students.
+     *
+     * @param  string $filter        The enroled participants filter
+     * @param  string $courseid      The course id
+     * @param  bool   $isstudent     Whether the participant is a student
+     * @param  string $includeonhold Whether or not include on-hold students
+     * @return string $where         The WHERE SQL query string
+     */
+    private static function get_sql_where(string $filter, int $courseid, bool $isstudent, bool $includeonhold = false) {
 
-        // outer select where statement
-        $outerwhere = '';
-        if (!empty($roles) || $byuserid) {
-            $outerwhere = !empty($roles) ? "roles " . ($isstudent ? "like '%$roles%'" : "REGEXP '$roles'") : "";
-            $outerwhere .= !empty($outerwhere) && $byuserid ? " AND " : "";
-            $outerwhere .= $byuserid ? "userid = :userid " : "" ;
-            $outerwhere = !empty($outerwhere) ? " WHERE " . $outerwhere : "";
-        }
+        $where = " WHERE en.courseid = $courseid AND u.deleted != 1 AND u.suspended = 0 ";
 
-        // outer select order by statement
-        if (!$simple) {
-            $orderby = $byuserid ? '' : ' ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') . ' hasactiveposts DESC, booked DESC, waitdate ASC' : 'lastsessiondate DESC');
-        }
+        if ($filter == 'active')
+            return $where .= $includeonhold ? '' : self::sql_active_participants($courseid, $isstudent);
 
-        // inner select group by statement
-        $innergroupby = ' GROUP BY u.id)  participants' . ($simple ? ' ON userid = u.id' : '');
+        if ($filter == 'onhold')
+            return $where .= self::sql_onhold_participants($courseid);
 
-        switch ($filter) {
-            // cross reference course completion and on-hold group
-            case 'active':
-                $excludeonhold = " AND u.id NOT IN (
-                            SELECT userid
-                            FROM {" . self::DB_GROUPS_MEM . "} gm
-                            INNER JOIN {" . self::DB_GROUPS . "} g on g.id = gm.groupid
-                            WHERE g.courseid = $courseid AND g.name = '" . ($isstudent ? LOCAL_BOOKING_ONHOLDGROUP : LOCAL_BOOKING_INACTIVEGROUP) . "')";
-                $innerwhere .= $includeonhold ? '' : $excludeonhold;
-                $innerwhere .= ' AND ue.status = 0' . ($isstudent ? ' AND cc.timecompleted IS NULL' : '');
-                break;
+        if ($filter == 'suspended')
+            return $where .= ' AND ue.status = 1';
 
-            case 'onhold':
-                $innerwhere .= " AND ue.status = 0 AND cc.timecompleted IS NULL
-                    AND u.id IN (
-                        SELECT userid
-                        FROM {" . self::DB_GROUPS_MEM . "} gm
-                        INNER JOIN {" . self::DB_GROUPS . "} g on g.id = gm.groupid
-                        WHERE g.courseid = $courseid AND g.name = '" . LOCAL_BOOKING_ONHOLDGROUP . "')";
-                break;
+        if ($filter == 'graduates')
+            return $where .= self::sql_graduated_participants($courseid);
 
-            case 'suspended':
-                $innerwhere .= ' AND ue.status = 1';
-                $orderby = ' ORDER BY suspenddate, userid DESC';
-                break;
+        return $where;
+    }
 
-            case 'graduates':
-                $innerwhere .= " AND ue.status = 0 AND ( u.id IN (
-                            SELECT userid
-                            FROM {" . self::DB_GROUPS_MEM . "} gm
-                            INNER JOIN {" . self::DB_GROUPS . "} g on g.id = gm.groupid
-                            WHERE g.courseid = $courseid AND g.name = '" . LOCAL_BOOKING_GRADUATESGROUP . "')
-                            OR cc.timecompleted IS NOT NULL)";
-                break;
+    /**
+     * Get group by clause base on user id.
+     *
+     * @return string The GROUP BY SQL query string
+     */
+    private static function get_sql_groupby(){
+        return ' GROUP BY u.id';
+    }
 
-            case 'any':
-                break;
-        }
+    /**
+     * Get ORDER BY SQL clause sort order.
+     *
+     * @param  bool $isstudent          Whether the participant is a student
+     * @param  bool $suspended          Whether the participant is a student
+     * @param  bool $requirescompletion Whether or not include on-hold students
+     * @return string $orderby The WHERE SQL query string
+     */
+    private static function get_sql_orderby(bool $isstudent, bool $suspended, bool $requirescompletion){
 
-        $sql = $select . $innerselect . $innerfrom . $innerwhere . $innergroupby . $outerwhere . $orderby;
+        // evaluate order by for suspended students
+        if ($suspended)
+            return ' ORDER BY suspenddate, userid DESC';
 
-        $countsql = 'SELECT Count(userid) FROM ' . $innerselectcount . $innerfrom . $innerwhere  . $innergroupby . $outerwhere;
+        // return order by for students and whether the course require lesson completion
+        return ' ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') .
+            ' hasactiveposts DESC, booked DESC, waitdate ASC' : 'lastsessiondate DESC');
 
-        return [$sql, $countsql];
+    }
+
+    /**
+     * Get active participants clause.
+     *
+     * @param  int  $courseid
+     * @param  bool $isstudent
+     * @return string SQL query string
+     */
+    private static function sql_active_participants(int $courseid, bool $isstudent){
+        return ' AND ue.status = 0' . ($isstudent ? ' AND cc.timecompleted IS NULL' : '') . ' AND u.id NOT IN
+                (
+                    SELECT userid
+                    FROM {' . self::DB_GROUPS_MEM . '} gm
+                    INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
+                    WHERE g.courseid = ' . $courseid . ' AND g.name = "' . ($isstudent ? LOCAL_BOOKING_ONHOLDGROUP : LOCAL_BOOKING_INACTIVEGROUP) . '"
+                )';
+    }
+
+    /**
+     * Get On-Hold student participants clause.
+     *
+     * @param  int  $courseid
+     * @return string SQL query string
+     */
+    private static function sql_onhold_participants(int $courseid){
+        return " AND ue.status = 0 AND
+            cc.timecompleted IS NULL AND u.id IN
+            (
+                SELECT userid
+                FROM {" . self::DB_GROUPS_MEM . "} gm
+                INNER JOIN {" . self::DB_GROUPS . "} g on g.id = gm.groupid
+                WHERE g.courseid = $courseid AND g.name = '" . LOCAL_BOOKING_ONHOLDGROUP . "'
+            )";
+    }
+
+    /**
+     * Get graduated student participants clause.
+     *
+     * @param  int  $courseid
+     * @return string SQL query string
+     */
+    private static function sql_graduated_participants(int $courseid){
+        return " AND ue.status = 0 AND ( cc.timecompleted IS NOT NULL OR u.id IN
+            (
+                SELECT userid
+                FROM {" . self::DB_GROUPS_MEM . "} gm
+                INNER JOIN {" . self::DB_GROUPS . "} g on g.id = gm.groupid
+                WHERE g.courseid = $courseid AND g.name = '" . LOCAL_BOOKING_GRADUATESGROUP . "'
+            ))";
+    }
+
+    /**
+     * Get current booking status for the student.
+     *
+     * @return string SQL query string
+     */
+    private static function sql_booked_field(){
+        return '@hasbooking :=
+            (
+                SELECT b.active FROM {' . self::DB_STATS . '} st
+                LEFT OUTER JOIN {' . self::DB_BOOKING . '} b ON b.studentid = st.userid AND b.courseid = st.courseid
+                WHERE b.studentid = u.id AND b.courseid = en.courseid
+                ORDER BY b.id DESC LIMIT 1
+            )';
+    }
+
+    /**
+     * Get hasactiveposts field SQL clause.
+     *
+     * @return string SQL query string
+     */
+    private static function sql_hasactiveposts_field(){
+        return 'IF(
+          (
+            SELECT MAX(a.starttime) FROM {' . self::DB_SLOTS . '} a
+            WHERE a.userid = u.id AND a.courseid = en.courseid
+          ) > UNIX_TIMESTAMP(), IF(@hasbooking=1, 0, 1), 0)';
+    }
+
+    /**
+     * Get date of the last booking the instructor made.
+     *
+     * @return string SQL query string
+     */
+    private static function sql_maxbooktime_var(){
+        return '@maxbooktime :=
+            (
+                SELECT MAX(b.timemodified) FROM {' . self::DB_BOOKING . '} b
+                WHERE b.userid = u.id AND b.courseid = en.courseid
+            )';
+    }
+
+    /**
+     * Get date of the last conducted flight date the instructor made.
+     *
+     * @return string SQL query string
+     */
+    private static function sql_maxlogentrytime_var(){
+        return '@maxlogentrytime :=
+            (
+                SELECT MAX(l.flightdate) FROM {' . self::DB_LOGBOOKS . '} l
+                WHERE l.userid = u.id AND l.courseid = en.courseid
+            )';
     }
 }

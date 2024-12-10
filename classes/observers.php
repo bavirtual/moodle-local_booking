@@ -74,7 +74,7 @@ class observers {
     /**
      * A completion of a lesson.
      *
-     * @param \mod\lesson\lesson_ended $event The event.
+     * @param lesson_ended $event The event.
      * @return void
      */
     public static function lesson_ended(lesson_ended $event) {
@@ -109,7 +109,7 @@ class observers {
     /**
      * A submission has been graded.
      *
-     * @param \mod\assign\submission_graded $event The event.
+     * @param submission_graded $event The event.
      * @return void
      */
     public static function submission_graded(submission_graded $event) {
@@ -157,7 +157,7 @@ class observers {
                         $student->update_statistic('currentexerciseid', $exerciseid);
                         $student->update_statistic('nextexerciseid', $nextexerciseid);
                         $student->update_statistic('lastsessiondate', $lastsessiondatets);
-                        $student->update_lessonscomplete_stat($courseid, $studentid);
+                        $student->update_lessonscomplete_stat();
 
                     } else {
                         $student->update_statistic('currentexerciseid', $exerciseid);

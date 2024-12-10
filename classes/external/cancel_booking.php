@@ -91,7 +91,7 @@ class cancel_booking extends external_api {
             $courseid = $booking->get_courseid();
 
             // set the subscriber object
-            $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
+            $subscriber = get_course_subscriber_context('/local/booking/', $courseid);
 
             // cancel the booking
             if ($result = $booking->cancel($noshow)) {

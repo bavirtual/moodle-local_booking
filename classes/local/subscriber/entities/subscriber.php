@@ -233,9 +233,9 @@ class subscriber implements subscriber_interface {
     /**
      * Constructor.
      *
-     * @param string $courseid  The description's value.
+     * @param int $courseid  The description's value.
      */
-    public function __construct($courseid) {
+    public function __construct(int $courseid) {
 
         // check if called at the site level from other than subscribing courses
         if ($courseid == 1) {
@@ -376,25 +376,12 @@ class subscriber implements subscriber_interface {
         $participant = new participant($this, $participantid);
 
         if ($populate) {
-            $participantrec = participant_vault::get_participant($this->courseid, $participantid, $active, $participant->is_student());
+            $participantrec = participant_vault::get_participant($this->courseid, $participantid);
             if (!empty($participantrec->userid))
                 $participant->populate($participantrec);
         }
 
         return $participant;
-    }
-
-    /**
-     * Get all senior instructors for the course.
-     *
-     * @param bool $rawdata Whether to return participant raw data
-     * @return {Object}[]   Array of course's senior instructors.
-     */
-    public function get_participants(bool $rawdata = false) {
-        $instructors = array_values($this->get_instructors(false, $rawdata));
-        $students = array_values($this->get_students('active', false, $rawdata));
-        $participants = array_merge($instructors, $students);
-        return $participants;
     }
 
     /**
@@ -406,9 +393,8 @@ class subscriber implements subscriber_interface {
      * @param string $wildcard      Wildcard value for autocomplete
      * @return array                Array of student ids & names
      */
-    public function get_participant_names(string $filter = 'active', bool $includeonhold = false, string $roles = null) {
-        $participantrecs = participant_vault::get_participants_simple($this->courseid, $filter, $includeonhold, $roles);
-        // $participants = array_combine(array_keys($participantrecs), array_column($participantrecs, 'fullname'));
+    public function get_student_names(string $filter = 'active', bool $includeonhold = false, string $roles = null) {
+        $participantrecs = participant_vault::get_student_names($this->courseid, $filter, $includeonhold, $roles);
         return $participantrecs;
     }
 
@@ -416,14 +402,14 @@ class subscriber implements subscriber_interface {
      * Get a student.
      *
      * @param int  $studentid   A participant user id.
-     * @param bool $courseid    Course id for student from different course required for instructor's mybookings w/ muultiple courses.
+     * @param bool $courseid    Course id for student from different course required for instructor's mybookings w/ multiple courses.
      * @return student          The student object
      */
     public function get_student(int $studentid, int $courseid = 0) {
         $student = (!empty($this->activestudents) && !empty($studentid) && isset($this->activestudents[$studentid])) ? $this->activestudents[$studentid] : null;
 
         if (empty($student)) {
-            $studentrec = participant_vault::get_student(($courseid ?: $this->courseid), $studentid);
+            $studentrec = participant_vault::get_participant(($courseid ?: $this->courseid), $studentid);
             $colors = LOCAL_BOOKING_SLOTCOLORS;
 
             // add a color for the student slots from the config.json file for each student
@@ -451,12 +437,12 @@ class subscriber implements subscriber_interface {
      */
     public function get_students(string $filter = 'active', bool $includeonhold = false, bool $rawdata = false, bool $loadgrades = false, int $page = 0) {
         $activestudents = [];
-        $studentrecs = participant_vault::get_students(
+        list($studentrecs, $this->activestudentscount) = participant_vault::get_students(
             $this->courseid,
             $filter,
             $includeonhold,
             ($page * LOCAL_BOOKING_DASHBOARDPAGESIZE),
-            $this->activestudentscount, $this->requirelessoncompletion);
+            $this->requirelessoncompletion);
         $colors = LOCAL_BOOKING_SLOTCOLORS;
 
         if ($rawdata) {
@@ -652,8 +638,7 @@ class subscriber implements subscriber_interface {
     public function get_exercise(int $exerciseid, int $courseid = 0, int $offset = 0) {
 
         $exercise = new stdClass();
-        $exercise->id = 0;
-        $exercise->name = '';
+        $exercise = (object) ['id'=>0, 'name'=>get_string('errormissingexercise', 'local_booking')];
 
         if ($offset) {
             // get offset exercise id
@@ -684,7 +669,7 @@ class subscriber implements subscriber_interface {
      * otherwise retrieves the last exercise.
      *
      * @param bool $nameonly Whether to return the name instead of the id
-     * @return string|int The last exericse id
+     * @return string|int The last exercise id
      */
     public function get_graduation_exercise_id(bool $nameonly = false) {
         if ($this->graduationexerciseid == 0) {
@@ -916,7 +901,7 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Removes user stats data once student is unenroled from the course
+     * Removes user stats data once student is unenrolled from the course
      *
      * @param int $courseid The subscribing course
      * @param int $userid   The assign module id

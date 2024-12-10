@@ -1,5 +1,18 @@
 # Change log
 
+## [2024121000] - RELEASED 2024-12-10
+
+### Fixed
+
+- logentry cancellation exception
+- null current & next exercise handling
+- nighttime missing error
+
+### Changed
+
+- refactored participant vault sql queries
+- profile administration section verbs
+
 ## [2024120700] - RELEASED 2024-12-07
 
 ### Changed

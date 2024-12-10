@@ -100,19 +100,9 @@ class student extends participant {
     protected $nextexercise;
 
     /**
-     * @var int $nextexerciseid The student's next exercise id.
-     */
-    protected $nextexerciseid;
-
-    /**
      * @var object $currentexercise The student's current exercise.
      */
     protected $currentexercise;
-
-    /**
-     * @var int $currentexerciseid The student's current exercise id.
-     */
-    protected $currentexerciseid;
 
     /**
      * @var DateTime $restrictiondate The student's end of restriction period date.
@@ -559,10 +549,12 @@ class student extends participant {
 
         if (empty($this->currentexercise)) {
 
-            // get last booked exercise
-            $booking = $this->get_last_booking();
-            $this->currentexercise = !empty($booking) ? $this->course->get_exercise($booking->get_exercise_id()) : null;
-            $this->currentexerciseid = !empty($this->currentexercise) ? $this->currentexercise->id : 0;
+            // initialize current exercise object with id=0 and erroneous exercise name
+            $this->currentexercise = (object) ['id'=>0, 'name'=>get_string('errormissingexercise', 'local_booking')];
+
+            // assign the exercise to the booked exercise if booking exists
+            if ($booking = $this->get_last_booking())
+                $this->currentexercise = $this->course->get_exercise($booking->get_exercise_id());
 
         }
 
@@ -578,13 +570,12 @@ class student extends participant {
 
         if (empty($this->nextexercise)) {
 
-            $this->nextexerciseid = 0;
-            $this->nextexercise = null;
+            // initialize next exercise object with id=0 and erroneous exercise name
+            $this->nextexercise = (object) ['id'=>0, 'name'=>get_string('errormissingexercise', 'local_booking')];
 
             // check first for newly enrolled students (boundary condition) based on graded exercises
             // if so the next exercise is the first
             if (empty($this->get_exercise_grades())) {
-                $this->nextexerciseid = array_values($this->course->get_modules())[0]->id;
                 return $this->nextexercise = array_values($this->course->get_modules())[0];
             }
 
@@ -593,8 +584,7 @@ class student extends participant {
             if (!empty($booking)) {
                 // make sure current exercise is not the last course exercise
                 if ($this->get_current_exercise()->id != $this->course->get_graduation_exercise_id()) {
-                    $this->nextexerciseid = $booking->get_exercise_id();
-                    return $this->nextexercise = $this->course->get_exercise($this->nextexerciseid);
+                    return $this->nextexercise = $this->course->get_exercise($booking->get_exercise_id());
                 }
             }
 
@@ -605,7 +595,6 @@ class student extends participant {
                 if ($lastgrade->get_exercise_id() != $this->course->get_graduation_exercise_id()) {
                     $this->course->get_exercise($lastgrade->get_exercise_id());
                     $this->nextexercise = $this->course->get_exercise($lastgrade->get_exercise_id(), 0, 1);
-                    $this->nextexerciseid = $this->nextexercise->id;
                 }
             }
         }
@@ -1000,9 +989,9 @@ class student extends participant {
         parent::populate($record);
         if (!empty($record)) {
             if (!empty($record->currentexerciseid))
-                $this->currentexerciseid = $record->currentexerciseid;
+                $this->currentexercise = $this->course->get_exercise($record->currentexerciseid);
             if (!empty($record->nextexerciseid))
-                $this->nextexerciseid = $record->nextexerciseid;
+                $this->nextexercise = $this->nextexercise = $this->course->get_exercise($record->nextexerciseid);
             if (!empty($record->lessonscomplete))
                 $this->lessonscomplete = $record->lessonscomplete;
             if (!empty($record->graduateddate))

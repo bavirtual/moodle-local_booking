@@ -25,6 +25,10 @@
 
 namespace local_booking\local\subscriber\entities;
 
+use local_booking\local\participant\entities\participant;
+use local_booking\local\participant\entities\student;
+use local_booking\local\participant\entities\instructor;
+
 defined('MOODLE_INTERNAL') || die();
 
 interface subscriber_interface {
@@ -83,14 +87,6 @@ interface subscriber_interface {
     public function get_participant(int $participantid, bool $populate = false, bool $active = true);
 
     /**
-     * Get all senior instructors for the course.
-     *
-     * @param bool $rawdata Whether to return participant raw data
-     * @return {Object}[]   Array of course's senior instructors.
-     */
-    public function get_participants(bool $rawdata = false);
-
-    /**
      * Get all active participant names for UI from the database.
      *
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
@@ -98,13 +94,13 @@ interface subscriber_interface {
      * @param string $roles         The roles of the participants
      * @return array                Array of student ids & names
      */
-    public function get_participant_names(string $filter = 'active', bool $includeonhold = false, string $roles = null);
+    public function get_student_names(string $filter = 'active', bool $includeonhold = false, string $roles = null);
 
     /**
      * Get a student.
      *
      * @param int  $studentid   A participant user id.
-     * @param bool $courseid    Course id for student from different course required for instructor's mybookings w/ muultiple courses.
+     * @param bool $courseid    Course id for student from different course required for instructor's mybookings w/ multiple courses.
      * @return student          The student object
      */
     public function get_student(int $studentid, int $courseid = 0);
@@ -176,7 +172,7 @@ interface subscriber_interface {
      * Returns the subscribed course lesson by the lesson module id
      *
      * @param int $lessonid The lesson id
-     * @return stdClass  The lesson module
+     * @return \stdClass  The lesson module
      */
     public function get_lesson_module(int $lessonid);
 
@@ -209,7 +205,7 @@ interface subscriber_interface {
      * Returns the course graduation exercise the last exercise
      * the student takes before graduating the course
      *
-     * @return int The last exericse id
+     * @return int The last exercise id
      */
     public function get_graduation_exercise_id();
 
@@ -282,7 +278,7 @@ interface subscriber_interface {
     public static function add_new_enrolments(int $courseid);
 
     /**
-     * Removes user stats data once student is unenroled from the course
+     * Removes user stats data once student is unenrolled from the course
      *
      * @param int $courseid The subscribing course
      * @param int $userid   The assign module id

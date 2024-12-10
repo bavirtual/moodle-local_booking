@@ -255,12 +255,13 @@ class participant implements participant_interface {
     /**
      * Returns full username
      *
-     * @param int       $participantid The user id.
-     * @param bool      $includealternate Whether to include the user's alternate name.
-     * @return string   $fullusername The full participant username
+     * @param int  $participantid The user id.
+     * @param bool $alternate     Whether to include the user's alternate name.
+     * @return string  The full participant username
      */
     public static function get_fullname(int $participantid, bool $alternate = true) {
-        return participant_vault::get_participant_name($participantid, $alternate);
+        $participant = \core_user::get_user($participantid);
+        return $participant->firstname . ' ' . $participant->firstname . ($alternate ? ' ' . $participant->alternatename :'');
     }
 
     /**

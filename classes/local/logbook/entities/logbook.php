@@ -81,8 +81,7 @@ class logbook implements logbook_interface {
      * @return logentry
      */
     public function create_logentry() {
-        $logentry = new logentry();
-        $logentry->set_parent($this);
+        $logentry = new logentry($this);
         return $logentry;
     }
 

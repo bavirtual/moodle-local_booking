@@ -108,7 +108,7 @@
                     <dl><dt><dd>
                         <div id="suspend-region" class="custom-control custom-switch">
                             <input type="checkbox" class="toggle-input" id="suspended" {{#suspended}}checked{{/suspended}}>
-                            <label class="toggle-label" for="suspended">{{#str}} suspended {{/str}}</label>
+                            <label class="toggle-label" for="suspended">{{#str}} suspend, local_booking {{/str}}</label>
                             {{> core/overlay_loading}}
                         </div>
                     </dd></dt></dl>
@@ -116,7 +116,7 @@
                     <dl><dt><dd>
                         <div id="onhold-region" class="custom-control custom-switch">
                             <input type="checkbox" class="toggle-input" id="onhold" {{#onhold}}checked{{/onhold}}>
-                            <label class="toggle-label" for="onhold">On-hold</label>
+                            <label class="toggle-label" for="onhold">{{#str}} putonhold , local_booking {{/str}}</label>
                             {{> core/overlay_loading}}
                         </div>
                     </dd></dt></dl>
@@ -132,7 +132,7 @@
                     <dl><dt><dd>
                         <div id="restriction-override-region" class="custom-control custom-switch">
                             <input type="checkbox" class="toggle-input" id="availabilityoverride" {{#restrictionoverride}}checked{{/restrictionoverride}}>
-                            <label class="toggle-label" for="availabilityoverride">{{#str}} restrictionoverride , local_booking {{/str}}</label>
+                            <label class="toggle-label" for="availabilityoverride">{{#str}} restrictionoverride , local_booking, {{postingwait}} {{/str}}</label>
                             {{> core/overlay_loading}}
                         </div>
                     </dd></dt></dl>

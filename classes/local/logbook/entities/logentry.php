@@ -228,6 +228,15 @@ class logentry implements logentry_interface {
     protected $linkedpirep = '';
 
     /**
+     * Constructor.
+     *
+     * @param logbook $parent The course id associated with this logbook.
+     */
+    public function __construct($parent) {
+        $this->parent = $parent;
+    }
+
+    /**
      * Saves a logbook entry (create or update).
      *
      * @return bool
@@ -469,7 +478,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_groundtime(bool $numeric = true) {
-        return $numeric ? $this->groundtime : logbook::convert_time($this->groundtime, 'MINS_TO_TEXT');
+        return $numeric ? $this->groundtime : $this->parent->convert_time($this->groundtime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -479,7 +488,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_flighttime(bool $numeric = true) {
-        return $numeric ? $this->flighttime : logbook::convert_time($this->flighttime, 'MINS_TO_TEXT');
+        return $numeric ? $this->flighttime : $this->parent->convert_time($this->flighttime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -489,7 +498,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_multipilottime(bool $numeric = true) {
-        return $numeric ? $this->multipilottime : logbook::convert_time($this->multipilottime, 'MINS_TO_TEXT');
+        return $numeric ? $this->multipilottime : $this->parent->convert_time($this->multipilottime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -499,7 +508,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_nighttime(bool $numeric = true) {
-        return $numeric ? $this->nighttime : logbook::convert_time($this->nighttime, 'MINS_TO_TEXT');
+        return $numeric ? $this->nighttime : $this->parent->convert_time($this->nighttime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -509,7 +518,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_ifrtime(bool $numeric = true) {
-        return $numeric ? $this->ifrtime : logbook::convert_time($this->ifrtime, 'MINS_TO_TEXT');
+        return $numeric ? $this->ifrtime : $this->parent->convert_time($this->ifrtime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -519,7 +528,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_pictime(bool $numeric = true) {
-        return $numeric ? $this->pictime : logbook::convert_time($this->pictime, 'MINS_TO_TEXT');
+        return $numeric ? $this->pictime : $this->parent->convert_time($this->pictime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -529,7 +538,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_copilottime(bool $numeric = true) {
-        return $numeric ? $this->copilottime : logbook::convert_time($this->copilottime, 'MINS_TO_TEXT');
+        return $numeric ? $this->copilottime : $this->parent->convert_time($this->copilottime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -539,7 +548,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_dualtime(bool $numeric = true) {
-        return $numeric ? $this->dualtime : logbook::convert_time($this->dualtime, 'MINS_TO_TEXT');
+        return $numeric ? $this->dualtime : $this->parent->convert_time($this->dualtime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -549,7 +558,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_instructortime(bool $numeric = true) {
-        return $numeric ? $this->instructortime : logbook::convert_time($this->instructortime, 'MINS_TO_TEXT');
+        return $numeric ? $this->instructortime : $this->parent->convert_time($this->instructortime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -559,7 +568,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_picustime(bool $numeric = true) {
-        return $numeric ? $this->picustime : logbook::convert_time($this->picustime, 'MINS_TO_TEXT');
+        return $numeric ? $this->picustime : $this->parent->convert_time($this->picustime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -571,7 +580,7 @@ class logentry implements logentry_interface {
     public function get_totalsessiontime(bool $numeric = true) {
         // get the log entry total time depending on the pilot's function
         $totalsessiontime = $this->flighttime + $this->groundtime;
-        return $numeric ? $totalsessiontime : logbook::convert_time($totalsessiontime, 'MINS_TO_TEXT');
+        return $numeric ? $totalsessiontime : $this->parent->convert_time($totalsessiontime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -581,7 +590,7 @@ class logentry implements logentry_interface {
      * @return mixed
      */
     public function get_checkpilottime(bool $numeric = true) {
-        return $numeric ? $this->checkpilottime : logbook::convert_time($this->checkpilottime, 'MINS_TO_TEXT');
+        return $numeric ? $this->checkpilottime : $this->parent->convert_time($this->checkpilottime, 'MINS_TO_TEXT');
     }
 
     /**
@@ -826,7 +835,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_groundtime($groundtime, bool $isnumeric = true) {
-        $this->groundtime = $isnumeric ? $groundtime : logbook::convert_time($groundtime, 'MINS_TO_NUM');
+        $this->groundtime = $isnumeric ? $groundtime : $this->parent->convert_time($groundtime, 'MINS_TO_NUM');
     }
 
     /**
@@ -836,7 +845,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_flighttime($flighttime, bool $isnumeric = true) {
-        $this->flighttime = $isnumeric ? $flighttime : logbook::convert_time($flighttime, 'MINS_TO_NUM');
+        $this->flighttime = $isnumeric ? $flighttime : $this->parent->convert_time($flighttime, 'MINS_TO_NUM');
     }
 
     /**
@@ -846,7 +855,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_multipilottime($multipilottime, bool $isnumeric = true) {
-        $this->multipilottime = $isnumeric ? $multipilottime : logbook::convert_time($multipilottime, 'MINS_TO_NUM');
+        $this->multipilottime = $isnumeric ? $multipilottime : $this->parent->convert_time($multipilottime, 'MINS_TO_NUM');
     }
 
     /**
@@ -856,7 +865,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_nighttime($nighttime, bool $isnumeric = true) {
-        $this->nighttime = $isnumeric ? $nighttime : logbook::convert_time($nighttime, 'MINS_TO_NUM');
+        $this->nighttime = $isnumeric ? $nighttime : $this->parent->convert_time($nighttime, 'MINS_TO_NUM');
     }
 
     /**
@@ -866,7 +875,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_ifrtime($ifrtime, bool $isnumeric = true) {
-        $this->ifrtime = $isnumeric ? $ifrtime : logbook::convert_time($ifrtime, 'MINS_TO_NUM');
+        $this->ifrtime = $isnumeric ? $ifrtime : $this->parent->convert_time($ifrtime, 'MINS_TO_NUM');
     }
 
     /**
@@ -876,7 +885,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_pictime($pictime, bool $isnumeric = true) {
-        $this->pictime = $isnumeric ? $pictime : logbook::convert_time($pictime, 'MINS_TO_NUM');
+        $this->pictime = $isnumeric ? $pictime : $this->parent->convert_time($pictime, 'MINS_TO_NUM');
     }
 
     /**
@@ -886,7 +895,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_copilottime($copilottime, bool $isnumeric = true) {
-        $this->copilottime = $isnumeric ? $copilottime : logbook::convert_time($copilottime, 'MINS_TO_NUM');
+        $this->copilottime = $isnumeric ? $copilottime : $this->parent->convert_time($copilottime, 'MINS_TO_NUM');
     }
 
     /**
@@ -896,7 +905,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_dualtime($dualtime, bool $isnumeric = true) {
-        $this->dualtime = $isnumeric ? $dualtime : logbook::convert_time($dualtime, 'MINS_TO_NUM');
+        $this->dualtime = $isnumeric ? $dualtime : $this->parent->convert_time($dualtime, 'MINS_TO_NUM');
     }
 
     /**
@@ -906,7 +915,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_instructortime($instructortime, bool $isnumeric = true) {
-        $this->instructortime = $isnumeric ? $instructortime : logbook::convert_time($instructortime, 'MINS_TO_NUM');
+        $this->instructortime = $isnumeric ? $instructortime : $this->parent->convert_time($instructortime, 'MINS_TO_NUM');
     }
 
     /**
@@ -916,7 +925,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_picustime($picustime, bool $isnumeric = true) {
-        $this->picustime = $isnumeric ? $picustime : logbook::convert_time($picustime, 'MINS_TO_NUM');
+        $this->picustime = $isnumeric ? $picustime : $this->parent->convert_time($picustime, 'MINS_TO_NUM');
     }
 
     /**
@@ -926,7 +935,7 @@ class logentry implements logentry_interface {
      * @param bool $isnumeric whether the passed duration is numberic or string format
      */
     public function set_checkpilottime($checkpilottime, bool $isnumeric = true) {
-        $this->checkpilottime = $isnumeric ? $checkpilottime : logbook::convert_time($checkpilottime, 'MINS_TO_NUM');
+        $this->checkpilottime = $isnumeric ? $checkpilottime : $this->parent->convert_time($checkpilottime, 'MINS_TO_NUM');
     }
 
     /**
@@ -1025,24 +1034,24 @@ class logentry implements logentry_interface {
 
         // process flight times first for the different flight types (Training, Solo, and Check flights pass/fail)
         // handle missing ground time in solo and check flights
-        $this->groundtime   = !empty($formdata->groundtime) ? logbook::convert_time($formdata->groundtime, 'MINS_TO_NUM') : 0;
-        $this->flighttime   = logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM');
-        $this->pictime      = $pictimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
-        $this->dualtime     = $dualtimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
-        $this->multipilottime = $multipilottimerule  ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
-        $this->copilottime  = $copilottimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
-        $this->ifrtime      = $ifrtimerule ? logbook::convert_time($formdata->ifrtime, 'MINS_TO_NUM') : 0;
-        $this->instructortime = $instructortimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
-        $this->picustime    = $picustimerule ? logbook::convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
-        $this->checkpilottime = $checkpilottimerule ? logbook::convert_time($formdata->checkpilottime, 'MINS_TO_NUM') : 0;
+        $this->groundtime   = !empty($formdata->groundtime) ? $this->parent->convert_time($formdata->groundtime, 'MINS_TO_NUM') : 0;
+        $this->flighttime   = $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM');
+        $this->pictime      = $pictimerule ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->dualtime     = $dualtimerule ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->multipilottime = $multipilottimerule  ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->copilottime  = $copilottimerule ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->ifrtime      = $ifrtimerule ? $this->parent->convert_time($formdata->ifrtime, 'MINS_TO_NUM') : 0;
+        $this->instructortime = $instructortimerule ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->picustime    = $picustimerule ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
+        $this->checkpilottime = $checkpilottimerule ? $this->parent->convert_time($formdata->checkpilottime, 'MINS_TO_NUM') : 0;
 
         // additional logentry data
         $this->callsign     = strtoupper($formdata->callsign);
         $this->depicao      = strtoupper($formdata->depicao);
         $this->arricao      = strtoupper($formdata->arricao);
         // convert from 24hr time format to a timestamp given the flightdate date start
-        $this->deptime      = logbook::convert_time($formdata->deptime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
-        $this->arrtime      = logbook::convert_time($formdata->arrtime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
+        $this->deptime      = $this->parent->convert_time($formdata->deptime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
+        $this->arrtime      = $this->parent->convert_time($formdata->arrtime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
         $this->aircraft     = $formdata->aircraft;
         $this->aircraftreg  = $formdata->aircraftreg;
         $this->enginetype   = $formdata->enginetype;
@@ -1052,7 +1061,7 @@ class logentry implements logentry_interface {
         $this->landingsday  = $landingsdayrule ? $formdata->landingsp1day : $formdata->landingsp2day;
         $this->landingsnight = $landingsnightrule ? $formdata->landingsp1night : $formdata->landingsp2night;
 
-        $this->nighttime    = $formdata->nighttime ? logbook::convert_time($formdata->nighttime, 'MINS_TO_NUM') : 0;
+        $this->nighttime    = $formdata->nighttime ? $this->parent->convert_time($formdata->nighttime, 'MINS_TO_NUM') : 0;
         $this->remarks      = $formdata->remarks;
         $this->fstd         = $formdata->fstd;
         $this->flighttype   = $formdata->flighttypehidden;
@@ -1090,9 +1099,9 @@ class logentry implements logentry_interface {
         $logentryarray['linkedpirep'] = $this->linkedpirep ?: '';
         $logentryarray['callsign'] = $this->callsign;
         $logentryarray['depicao'] = $this->depicao;
-        $logentryarray['deptime'] = $formattostring ? logbook::convert_time($this->deptime, 'TS_TO_TIME') : $this->deptime;
+        $logentryarray['deptime'] = $formattostring ? $this->parent->convert_time($this->deptime, 'TS_TO_TIME') : $this->deptime;
         $logentryarray['arricao'] = $this->arricao;
-        $logentryarray['arrtime'] = $formattostring ? logbook::convert_time($this->arrtime, 'TS_TO_TIME') : $this->arrtime;
+        $logentryarray['arrtime'] = $formattostring ? $this->parent->convert_time($this->arrtime, 'TS_TO_TIME') : $this->arrtime;
         $logentryarray['aircraft'] = $this->aircraft;
         $logentryarray['aircraftreg'] = $this->aircraftreg;
         $logentryarray['enginetype'] = $this->enginetype;
@@ -1133,7 +1142,7 @@ class logentry implements logentry_interface {
                 case 'deptime':
                 case 'arrtime':
                     $value = substr_replace($value, ':', 2, 0);
-                    $this->$key = logbook::convert_time($value, 'TIME_TO_TS', $this->flightdate);
+                    $this->$key = $this->parent->convert_time($value, 'TIME_TO_TS', $this->flightdate);
                     break;
                 default:
                     if (!is_null($value))

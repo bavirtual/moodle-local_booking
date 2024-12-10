@@ -34,38 +34,24 @@ interface participant_vault_interface {
      *
      * @param int  $courseid The course id.
      * @param int  $userid   A specific user.
+     * @return {Object}      Array of database records.
+     */
+    public static function get_participant(int $courseid, int $userid);
+
+    /**
+     * Get all active students from the database.
+     *
+     * @param int  $courseid The course id.
+     * @param int  $userid   A specific user.
      * @param bool $active   Whether the user is actively enrolled.
      * @param bool $student  Whether the user is a student or not
      * @return {Object}      Array of database records.
-     */
-    public static function get_participant(int $courseid, int $userid = 0, bool $active = true, bool $student = true);
-
-    /**
-     * Get all active students from the database.
-     *
-     * @param int $courseid     The course id.
-     * @param bool $studentid   A specific student for booking confirmation
-     * @return {Object}         Array of database records.
-     */
-    public static function get_student(int $courseid, int $studentid = 0);
-
-    /**
-     * Get all active students from the database.
-     *
-     * @param int $courseid         The course id.
-     * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
-     * @param bool $includeonhold   Whether to include on-hold students as well
-     * @param int $offset           The offset record for pagination
-     * @param bool &$count          Reference to the count of students count before pagination
-     * @param bool $requirescompletion Whether the course has lesson completion restriction
-     * @return {Object}[]           Array of database records.
      */
     public static function get_students(
         int $courseid,
         string $filter = 'active',
         bool $includeonhold = false,
         int $offset = 0,
-        int &$count = 0,
         bool $requirescompletion = true);
 
     /**
@@ -77,7 +63,7 @@ interface participant_vault_interface {
      * @param string $roles         The roles of the participants
      * @return {Object}[]           Array of database records.
      */
-    public static function get_participants_simple(int $courseid, string $filter = 'active', bool $includeonhold = false, string $roles = null);
+    public static function get_student_names(int $courseid, string $filter = 'active', bool $includeonhold = false, string $roles = null);
 
     /**
      * Get all active instructors for the course from the database.
@@ -87,15 +73,6 @@ interface participant_vault_interface {
      * @return {Object}[]        Array of database records.
      */
     public static function get_instructors(int $courseid, bool $courseadmins = false);
-
-    /**
-     * Returns full username
-     *
-     * @param int $userid            The user id.
-     * @param bool $includealternate Whether to include the user's alternate name.
-     * @return string $fullusername  The full participant username
-     */
-    public static function get_participant_name(int $userid, bool $includealternate = true);
 
     /**
      * Get student's enrolment date.

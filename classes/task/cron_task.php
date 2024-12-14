@@ -48,6 +48,8 @@ use local_booking\local\subscriber\entities\subscriber;
  */
 class cron_task extends \core\task\scheduled_task {
 
+    protected bool $debugmode;
+
     /**
      * Get a descriptive name for this task (shown to admins).
      *
@@ -61,6 +63,10 @@ class cron_task extends \core\task\scheduled_task {
      * Run session booking cron.
      */
     public function execute() {
+        global $CFG;
+
+        // set debug mode
+        $this->debugmode = $CFG->debug == 32767;
 
         // get course list
         $sitecourses = \get_courses();
@@ -130,13 +136,16 @@ class cron_task extends \core\task\scheduled_task {
 
         // check if wait-period restriction is enabled
         $postingwait = intval($course->postingwait);
-        mtrace('');
-        mtrace('        #### POSTING WAIT RESTRICTION ' . ($postingwait > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+
+        // trace on debug mode
+        $this->trace('');
+        $this->trace('        #### POSTING WAIT RESTRICTION ' . ($postingwait > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+
         if ($postingwait > 0) {
             foreach ($students as $student) {
 
                 $studentname = participant::get_fullname($student->get_id());
-                mtrace('        ' . $studentname);
+                $this->trace('        ' . $studentname);
 
                 // get last booked date, otherwise use last graded date instead
                 $lastsessionts = $student->get_last_booking_date();
@@ -162,15 +171,15 @@ class cron_task extends \core\task\scheduled_task {
 
                     // POSTING OVERDUE WARNING NOTIFICATION
                     // notify student a week before being placed
-                    mtrace('            posting overdue warning date: ' . $postingoverduedate->format('M d, Y'));
-                    mtrace('            on-hold date: ' . $onholddate->format('M d, Y'));
+                    $this->trace('            posting overdue warning date: ' . $postingoverduedate->format('M d, Y'));
+                    $this->trace('            on-hold date: ' . $onholddate->format('M d, Y'));
                     $message = new notification($course);
                     if (getdate($postingoverduedate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$isactive) {
-                        mtrace('        Sending student inactivity warning (10 days inactive after posting wait period)');
                         $message->send_inactive_warning($student->get_id(), $lastsessiondate, $onholddate);
+                        mtrace('        Sending student inactivity warning (10 days inactive after posting wait period)');
                     }
                 } else {
-                    mtrace('            last session: NONE ON RECORD!');
+                    $this->trace('            last session: NONE ON RECORD!');
                 }
             }
         }
@@ -187,13 +196,15 @@ class cron_task extends \core\task\scheduled_task {
 
         // check if on-hold restriction is enabled
         $onholddays = intval($course->onholdperiod);
-        mtrace('');
-        mtrace('        #### ON-HOLD RESTRICTION ' . ($onholddays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+
+        $this->trace('');
+        $this->trace('        #### ON-HOLD RESTRICTION ' . ($onholddays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+
         if ($onholddays > 0) {
             foreach ($students as $student) {
 
                 $studentname = participant::get_fullname($student->get_id());
-                mtrace('        ' . $studentname);
+                $this->trace('        ' . $studentname);
 
                 // get last booked date, otherwise use last graded date instead
                 $lastsessionts = $student->get_last_booking_date();
@@ -223,13 +234,13 @@ class cron_task extends \core\task\scheduled_task {
 
                     // ON HOLD WARNING NOTIFICATION
                     // notify student a week before being placed
-                    mtrace('            on-hold date: ' . $onholddate->format('M d, Y'));
-                    mtrace('            on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
-                    mtrace('            keep active status: ' . ($keepactive ? 'ON' : 'OFF'));
+                    $this->trace('            on-hold date: ' . $onholddate->format('M d, Y'));
+                    $this->trace('            on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
+                    $this->trace('            keep active status: ' . ($keepactive ? 'ON' : 'OFF'));
                     $message = new notification($course);
                     if (getdate($onholdwarningdate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$keepactive && !$isactive && !$booked) {
-                        mtrace('        Notifying student of becoming on-hold in a week');
                         $message->send_onhold_warning($student->get_id(), $onholddate);
+                        mtrace('        Notifying student of becoming on-hold in a week');
                     }
 
                     // ON-HOLD PLACEMENT NOTIFICATION
@@ -242,11 +253,11 @@ class cron_task extends \core\task\scheduled_task {
 
                         // send notification of upcoming placement on-hold to student and senior instructor roles
                         if ($message->send_onhold_notification($student->get_id(), $lastsessiondate, $suspenddate, $seniorinstructors)) {
-                            mtrace('                Placed \'' . $studentname . '\' on-hold (notified)...');
+                            $this->trace('                Placed \'' . $studentname . '\' on-hold (notified)...');
                         }
                     }
                 } else {
-                    mtrace('            last session: NONE ON RECORD!');
+                    $this->trace('            last session: NONE ON RECORD!');
                 }
             }
         }
@@ -263,12 +274,15 @@ class cron_task extends \core\task\scheduled_task {
 
         // check for suspension restriction is enabled
         $suspensiondays = intval($course->suspensionperiod);
-        mtrace('');
-        mtrace('        #### SUSPENSION RESTRICTION ' . ($suspensiondays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+
+        $this->trace('');
+        $this->trace('        #### SUSPENSION RESTRICTION ' . ($suspensiondays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+
         if ($suspensiondays > 0) {
             foreach ($students as $student) {
+
                 $studentname = participant::get_fullname($student->get_id());
-                mtrace('        ' . $studentname);
+                $this->trace('        ' . $studentname);
 
                 // get suspension date, otherwise use last graded date instead
                 $lastsessionts = $student->get_last_booking_date();
@@ -287,12 +301,12 @@ class cron_task extends \core\task\scheduled_task {
 
                     // SUSPENSION NOTIFICATION
                     // suspend when passed on-hold by 9x wait days process suspension and notify student and senior instructor roles
-                    mtrace('            suspension date: ' . $suspenddate->format('M d, Y'));
+                    $this->trace('            suspension date: ' . $suspenddate->format('M d, Y'));
                     $message = new notification($course);
                     if ($suspenddate->getTimestamp() <= time() && !$keepactive) {
                         // unenrol the student from the course
                         if ($student->suspend()) {
-                            mtrace('                Suspended!');
+                            $this->trace('                Suspended!');
                             // send notification of unenrolment from the course and senior instructor roles
                             if ($message->send_suspension_notification($student->get_id(), $lastsessiondate, $seniorinstructors)) {
                                 mtrace('                Student notified of suspension');
@@ -300,7 +314,7 @@ class cron_task extends \core\task\scheduled_task {
                         }
                     }
                 } else {
-                    mtrace('            last session: NONE ON RECORD!');
+                    $this->trace('            last session: NONE ON RECORD!');
                 }
             }
         }
@@ -317,12 +331,13 @@ class cron_task extends \core\task\scheduled_task {
 
         // check for suspension restriction is enabled
         $overdueperiod = intval($course->overdueperiod);
-        mtrace('');
-        mtrace('        #### INSTRUCTOR OVERDUE NOTIFICATION ' . ($overdueperiod > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+        $this->trace('');
+        $this->trace('        #### INSTRUCTOR OVERDUE NOTIFICATION ' . ($overdueperiod > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
         if ($overdueperiod > 0) {
             foreach ($instructors as $instructor) {
+
                 $instructorname = participant::get_fullname($instructor->get_id());
-                mtrace('        ' . $instructorname);
+                $this->trace('        ' . $instructorname);
 
                 // get instructor last booked session, otherwise use the last login for date compare
                 $lastsessiondate = $instructor->get_last_booked_date();
@@ -334,21 +349,21 @@ class cron_task extends \core\task\scheduled_task {
                     // check if overdue period had past without a grading and send a notification each time this interval passes
                     $sendnotification = ($dayssincelast % $overdueperiod) == 0 && $dayssincelast >= $overdueperiod;
                     $status = get_string('emailoverduestatus', 'local_booking', $lastsessiondate->format('M d, Y'));
-                    mtrace('            last session: ' . $lastsessiondate->format('M d, Y'));
+                    $this->trace('            last session: ' . $lastsessiondate->format('M d, Y'));
 
                     // notify the instructors of overdue status
                     if ($sendnotification) {
-                        mtrace('                inactivity notification sent (retry=' . round($dayssincelast / $overdueperiod) . ')...');
                         $message = new notification($course);
                         $message->send_session_overdue_notification($instructor->get_id(), $status, $seniorinstructors);
+                        mtrace('                inactivity notification sent (retry=' . round($dayssincelast / $overdueperiod) . ')...');
                     }
                 }
                 else {
-                    mtrace('            last session: NONE ON RECORD!');
+                    $this->trace('            last session: NONE ON RECORD!');
                 }
             }
         } else {
-            mtrace('            instructor overdue notifications disabled.');
+            $this->trace('            instructor overdue notifications disabled.');
         }
     }
 
@@ -361,8 +376,8 @@ class cron_task extends \core\task\scheduled_task {
      */
     private function process_noshow_reinstatement($course, $seniorinstructors) {
 
-        mtrace('');
-        mtrace('        #### SUSPENDED NO-SHOW STUDENTS REINSTATEMENT ####');
+        $this->trace('');
+        $this->trace('        #### SUSPENDED NO-SHOW STUDENTS REINSTATEMENT ####');
 
         // evaluate suspended students with 2 no-shows that completed their suspension period
         $students = $course->get_students('suspended');
@@ -383,11 +398,22 @@ class cron_task extends \core\task\scheduled_task {
                     $exerciseid = array_values($noshows)[0]->exerciseid;
 
                     // notify the student and senior instructors of reinstatement
-                    mtrace('                no-show student reinstated');
                     $message = new notification($course);
                     $message->send_noshow_reinstatement_notification($student, $exerciseid, $seniorinstructors);
+                    mtrace('                no-show student reinstated');
                 }
             }
+        }
+    }
+
+    /**
+     * Trace message based on debug mode.
+     *
+     * @param string $tracemessage The message to post to the log
+     */
+    private function trace($tracemessage) {
+        if ($this->debugmode) {
+            mtrace($tracemessage);
         }
     }
 }

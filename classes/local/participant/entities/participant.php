@@ -261,7 +261,7 @@ class participant implements participant_interface {
      */
     public static function get_fullname(int $participantid, bool $alternate = true) {
         $participant = \core_user::get_user($participantid);
-        return $participant->firstname . ' ' . $participant->firstname . ($alternate ? ' ' . $participant->alternatename :'');
+        return $participant->firstname . ' ' . $participant->lastname . ($alternate ? ' ' . $participant->alternatename :'');
     }
 
     /**

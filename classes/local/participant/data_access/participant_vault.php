@@ -480,7 +480,7 @@ class participant_vault implements participant_vault_interface {
         $where = " WHERE en.courseid = $courseid AND u.deleted != 1 AND u.suspended = 0 ";
 
         if ($filter == 'active')
-            return $where .= $includeonhold ? '' : self::sql_active_participants($courseid, $isstudent);
+            return $where .= self::sql_active_participants($courseid, $isstudent, $includeonhold);
 
         if ($filter == 'onhold')
             return $where .= self::sql_onhold_participants($courseid);
@@ -528,16 +528,23 @@ class participant_vault implements participant_vault_interface {
      *
      * @param  int  $courseid
      * @param  bool $isstudent
+     * @param  string $includeonhold Whether or not include on-hold students
      * @return string SQL query string
      */
-    private static function sql_active_participants(int $courseid, bool $isstudent){
-        return ' AND ue.status = 0' . ($isstudent ? ' AND cc.timecompleted IS NULL' : '') . ' AND u.id NOT IN
+    private static function sql_active_participants(int $courseid, bool $isstudent, bool $includeonhold = false){
+
+        // active participants and students that didn't graduate
+        $activeparticipantssql = ' AND ue.status = 0' . ($isstudent ? ' AND cc.timecompleted IS NULL' : '');
+
+        // include on-hold students or inactive participants to include onhold
+        $activeparticipantssql .= $includeonhold ? '' : ' AND u.id NOT IN
                 (
                     SELECT userid
                     FROM {' . self::DB_GROUPS_MEM . '} gm
                     INNER JOIN {' . self::DB_GROUPS . '} g on g.id = gm.groupid
                     WHERE g.courseid = ' . $courseid . ' AND g.name = "' . ($isstudent ? LOCAL_BOOKING_ONHOLDGROUP : LOCAL_BOOKING_INACTIVEGROUP) . '"
-                )';
+                ) ';
+        return $activeparticipantssql;
     }
 
     /**

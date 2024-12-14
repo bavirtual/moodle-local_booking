@@ -1,5 +1,12 @@
 # Change log
 
+## [2024121400] - RELEASED 2024-12-14
+
+### Fixed
+
+- participant fullname
+- cron job evaluating suspended students
+
 ## [2024121000] - RELEASED 2024-12-10
 
 ### Fixed

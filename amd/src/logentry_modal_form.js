@@ -475,9 +475,9 @@ export default class ModalLogEntryForm extends Modal {
         // Mask flight times < 5hrs and departure/arrival times to 24hr format
         // Mask flight time elements based on training type
 
-        if ($(Selectors.bookingwrapper).data('trainingtype') == "Dual") {
+        if ($(Selectors.wrappers.bookingwrapper).data('trainingtype') == "Dual") {
             Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_dualtime"));
-        } else if ($(Selectors.bookingwrapper).data('trainingtype') == "Multicrew") {
+        } else if ($(Selectors.wrappers.bookingwrapper).data('trainingtype') == "Multicrew") {
             Inputmask({"regex": "^([0]?[0-4]):([0-5]?[0-9])$"}).mask(document.getElementById("id_multipilottime"));
 
             // TODO: Instructor logentry edit:
@@ -685,7 +685,7 @@ export default class ModalLogEntryForm extends Modal {
      */
     applyFlightTimes(force) {
 
-        let rule = $(Selectors.bookingwrapper).data('trainingtype');
+        let rule = $(Selectors.wrappers.bookingwrapper).data('trainingtype');
         if (typeof rule == 'undefined') {
             rule = $("input[name='trainingtype']").val();
         }
@@ -732,7 +732,7 @@ export default class ModalLogEntryForm extends Modal {
      */
     doDynamicDisplay() {
 
-        let rule = $(Selectors.bookingwrapper).data('trainingtype');
+        let rule = $(Selectors.wrappers.bookingwrapper).data('trainingtype');
         if (typeof rule == 'undefined') {
             rule = $("input[name='trainingtype']").val();
         }

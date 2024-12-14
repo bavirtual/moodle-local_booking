@@ -75,9 +75,9 @@ define([
         });
 
         // Get promise for the logentry form for create and edit
-        const contextId = $(Selectors.logbookwrapper).data('contextid'),
-        courseId = $(Selectors.logbookwrapper).data('courseid'),
-        userId = $(Selectors.logbookwrapper).data('userid');
+        const contextId = $(Selectors.wrappers.logbookwrapper).data('contextid'),
+        courseId = $(Selectors.wrappers.logbookwrapper).data('courseid'),
+        userId = $(Selectors.wrappers.logbookwrapper).data('userid');
 
         if (contextId) {
             // Listen the edit click of a logbook entry.
@@ -115,8 +115,8 @@ define([
      */
     const refreshNewLogentryContent = (root, logentry) => {
 
-        const courseId = $(Selectors.logbookwrapper).data('courseid'),
-        userId = $(Selectors.logbookwrapper).data('userid');
+        const courseId = $(Selectors.wrappers.logbookwrapper).data('courseid'),
+        userId = $(Selectors.wrappers.logbookwrapper).data('userid');
 
         M.util.js_pending(root.get('id') + '-' + courseId);
         return Repository.getLogentryById(logentry.id, courseId, userId)
@@ -148,8 +148,8 @@ define([
 
         showPlaceholder(card);
 
-        const courseId = $(Selectors.logbookwrapper).data('courseid'),
-        userId = $(Selectors.logbookwrapper).data('userid');
+        const courseId = $(Selectors.wrappers.logbookwrapper).data('courseid'),
+        userId = $(Selectors.wrappers.logbookwrapper).data('userid');
 
         M.util.js_pending(root.get('id') + '-' + courseId);
         return Repository.getLogentryById(logentry.id, courseId, userId)

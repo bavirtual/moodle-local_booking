@@ -31,14 +31,13 @@ import Ajax from 'core/ajax';
  * @param {number} week Week
  * @param {number} time Timestamp
  * @param {number} courseId The course id.
- * @param {number} categoryId The category id.
  * @param {string} action The action type.
  * @param {string} view The view type user/all.
  * @param {number} studentId The id of the associated user.
  * @param {number} exerciseId The exercise id for the booked session.
  * @return {promise} Resolved with the month view data.
  */
- export const getCalendarWeekData = (year, week, time, courseId, categoryId, action, view, studentId, exerciseId) => {
+ export const getCalendarWeekData = (year, week, time, courseId, action, view, studentId, exerciseId) => {
     const request = {
         methodname: 'local_booking_get_weekly_view',
         args: {
@@ -46,7 +45,6 @@ import Ajax from 'core/ajax';
             week,
             time,
             courseid: courseId,
-            categoryid: categoryId,
             action: action,
             view: view,
             studentid: studentId,

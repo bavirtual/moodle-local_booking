@@ -27,7 +27,7 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
 
-use local_booking\local\views\base_action_bar;
+use local_booking\output\base_action_bar;
 
 /**
  * The primary renderer for the calendar.
@@ -67,7 +67,7 @@ class local_booking_renderer extends plugin_renderer_base {
      *
      * @return string
      */
-    public function render_text_label(\local_booking\local\views\text_label $text_label) {
+    public function render_text_label(\local_booking\output\text_label $text_label) {
         return $text_label->html;
     }
 }

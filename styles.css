@@ -393,29 +393,6 @@
     transition: ease background-color 250ms;
     cursor: pointer;
 }
-.slot-button-red {
-    background-color: #c40a0a;
-}
-.slot-button-red:hover {
-    background-color: #9b2828;
-}
-.slot-button-blue {
-    background-color: #1565c0;
-    transition: ease background-color 250ms;
-}
-.slot-button-blue:hover {
-    background-color: #0d47a1;
-}
-.slot-button-gray {
-    background-color: rgb(168, 167, 167);
-}
-.slot-button-black {
-    background-color: black;
-    transition: ease background-color 250ms;
-}
-.slot-button-black:hover {
-    background-color: darkgray;
-}
 
 /* availability calendar */
 .path-availability .slotcalendartable {

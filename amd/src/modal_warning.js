@@ -25,12 +25,8 @@
 import $ from 'jquery';
 import * as CustomEvents from 'core/custom_interaction_events';
 import Modal from 'core/modal';
-import ModalEvents from 'core/modal_events';
-
-const SELECTORS = {
-    OK_BUTTON: '[data-action="ok"]',
-};
-
+import ModalEvents from 'local_booking/events';
+import Selectors from 'local_booking/selectors';
 
 /**
  * Constructor for the Modal.
@@ -40,7 +36,6 @@ const SELECTORS = {
  */
 export default class ModalWarning extends Modal {
     static TYPE = 'local_booking-modal_warning';
-    static TEMPLATE = 'local_booking/availability_warning_modal';
 
     constructor(root) {
         super(root);
@@ -56,17 +51,38 @@ export default class ModalWarning extends Modal {
         // Apply parent event listeners.
         super.registerEventListeners(this);
 
-        this.getModal().on(CustomEvents.events.activate, SELECTORS.OK_BUTTON, function(e, data) {
-            const cancelEvent = $.Event(ModalEvents.cancel);
-            this.getRoot().trigger(cancelEvent, this);
+        // Handle OK button event
+        this.getModal().on(CustomEvents.events.activate, Selectors.regions.okbutton, function(e, data) {
+            let okEvent = $.Event(ModalEvents.okEvent);
+            this.getRoot().trigger(okEvent, this);
 
-            if (!cancelEvent.isDefaultPrevented()) {
+            if (!okEvent.isDefaultPrevented()) {
                 this.hide();
                 data.originalEvent.preventDefault();
             }
         }.bind(this));
-    }
 
+        // Handle YES button event
+        this.getModal().on(CustomEvents.events.activate, Selectors.regions.yesbutton, function(e, data) {
+            let yesEvent = $.Event(ModalEvents.yesEvent);
+            this.getRoot().trigger(yesEvent, this);
+
+            if (!yesEvent.isDefaultPrevented()) {
+                this.hide();
+                data.originalEvent.preventDefault();
+            }
+        }.bind(this));
+
+        // Handle NO button event
+        this.getModal().on(CustomEvents.events.activate, Selectors.regions.nobutton, function() {
+            let noEvent = $.Event(ModalEvents.noEvent);
+            this.getRoot().trigger(noEvent, this);
+
+            if (!noEvent.isDefaultPrevented()) {
+                this.hide();
+            }
+        }.bind(this));
+    }
 }
 
 ModalWarning.registerModalType();

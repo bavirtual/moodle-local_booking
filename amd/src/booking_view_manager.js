@@ -48,9 +48,9 @@ export const refreshBookingsContent = (root, courseId, contextId, userId = 0, ta
     startLoading(root);
 
     const bookingtemplate = root.attr('data-template'),
-        bookingtarget = target || root.find(Selectors.bookingwrapper);
-    courseId = courseId || root.find(Selectors.bookingwrapper).data('courseid');
-    contextId = contextId || root.find(Selectors.bookingwrapper).data('contextid');
+        bookingtarget = target || root.find(Selectors.wrappers.bookingwrapper);
+    courseId = courseId || root.find(Selectors.wrappers.bookingwrapper).data('courseid');
+    contextId = contextId || root.find(Selectors.wrappers.bookingwrapper).data('contextid');
     filter = filter || 'active';
 
     M.util.js_pending([root.get('id'), courseId, contextId].join('-'));
@@ -82,9 +82,9 @@ export const refreshInstructorBookingsContent = (root, courseId, contextId, temp
     startLoading(root);
 
     const mybookingstemplate = template || root.attr('data-template'),
-        mybookingstarget = root.find(Selectors.mybookingswrapper);
-    courseId = courseId || root.find(Selectors.mybookingswrapper).data('courseid');
-    contextId = contextId || root.find(Selectors.mybookingswrapper).data('contextid');
+        mybookingstarget = root.find(Selectors.wrappers.mybookingswrapper);
+    courseId = courseId || root.find(Selectors.wrappers.mybookingswrapper).data('courseid');
+    contextId = contextId || root.find(Selectors.wrappers.mybookingswrapper).data('contextid');
 
     M.util.js_pending([root.get('id'), courseId, contextId].join('-'));
     return Repository.getInstructorBookingsData(courseId)
@@ -146,7 +146,7 @@ export const refreshInstructorBookingsContent = (root, courseId, contextId, temp
                     exerciseId = logegntrySession.dataset.exerciseId;
                     sessionId = logegntrySession.dataset.sessionId;
                     flightType = logegntrySession.dataset.flightType;
-                    findpirepenabled = $(Selectors.bookingwrapper).data('findpirep');
+                    findpirepenabled = $(Selectors.wrappers.bookingwrapper).data('findpirep');
                 }
             } else {
                 if (template == 'local_booking/logbook_std') {

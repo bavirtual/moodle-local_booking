@@ -30,7 +30,9 @@ defined('MOODLE_INTERNAL') || die();
 use core\external\exporter;
 use core_calendar\external\date_exporter;
 use local_booking\local\participant\entities\participant;
+use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\local\session\entities\booking;
 use renderer_base;
 use moodle_url;
 
@@ -95,7 +97,7 @@ class availability_week_exporter extends exporter {
     protected $activebooking;
 
     /**
-     * @var array $action The action data being peformed.
+     * @var array $action The action data being performed.
      */
     protected $actiondata;
 
@@ -172,6 +174,7 @@ class availability_week_exporter extends exporter {
         $data = [
             'url'         => $this->url->out(false),
             'username'    => $this->actiondata['action'] == 'book' ? $this->actiondata['student']->get_fullname($this->actiondata['student']->get_id()) : '',
+            'posts'       => $this->actiondata['student']->get_total_posts(),
             'action'      => $this->actiondata['action'],
             'studentid'   => $this->actiondata['student']->get_id(),
             'exerciseid'  => $this->actiondata['exerciseid'],
@@ -183,6 +186,7 @@ class availability_week_exporter extends exporter {
             'viewallurl'  => $CFG->httpswwwroot . '/local/booking/availability.php?courseid=' . $this->calendar->courseid . '&view=all',
             'hiddenclass' => $this->actiondata['action'] != 'book' && $this->view == 'user',
             'visible'     => $this->actiondata['action'] != 'book' && $this->view == 'user',
+            'justify'     => 'justify-content-' . ($this->view == 'all' ? 'center' : 'left'),
         ];
 
         parent::__construct($data, $related);
@@ -206,6 +210,10 @@ class availability_week_exporter extends exporter {
             'username' => [
                 'type' => PARAM_RAW,
                 'default' => null,
+            ],
+            'posts' => [
+                'type' => PARAM_INT,
+                'default' => 0,
             ],
             'action' => [
                 'type' => PARAM_RAW,
@@ -241,6 +249,14 @@ class availability_week_exporter extends exporter {
             'visible' => [
                 'type' => PARAM_BOOL,
             ],
+            'justify' => [
+                'type'  => PARAM_RAW,
+                'default'  => null,
+            ],
+            'calendarview' => [
+                'type' => PARAM_BOOL,
+                'default' => true,
+            ],
         ];
     }
 
@@ -257,11 +273,6 @@ class availability_week_exporter extends exporter {
             ],
             'courseid' => [
                 'type' => PARAM_INT,
-            ],
-            'categoryid' => [
-                'type' => PARAM_INT,
-                'optional' => true,
-                'default' => 0,
             ],
             'date' => [
                 'type' => date_exporter::read_properties_definition(),
@@ -380,10 +391,6 @@ class availability_week_exporter extends exporter {
             'larrow' => $output->larrow(),
             'rarrow' => $output->rarrow(),
         ];
-
-        if ($this->calendar->categoryid) {
-            $return['categoryid'] = $this->calendar->categoryid;
-        }
 
         return $return;
     }

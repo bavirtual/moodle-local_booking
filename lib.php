@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use \moodle_url;
+use \navigation_node;
 use local_booking\local\logbook\form\create as create_logentry_form;
 use local_booking\local\logbook\form\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;

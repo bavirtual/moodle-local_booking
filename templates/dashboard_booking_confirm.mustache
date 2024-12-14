@@ -37,7 +37,7 @@
     }} data-contextid="{{contextid}}"{{!
     }} data-trainingtype="{{trainingtype}}"{{!
     }}>
-    <form id="booking">
+    <form id="confirm_form" method="get" action="{{formaction}}">
         {{#activestudents}}
         <input type="hidden" id="courseid" name="courseid" value="{{courseid}}">
         <input type="hidden" id="userid" name="userid" value="{{studentid}}">
@@ -57,7 +57,7 @@
                         <span class="media-body" aria-hidden="true">{{#str}} student, local_booking {{/str}}</span>
                     </th>
                     <th class="header booking-header booking-small text-xs-center">
-                        <span class="media-body" aria-hidden="true">{{#str}} studentinfoactive, local_booking {{/str}}</span>
+                        <span class="media-body" aria-hidden="true">{{#str}} col3header, local_booking {{/str}}</span>
                     </th>
                     <th class="header booking-header booking-med text-xs-center">
                         <span class="media-body" aria-hidden="true">{{#str}} simulator, local_booking {{/str}}</span>
@@ -102,16 +102,6 @@
                 </tr>
             </tbody>
         </table>
-        <p>
-        <h5>{{#str}} bookingavailabilityposts, local_booking {{/str}}: {{posts}}&nbsp;{{#str}} slots, local_booking {{/str}}</h5>
-        <div class="bottom" style="text-align: center;">
-            <button type="submit"
-                class="btn btn-primary"
-                id="continue_button"
-                formaction="{{formaction}}">
-                {{#str}} continue {{/str}}
-            </button>
-        </div>
         {{/activestudents}}
     </form>
 </div>

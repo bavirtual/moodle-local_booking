@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_booking\local\views;
+namespace local_booking\output;
 
 use core\navigation\views\secondary as core_secondary;
 
@@ -40,9 +40,8 @@ class secondary extends core_secondary {
             ],
             self::TYPE_CUSTOM => [
                 'availabilityinst' => 2,
-            ],
-            self::TYPE_CUSTOM => [
-                'logbookmy' => 3,
+                'progression' => 3,
+                'logbookmy' => 4,
             ],
         ];
     }

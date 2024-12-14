@@ -25,10 +25,7 @@
 
 define([
         'jquery',
-        'core/str',
         'core/pending',
-        'core/modal',
-        'core/notification',
         'local_booking/booking_view_manager',
         'local_booking/booking_actions',
         'local_booking/events',
@@ -37,10 +34,7 @@ define([
     ],
     function(
         $,
-        Str,
         Pending,
-        Modal,
-        Notification,
         ViewManager,
         BookingActions,
         BookingEvents,
@@ -111,8 +105,8 @@ define([
     const registerSessionEventListeners = (root) => {
 
         // Get promise for the logentry form for create and edit
-        const contextId = $(Selectors.bookingwrapper).data('contextid'),
-        courseId = $(Selectors.bookingwrapper).data('courseid');
+        const contextId = $(Selectors.wrappers.bookingwrapper).data('contextid'),
+        courseId = $(Selectors.wrappers.bookingwrapper).data('courseid');
 
         if (contextId) {
             // Listen the click on the progression table of sessions for a logentry (new/view).

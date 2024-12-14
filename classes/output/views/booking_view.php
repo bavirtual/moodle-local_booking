@@ -19,7 +19,6 @@ namespace local_booking\output\views;
 use local_booking\exporters\dashboard_bookings_exporter;
 use local_booking\exporters\dashboard_mybookings_exporter;
 use local_booking\exporters\dashboard_participation_exporter;
-use moodle_url;
 use stdClass;
 
 /**
@@ -30,7 +29,8 @@ use stdClass;
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class booking_view extends base_view {
+class booking_view extends base_view
+{
 
     /**
      * @var array $related Related objects necessary to pass along to exporters.
@@ -43,8 +43,12 @@ class booking_view extends base_view {
      * @param array    $data      The data required for output
      * @param array    $related   The related objects to pass
      */
-    public function __construct(array $data, array $related) {
+    public function __construct(array $data, array $related)
+    {
         parent::__construct($data, $related, '');
+
+        $bookings = new dashboard_bookings_exporter($this->data, $this->related);
+        $this->exporteddata = $bookings->export($this->renderer);
     }
 
     /**
@@ -52,31 +56,29 @@ class booking_view extends base_view {
      *
      * @return  ?stdClass
      */
-    public function get_student_progression(bool $html = true) {
+    public function get_student_progression(bool $html = true)
+    {
         global $OUTPUT, $PAGE;
         $output = '';
-
-        $bookings = new dashboard_bookings_exporter($this->data, $this->related);
-        $this->exporteddata = $bookings->export($this->renderer);
 
         // export bookings
         if ($this->data['action'] == 'readonly' || $this->data['action'] == 'book') {
 
             if ($html) {
-                $output = parent::output('local_booking/dashboard' . ($this->data['action'] == 'readonly' ? '_readonly' : '') , $this->exporteddata);
+                $output = parent::output('local_booking/dashboard' . ($this->data['action'] == 'readonly' ? '_readonly' : ''), $this->exporteddata);
 
                 // show page bar and search form if required
                 $course = $this->related['subscriber'];
                 if ($course->get_students_count() > LOCAL_BOOKING_DASHBOARDPAGESIZE) {
                     // show paging bar
-                    $output .= $this->users_selector($course->get_course());
                     $output .= $OUTPUT->paging_bar($course->get_students_count(), $this->data['page'], LOCAL_BOOKING_DASHBOARDPAGESIZE, $PAGE->url);
-                    $baseurl = new moodle_url('/local/booking/view.php', ['courseid' => $course->get_id()]);
-                    $PAGE->requires->js_call_amd('local_booking/user_search', 'init', [$baseurl->out(false)]);
                 }
             }
 
-        } elseif ($this->data['action'] == 'confirm') {
+        }
+
+        // booking confirmation page
+        if ($this->data['action'] == 'confirm') {
             $output = parent::output('local_booking/dashboard_booking_confirm', $this->exporteddata);
         }
 
@@ -88,7 +90,8 @@ class booking_view extends base_view {
      *
      * @return  ?stdClass
      */
-    public function get_instructor_bookings(bool $html = true) {
+    public function get_instructor_bookings(bool $html = true)
+    {
 
         $output = '';
         if ($this->data['action'] != 'confirm') {
@@ -110,7 +113,8 @@ class booking_view extends base_view {
      *
      * @return  ?stdClass
      */
-    public function get_instructor_participation(bool $html = true) {
+    public function get_instructor_participation(bool $html = true)
+    {
 
         $output = '';
         if ($this->data['action'] != 'confirm') {
@@ -130,34 +134,13 @@ class booking_view extends base_view {
 
         return $html ? $output : $this->exporteddata;
     }
+
     /**
-     * Renders the user selector trigger element.
+     * Get instructor participation export
      *
-     * @param object $course The course object.
-     * @param int|null $userid The user ID.
-     * @param int|null $groupid The group ID.
-     * @return string The raw HTML to render.
+     * @return  \stdClass
      */
-    public function users_selector(object $course, ?int $userid = null, ?int $groupid = null): string {
-        global $PAGE;
-
-        $courserenderer = $PAGE->get_renderer('core', 'course');
-        $resetlink = new moodle_url('/local/booking/view.php', ['courseid' => $course->id]);
-        $usersearch = '';
-
-        if ($userid) {
-            $user = core_user::get_user($userid);
-            $usersearch = fullname($user);
-        }
-
-        return $courserenderer->render(
-            new \core_course\output\actionbar\user_selector(
-                course: $course,
-                resetlink: $resetlink,
-                userid: $userid,
-                groupid: $groupid,
-                usersearch: $usersearch
-            )
-        );
+    public function get_exportdata() {
+        return $this->exporteddata;
     }
 }

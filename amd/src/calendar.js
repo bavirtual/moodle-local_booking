@@ -32,28 +32,16 @@ define([
             'jquery',
             'local_booking/calendar_view_manager',
             'local_booking/slot_actions',
-            'core_calendar/selectors',
             'local_booking/events',
+            'local_booking/selectors',
         ],
         function(
             $,
             CalendarViewManager,
             SlotActions,
-            CalendarSelectors,
+            ModalEvents,
+            Selectors,
         ) {
-
-    var SELECTORS = {
-        ROOT: "[data-region='calendar']",
-        DAY: "[data-region='day']",
-        SAVE_BUTTON: "[data-region='save-button']",
-        BOOK_BUTTON: "[data-region='book-button']",
-        COPY_BUTTON: "[data-region='copy-button']",
-        PASTE_BUTTON: "[data-region='paste-button']",
-        CLEAR_BUTTON: "[data-region='clear-button']",
-        LOADING_ICON: '.loading-icon',
-        CALENDAR_WEEK_WRAPPER: ".calendarwrapper",
-        TODAY: '.today',
-    };
 
     /**
      * Register event listeners for the module.
@@ -61,68 +49,107 @@ define([
      * @method  registerEventListeners
      * @param   {object} root The calendar root element
      */
-    var registerEventListeners = function(root) {
+    const registerEventListeners = function(root) {
         // Get action type of the current week view or booking
-        const action = $(SELECTORS.CALENDAR_WEEK_WRAPPER).data('action');
-        var contextId = $(SELECTORS.CALENDAR_WEEK_WRAPPER).data('contextid');
+        const action = root.find(Selectors.wrappers.calendarwrapper).data('action');
+        const warningModal = $('body');
+
+
+        // Process previous/next week navigation links
+        root.on('click', Selectors.links.navLink, (e) => {
+            const courseId = root.find(Selectors.wrappers.calendarwrapper).data('courseid'),
+                link = e.currentTarget;
+
+            e.preventDefault();
+            CalendarViewManager.changeWeek(root, link.href, link.dataset.year, link.dataset.week, link.dataset.time, courseId);
+        });
+
+        warningModal.on(ModalEvents.yesEvent, function() {
+            if (action == 'book') {
+                SlotActions.saveBookedSlot(root);
+            } else {
+                SlotActions.saveWeekSlots(root);
+            }
+        });
 
         // Listen the click on the Save button.
-        root.on('click', SELECTORS.SAVE_BUTTON, function() {
+        root.on('click', Selectors.regions.savebutton, function() {
             SlotActions.saveWeekSlots(root);
         });
 
         // Listen the click on the Save Booking button.
-        root.on('click', SELECTORS.BOOK_BUTTON, function() {
+        root.on('click', Selectors.regions.bookbutton, function() {
             SlotActions.saveBookedSlot(root);
         });
 
         // Listen the click on the Copy button.
-        root.on('click', SELECTORS.COPY_BUTTON, function() {
+        root.on('click', Selectors.regions.copybutton, function() {
             SlotActions.copySlots(root);
         });
 
         // Listen the click on the Paste button.
-        root.on('click', SELECTORS.PASTE_BUTTON, function() {
+        root.on('click', Selectors.regions.pastebutton, function() {
             SlotActions.pasteSlots(root);
         });
 
         // Listen the click on the Clear button.
-        root.on('click', SELECTORS.CLEAR_BUTTON, function() {
-            SlotActions.clearWeekSlots(root);
+        root.on('click', Selectors.regions.clearbutton, function() {
+            SlotActions.clearWeekSlots();
         });
 
-        // Listen to click on the clickable slot areas/cells
-        if (contextId) {
-            // Listen the mouse down on the calendar grid posting.
-            root.on('mousedown', SELECTORS.DAY, function(e) {
-                SlotActions.setPosting(true);
-                SlotActions.postSlots(root, action, $(e.target));
-                e.preventDefault();
-            });
+        // Listen the mouse down on the calendar grid posting.
+        root.on('mousedown', Selectors.regions.day, function(e) {
+            SlotActions.setPosting(true);
+            SlotActions.postSlots(root, action, $(e.target));
+            e.preventDefault();
+        });
 
-            // Listen the mouse down on the calendar grid posting.
-            root.on('mouseover', SELECTORS.DAY, function(e) {
-                SlotActions.postSlots(root, action, $(e.target));
-                e.preventDefault();
-            });
+        // Listen the mouse down on the calendar grid posting.
+        root.on('mouseover', Selectors.regions.day, function(e) {
+            SlotActions.postSlots(root, action, $(e.target));
+            e.preventDefault();
+        });
 
-            // Listen the mouse down on the calendar grid posting.
-            root.on('mouseup', SELECTORS.DAY, function() {
-                SlotActions.setPosting(false);
-            });
-        }
+        // Listen the mouse down on the calendar grid posting.
+        root.on('mouseup', Selectors.regions.day, function() {
+            SlotActions.setPosting(false);
+        });
+
+        // Start listening for calendar slot posting changes.
+        window.addEventListener('beforeunload', beforeUnloadHandler);
 
         // Remove loading
-        const loadingIconContainer = root.find(CalendarSelectors.containers.loadingIcon);
+        const loadingIconContainer = root.find(Selectors.containers.loadingIcon);
         loadingIconContainer.addClass('hidden');
+    };
 
+
+    /**
+     * Handle the beforeunload event.
+     *
+     * @method
+     * @param   {Event} e
+     * @returns {string|null}
+     * @private
+     */
+    const beforeUnloadHandler = e => {
+        // Check if the calendar is dirty
+        if (SlotActions.isDirty()) {
+            return e.preventDefault();
+        }
+
+        // Attaching an event handler/listener to window or document's beforeunload event prevents browsers from using
+        // in-memory page navigation caches, like Firefox's Back-Forward cache or WebKit's Page Cache.
+        // Remove the handler.
+        window.removeEventListener('beforeunload', beforeUnloadHandler);
+
+        return null;
     };
 
     return {
         init: function(root) {
             root = $(root);
             CalendarViewManager.startLoading(root);
-            CalendarViewManager.init(root);
             registerEventListeners(root);
             CalendarViewManager.stopLoading(root);
         }

@@ -36,27 +36,6 @@
     }} data-findpirep="{{findpirepenabled}}"{{!
     }}>
     {{> core/overlay_loading}}
-    <table class="booking-title">
-        <tr>
-            <td><h3>{{#str}} activestudents, local_booking {{/str}}</h3></td>
-            <td class="mdl-right"><h5>{{#str}} averagewaittime, local_booking {{/str}}: <strong>{{avgwait}}</strong></h5></td>
-        </tr>
-        <tr>
-            <td colspan="2" class="mdl-right">
-                <span style="font-size: small;">{{#str}} bookingtotalstudents, local_booking {{/str}}: <strong>{{totalstudents}}</strong>
-                </span>
-                <br />
-                <span style="font-size: small;">{{#str}} bookingsortby, local_booking {{/str}}: {{!
-                    }}{{^scoresort}}<u>{{/scoresort}}
-                    <a href="{{url}}&sort=a" data-toggle="tooltip" title="{{#str}} bookingsortbyavailabilitytooltip, local_booking {{/str}}">{{#str}} bookingsortbyavailability, local_booking{{/str}}</a>{{!
-                    }}{{^scoresort}}</u>{{/scoresort}} | {{!
-                    }}{{#scoresort}}<u>{{/scoresort}}
-                    <a href="{{url}}&sort=s" data-toggle="tooltip" title="{{#str}} bookingsortbyscoretooltip, local_booking {{/str}}">{{#str}} bookingsortbyscore, local_booking {{/str}}</a>{{!
-                    }}{{#scoresort}}</u>{{/scoresort}}
-                </span>
-            </td>
-        </tr>
-    </table>
     <table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover booking-table">
         <thead>
             <tr>
@@ -67,7 +46,7 @@
                     <span class="media-body" aria-hidden="true">{{#str}} student, local_booking {{/str}}</span>
                 </th>
                 <th class="header booking-header booking-xsmall text-xs-center">
-                    <span class="media-body" aria-hidden="true">{{studentinfo}}</span>
+                    <span class="media-body" aria-hidden="true">{{col3header}}</span>
                 </th>
                 <th class="header booking-header booking-med text-xs-center">
                     <span class="media-body" aria-hidden="true">{{#str}} simulator, local_booking {{/str}}</span>

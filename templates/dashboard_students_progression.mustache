@@ -36,19 +36,6 @@
     }}{{#courseid}} data-courseid="{{courseid}}"{{/courseid}}{{!
     }} data-contextid="{{contextid}}"{{!
     }}>
-    <table class="booking-title">
-        <tr>
-            <td><h3>{{#str}} activestudents, local_booking {{/str}}</h3></td>
-            <td class="mdl-right"><h5>{{#str}} averagewaittime, local_booking {{/str}}: <strong>{{avgwait}}</strong></h5></td>
-        </tr>
-        <tr>
-            <td colspan="2" class="mdl-right">
-                <span style="font-size: small;">{{#str}} bookingtotalstudents, local_booking {{/str}}: <strong>{{totalstudents}}</strong>
-                </span>
-            </td>
-        </tr>
-    </table>
-    <p>
     </table><table id="progression-detail-{{uniqid}}" data-region="student-progression" class="table-hover booking-table">
         <thead>
             <tr>
@@ -59,7 +46,7 @@
                     <span class="media-body" aria-hidden="true">{{#str}} student, local_booking {{/str}}</span>
                 </th>
                 <th class="header booking-header booking-small text-xs-center">
-                    <span class="media-body" aria-hidden="true">{{#str}} studentinfoactive, local_booking {{/str}}</span>
+                    <span class="media-body" aria-hidden="true">{{#str}} col3header, local_booking {{/str}}</span>
                 </th>
                 <th class="header booking-header booking-med text-xs-center">
                     <span class="media-body" aria-hidden="true">{{#str}} simulator, local_booking {{/str}}</span>

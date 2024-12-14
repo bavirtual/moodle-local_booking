@@ -34,9 +34,10 @@ interface participant_vault_interface {
      *
      * @param int  $courseid The course id.
      * @param int  $userid   A specific user.
+     * @param string $filter Optional filter.
      * @return {Object}      Array of database records.
      */
-    public static function get_participant(int $courseid, int $userid);
+    public static function get_participant(int $courseid, int $userid, string $filter = 'active');
 
     /**
      * Get all active students from the database.

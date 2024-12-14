@@ -31,43 +31,97 @@
     {
     }
 }}
-<div id="week-navigation-{{uniqid}}" class="controls">
-    <p>
-        <div class="calendar-controls">
+{{^groupview}}
+<div class="navitem order-1">
+    {{#editing}}
+        <span class="h5 mb-0 pt-2 mr-5">{{#str}} availabilityposting, local_booking, {{posts}} {{/str}}</span>
+    {{/editing}}
+    {{^editing}}
+        <span class="h5 mb-0 pt-2 mr-5">{{username}}</span>
+    {{/editing}}
+</div>
+<div class="navitem-divider d-none d-sm-flex order-1"></div>
+{{/groupview}}
+{{^groupview}}
+<div class="navitem order-2">
+    {{#editing}}
+        <div class="text-nowrap">
+            <div class="btn-group" role="group">
+                <button type="submit" class="btn btn-primary"
+                    data-region="save-button"
+                    id="save_button"
+                    title="">
+                    {{#str}} buttonsave, local_booking {{/str}}
+                </button>
+                <button type="submit" class="btn btn-secondary"
+                    data-region="copy-button"
+                    id="copy_button"
+                    title="">
+                    {{#str}} buttoncopy, local_booking {{/str}}
+                </button>
+                <button type="submit" class="btn btn-secondary"
+                    data-region="paste-button"
+                    id="paste_button"
+                    title="">
+                    {{#str}} buttonpaste, local_booking {{/str}}
+                </button>
+                <button type="submit" class="btn btn-secondary"
+                    data-region="clear-button"
+                    id="clear_button"
+                    title="">
+                    {{#str}} buttonclear, local_booking {{/str}}
+                </button>
+            </div>
+    </div>
+    {{/editing}}
+    {{^editing}}
+    <div class="d-flex navitem ms-0 me-auto me-sm-0 ms-sm-auto">
+        <div class="d-block d-sm-flex text-nowrap">
+            <button type="submit" class="btn {{#alreadybooked}}btn-secondary{{/alreadybooked}}{{^alreadybooked}}btn-primary{{/alreadybooked}}"
+                data-region="book-button"
+                id="book_button"
+                title=""
+                {{#alreadybooked}}disabled{{/alreadybooked}}>
+                {{#str}} booksave, local_booking {{/str}}
+            </button>
+        </div>
+    </div>
+    {{/editing}}
+</div>
+<div class="navitem-divider d-none d-sm-flex order-2"></div>
+{{/groupview}}
+<div class="navitem order-3 row ms-0 ms-sm-auto px-0">
+    <div class="mb-0">
+        <div class="btn-group align-items-center" role="group">
             <a{{!
                 }} href="{{previousperiodlink}}"{{!
-                }} class="arrow_link previous"{{!
+                }} role="button"{{!
+                }} class="btn btn-outline-primary"{{!
                 }} title="{{#str}} weekprev, local_booking {{/str}}"{{!
                 }} data-year="{{previousperiod.year}}"{{!
                 }} data-week="{{previousweek}}"{{!
                 }} data-time="{{previousweekts}}"{{!
                 }}>
-                <span class="arrow">{{{larrow}}}</span>
-                &nbsp;
-                <span class="arrow_text">{{previousperiodname}}</span>
+            <span class="arrow">{{{larrow}}}</span>&nbsp;{{previousweek}}
             </a>
-            <span class="hide"> | </span>
-            <h4 class="current">{{periodname}}
-            {{^editing}}
-            <br/><span class="availability-student">{{username}}</span>
-            {{#alreadybooked}}
-            <br/><span style="color: darkred;" class="availability-student">{{alreadybookedmsg}}</span>
-            {{/alreadybooked}}
-            {{/editing}}
-            </h4>
-        <span class="hide"> | </span>
+            <a href="{{url}}"
+            role="button"
+            class="btn btn-outline-primary active">
+            {{periodname}}
+            </a>
             <a{{!
                 }} href="{{nextperiodlink}}"{{!
-                }} class="arrow_link next"{{!
+                }} role="button"{{!
+                }} class="btn btn-outline-primary"{{!
                 }} title="{{#str}} weeknext, local_booking {{/str}}"{{!
                 }} data-year="{{nextperiod.year}}"{{!
                 }} data-week="{{nextweek}}"{{!
                 }} data-time="{{nextweekts}}"{{!
                 }}>
-                <span class="arrow_text">{{nextperiodname}}</span>
-                &nbsp;
-                <span class="arrow">{{{rarrow}}}</span>
+            {{nextweek}}&nbsp;<span class="arrow">{{{rarrow}}}</span>
             </a>
         </div>
-    </p>
+    </div>
 </div>
+
+

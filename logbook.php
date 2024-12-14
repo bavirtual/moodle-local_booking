@@ -25,7 +25,7 @@
 
 use local_booking\local\participant\entities\participant;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\local\views\manage_action_bar;
+use local_booking\output\action_bar;
 use local_booking\output\views\logbook_view;
 
 // Standard GPL and phpdocs
@@ -129,7 +129,7 @@ $data    = [
 ];
 // get logbook view
 $logbookview = new logbook_view($data + $totals, ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
-$actionbar = new manage_action_bar($PAGE, 'logbook');
+$actionbar = new action_bar($PAGE, 'logbook', ['course'=>$COURSE->subscriber]);
 
 // output logbook page
 echo $OUTPUT->header();

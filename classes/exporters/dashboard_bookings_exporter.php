@@ -111,24 +111,27 @@ class dashboard_bookings_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($data, $related) {
+        global $CFG;
 
-        $this->course = $related['subscriber'];
+        $this->course     = $related['subscriber'];
+        $this->viewtype   = $data['view'];
+        $this->modules    = $this->course->get_modules(true);
+        $this->instructor = key_exists('instructor', $data) ? $data['instructor'] : null;
+        $this->studentid  = $data['studentid'];
+        $this->filter     = !empty($data['filter']) ? $data['filter'] : 'active';
+
         $url = new moodle_url('/local/booking/view.php', [
                 'courseid' => $this->course->get_id(),
                 'time' => time(),
             ]);
 
-        $data['url'] = $url->out(false);
-        $data['contextid'] = $related['context']->id;
-        $data['courseid'] = $this->course->get_id();
-        $this->viewtype = $data['view'];
-        $this->modules = $this->course->get_modules(true);
-        $data['trainingtype'] = $this->course->trainingtype;
+        $data['url']              = $url->out(false);
+        $data['contextid']        = $related['context']->id;
+        $data['courseid']         = $this->course->get_id();
+        $data['formaction']       = $CFG->httpswwwroot . '/local/booking/availability.php';
+        $data['trainingtype']     = $this->course->trainingtype;
         $data['findpirepenabled'] = $this->course->has_integration('external_data', 'pireps');
-        $this->instructor = key_exists('instructor', $data) ? $data['instructor'] : null;
-        $this->studentid = $data['studentid'];
-        $this->filter = !empty($data['filter']) ? $data['filter'] : 'active';
-        $data['visible'] = 0;
+        $data['visible']          = 0;
 
         parent::__construct($data, $related);
     }
@@ -166,6 +169,11 @@ class dashboard_bookings_exporter extends exporter {
             'visible' => [
                 'type' => PARAM_INT,
                 'default' => 0,
+            ],
+            'formaction' => [
+                'type' => PARAM_RAW,
+                'optional' => true,
+                'default' => '',
             ],
         ];
     }
@@ -235,7 +243,7 @@ class dashboard_bookings_exporter extends exporter {
                 'type' => \PARAM_BOOL,
                 'default' => false,
             ],
-            'studentinfo' => [
+            'col3header' => [
                 'type' => PARAM_RAW,
                 'default' => '',
             ],
@@ -250,6 +258,7 @@ class dashboard_bookings_exporter extends exporter {
      */
     protected function get_other_values(renderer_base $output) {
 
+        $col3customheader = 'col3header' . (preg_match('~(any|active|onhold)~', $this->filter) ? '' : $this->filter);
         $options = [
             'isinstructor' => !empty($this->instructor),
             'isexaminer'   => !empty($this->instructor) ? $this->instructor->is_examiner() : false,
@@ -270,7 +279,7 @@ class dashboard_bookings_exporter extends exporter {
             'showsuspended' => $this->filter == 'suspended' ? 'checked' : '',
             'showallcourses'=> !empty(\get_user_preferences('local_booking_1_xcoursebookings', false, !empty($this->instructor) ? $this->instructor->get_id() : 0)),
             'restrictionsenabled'=> intval($this->course->onholdperiod) > 0,
-            'studentinfo'=> get_string('studentinfo' . $this->filter, 'local_booking'),
+            'col3header'=> get_string($col3customheader, 'local_booking'),
         ];
 
         return $return;
@@ -290,20 +299,19 @@ class dashboard_bookings_exporter extends exporter {
             // get the user preference for the student progression sort type by s = score or a = availability
             $sorttype = $this->data['sorttype'];
             $filter = $this->filter;
+            $page = $this->data['page'] ?: 0;
 
             // get sorted preference
             if (empty($sorttype)) {
                 $sorttype = get_user_preferences('local_booking_sorttype', 'a');
-            } else {
-                set_user_preferences(array('local_booking_sorttype'=>$sorttype));
             }
+            set_user_preferences(array('local_booking_sorttype'=>$sorttype));
 
             // get the students list based on the requested filter for active or on-hold
-            $this->activestudents = $this->course->get_students($filter, false, false, true, $this->data['page']);
+            $this->activestudents = $this->course->get_students($filter, false, $page, true);
 
-        } elseif ($this->viewtype == 'confirm') {
-            $this->activestudents[] = $this->course->get_student($this->bookingstudentid);
-            $this->activestudents[] = $this->course->get_student($this->bookingstudentid);
+        } else {
+            $this->activestudents[] = $this->course->get_student($this->studentid, 0, $this->filter);
         }
 
         $i = 0;

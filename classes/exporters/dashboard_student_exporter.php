@@ -74,11 +74,10 @@ class dashboard_student_exporter extends exporter {
                 $data['recencytooltip'] = get_string('bookingrecencyfrom' . $source . 'tooltip', 'local_booking', $this->student->get_wait_date()->format('j M \'y'));
                 break;
             case 'graduates':
+                $data['dateinfo'] = get_string('nograduatedate', 'local_booking');
                 $graduatedate = $this->student->get_graduated_date();
                 if (!empty($graduatedate)) {
                     $data['dateinfo'] = $graduatedate->format('M d, y');
-                } else {
-                    $data['dateinfo'] = get_string('nograduatedate', 'local_booking');
                 }
 
                 break;
@@ -241,13 +240,6 @@ class dashboard_student_exporter extends exporter {
                 'optional' => true,
                 'default' => 0,
             ],
-            'formaction' => [
-                'type' => PARAM_RAW,
-                'optional' => true,
-                'default' => '',
-                'optional' => true,
-                'default' => '',
-            ],
         ];
     }
 
@@ -288,7 +280,6 @@ class dashboard_student_exporter extends exporter {
                 'sessionoptions'    => $this->get_session_options($action),
                 'posts'             => $posts,
                 'week'              => $this->get_booking_week(),
-                'formaction'        => $CFG->httpswwwroot . '/local/booking/availability.php',
             ), $return);
         }
 
@@ -303,7 +294,6 @@ class dashboard_student_exporter extends exporter {
                 'sessionoptions'    => $this->get_session_options($action),
                 'posts'             => $posts,
                 'week'              => $this->get_booking_week(),
-                'formaction'        => $CFG->httpswwwroot . '/local/booking/availability.php',
             ), $return);
         }
 

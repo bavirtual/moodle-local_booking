@@ -58,7 +58,6 @@ class get_weekly_view extends external_api {
                 'week' => new external_value(PARAM_INT, 'Week to be viewed', VALUE_REQUIRED),
                 'time' => new external_value(PARAM_INT, 'Timestamp of the first day of the week to be viewed', VALUE_REQUIRED),
                 'courseid' => new external_value(PARAM_INT, 'Course being viewed', VALUE_DEFAULT, SITEID, NULL_ALLOWED),
-                'categoryid' => new external_value(PARAM_INT, 'Category being viewed', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'action' => new external_value(PARAM_RAW, 'The action being performed view or book', VALUE_DEFAULT, 'view', NULL_ALLOWED),
                 'view' => new external_value(PARAM_RAW, 'The action being performed view or book', VALUE_DEFAULT, 'view', NULL_ALLOWED),
                 'studentid' => new external_value(PARAM_INT, 'The user id the slots belongs to', VALUE_DEFAULT, 0, NULL_ALLOWED),
@@ -74,14 +73,13 @@ class get_weekly_view extends external_api {
      * @param   int     $week       The week to be shown
      * @param   int     $time       The timestamp of the first day in the week to be shown
      * @param   int     $courseid   The course to be included
-     * @param   int     $categoryid The category to be included
      * @param   string  $action     The action to be performed if in booking view
      * @param   string  $view       The view to be displayed if user or all
      * @param   int     $studentid  The student id the action is performed on
      * @param   int     $exercise   The exercise id the action is associated with
      * @return  \stdClass
      */
-    public static function execute($year, $week, $time, $courseid, $categoryid, $action, $view, $userid, $exerciseid) {
+    public static function execute($year, $week, $time, $courseid, $action, $view, $userid, $exerciseid) {
 
         // Parameter validation.
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -89,7 +87,6 @@ class get_weekly_view extends external_api {
             'week'      => $week,
             'time'      => $time,
             'courseid'  => $courseid,
-            'categoryid'=> $categoryid,
             'action'    => $action,
             'view'      => $view,
             'studentid' => $userid,
@@ -99,13 +96,13 @@ class get_weekly_view extends external_api {
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
         require_login($params['courseid'], false);
 
-        $calendar = \calendar_information::create($time, $params['courseid'], $params['categoryid']);
+        $calendar = \calendar_information::create($time, $params['courseid']);
 
         $data = [
             'calendar'  => $calendar,
             'view'      => $view,
             'action'    => $action,
-            'student'   => $subscriber->get_participant($userid),
+            'student'   => $subscriber->get_student($userid),
             'exerciseid'=> $exerciseid == null ? 0 : $exerciseid,
         ];
 

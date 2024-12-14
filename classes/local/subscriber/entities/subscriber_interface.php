@@ -101,19 +101,22 @@ interface subscriber_interface {
      *
      * @param int  $studentid   A participant user id.
      * @param bool $courseid    Course id for student from different course required for instructor's mybookings w/ multiple courses.
+     * @param string $filter    Optional filter for selecting the student.
      * @return student          The student object
      */
-    public function get_student(int $studentid, int $courseid = 0);
+    public function get_student(int $studentid, int $courseid = 0, string $filter = 'active');
 
     /**
      * Get students based on filter.
      *
-     * @param string $filter       The filter to show students, inactive (including graduates), suspended, and default to active.
-     * @param bool $includeonhold  Whether to include on-hold students as well
-     * @param bool $rawdata        Whether to return students raw data
+     * @param string $filter      The filter to show students, inactive (including graduates), suspended, and default to active.
+     * @param bool $includeonhold Whether to include on-hold students as well
+     * @param int  $page          The page number to load
+     * @param bool $loadgrades    Whether to load students' grades as well (take a little longer)
+     * @param bool $rawdata       Whether to return students raw data
      * @return array $activestudents Array of active students.
      */
-    public function get_students(string $filter = 'active', bool $includeonhold = false, bool $rawdata = false);
+    public function get_students(string $filter = 'active', bool $includeonhold = false, int $page = 0, bool $loadgrades = false, bool $rawdata = false);
 
     /**
      * Get an active instructor.

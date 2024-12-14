@@ -31,145 +31,103 @@
     {
     }
 }}
-<div{{!
-    }} class="calendarwrapper"{{!
-    }}{{#courseid}} data-courseid="{{courseid}}"{{/courseid}}{{!
-    }}{{#categoryid}} data-categoryid="{{categoryid}}"{{/categoryid}}{{!
-    }} data-contextid="{{contextid}}"{{!
-    }} data-week="{{weekofyear}}"{{!
-    }} data-month="{{date.mon}}"{{!
-    }} data-year="{{date.year}}"{{!
-    }} data-time="{{date.timestamp}}"{{!
-    }} data-action="{{action}}"{{!
-    }} data-viewall="{{groupview}}"{{!
-    }} data-student-id="{{studentid}}"{{!
-    }} data-exercise-id="{{exerciseid}}"{{!
-    }} data-minslotperiod="{{minslotperiod}}"{{!
-    }}>
-    {{> local_booking/availability_week_nav }}
-    {{> core/overlay_loading}}
-    <style>
-        table.calendarmonth td:nth-child({{maxlanes}}n+2) {
-            border-right: 1px solid lightgrey;
-        }
-    </style>
-    <table id="week-detail-{{uniqid}}" data-region="slots-week" class="calendarmonth slotcalendartable mb0 table-hover">
-        <thead>
-            <tr>
-                {{#showlocaltime}}
-                <th class="header text-xs-center localtime">
-                    <br><span class="media-body small" aria-hidden="true">{{#str}} local, local_booking {{/str}}</span></br>
-                </th>
-                {{/showlocaltime}}
-                <th class="header text-xs-center zulutime">
-                    <span class="media-body" aria-hidden="true">{{#str}} zulutime, local_booking {{/str}}</span>
-                </th>
-                {{#daynames}}
-                <th class="header text-xs-center daynames" colspan="{{maxlanes}}" data-region="slot-week-day">
-                    <span class="sr-only">{{fullname}}</span>
-                    <span aria-hidden="true">{{shortname}}</span>
-                    <br><span class="media-body small slot-month-day" aria-hidden="true">{{dayofmonth}}</span></br>
-                </th>
-                {{/daynames}}
-            </tr>
-        </thead>
-        <tbody>
-        {{#timeslots}}
-            <tr data-region="month-view-week">
-                {{#showlocaltime}}
-                <td class="text-sm-center text-md-left localtimecol">
-                    <span class="media-body small" style="display:block; text-align:center;" aria-hidden="true">{{localtimeslot}}</span>
-                </td>
-                {{/showlocaltime}}
-                <td class="text-sm-center text-md-left zulutimecol"
-                    data-slot="{{timeslot}}">
-                    <span class="media-body small font-weight-bold" style="display:block; text-align:center;" aria-hidden="true">{{timeslot}}</span>
-                </td>
-                {{#days}}
-                <td id="slot-{{timestamp}}" class="day text-sm-center text-md-left slot-month-day{{!
-                    }}{{^groupview}}{{#slotavailable}} clickable{{/slotavailable}}{{#slotmarked}} slot-{{slotstatus}}{{/slotmarked}}{{/groupview}}{{!
-                    }}{{#groupview}}{{#slotbooked}} slot-{{slotstatus}}{{/slotbooked}}{{/groupview}}{{!
-                    }}{{^slotavailable}} slot-unavailable{{/slotavailable}}{{!
-                    }}"
-                    {{#groupview}}{{^slotbooked}}{{#slotmarked}}style="background-color: {{slotcolor}}; border-top: 1px solid {{slotcolor}};"{{/slotmarked}}{{/slotbooked}}{{/groupview}}
-                    data-slot-timestamp="{{timestamp}}"
-                    data-slot-marked="{{slotmarked}}"
-                    data-slot-booked="{{slotbooked}}"
-                    data-slot-status="{{slotstatus}}"
-                    data-region="{{#slotavailable}}{{^groupview}}day{{/groupview}}{{/slotavailable}}"{{!
-                    }}{{#slotbooked}}
-                    data-toggle="tooltip"
-                    data-html="true"
-                    title="{{{slotstatustooltip}}}"
-                    {{/slotbooked}}{{!
-                    }}{{!
-                    }}{{#groupview}}{{!
-                    }}{{#slotmarked}}
-                    data-toggle="tooltip"
-                    data-html="true"
-                    title="{{{slotstatustooltip}}}"
-                    {{/slotmarked}}{{!
-                    }}{{/groupview}}
-                    data-new-event-timestamp="{{neweventtimestamp}}">
-                </td>
-                {{/days}}
-            </tr>
-        {{/timeslots}}
-        </tbody>
-    </table>
-    {{#editing}}
-    <div style="margin-top: 10px; text-align: center;">
-        <div class="singlebutton">
-            <button type="submit" class="btn btn-primary"
-                data-region="save-button"
-                id="save_button"
-                title="">
-                {{#str}} buttonsave, local_booking {{/str}}
-            </button>
+<div id="calendar-week" class="weekwrapper" data-template="local_booking/availability_week">
+    <div{{!
+        }} class="calendarwrapper"{{!
+        }}{{#courseid}} data-courseid="{{courseid}}"{{/courseid}}{{!
+        }} data-contextid="{{contextid}}"{{!
+        }} data-week="{{weekofyear}}"{{!
+        }} data-month="{{date.mon}}"{{!
+        }} data-year="{{date.year}}"{{!
+        }} data-time="{{date.timestamp}}"{{!
+        }} data-action="{{action}}"{{!
+        }} data-viewall="{{groupview}}"{{!
+        }} data-student-id="{{studentid}}"{{!
+        }} data-exercise-id="{{exerciseid}}"{{!
+        }} data-minslotperiod="{{minslotperiod}}"{{!
+        }}>
+        {{> core/overlay_loading}}
+        <style>
+            table.calendarmonth td:nth-child({{maxlanes}}n+2) {
+                border-right: 1px solid lightgrey;
+            }
+        </style>
+        {{^editing}}
+        {{#alreadybooked}}
+        <br/><span style="color: darkred;" class="availability-student">{{alreadybookedmsg}}</span>
+        {{/alreadybooked}}
+        {{/editing}}
+        <form id="calendar">
+            <table id="week-detail" data-region="slots-week" class="calendarmonth slotcalendartable mb0 table-hover">
+                <thead>
+                    <tr>
+                        {{#showlocaltime}}
+                        <th class="header text-xs-center localtime">
+                            <br><span class="media-body small" aria-hidden="true">{{#str}} local, local_booking {{/str}}</span></br>
+                        </th>
+                        {{/showlocaltime}}
+                        <th class="header text-xs-center zulutime">
+                            <span class="media-body" aria-hidden="true">{{#str}} zulutime, local_booking {{/str}}</span>
+                        </th>
+                        {{#daynames}}
+                        <th class="header text-xs-center daynames" colspan="{{maxlanes}}" data-region="slot-week-day">
+                            <span class="sr-only">{{fullname}}</span>
+                            <span aria-hidden="true">{{shortname}}</span>
+                            <br><span class="media-body small slot-month-day" aria-hidden="true">{{dayofmonth}}</span></br>
+                        </th>
+                        {{/daynames}}
+                    </tr>
+                </thead>
+                <tbody>
+                {{#timeslots}}
+                    <tr data-region="month-view-week">
+                        {{#showlocaltime}}
+                        <td class="text-sm-center text-md-left localtimecol">
+                            <span class="media-body small" style="display:block; text-align:center;" aria-hidden="true">{{localtimeslot}}</span>
+                        </td>
+                        {{/showlocaltime}}
+                        <td class="text-sm-center text-md-left zulutimecol"
+                            data-slot="{{timeslot}}">
+                            <span class="media-body small font-weight-bold" style="display:block; text-align:center;" aria-hidden="true">{{timeslot}}</span>
+                        </td>
+                        {{#days}}
+                        <td id="slot-{{timestamp}}" class="day text-sm-center text-md-left slot-month-day{{!
+                            }}{{^groupview}}{{#slotavailable}} clickable{{/slotavailable}}{{#slotmarked}} slot-{{slotstatus}}{{/slotmarked}}{{/groupview}}{{!
+                            }}{{#groupview}}{{#slotbooked}} slot-{{slotstatus}}{{/slotbooked}}{{/groupview}}{{!
+                            }}{{^slotavailable}} slot-unavailable{{/slotavailable}}{{!
+                            }}"
+                            {{#groupview}}{{^slotbooked}}{{#slotmarked}}style="background-color: {{slotcolor}}; border-top: 1px solid {{slotcolor}};"{{/slotmarked}}{{/slotbooked}}{{/groupview}}
+                            data-slot-timestamp="{{timestamp}}"
+                            data-slot-marked="{{slotmarked}}"
+                            data-slot-booked="{{slotbooked}}"
+                            data-slot-status="{{slotstatus}}"
+                            data-region="{{#slotavailable}}{{^groupview}}day{{/groupview}}{{/slotavailable}}"{{!
+                            }}{{#slotbooked}}
+                            data-toggle="tooltip"
+                            data-html="true"
+                            title="{{{slotstatustooltip}}}"
+                            {{/slotbooked}}{{!
+                            }}{{!
+                            }}{{#groupview}}{{!
+                            }}{{#slotmarked}}
+                            data-toggle="tooltip"
+                            data-html="true"
+                            title="{{{slotstatustooltip}}}"
+                            {{/slotmarked}}{{!
+                            }}{{/groupview}}
+                            data-new-event-timestamp="{{neweventtimestamp}}">
+                        </td>
+                        {{/days}}
+                    </tr>
+                {{/timeslots}}
+                </tbody>
+            </table>
+        </form>
+        {{#editing}}
+        <div>
+            <span class="small"><a href='{{viewallurl}}'>{{#str}} availabilityallview, local_booking {{/str}}</a></span>
         </div>
-        <div class="singlebutton">
-            <button type="submit" class="btn btn-secondary"
-                data-region="copy-button"
-                id="copy_button"{{uniqid}}
-                title="">
-                {{#str}} buttoncopy, local_booking {{/str}}
-            </button>
-        </div>
-        <div class="singlebutton">
-            <button type="submit" class="btn btn-secondary"
-                data-region="paste-button"
-                id="paste_button"
-                title="">
-                {{#str}} buttonpaste, local_booking {{/str}}
-            </button>
-        </div>
-        <div class="singlebutton">
-            <button type="submit" class="btn btn-danger"
-                data-region="clear-button"
-                id="clear_button"{{uniqid}}
-                title="">
-                {{#str}} buttonclear, local_booking {{/str}}
-            </button>
-        </div>
+        {{/editing}}
     </div>
-    <div>
-        <br/><span class="small"><a href='{{viewallurl}}'>
-            {{#str}} availabilityallview, local_booking {{/str}}</a></span>
-    </div>
-    {{/editing}}
-    {{^editing}}
-    {{^groupview}}
-    <div class="bottom" style="text-align: center;">
-        <div class="singlebutton">
-            <button type="submit" class="btn {{#alreadybooked}}btn-secondary{{/alreadybooked}}{{^alreadybooked}}btn-primary{{/alreadybooked}}" style="margin-top: 20px;"
-                data-region="book-button"
-                id="book_button"
-                title=""
-                {{#alreadybooked}}disabled{{/alreadybooked}}>
-                {{#str}} booksave, local_booking {{/str}}
-            </button>
-        </div>
-    </div>
-    {{/groupview}}
-    {{/editing}}
 </div>
+

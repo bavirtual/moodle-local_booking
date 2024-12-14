@@ -65,12 +65,13 @@ class participant_vault implements participant_vault_interface {
      *
      * @param int  $courseid The course id.
      * @param int  $userid   A specific user.
+     * @param string $filter Optional filter.
      * @return {Object}      Array of database records.
      */
-    public static function get_participant(int $courseid, int $userid) {
+    public static function get_participant(int $courseid, int $userid, string $filter = 'active') {
         global $DB;
 
-        $enrolledsql = self::get_sql($courseid);
+        $enrolledsql = self::get_sql($courseid, $filter, ($filter == 'any'), 'student', ($filter != 'any'));
 
         $sql = "SELECT * FROM (SELECT u.id AS userid, $enrolledsql->fields $enrolledsql->from $enrolledsql->where $enrolledsql->groupby) AS participants
                 WHERE roles like '%student%' AND userid = $userid $enrolledsql->orderby";

@@ -36,7 +36,7 @@ function(
     Notification,
     Repository,
     BookingSessions,
-    BookingSelectors,
+    Selectors,
 ) {
 
     /**
@@ -78,7 +78,7 @@ function(
      * @param   {object} e
      */
      var gotoFeedback = (root, e) => {
-        let Source = root.find(BookingSelectors.logentryitem),
+        let Source = root.find(Selectors.logentryitem),
             courseId, exerciseId, userId;
 
         // Call redirect to assignment feedback page
@@ -89,8 +89,8 @@ function(
             userId = Source.data('userId');
         } else {
             // Get from closest dashboard session clicked
-            Source = $(e.target).closest(BookingSelectors.session);
-            courseId = $(BookingSelectors.bookingwrapper).data('courseid');
+            Source = $(e.target).closest(Selectors.session);
+            courseId = $(Selectors.wrappers.bookingwrapper).data('courseid');
             exerciseId = Source.data('exerciseId');
             userId = Source.data('studentId');
         }

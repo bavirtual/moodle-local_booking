@@ -35,7 +35,7 @@ class calendar_view extends base_view {
      * @param array    $related   The related objects to pass
      */
     public function __construct(array $data, array $related) {
-        parent::__construct($data, $related, 'local_booking/availability_calendar');
+        parent::__construct($data, $related, 'local_booking/availability_week');
 
         $related += [
             'type' => \core_calendar\type_factory::get_calendar_instance(),
@@ -44,6 +44,14 @@ class calendar_view extends base_view {
 
         $week = new availability_week_exporter($data, $related);
         $this->exporteddata = $week->export($this->renderer);
-        $this->exporteddata->viewingmonth = true;
+    }
+
+    /**
+     * Get instructor participation export
+     *
+     * @return  \stdClass
+     */
+    public function get_exportdata() {
+        return $this->exporteddata;
     }
 }

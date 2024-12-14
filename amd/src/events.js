@@ -32,5 +32,8 @@ define([], function() {
         editLogentry: 'booking-sessions:edit_logentry',
         viewUpdated: 'booking-sessions:view_updated',
         gotoFeedback: 'booking-sessions:goto_feedback',
+        yesEvent: 'booking-sessions:response_yes',
+        noEvent: 'booking-sessions:response_no',
+        okEvent: 'booking-sessions:response_ok',
     };
 });

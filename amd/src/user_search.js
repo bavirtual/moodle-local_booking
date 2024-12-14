@@ -74,6 +74,7 @@ export default class User extends UserSearch {
     selectOneLink(userID) {
         const url = new URL(this.baseUrl);
         url.searchParams.set('studentid', userID);
+        url.searchParams.set('filter', 'any');
         return url.toString();
     }
 }

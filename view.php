@@ -24,7 +24,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_booking\local\subscriber\entities\subscriber;
 use local_booking\output\action_bar;
 use local_booking\output\views\booking_view;
 
@@ -60,7 +59,6 @@ $PAGE->set_pagelayout('admin');   // wide page layout
 $PAGE->set_title($COURSE->shortname . ': ' . get_string('pluginname', 'local_booking'));
 $PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-local-booking');
-
 
 // define session booking plugin subscriber globally
 $subscriber = get_course_subscriber_context($url->out(false), $courseid);

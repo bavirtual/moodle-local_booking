@@ -96,13 +96,14 @@ class get_weekly_view extends external_api {
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
         require_login($params['courseid'], false);
 
+        $student = $userid ? $subscriber->get_student($userid) : null;
         $calendar = \calendar_information::create($time, $params['courseid']);
 
         $data = [
             'calendar'  => $calendar,
             'view'      => $view,
             'action'    => $action,
-            'student'   => $subscriber->get_student($userid),
+            'student'   => $student,
             'exerciseid'=> $exerciseid == null ? 0 : $exerciseid,
         ];
 

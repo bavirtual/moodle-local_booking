@@ -30,7 +30,6 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 use DateTime;
-use local_booking\local\participant\entities\student;
 use renderer_base;
 
 /**
@@ -38,7 +37,7 @@ use renderer_base;
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class availability_week_timeslot_exporter extends exporter {
@@ -47,11 +46,6 @@ class availability_week_timeslot_exporter extends exporter {
      * @var \calendar_information $calendar The calendar to be rendered.
      */
     protected $calendar;
-
-    /**
-     * @var student $student - The student id for the view.
-     */
-    protected $student;
 
     /**
      * @var array $timeslot - A timeslot for the work_exporter objects.
@@ -69,58 +63,25 @@ class availability_week_timeslot_exporter extends exporter {
     protected $weeklanes;
 
     /**
-     * @var array $maxlanes - The maximum amount of lanes required to fit in a day.
-     */
-    protected $maxlanes;
-
-    /**
      * @var int $hour - A timeslot hour for the work_exporter objects.
      */
     protected $hour;
-
-    /**
-     * @var array $days - An array of availability_day_exporter objects.
-     */
-    protected $days = [];
-
-    /**
-     * @var array $groupview - The type of UI view being requested.
-     */
-    protected $groupview;
-
-    /**
-     * @var string $bookview - The type of booking UI view being requested.
-     */
-    protected $bookview;
-
-    /**
-     * @var bool $alreadybooked - Whether the student is already booked by another instructor already.
-     */
-    protected $alreadybooked;
 
     /**
      * Constructor.
      *
      * @param \calendar_information $calendar The calendar information for the period being displayed
      * @param array $data       Data needed to process global values
-     * @param array $daydata    Data needed to process day export
-     * @param array $weeklanes  Contains the week lanes information
      * @param array $related Related objects.
      */
-    public function __construct(\calendar_information $calendar, $data, $daydata, $weeklanes, $related) {
+    public function __construct(\calendar_information $calendar, $data, $related) {
         $this->calendar      = $calendar;
-        $this->weeklanes     = $weeklanes;
-        $this->student       = $data['student'];
-        $this->days          = $data['days'];
-        $this->groupview     = $data['groupview'];
-        $this->bookview      = $data['bookview'];
-        $this->maxlanes      = $data['maxlanes'];
-        $this->alreadybooked = $data['alreadybooked'];
-        $this->timeslot      = $daydata['timeslot'];
-        $this->usertimeslot  = $daydata['usertimeslot'];
-        $this->hour          = $daydata['hour'];
+        $this->weeklanes     = $related['timeslotdata']->weeklanes;
+        $this->timeslot      = $related['timeslotdata']->daydata->timeslot;
+        $this->usertimeslot  = $related['timeslotdata']->daydata->usertimeslot;
+        $this->hour          = $related['timeslotdata']->daydata->hour;
 
-        parent::__construct([], $related);
+        parent::__construct($data, $related);
     }
 
     /**
@@ -131,6 +92,7 @@ class availability_week_timeslot_exporter extends exporter {
     protected static function define_related() {
         return [
             'type' => '\core_calendar\type_base',
+            'timeslotdata' => '\\stdClass',
         ];
     }
 
@@ -193,25 +155,29 @@ class availability_week_timeslot_exporter extends exporter {
         $type = $this->related['type'];
 
         // get the days and their slots in each hour timeslot
-        foreach ($this->days as $daydata) {
+        foreach ($this->data['daysdata'] as $daydata) {
 
             // get this day's data basedon GMT time
-            $slotdaydata = $type->timestamp_to_date_array(gmmktime($this->hour, 0, 0, $daydata['mon'], $daydata['mday'], $daydata['year']));
+            $daytimestamp = $type->timestamp_to_date_array(gmmktime($this->hour, 0, 0, $daydata['mon'], $daydata['mday'], $daydata['year']));
             $daylanes = $this->weeklanes[$daydata['wday']];
-            $resticted = $this->day_restricted($daydata);
 
             // get slots in all lanes even if a slot is empty (not posted by a student, booked, nor tentative)
-            for ($laneindex = 0; $laneindex < $this->maxlanes && $laneindex < LOCAL_BOOKING_MAXLANES; $laneindex++) {
-                // assign the lane slots to the corrsponding day lane
+            for ($laneindex = 0; $laneindex < $this->data['maxlanes'] && $laneindex < LOCAL_BOOKING_MAXLANES; $laneindex++) {
+                // assign the lane slots to the corresponding day lane
                 $laneslots = count($daylanes) > $laneindex ? $daylanes[$laneindex] : null;
 
-                $slotdaydata['istoday']     = $this->is_today($daydata);
-                $slotdaydata['isweekend']   = $this->is_weekend($daydata);
-                $slotdaydata['daytitle']    = get_string('dayeventsnone', 'calendar', userdate($daydata[0], get_string('strftimedayshort')));
-                $slotdata['slotavailable']  = !$resticted && !$this->alreadybooked;
-                $slotdata['slot']           = $this->get_slot_info($laneslots, $slotdaydata);
+                $data = [
+                    'courseid'     => $this->calendar->course->id,
+                    'istoday'      => $this->is_today($daydata),
+                    'isweekend'    => $this->is_weekend($daydata),
+                    'daytitle'     => get_string('strftimedayshort'),
+                    'slotavailable'=> !$daydata['restricted'] && !$this->data['alreadybooked'],
+                    'slot'         => $this->get_slot($laneslots, $daytimestamp),
+                    'timestamp'    => $daytimestamp[0],
+                    'groupview'    => $this->data['groupview']
+                ];
 
-                $day = new availability_week_day_exporter($this->calendar, $this->groupview, $slotdaydata, $slotdata, $this->related);
+                $day = new availability_week_day_exporter( $data, $this->related);
 
                 $days[] = $day->export($output);
             }
@@ -225,7 +191,7 @@ class availability_week_timeslot_exporter extends exporter {
      *
      * @return  {object}    Database record representing the slot record
      */
-    protected function get_slot_info($studentslots, $weekdate) {
+    protected function get_slot($studentslots, $weekdate) {
         $slot = null;
         // loop through week's timeslots to see if the slot marked by student
         if (!empty($studentslots)) {
@@ -240,57 +206,10 @@ class availability_week_timeslot_exporter extends exporter {
     }
 
     /**
-     * Checks if the slot date is out
-     * of week lookahead bounds for students
+     * Checks if the date is today.
      *
-     * @param  array $date array of the day to be evaluated
-     * @return  bool
-     */
-    protected function day_restricted($date) {
-        $now = $this->related['type']->timestamp_to_date_array(time());
-        $today = $this->related['type']->timestamp_to_date_array(gmmktime(0, 0, 0, $now['mon'], $now['mday'], $now['year']));
-
-        // can't mark in the past, the day had passed i.e. yesterday
-        $datepassed = $today['year'] <= $date['year'] ? $today['yday'] >= $date['yday'] : true;
-
-        // can't mark before x days from last booked session (durnig wait days) for student view
-        $lastsessionwait = true;
-        $hasrestrictionwaiver = false;
-        if ($this->groupview || $this->bookview) {
-            $lastsessionwait = false;
-        } else {
-            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->calendar->courseid . '_availabilityoverride', false, $this->student->get_id());
-            if (!$hasrestrictionwaiver) {
-                $nextsessiondt = $this->student->get_next_allowed_session_date();
-                $nextsessiondate = $this->related['type']->timestamp_to_date_array($nextsessiondt->getTimestamp());
-                $lastsessionwait = $lastsessionwait && $nextsessiondate['year'] >= $date['year'];
-                $lastsessionwait = $lastsessionwait && $nextsessiondate['yday'] >= $date['yday'];
-            } else {
-                $lastsessionwait = !$hasrestrictionwaiver;
-            }
-        }
-
-        // future week is not beyond the set lookahead number of weeks
-        $currentyearweekno = (int)date('W', time());
-        $futureyearweekno = (int)date('W', $date[0]);
-        $weekslookahead = (get_config('local_booking', 'weeksahead')) ? get_config('local_booking', 'weeksahead') : LOCAL_BOOKING_WEEKSLOOKAHEAD;
-        $yeardate = new DateTime();
-        $yeardate->setISODate($today['year'], 53);
-        $yearweeks = ($yeardate->format("W") === "53" ? 53 : 52);
-        $beyondlookahead = (($futureyearweekno + (($date['year'] - $today['year']) * $yearweeks)) - $currentyearweekno ) > $weekslookahead;
-
-        // lookahead setting is not unlimited
-        $unlimited = $weekslookahead == 0;
-
-        return $datepassed || $lastsessionwait || ($beyondlookahead && !$unlimited);
-    }
-
-    /**
-     * Checks if the date
-     * is today.
-     *
-     * @param   int     The date to compare against
-     * @return  bool
+     * @param  array The date to compare against
+     * @return bool
      */
     protected function is_today($date) {
         $today = $this->related['type']->timestamp_to_date_array(time());
@@ -313,7 +232,7 @@ class availability_week_timeslot_exporter extends exporter {
         if (isset($CFG->calendar_weekend)) {
             $weekend = intval($CFG->calendar_weekend);
         }
-        $numberofdaysinweek = count($this->days);
+        $numberofdaysinweek = count($this->data['daysdata']);
 
         return !!($weekend & (1 << ($date['wday'] % $numberofdaysinweek)));
     }

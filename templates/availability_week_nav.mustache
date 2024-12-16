@@ -41,54 +41,55 @@
     {{/editing}}
 </div>
 <div class="navitem-divider d-none d-sm-flex order-1"></div>
-{{/groupview}}
-{{^groupview}}
 <div class="navitem order-2">
     {{#editing}}
-        <div class="text-nowrap">
-            <div class="btn-group" role="group">
-                <button type="submit" class="btn btn-primary"
-                    data-region="save-button"
-                    id="save_button"
-                    title="">
-                    {{#str}} buttonsave, local_booking {{/str}}
-                </button>
-                <button type="submit" class="btn btn-secondary"
-                    data-region="copy-button"
-                    id="copy_button"
-                    title="">
-                    {{#str}} buttoncopy, local_booking {{/str}}
-                </button>
-                <button type="submit" class="btn btn-secondary"
-                    data-region="paste-button"
-                    id="paste_button"
-                    title="">
-                    {{#str}} buttonpaste, local_booking {{/str}}
-                </button>
-                <button type="submit" class="btn btn-secondary"
-                    data-region="clear-button"
-                    id="clear_button"
-                    title="">
-                    {{#str}} buttonclear, local_booking {{/str}}
-                </button>
-            </div>
-    </div>
-    {{/editing}}
-    {{^editing}}
-    <div class="d-flex navitem ms-0 me-auto me-sm-0 ms-sm-auto">
-        <div class="d-block d-sm-flex text-nowrap">
-            <button type="submit" class="btn {{#alreadybooked}}btn-secondary{{/alreadybooked}}{{^alreadybooked}}btn-primary{{/alreadybooked}}"
-                data-region="book-button"
-                id="book_button"
-                title=""
-                {{#alreadybooked}}disabled{{/alreadybooked}}>
-                {{#str}} booksave, local_booking {{/str}}
+    <div class="text-nowrap">
+        <div class="btn-group" role="group">
+            <button type="submit" class="btn btn-primary"
+                data-region="save-button"
+                id="save_button"
+                title="">
+                {{#str}} buttonsave, local_booking {{/str}}
+            </button>
+            <button type="submit" class="btn btn-secondary"
+                data-region="copy-button"
+                id="copy_button"
+                title="">
+                {{#str}} buttoncopy, local_booking {{/str}}
+            </button>
+            <button type="submit" class="btn btn-secondary"
+                data-region="paste-button"
+                id="paste_button"
+                title="">
+                {{#str}} buttonpaste, local_booking {{/str}}
+            </button>
+            <button type="submit" class="btn btn-secondary"
+                data-region="clear-button"
+                id="clear_button"
+                title="">
+                {{#str}} buttonclear, local_booking {{/str}}
             </button>
         </div>
     </div>
     {{/editing}}
+    {{^editing}}
+    <div>
+        <button type="submit" class="btn {{#alreadybooked}}btn-secondary{{/alreadybooked}}{{^alreadybooked}}btn-primary{{/alreadybooked}}"
+            data-region="book-button"
+            id="book_button"
+            title=""
+            {{#alreadybooked}}disabled{{/alreadybooked}}>
+            {{#str}} booksave, local_booking {{/str}}
+        </button>
+    </div>
+    {{/editing}}
 </div>
 <div class="navitem-divider d-none d-sm-flex order-2"></div>
+{{/groupview}}
+{{#groupview}}
+<div class="navitem order-1">
+    <span class="h5 mb-0 pt-2 mr-5">{{#str}} availabilityinst, local_booking {{/str}}</span>
+</div>
 {{/groupview}}
 <div class="navitem order-3 row ms-0 ms-sm-auto px-0">
     <div class="mb-0">

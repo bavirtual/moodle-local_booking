@@ -64,12 +64,17 @@ define([
             CalendarViewManager.changeWeek(root, link.href, link.dataset.year, link.dataset.week, link.dataset.time, courseId);
         });
 
-        warningModal.on(ModalEvents.yesEvent, function() {
+        warningModal.on(ModalEvents.yesEvent, function(e) {
+            const courseId = root.find(Selectors.wrappers.calendarwrapper).data('courseid'),
+                link = e.eventData;
+
             if (action == 'book') {
                 SlotActions.saveBookedSlot(root);
             } else {
                 SlotActions.saveWeekSlots(root);
             }
+
+            CalendarViewManager.changeWeek(root, link.url, link.year, link.week, link.time, courseId);
         });
 
         // Listen the click on the Save button.

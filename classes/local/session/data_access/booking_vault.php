@@ -216,7 +216,7 @@ class booking_vault implements booking_vault_interface {
         $sessions = array();
 
         // last booking w/ a slot starttime that had past, otherwise the booking before it (check for no booking / no slot)
-        $sql = 'SELECT *
+        $sql = 'SELECT b.*
                 FROM {' . static::DB_BOOKINGS . '} b
                 LEFT JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
                 WHERE b.courseid = :courseid AND ' . ($isinstructor ? 'b.userid = :userid' : 'b.studentid = :userid') . '

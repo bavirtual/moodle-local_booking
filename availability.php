@@ -39,7 +39,6 @@ use local_booking\output\views\calendar_view;
 global $USER, $COURSE;
 
 // Set up the page.
-$categoryid = optional_param('categoryid', null, PARAM_INT);
 $courseid = optional_param('courseid', SITEID, PARAM_INT);
 $course = get_course($courseid);
 $context = context_course::instance($courseid);
@@ -65,6 +64,7 @@ $subscriber = get_course_subscriber_context($url->out(false), $courseid);
 // view all capability for instructors
 if (has_capability('local/booking:view', $context)) {
     $view = $action == 'book' ? 'user' : 'all';
+    $student = $userid ? $subscriber->get_student($userid) : null;
 } else {
     $student = $subscriber->get_student($USER->id);
     $action = 'post';
@@ -88,7 +88,7 @@ if (empty($time)) {
     $time =  time();
 }
 
-$calendar = calendar_information::create($time, $courseid, !empty($categoryid) ? $categoryid : $course->category);
+$calendar = calendar_information::create($time, $courseid);
 
 $PAGE->navbar->add(userdate($time, get_string('weekinyear','local_booking', date('W', $time))));
 $PAGE->set_pagelayout('standard');
@@ -104,7 +104,7 @@ $data = [
     'calendar'   => $calendar,
     'view'       => $view,
     'action'     => $action,
-    'student'    => $subscriber->get_student($userid),
+    'student'    => $student,
     'exerciseid' => $exerciseid,
     'confirm'    => $confirm,
     ];

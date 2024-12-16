@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
 
+use DateTime;
 use core_external\external_api;
 use core_external\external_value;
 use core_external\external_warnings;
@@ -91,10 +92,15 @@ class save_slots extends external_api {
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
 
+        $warnings = [];
         $student = $subscriber->get_student($USER->id);
 
         // add new slots after removing previous ones for the week
-        $slots = $student->save_slots($params);
+        $slots = [];
+        $currentweek = (new DateTime())->format("W");
+        if ($week >= $currentweek) {
+            $slots = $student->save_slots($params);
+        }
 
         // activate posting notification
         $existingslots = get_user_preferences('local_booking_' . $courseid . '_postingnotify', '', $student->get_id());
@@ -104,12 +110,16 @@ class save_slots extends external_api {
         if (!empty($slots)) {
             \core\notification::SUCCESS(get_string('slotssavesuccess', 'local_booking'));
         } else {
+            $warnings[] = [
+                'warningcode' => 'warnsomeslotsnotsaved',
+                'message' => get_string('warnsomeslotsnotsaved', 'local_booking')
+            ];
             \core\notification::ERROR(get_string('slotssaveunable', 'local_booking'));
         }
 
         return array(
             'result' => !empty($slots),
-            'warnings' => array()
+            'warnings' => $warnings
         );
     }
 

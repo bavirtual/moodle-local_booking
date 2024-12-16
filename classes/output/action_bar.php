@@ -67,6 +67,7 @@ class action_bar extends base_action_bar {
 
         switch ($this->type) {
             case 'book':
+            case 'view':
                 $elements = $this->generate_booking_navigation();
                 break;
 
@@ -101,7 +102,7 @@ class action_bar extends base_action_bar {
         $elements = (array) $this->additional['bookingparams'];
         $elements['justify'] = 'justify-content-left';
         $elements['bookingview'] = true;
-        $elements['userselect'] = $this->users_selector();
+        $elements['userselect'] = $this->type == 'book' ? $this->users_selector() : false;
 
         return $elements;
     }

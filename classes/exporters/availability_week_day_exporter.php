@@ -28,21 +28,18 @@ namespace local_booking\exporters;
 defined('MOODLE_INTERNAL') || die();
 
 use local_booking\local\participant\entities\student;
+use core\external\exporter;
 use renderer_base;
 
 /**
  * Class for displaying the day on month view.
- *
- * @package   core_calendar
- * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class availability_week_day_exporter extends availability_day_exporter {
+class availability_week_day_exporter extends exporter {
 
     /**
-     * @var {object} $slotdata dataobjects.
+     * @var {object} $slot data objects.
      */
-    protected $slotdata;
+    protected $slot;
 
     /**
      * @var bool $groupview Whether this is a single or all group view.
@@ -56,14 +53,14 @@ class availability_week_day_exporter extends availability_day_exporter {
      * @param mixed $data Either an stdClass or an array of values.
      * @param array $related Related objects.
      */
-    public function __construct(\calendar_information $calendar, $groupview, $data, $slot, $related) {
-        parent::__construct($calendar, $data, $related);
+    public function __construct($data, $related) {
         // Fix the url for today to be based on the today timestamp
         // rather than the calendar_information time set in the parent
         // constructor.
-        $this->url->param('time', $this->data[0]);
-        $this->slotdata     = $slot;
-        $this->groupview    = $groupview;
+        $this->slot      = $data['slot'];
+        $this->groupview = $data['groupview'];
+
+        parent::__construct($data, $related);
     }
 
     /**
@@ -86,6 +83,9 @@ class availability_week_day_exporter extends availability_day_exporter {
         $return = parent::define_properties();
         $return = array_merge($return, [
             // These are additional params.
+            'timestamp' => [
+                'type' => PARAM_INT,
+            ],
             'istoday' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
@@ -96,6 +96,14 @@ class availability_week_day_exporter extends availability_day_exporter {
             ],
             'daytitle' => [
                 'type' => PARAM_RAW,
+            ],
+            'groupview' => [
+                'type' => PARAM_BOOL,
+                'default' => '',
+            ],
+            'slotavailable' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
             ],
         ]);
 
@@ -109,10 +117,6 @@ class availability_week_day_exporter extends availability_day_exporter {
     protected static function define_other_properties() {
         $return = parent::define_other_properties();
         $return = array_merge($return, [
-            'slotavailable' => [
-                'type' => PARAM_BOOL,
-                'default' => false,
-            ],
             'slotmarked' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
@@ -133,10 +137,6 @@ class availability_week_day_exporter extends availability_day_exporter {
                 'type' => PARAM_RAW,
                 'default' => '',
             ],
-            'groupview' => [
-                'type' => PARAM_BOOL,
-                'default' => '',
-            ],
         ]);
 
         return $return;
@@ -153,26 +153,24 @@ class availability_week_day_exporter extends availability_day_exporter {
         // Check if there is a slot that matches
         $slotstatus = '';
         $slotstatustooltip = '';
-        if ($this->slotdata['slot'] != null) {
-            $slotstatus = $this->slotdata['slot']->slotstatus ?: 'selected';
+        if ($this->slot != null) {
+            $slotstatus = $this->slot->slotstatus ?: 'selected';
             // add student name tooltip in group view
             if ($this->groupview) {
-                $studentname = student::get_fullname($this->slotdata['slot']->userid);
+                $studentname = student::get_fullname($this->slot->userid);
                 $slotstatustooltip = $studentname . '<br/>';
             }
-            $slotstatustooltip .= $this->slotdata['slot']->bookinginfo ?: '';
+            $slotstatustooltip .= $this->slot->bookinginfo ?: '';
 
         }
 
-        $return = parent::get_other_values($output);
-
-        $return['slotavailable']    = $this->slotdata['slotavailable'];
-        $return['slotmarked']       = $this->slotdata['slot'] != null;
-        $return['slotbooked']       = $this->slotdata['slot'] != null ? !empty($this->slotdata['slot']->slotstatus) : false;
-        $return['slotstatus']       = $slotstatus;
-        $return['slotstatustooltip']= $slotstatustooltip;
-        $return['groupview']        = $this->groupview;
-        $return['slotcolor']        = $this->slotdata['slot'] != null ? $this->slotdata['slot']->slotcolor : 'white';
+        $return = [
+            'slotmarked' => $this->slot != null,
+            'slotbooked' => $this->slot != null ? !empty($this->slot->slotstatus) : false,
+            'slotstatus' => $slotstatus,
+            'slotstatustooltip' => $slotstatustooltip,
+            'slotcolor' => $this->slot != null ? $this->slot->slotcolor : 'white'
+        ];
 
         return $return;
     }

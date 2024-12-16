@@ -36,30 +36,35 @@ import * as Selectors from 'local_booking/selectors';
  *
  * @method  changeWeek
  * @param   {object} root The container element
- * @param   {string} url The calendar url to be shown
+ * @param   {string} url  The calendar url to be shown
  * @param   {number} year Year
  * @param   {number} week week
  * @param   {number} time The timestamp of the beginning current week
  * @param   {number} courseId The id of the course associated with the calendar shown
  * @return  {promise}
  */
-export const changeWeek = (root, url, year, week, time, courseId) => {
+export async function changeWeek(root, url, year, week, time, courseId) {
 
     // Check if the calendar is dirty and suggest saving
     if (SlotActions.isDirty()) {
-        ModalActions.showWarning('slotsnotsaved', {year, week, time, courseId}, 'yesno');
+        ModalActions.showWarning(
+            'slotsnotsaved',
+            'slotsnotsavedtitle',
+            { url, year, week, time, courseId },
+            {fromComponent: true, buttonType: 'yesno'});
         SlotActions.clean();
+    } else {
+        // Go to the requested week
+        return renderCalendar(root, year, week, time, courseId)
+            .then((...args) => {
+                if (url.length && url !== '#') {
+                    window.history.pushState({}, '', url);
+                }
+                return args;
+            });
     }
-
-    // Go to the requested week
-    return renderCalendar(root, year, week, time, courseId)
-        .then((...args) => {
-            if (url.length && url !== '#') {
-                window.history.pushState({}, '', url);
-            }
-            return args;
-        });
-};
+    return true;
+}
 
 /**
  * Renders the action bar

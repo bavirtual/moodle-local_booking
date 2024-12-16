@@ -29,12 +29,15 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 use core_calendar\external\date_exporter;
+use calendartype_gregorian\structure;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\session\entities\booking;
 use renderer_base;
 use moodle_url;
+use DateTime;
+use DateTimeZone;
 
 /**
  * Class for displaying the week view.
@@ -65,6 +68,11 @@ class availability_week_exporter extends exporter {
      * @var bool $showlocaltime Whether to show local time.
      */
     protected $showlocaltime;
+
+    /**
+     * @var int $year The year based on the calendar's timestamp.
+     */
+    protected $year;
 
     /**
      * @var int $weekofyear A number representing the week of the year.
@@ -136,11 +144,13 @@ class availability_week_exporter extends exporter {
         $this->firstdayofweek = $type->get_starting_weekday();
         $calendarday = $type->timestamp_to_date_array($this->calendar->time);
         $this->GMTdate = $type->timestamp_to_date_array(gmmktime(0, 0, 0, $calendarday['mon'], $calendarday['mday'], $calendarday['year']));
-        $this->days = $this->get_week_days($this->GMTdate);
+        $this->days = $this->get_week_days($this->GMTdate, $type);
 
         // Update the url with time, course, and category info
         $this->url = new moodle_url('/local/booking/availability.php', [
             'time' => $calendar->time,
+            'week' => $this->weekofyear,
+            'year' => $calendarday['year']
         ]);
 
         if ($this->calendar->course && SITEID !== $this->calendar->course->id) {
@@ -150,14 +160,12 @@ class availability_week_exporter extends exporter {
 
         // identify the student to view the slots (single student view 'user' or 'all' students)
         $activebookinginstrname = '';
+        $studentposts = 0;
+        $studentid = 0;
+        $fullname = '';
         if ($actiondata['view'] == 'user') {
-            if ($actiondata['action'] == 'book') {
-                // view the slot for the student id passed in action data
-                $this->student = $this->course->get_student($actiondata['student']->get_id());
-            } else {
-                // student attempting to post availability
-                $this->student = $this->course->get_student($USER->id);
-
+            $this->student = $actiondata['student'];
+            if ($actiondata['action'] != 'book') {
                 // push notification if the student is already booked
                 if (!empty($this->student->get_active_booking()) && !$actiondata['confirm']) {
                     \core\notification::INFO(get_string('alreadybooked', 'local_booking'));
@@ -171,12 +179,18 @@ class availability_week_exporter extends exporter {
             }
         }
 
+        if (!empty($this->student)) {
+            $studentposts = $this->student->get_total_posts();
+            $studentid = $this->student->get_id();
+            $fullname = $this->student->get_name();
+        }
+
         $data = [
             'url'         => $this->url->out(false),
-            'username'    => $this->actiondata['action'] == 'book' ? $this->actiondata['student']->get_fullname($this->actiondata['student']->get_id()) : '',
-            'posts'       => $this->actiondata['student']->get_total_posts(),
+            'username'    => $fullname,
+            'posts'       => $studentposts,
             'action'      => $this->actiondata['action'],
-            'studentid'   => $this->actiondata['student']->get_id(),
+            'studentid'   => $studentid,
             'exerciseid'  => $this->actiondata['exerciseid'],
             'editing'     => $this->view == 'user' && $this->actiondata['action'] != 'book',    // Editing is not allowed if user id is passed for booking
             'alreadybooked' => !empty($this->activebooking),
@@ -398,36 +412,72 @@ class availability_week_exporter extends exporter {
     /**
      * Return the days of the week where $date falls in.
      *
+     * @param  array $date First day of the week GMT date
+     * @param  structure $type base calendar type
      * @return array array of days
      */
-    protected function get_week_days($date) {
+    protected function get_week_days($date, structure $type) {
 
         $days = [];
         // Calculate which day number is the first day of the week.
-        $type = \core_calendar\type_factory::get_calendar_instance();
         $daysinweek = count($type->get_weekdays());
-        $week_start = $this->get_week_start($date);
+        $week_start = new DateTime('@'.$date[0]);
+
+        // The number of weeks allowed for posting from plugin settings
+        $weekslookahead = get_config('local_booking', 'weeksahead');
 
         // add remaining days of the week
         for ($i = 0; $i < $daysinweek; $i++) {
-            $days[] = $type->timestamp_to_date_array(date_timestamp_get($week_start), 0);
+            $day = $type->timestamp_to_date_array(date_timestamp_get($week_start), 0);
             date_add($week_start, date_interval_create_from_date_string("1 days"));
+            $day['restricted'] = $this->day_restricted($day, $type, $weekslookahead);
+            $days[$i] = $day;
         }
 
         return $days;
     }
 
     /**
-     * Return the days of the week where $date falls in.
+     * Checks if the slot date is out
+     * of week lookahead bounds for students
      *
-     * @return \DateTime array of days
+     * @param  array $date array of the day to be evaluated
+     * @param  structure $type base calendar type
+     * @param  int $weekslookahead number of weeks allowed for posting
+     * @return  bool
      */
-    protected function get_week_start($date) {
-        $week_start_date = new \DateTime();
-        date_timestamp_set($week_start_date, $date[0]);
-        $week_start_date->setISODate($date['year'], (int)date('W', $date[0]))->format('Y-m-d');
+    protected function day_restricted(array $date, structure $type, int $weekslookahead) {
 
-        return $week_start_date;
+        // restrict posting on days in the past
+        $now = new DateTime('@' . gmmktime(0, 0, 0));
+        $targetdate = new DateTime('@' . $date[0]);
+        $datedifference = (date_diff($now, $targetdate))->format('%R%a');
+        $datepassed = $datedifference < 0;
+
+        // when course posting wait restriction is enabled, a day prior to that wait restriction period is restricted
+        $lastsessionwait = true;
+        $hasrestrictionwaiver = false;
+        if ($this->view == 'all' || $this->actiondata['action'] == 'book') {
+            $lastsessionwait = false;
+        } else {
+            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->calendar->courseid . '_availabilityoverride', false, $this->data['student']->get_id());
+            if (!$hasrestrictionwaiver) {
+                $nextsessiondt = $this->data['student']->get_next_allowed_session_date();
+                $nextsessiondate = $this->related['type']->timestamp_to_date_array($nextsessiondt->getTimestamp());
+                $lastsessionwait = $lastsessionwait && $nextsessiondate['year'] >= $date['year'];
+                $lastsessionwait = $lastsessionwait && $nextsessiondate['yday'] >= $date['yday'];
+            } else {
+                $lastsessionwait = !$hasrestrictionwaiver;
+            }
+        }
+
+        // lookahead is the allowed number of future weeks where posting is allowed
+        $beyondlookahead = $datedifference > ($weekslookahead * count($type->get_weekdays()));
+
+        // also ensure weeks lookahead setting is not disabled (unlimited)
+        $unlimited = !is_null($weekslookahead)  &&  $weekslookahead == 0;
+
+        return $datepassed || $lastsessionwait || ($beyondlookahead && !$unlimited);
     }
 
     /**
@@ -467,8 +517,8 @@ class availability_week_exporter extends exporter {
         $lastsessionhour = get_config('local_booking', 'lastsession');
 
         // Get user timezone offset
-        $usertz = new \DateTimeZone(usertimezone());
-        $usertime = new \DateTime("now", $usertz);
+        $usertz = new DateTimeZone(usertimezone());
+        $usertime = new DateTime("now", $usertz);
         $usertimezoneoffset = (int)$usertz->getOffset($usertime) / 3600;
 
         // get the lanes containing student(s) slots
@@ -476,20 +526,26 @@ class availability_week_exporter extends exporter {
 
         $data = [
             'student'   => $this->student,
-            'days'      => $this->days,
+            'daysdata'  => $this->days,
             'maxlanes'  => $this->maxlanes,
             'groupview' => $this->view == 'all',
             'bookview'  => $this->actiondata['action'] == 'book',
             'alreadybooked'  => !empty($this->activebooking)
         ];
 
+        $timeslotdata = new \stdClass();
+        $timeslotdata->weeklanes = $weeklanes;
+        $related = $this->related;
+        $related['timeslotdata'] = $timeslotdata;
+
         $slots = [];
         for ($i = $firstsessionhour; $i <= $lastsessionhour; $i++) {
-            $daydata = [];
-            $daydata['timeslot'] = substr('00' . $i, -2) . ':00';
-            $daydata['usertimeslot'] = substr('00' . ($i + $usertimezoneoffset) % 24, -2) . ':00';
-            $daydata['hour'] = $i;
-            $timeslot = new availability_week_timeslot_exporter($this->calendar, $data, $daydata, $weeklanes, $this->related);
+            $daydata = new \stdClass();
+            $daydata->timeslot = substr('00' . $i, -2) . ':00';
+            $daydata->usertimeslot = substr('00' . ($i + $usertimezoneoffset) % 24, -2) . ':00';
+            $daydata->hour = $i;
+            $related['timeslotdata']->daydata = $daydata;
+            $timeslot = new availability_week_timeslot_exporter($this->calendar, $data, $related);
 
             $slots[] = $timeslot->export($output);
         }
@@ -605,6 +661,7 @@ class availability_week_exporter extends exporter {
         $periodlink = new moodle_url($this->url);
         $periodlink->param('time', $newperioddate[0]);
         $periodlink->param('week', (int)date('W', $newperioddate[0]));
+        $periodlink->param('year', (int)$this->GMTdate['year']);
         $periodlink->param('view', $this->view);
         $periodlink->param('action', $this->actiondata['action']);
 

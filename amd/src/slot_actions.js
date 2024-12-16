@@ -25,7 +25,6 @@
 define([
     'jquery',
     'core/notification',
-    'core/pending',
     'local_booking/repository',
     'local_booking/calendar_view_manager',
     'local_booking/modal_actions',
@@ -34,7 +33,6 @@ define([
     function(
         $,
         Notification,
-        Pending,
         Repository,
         CalendarViewManager,
         ModalActions,
@@ -103,7 +101,7 @@ define([
         } else {
             // Show warning message
             CalendarViewManager.stopLoading(root);
-            ModalActions.showWarning('warnminslotperiod', minslotperiod);
+            ModalActions.showWarning('warnminslotperiod', 'warnminslotperiodtitle', minslotperiod, {fromComponent: true});
             return false;
         }
     }
@@ -128,7 +126,6 @@ define([
             getSlots(root, 'book');
 
             // Check if the instructor has conflicting bookings
-            const pendingPromise = new Pending('local_booking/hasConflictingBooking');
             if (Array.isArray(BookedSlots) && BookedSlots.length === 1) {
                 let hasConflictingBooking = await Repository.hasConflictingBooking(studentid, BookedSlots[0])
                     .then(function(response) {
@@ -139,13 +136,12 @@ define([
                         } else {
                             // Check if there are no conflicting messages
                             if (response.result) {
-                                ModalActions.showWarning(response.warnings[0].message);
+                                ModalActions.showWarning(response.warnings[0].message, 'Warning');
                                 CalendarViewManager.stopLoading(root);
                             }
                         }
                         return response.result;
                     })
-                    .then(pendingPromise.resolve)
                     .fail(Notification.exception);
 
                 // Save booking if no conflicting bookings were found
@@ -157,8 +153,8 @@ define([
                             alert('Errors encountered: Unable to save slot!');
                             CalendarViewManager.stopLoading(root);
                         } else {
+                            clean();
                             // Redirect to bookings view
-                            formSaved = true;
                             location.href = M.cfg.wwwroot + '/local/booking/view.php?courseid=' + course;
                         }
                         return;
@@ -168,7 +164,7 @@ define([
             } else {
                 // Show warning message
                 CalendarViewManager.stopLoading(root);
-                ModalActions.showWarning('warnoneslotmax');
+                ModalActions.showWarning('warnoneslotmax', 'warnoneslotmaxtitle', null, {fromComponent: true});
             }
         }
 

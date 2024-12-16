@@ -65,7 +65,8 @@ class booking_view extends base_view
         if ($this->data['action'] == 'readonly' || $this->data['action'] == 'book') {
 
             if ($html) {
-                $output = parent::output('local_booking/dashboard' . ($this->data['action'] == 'readonly' ? '_readonly' : ''), $this->exporteddata);
+                $templatesuffix = !empty($this->data['action']) ? ($this->data['action'] == 'readonly' ? '_readonly' : '') : '';
+                $output = parent::output('local_booking/dashboard' . $templatesuffix, $this->exporteddata);
 
                 // show page bar and search form if required
                 $course = $this->related['subscriber'];

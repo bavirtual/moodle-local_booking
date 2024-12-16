@@ -24,7 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_booking\local\subscriber\entities\subscriber;
+use local_booking\output\action_bar;
 use local_booking\output\views\booking_view;
 
 // Standard GPL and phpdocs
@@ -47,10 +47,10 @@ $context = context_course::instance($courseid);
 require_login($course, false);
 require_capability('local/booking:availabilityview', $context);
 
-// set the subscriber object
-if (empty($COURSE->subscriber)) {
-    $COURSE->subscriber = new subscriber($courseid);
-}
+// define session booking plugin subscriber globally
+$subscriber = get_course_subscriber_context($url->out(false), $courseid);
+$instructor = $subscriber->get_instructor($USER->id);
+
 
 // get students progression view
 $data = [
@@ -62,7 +62,9 @@ $data = [
     'page'      => $page,
 ];
 // get booking view
-$bookingview = new booking_view($data, ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
+$bookingview = new booking_view($data, ['subscriber'=>$subscriber, 'context'=>$context]);
+$additional = ['course' => $subscriber->get_course(), 'bookingparams'=>$bookingview->get_exportdata()];
+$actionbar = new action_bar($PAGE, 'view', $additional);
 
 $navbartext = get_string('bookingprogression', 'local_booking');
 $PAGE->navbar->add($navbartext);
@@ -74,6 +76,7 @@ $PAGE->add_body_class('path-local-booking');
 echo $OUTPUT->header();
 echo $bookingview->get_renderer()->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
+echo $bookingview->get_renderer()->render_tertiary_navigation($actionbar);
 echo $bookingview->get_student_progression();
 echo html_writer::end_tag('div');
 echo $bookingview->get_renderer()->complete_layout();

@@ -39,6 +39,7 @@ export default class ModalWarning extends Modal {
 
     constructor(root) {
         super(root);
+        this.data = null;
         this.setRemoveOnClose(true);
     }
 
@@ -53,7 +54,7 @@ export default class ModalWarning extends Modal {
 
         // Handle OK button event
         this.getModal().on(CustomEvents.events.activate, Selectors.regions.okbutton, function(e, data) {
-            let okEvent = $.Event(ModalEvents.okEvent);
+            let okEvent = $.Event(ModalEvents.okEvent, {'eventData': this.data});
             this.getRoot().trigger(okEvent, this);
 
             if (!okEvent.isDefaultPrevented()) {
@@ -64,7 +65,7 @@ export default class ModalWarning extends Modal {
 
         // Handle YES button event
         this.getModal().on(CustomEvents.events.activate, Selectors.regions.yesbutton, function(e, data) {
-            let yesEvent = $.Event(ModalEvents.yesEvent);
+            let yesEvent = $.Event(ModalEvents.yesEvent, {'eventData': this.data});
             this.getRoot().trigger(yesEvent, this);
 
             if (!yesEvent.isDefaultPrevented()) {
@@ -82,6 +83,27 @@ export default class ModalWarning extends Modal {
                 this.hide();
             }
         }.bind(this));
+    }
+
+    /**
+     * Set custom data object to attach to events.
+     *
+     * @param  {array} data Any additional message parameters.
+     * @method setData
+     */
+    setData(data) {
+        this.data = data;
+
+    }
+
+    /**
+     * Get custom data object to attach to events.
+     *
+     * @method setData
+     */
+    getData() {
+        return this.data;
+
     }
 }
 

@@ -118,59 +118,83 @@ function(
      * Displays a warning message.
      *
      * @method  showWarning
-     * @param   {String} message       The warning message to display.
+     * @param   {array}  message       The warning message to display.
+     * @param   {array}  title         The modal title string.
      * @param   {array}  data          Any additional message parameters.
-     * @param   {String} buttonType    ok|yesno.
-     * @param   {String} buttonDefault Default button ok|yes|no.
+     * @param   {array}  options       Options array for the popup.
      * @return  {Promise}
      */
-    const showWarning = (message, data = '', buttonType = null, buttonDefault = null) => {
-        buttonType ??= 'ok';
-        buttonDefault ??= 'ok';
+    const showWarning = (message, title, data = {}, options = null) => {
+
+        title ??= 'wanringtitle';
+        options.buttonType ??= 'ok';
+        options.buttonDefault ??= 'ok';
 
         // Setup modal footer
         let footer = '<button type="button" class="btn btn-primary" data-action="ok">Ok</button>';
-        if (buttonType == 'yesno') {
-            footer = '<button type="button" class="btn ' + (buttonDefault == 'no' ?
+        if (options.buttonType == 'yesno') {
+            footer = '<button type="button" class="btn ' + (options.buttonDefault == 'no' ?
                 'btn-primary' : 'btn-secondary') + '" data-action="no">No</button>';
-            footer += '<button type="button" class="btn ' + (buttonDefault != 'no' ?
+            footer += '<button type="button" class="btn ' + (options.buttonDefault != 'no' ?
                 'btn-primary' : 'btn-secondary') + '" data-action="yes">Yes</button>';
         }
 
         let pendingPromise = new Pending('local_booking/booking_actions:showWarning');
-        let warningPromise;
-        let warningStrings = [
-            {
-                key: message + 'title',
-                component: 'local_booking'
-            },
-            {
-                key: message,
-                component: 'local_booking',
-                param: data
-            }];
+        let warningPromise = ModalWarning.create();
+        let finalPromise;
 
-        warningPromise = ModalWarning.create();
+        if (options.fromComponent) {
+            let warningStrings = [
+                {
+                    key: title,
+                    component: 'local_booking'
+                }];
 
-        let stringsPromise = Str.get_strings(warningStrings).fail(Notification.exception);
-        let emptyTitle = '[[' + message + 'title]]';
+            if (message) {
+                warningStrings.push({
+                    key: message,
+                    component: 'local_booking',
+                    param: data
+                });
+            }
 
-        // Setup modal warning prompt form
-        let finalPromise = $.when(stringsPromise, warningPromise)
-        .then(function(strings, warningModal) {
-            warningModal.setRemoveOnClose(true);
-            warningModal.setTitle(strings[0] == emptyTitle ? 'Warning' : strings[0]);
-            warningModal.setBody(strings[1]);
-            warningModal.setFooter(footer);
-            warningModal.show();
+            let stringsPromise = Str.get_strings(warningStrings).fail(Notification.exception);
+            // Setup modal warning prompt form
+            finalPromise = $.when(stringsPromise, warningPromise)
+            .then(function(strings, warningModal) {
+                warningModal.setRemoveOnClose(true);
+                warningModal.setTitle(strings[0]);
+                warningModal.setBody(strings[1]);
+                warningModal.setData(data);
+                warningModal.setFooter(footer);
+                warningModal.show();
 
-            return warningModal;
-        })
-        .then(function(modal) {
-            pendingPromise.resolve();
-            return modal;
-        })
-        .catch(Notification.exception);
+                return warningModal;
+            })
+            .then(function(modal) {
+                pendingPromise.resolve();
+                return modal;
+            })
+            .catch(Notification.exception);
+        } else {
+            // Setup modal warning prompt form
+            finalPromise = $.when(warningPromise)
+            .then(function(warningModal) {
+                warningModal.setRemoveOnClose(true);
+                warningModal.setTitle(title);
+                warningModal.setBody(message);
+                warningModal.setData(data);
+                warningModal.setFooter(footer);
+                warningModal.show();
+
+                return warningModal;
+            })
+            .then(function(modal) {
+                pendingPromise.resolve();
+                return modal;
+            })
+            .catch(Notification.exception);
+        }
 
         return finalPromise;
     };

@@ -26,7 +26,7 @@
 import $ from 'jquery';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
-import SlotActions from 'local_booking/slot_actions';
+import CalendarActions from 'local_booking/calendar_actions';
 import ModalActions from 'local_booking/modal_actions';
 import * as Repository from 'local_booking/repository';
 import * as Selectors from 'local_booking/selectors';
@@ -44,21 +44,24 @@ import * as Selectors from 'local_booking/selectors';
  * @return  {promise}
  */
 export async function changeWeek(root, url, year, week, time, courseId) {
+    const action = root.find(Selectors.wrappers.calendarwrapper).data('action'),
+    message = action == 'book' ? 'slotsbookednotsaved' : 'slotsnotsaved',
+    title = action == 'book' ? 'slotsbookednotsavedtitle' : 'slotsnotsavedtitle';
 
     // Check if the calendar is dirty and suggest saving
-    if (SlotActions.isDirty()) {
+    if (CalendarActions.isDirty()) {
         ModalActions.showWarning(
-            'slotsnotsaved',
-            'slotsnotsavedtitle',
-            { url, year, week, time, courseId },
+            message,
+            title,
+            {url, year, week, time, courseId},
             {fromComponent: true, buttonType: 'yesno'});
-        SlotActions.clean();
+        CalendarActions.clean();
     } else {
         // Go to the requested week
-        return renderCalendar(root, year, week, time, courseId)
+        return renderCalendar(root, url, year, week, time, courseId)
             .then((...args) => {
-                if (url.length && url !== '#') {
-                    window.history.pushState({}, '', url);
+                if (url !== undefined && url.length && url !== '#') {
+                        window.history.pushState({}, '', url);
                 }
                 return args;
             });
@@ -70,13 +73,14 @@ export async function changeWeek(root, url, year, week, time, courseId) {
  * Renders the action bar
  *
  * @param {object} root The root element.
+ * @param   {number} url  Prev/Next link
  * @param   {number} year Year
  * @param   {number} week week
  * @param   {number} time The timestamp of the beginning current week
  * @param   {number} courseId The id of the course associated with the calendar shown
  * @method  renderActionbar
  */
-async function renderCalendar(root, year, week, time, courseId) {
+async function renderCalendar(root, url, year, week, time, courseId) {
     const weekviewTarget = root.find(Selectors.wrappers.weekwrapper);
     const weekviewTemplate = weekviewTarget.attr('data-template');
     const actionbarTarget = root.find(Selectors.wrappers.actionbarwrapper);
@@ -96,7 +100,7 @@ async function renderCalendar(root, year, week, time, courseId) {
         .then((html, js) => {
             return Templates.replaceNode(weekviewTarget, html, js);
         }).always(() => {
-            SlotActions.setPasteState(root);
+            CalendarActions.setPasteState(root);
             stopLoading(root);
         })
         .fail(Notification.exception);

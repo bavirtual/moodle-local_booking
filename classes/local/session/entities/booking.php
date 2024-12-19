@@ -182,7 +182,7 @@ class booking implements booking_interface {
             // save new booking
             if ($this->id = booking_vault::save_booking($this)) {
                 // delete other posted slots
-                if (slot_vault::delete_slots($this->courseid, $this->studentid, 0, 0, false)) {
+                if (slot_vault::delete_slots($this->courseid, $this->studentid)) {
                     // add instructor and student Moodle calendar events
                     $moodlecalendar =  new moodle_calendar($this);
                     $result = $moodlecalendar->add_events();
@@ -272,9 +272,11 @@ class booking implements booking_interface {
      * @return bool
      */
     public function deactivate() {
+        $result = false;
         if (booking_vault::set_booking_inactive($this->id, $this->noshow)) {
-            return slot_vault::delete_slots($this->courseid, 0, 0, $this->studentid, false);
+            $result = slot_vault::delete_slots($this->courseid, $this->studentid);
         }
+        return $result;
     }
 
     /**

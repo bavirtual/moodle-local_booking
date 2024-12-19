@@ -35,7 +35,7 @@ class logentry_view extends base_view {
      * @param array    $related   The related objects to pass
      */
     public function __construct(array $data, array $related) {
-        parent::__construct($data, $related, 'local_booking/logentry_modal_form');
+        parent::__construct($data, $related, 'local_booking/logentry_edit_modal');
 
         // add training type to the data sent to the exporter
         $pilot = $related['subscriber']->get_participant($data['userid']);

@@ -37,7 +37,10 @@
         <span class="h5 mb-0 pt-2 mr-5">{{#str}} availabilityposting, local_booking, {{posts}} {{/str}}</span>
     {{/editing}}
     {{^editing}}
-        <span class="h5 mb-0 pt-2 mr-5">{{username}}</span>
+    <div>
+        <span class="h5 mb-0 pt-2 mr-5">{{username}}</span><br/>
+        <span class="mb-0 pt-2 mr-5">{{exercisename}}</span>
+    </div>
     {{/editing}}
 </div>
 <div class="navitem-divider d-none d-sm-flex order-1"></div>
@@ -107,7 +110,7 @@
             </a>
             <a href="{{url}}"
             role="button"
-            class="btn btn-outline-primary active">
+            class="btn btn-outline-primary disabled">
             {{periodname}}
             </a>
             <a{{!

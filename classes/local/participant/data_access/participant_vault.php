@@ -86,6 +86,7 @@ class participant_vault implements participant_vault_interface {
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @param int $offset           The offset record for pagination
+     * @param int $limitnum         The number of record to retrieve per page
      * @param bool $requirescompletion Whether the course has lesson completion restriction
      * @return array Array of database records and total count.
      */
@@ -94,6 +95,7 @@ class participant_vault implements participant_vault_interface {
         string $filter = 'active',
         bool $includeonhold = false,
         int $offset = 0,
+        int $limitnum = 0,
         bool $requirescompletion = true) {
 
         global $DB;
@@ -111,7 +113,7 @@ class participant_vault implements participant_vault_interface {
 
         // get filtered students and their total count
         $count = $DB->count_records_sql($countsql);
-        $students = $DB->get_records_sql($sql, null, $offset, LOCAL_BOOKING_DASHBOARDPAGESIZE);
+        $students = $DB->get_records_sql($sql, null, $offset, $limitnum);
 
         return [$students, $count];
     }

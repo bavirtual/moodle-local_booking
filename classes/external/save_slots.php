@@ -96,16 +96,7 @@ class save_slots extends external_api {
         $student = $subscriber->get_student($USER->id);
 
         // add new slots after removing previous ones for the week
-        $slots = [];
-        $currentweek = (new DateTime())->format("W");
-        if ($week >= $currentweek) {
-            $slots = $student->save_slots($params);
-        }
-
-        // activate posting notification
-        $existingslots = get_user_preferences('local_booking_' . $courseid . '_postingnotify', '', $student->get_id());
-        $slotstonotify = $existingslots . (empty($existingslots) ? '' : ',') . $slots;
-        set_user_preference('local_booking_' . $courseid . '_postingnotify', $slotstonotify, $student->get_id());
+        $slots = $student->save_slots($params);
 
         if (!empty($slots)) {
             \core\notification::SUCCESS(get_string('slotssavesuccess', 'local_booking'));

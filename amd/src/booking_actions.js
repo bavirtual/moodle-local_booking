@@ -24,51 +24,14 @@
  */
 define([
     'jquery',
-    'core/str',
-    'core/notification',
-    'local_booking/repository',
     'local_booking/events',
     'local_booking/selectors',
 ],
 function(
     $,
-    Str,
-    Notification,
-    Repository,
-    BookingSessions,
+    BookingEvents,
     Selectors,
 ) {
-
-    /**
-     * Cancel a specific booking and trigger update UI event.
-     *
-     * @method  cancelBooking
-     * @param   {object} root     The My Bookings root element
-     * @param   {object} e        The click event on the Cancel button
-     * @param   {string} comment  The cancellation comment
-     * @param   {string} noshow   Whether the cancellation is a no-show or instructor initiated
-     * @return  {object} The create modal promise
-     */
-    var cancelBooking = (root, e, comment, noshow) => {
-
-        var target = e.target;
-        const bookingId = target.dataset.bookingid;
-
-        // Send the request data to the server for processing.
-        return Repository.cancelBooking(bookingId, comment, noshow)
-            .then(function(response) {
-                if (response.validationerror) {
-                    // eslint-disable-next-line no-alert
-                    window.alert(Str.get_string('errorlogentrycancel', 'local_booking'));
-                }
-                return;
-            })
-            .always(function() {
-                $('body').trigger(BookingSessions.sessioncanceled, [root, false]);
-                Notification.fetchNotifications();
-            })
-            .fail(Notification.exception);
-    };
 
     /**
      * Redirect to exercise (assignment) grading page.
@@ -89,14 +52,14 @@ function(
             userId = Source.data('userId');
         } else {
             // Get from closest dashboard session clicked
-            Source = $(e.target).closest(Selectors.session);
+            Source = $(e.target).closest(Selectors.regions.session);
             courseId = $(Selectors.wrappers.bookingwrapper).data('courseid');
             exerciseId = Source.data('exerciseId');
             userId = Source.data('studentId');
         }
 
         // Trigger redirect to feedback
-        $('body').trigger(BookingSessions.gotoFeedback, [exerciseId]);
+        $('body').trigger(BookingEvents.gotoFeedback, [exerciseId]);
 
         // Redirect to the grading and feedback page
         location.href = M.cfg.wwwroot + '/local/booking/assign.php?courseid=' + courseId +
@@ -104,7 +67,6 @@ function(
     };
 
     return {
-        gotoFeedback: gotoFeedback,
-        cancelBooking: cancelBooking
+        gotoFeedback: gotoFeedback
     };
 });

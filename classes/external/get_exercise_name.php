@@ -77,9 +77,15 @@ class get_exercise_name extends external_api {
             );
 
         // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
+        if ($exerciseid) {
+            $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
+            $exercisename = $subscriber->get_exercise($params['exerciseid'], $params['courseid'])->name;
+        } else {
+            $exercisename = get_string('titlenewlogentry', 'local_booking');
+        }
 
-        return ['exercisename' => $subscriber->get_exercise($params['exerciseid'], $params['courseid'])->name, 'warnings' => array()];
+
+        return ['exercisename' => $exercisename, 'warnings' => array()];
     }
 
     /**

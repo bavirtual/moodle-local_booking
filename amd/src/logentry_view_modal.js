@@ -17,7 +17,7 @@
  * A javascript module to handle summary modal.
  * Improvised from core_calendar.
  *
- * @module     local_booking/logentry_modal_summary
+ * @module     local_booking/logentry_view_modal
  * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2023
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -184,7 +184,7 @@ export default class ModalEventSummary extends Modal {
 
         // We have to wait for the modal to finish rendering in order to ensure that
         // the data-logentry-id property is available to use in the modal.
-        M.util.js_pending('local_booking/logentry_modal_summary:registerEventListeners:bodyRendered');
+        M.util.js_pending('local_booking/logentry_view_modal:registerEventListeners:bodyRendered');
         this.getRoot().on(ModalEvents.bodyRendered, function() {
             this.getModal().data({
                 logentryTitle: this.getLogentryTitle(),
@@ -193,7 +193,7 @@ export default class ModalEventSummary extends Modal {
             .attr('data-type', 'logentry');
             ModalActions.registerDelete(this.getModal());
             ModalActions.registerRedirect(this.getModal());
-            M.util.js_complete('local_booking/logentry_modal_summary:registerEventListeners:bodyRendered');
+            M.util.js_complete('local_booking/logentry_view_modal:registerEventListeners:bodyRendered');
         }.bind(this));
 
         $('body').on(BookingEvents.logentrydeleted, function() {

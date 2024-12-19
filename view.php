@@ -40,7 +40,8 @@ $sorttype = optional_param('sort', '', PARAM_ALPHA);
 $action   = optional_param('action', 'book', PARAM_ALPHA);
 $filter   = optional_param('filter', 'active', PARAM_ALPHA);
 $page     = optional_param('page', 0, PARAM_INT);
-$context   = context_course::instance($courseid);
+$perpage  = optional_param('perpage', 0, PARAM_INT);
+$context  = context_course::instance($courseid);
 
 require_login($course, false);
 require_capability('local/booking:view', $context);
@@ -73,12 +74,13 @@ $data = [
     'sorttype'   => $sorttype,
     'filter'     => $filter,
     'page'       => $page,
+    'perpage'    => $perpage,
 ];
 
 // get booking view
 $bookingview = new booking_view($data, ['subscriber'=>$subscriber, 'context'=>$context]);
 
-$additional = ['course' => $subscriber->get_course(), 'bookingparams'=>$bookingview->get_exportdata()];
+$additional = ['course' => $subscriber, 'studentid' => $studentid ?: $userid, 'bookingparams'=>$bookingview->get_exportdata()];
 $actionbar = new action_bar($PAGE, $action, $additional);
 
 echo $OUTPUT->header();
@@ -90,6 +92,7 @@ echo $bookingview->get_renderer()->render_tertiary_navigation($actionbar);
 echo $bookingview->get_student_progression();
 echo $bookingview->get_instructor_bookings();
 echo $bookingview->get_instructor_participation();
+echo $bookingview->get_sticky_footer();
 
 echo html_writer::end_tag('div');
 echo $bookingview->get_renderer()->complete_layout();

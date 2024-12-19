@@ -145,12 +145,10 @@ class notifications_task extends \core\task\scheduled_task {
 
         $haspostings = false;
 
-        $slotstonotify = get_user_preferences('local_booking_' . $course->get_id() . '_postingnotify', false, $student->get_id());
+        $slotstonotify = $student->get_notify('posted_slots');
         if (!empty($slotstonotify)) {
 
-            // get student availability slots new postings
-            if (!empty($slotstonotify))
-                $slotids = explode(',', $slotstonotify);
+            $slotids = explode(',', $slotstonotify);
             $postingstext = '';
             $postingshtml = '<table style="border-collapse: collapse; width: 400px"><tbody>';
             $previousday = '';
@@ -208,7 +206,7 @@ class notifications_task extends \core\task\scheduled_task {
             }
 
             // reset notification setting
-            set_user_preference('local_booking_' . $course->get_id() . '_postingnotify', '', $student->get_id());
+            $student->set_notify('posted_slots');
         }
     }
 

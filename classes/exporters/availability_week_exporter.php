@@ -139,25 +139,6 @@ class availability_week_exporter extends exporter {
         // Get user preference to show local time column ## future feature ##
         $this->showlocaltime = true;
 
-        // Get current week of the year and GMT date
-        $this->weekofyear = (int)date('W', $this->calendar->time);
-        $this->firstdayofweek = $type->get_starting_weekday();
-        $calendarday = $type->timestamp_to_date_array($this->calendar->time);
-        $this->GMTdate = $type->timestamp_to_date_array(gmmktime(0, 0, 0, $calendarday['mon'], $calendarday['mday'], $calendarday['year']));
-        $this->days = $this->get_week_days($this->GMTdate, $type);
-
-        // Update the url with time, course, and category info
-        $this->url = new moodle_url('/local/booking/availability.php', [
-            'time' => $calendar->time,
-            'week' => $this->weekofyear,
-            'year' => $calendarday['year']
-        ]);
-
-        if ($this->calendar->course && SITEID !== $this->calendar->course->id) {
-            $this->url->param('courseid', $this->calendar->course->id);
-            $this->course = $related['subscriber'];
-        }
-
         // identify the student to view the slots (single student view 'user' or 'all' students)
         $activebookinginstrname = '';
         $studentposts = 0;
@@ -185,13 +166,34 @@ class availability_week_exporter extends exporter {
             $fullname = $this->student->get_name();
         }
 
+        // Get current week of the year and GMT date
+        $this->weekofyear = (int)date('W', $this->calendar->time);
+        $this->firstdayofweek = $type->get_starting_weekday();
+        $calendarday = $type->timestamp_to_date_array($this->calendar->time);
+        $this->GMTdate = $type->timestamp_to_date_array(gmmktime(0, 0, 0, $calendarday['mon'], $calendarday['mday'], $calendarday['year']));
+        $this->days = $this->get_week_days($this->GMTdate, $type);
+
+        // Update the url with time, course, and category info
+        $this->url = new moodle_url('/local/booking/availability.php', [
+            'time' => $calendar->time,
+            'week' => $this->weekofyear,
+            'year' => $calendarday['year']
+        ]);
+
+        if ($this->calendar->course && SITEID !== $this->calendar->course->id) {
+            $this->url->param('courseid', $this->calendar->course->id);
+            $this->course = $related['subscriber'];
+        }
+
+        $exerciseid = $this->actiondata['exerciseid'];
         $data = [
             'url'         => $this->url->out(false),
             'username'    => $fullname,
             'posts'       => $studentposts,
             'action'      => $this->actiondata['action'],
             'studentid'   => $studentid,
-            'exerciseid'  => $this->actiondata['exerciseid'],
+            'exerciseid'  => $exerciseid,
+            'exercisename'=> $this->course->get_exercise($exerciseid)->name,
             'editing'     => $this->view == 'user' && $this->actiondata['action'] != 'book',    // Editing is not allowed if user id is passed for booking
             'alreadybooked' => !empty($this->activebooking),
             'alreadybookedmsg' => !empty($activebookinginstrname) ? get_string('activebookingmsg', 'local_booking', $activebookinginstrname) : '',
@@ -237,6 +239,10 @@ class availability_week_exporter extends exporter {
             ],
             'exerciseid' => [
                 'type' => PARAM_INT,
+            ],
+            'exercisename' => [
+                'type' => PARAM_RAW,
+                'default' => '',
             ],
             'editing' => [
                 'type' => PARAM_BOOL,
@@ -460,10 +466,10 @@ class availability_week_exporter extends exporter {
         if ($this->view == 'all' || $this->actiondata['action'] == 'book') {
             $lastsessionwait = false;
         } else {
-            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->calendar->courseid . '_availabilityoverride', false, $this->data['student']->get_id());
+            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->calendar->courseid . '_availabilityoverride', false, $this->student->get_id());
             if (!$hasrestrictionwaiver) {
-                $nextsessiondt = $this->data['student']->get_next_allowed_session_date();
-                $nextsessiondate = $this->related['type']->timestamp_to_date_array($nextsessiondt->getTimestamp());
+                $nextsessiondt = $this->student->get_next_allowed_session_date();
+                $nextsessiondate = $type->timestamp_to_date_array($nextsessiondt->getTimestamp());
                 $lastsessionwait = $lastsessionwait && $nextsessiondate['year'] >= $date['year'];
                 $lastsessionwait = $lastsessionwait && $nextsessiondate['yday'] >= $date['yday'];
             } else {
@@ -650,7 +656,7 @@ class availability_week_exporter extends exporter {
      * Get the previous and next week timestamps
      * and URL for navigation links.
      *
-     * @return int The previous and next week's timestamp.
+     * @return array The previous and next week's timestamp.
      */
     protected function get_period($date, $nextprev) {
         $perioddate = date_create();

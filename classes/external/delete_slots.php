@@ -95,7 +95,7 @@ class delete_slots extends external_api {
 
         return array(
             'result' => $result,
-            'warnings' => array()
+            'warnings' => $warnings
         );
     }
 

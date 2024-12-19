@@ -16,7 +16,7 @@
 /**
  * Contain the logic for the quick add or update event modal.
  *
- * @module     local_booking/slot_actions
+ * @module     local_booking/calendar_actions
  * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,6 +27,7 @@ define([
     'core/notification',
     'local_booking/repository',
     'local_booking/calendar_view_manager',
+    'local_booking/events',
     'local_booking/modal_actions',
     'local_booking/selectors',
     ],
@@ -35,6 +36,7 @@ define([
         Notification,
         Repository,
         CalendarViewManager,
+        BookingEvents,
         ModalActions,
         Selectors,
     ) {
@@ -50,26 +52,29 @@ define([
      *
      * @method saveWeekSlots
      * @param {object} root The calendar root element
+     * @param {event} e The calendar move event
      * @return {object} The create modal promise
      */
-    function saveWeekSlots(root) {
+    function saveWeekSlots(root, e = null) {
 
         CalendarViewManager.startLoading(root);
 
         // Get year and week
-        const course = root.find(Selectors.wrappers.calendarwrapper).data('courseid');
-        const year = root.find(Selectors.wrappers.calendarwrapper).data('year');
-        const week = root.find(Selectors.wrappers.calendarwrapper).data('week');
-        const minslotperiod = root.find(Selectors.wrappers.calendarwrapper).data('minslotperiod');
-        const unixTsHr = 3600;
-        const lastMinute = 60;
+        const course = root.find(Selectors.wrappers.calendarwrapper).data('courseid'),
+              year = root.find(Selectors.wrappers.calendarwrapper).data('year'),
+              week = root.find(Selectors.wrappers.calendarwrapper).data('week'),
+              time = root.find(Selectors.wrappers.calendarwrapper).data('time'),
+              eventData = e !== null ? e.eventData : {year, week, time, course},
+              minslotperiod = root.find(Selectors.wrappers.calendarwrapper).data('minslotperiod'),
+              unixTsHr = 3600,
+              lastMinute = 60;
 
         // Get marked availability slots
         getSlots(root);
 
         // Evaluate each slot to ensure it is a minimum of 2hrs if minimum slots is required (minslotperiod!=0)
         let minSlotPeriodMet = true;
-        $.map( Slots, function(val) {
+        $.map(Slots, function(val) {
             if ((val.endtime - val.starttime + lastMinute) < (minslotperiod * unixTsHr) && minslotperiod != 0) {
                 minSlotPeriodMet = false;
             }
@@ -90,7 +95,10 @@ define([
                         // eslint-disable-next-line no-alert
                         alert('Errors encountered: Unable to process availability posting action!');
                     }
-                    formSaved = true;
+                    clean();
+                    const slotsSavedEvent = $.Event(BookingEvents.slotssaved, {'eventData': eventData});
+                    root.trigger(slotsSavedEvent, this);
+
                     return;
                 })
                 .always(function() {
@@ -126,45 +134,39 @@ define([
             getSlots(root, 'book');
 
             // Check if the instructor has conflicting bookings
-            if (Array.isArray(BookedSlots) && BookedSlots.length === 1) {
-                let hasConflictingBooking = await Repository.hasConflictingBooking(studentid, BookedSlots[0])
-                    .then(function(response) {
-                        if (response.validationerror) {
-                            // eslint-disable-next-line no-alert
-                            alert('Errors encountered: Unable to check conflicting bookings!');
+            let hasConflictingBooking = await Repository.hasConflictingBooking(studentid, BookedSlots[0])
+                .then(function(response) {
+                    if (response.validationerror) {
+                        // eslint-disable-next-line no-alert
+                        alert('Errors encountered: Unable to check conflicting bookings!');
+                        CalendarViewManager.stopLoading(root);
+                    } else {
+                        // Check if there are no conflicting messages
+                        if (response.result) {
+                            ModalActions.showWarning(response.warnings[0].message, 'Warning');
                             CalendarViewManager.stopLoading(root);
-                        } else {
-                            // Check if there are no conflicting messages
-                            if (response.result) {
-                                ModalActions.showWarning(response.warnings[0].message, 'Warning');
-                                CalendarViewManager.stopLoading(root);
-                            }
                         }
-                        return response.result;
-                    })
-                    .fail(Notification.exception);
+                    }
+                    return response.result;
+                })
+                .fail(Notification.exception);
 
-                // Save booking if no conflicting bookings were found
-                if (!hasConflictingBooking) {
-                    Repository.saveBookedSlot(BookedSlots[0], course, exercise, studentid)
-                    .then(function(response) {
-                        if (response.validationerror) {
-                            // eslint-disable-next-line no-alert
-                            alert('Errors encountered: Unable to save slot!');
-                            CalendarViewManager.stopLoading(root);
-                        } else {
-                            clean();
-                            // Redirect to bookings view
-                            location.href = M.cfg.wwwroot + '/local/booking/view.php?courseid=' + course;
-                        }
-                        return;
-                    })
-                    .fail(Notification.exception);
-                }
-            } else {
-                // Show warning message
-                CalendarViewManager.stopLoading(root);
-                ModalActions.showWarning('warnoneslotmax', 'warnoneslotmaxtitle', null, {fromComponent: true});
+            // Save booking if no conflicting bookings were found
+            if (!hasConflictingBooking) {
+                Repository.saveBookedSlot(BookedSlots[0], course, exercise, studentid)
+                .then(function(response) {
+                    if (response.validationerror) {
+                        // eslint-disable-next-line no-alert
+                        alert('Errors encountered: Unable to save slot!');
+                        CalendarViewManager.stopLoading(root);
+                    } else {
+                        clean();
+                        // Redirect to bookings view
+                        location.href = M.cfg.wwwroot + '/local/booking/view.php?courseid=' + course;
+                    }
+                    return;
+                })
+                .fail(Notification.exception);
             }
         }
 
@@ -290,8 +292,10 @@ define([
             const table = document.getElementById(root.find(Selectors.regions.slotsweek).attr('id'));
             SlotIndexes.forEach((idx) => {
                 let slot = table.rows[idx[0]].cells[idx[1]];
-                $(slot).data('slot-marked', 1);
-                $(slot).addClass('slot-selected', 1);
+                if (!$(slot).hasClass("slot-unavailable")) {
+                    $(slot).data('slot-marked', 1);
+                    $(slot).addClass('slot-selected', 1);
+                }
             });
             formSaved = false;
         }

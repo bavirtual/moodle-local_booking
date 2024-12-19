@@ -48,7 +48,7 @@ function(
      */
      const setEndorsement = function(courseId, userId, endorse, root) {
         // Get endorsement information (endorser, date, and message) from template
-        let userProfile = root.find(Selectors.userprofilewrapper),
+        let userProfile = root.find(Selectors.wrappers.userprofilewrapper),
         endorsername = userProfile.data('endorsername'),
         endorser = userProfile.data('endorser'),
         endorsedate = new Date(),
@@ -149,7 +149,7 @@ function(
     const processGroup = function(key, add, courseId, userId, root) {
 
         // Get the group name from the template
-        const userProfile = root.find(Selectors.userprofilewrapper),
+        const userProfile = root.find(Selectors.wrappers.userprofilewrapper),
         groupName = userProfile.data(key + 'group');
 
         // Add or remove the user from the group
@@ -262,7 +262,7 @@ function(
      */
     const registerEventListeners = function(root) {
 
-        var userProfile = root.find(Selectors.userprofilewrapper),
+        var userProfile = root.find(Selectors.wrappers.userprofilewrapper),
         courseId = userProfile.data('courseid'),
         userId = userProfile.data('userid');
 

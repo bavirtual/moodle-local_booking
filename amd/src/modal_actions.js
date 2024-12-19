@@ -129,6 +129,7 @@ function(
         title ??= 'wanringtitle';
         options.buttonType ??= 'ok';
         options.buttonDefault ??= 'ok';
+        options.stopExecution ??= true;
 
         // Setup modal footer
         let footer = '<button type="button" class="btn btn-primary" data-action="ok">Ok</button>';

@@ -434,17 +434,26 @@ class subscriber implements subscriber_interface {
      * @param string $filter      The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold Whether to include on-hold students as well
      * @param int  $page          The page number to load
+     * @param int  $perpage       The number students per page
      * @param bool $loadgrades    Whether to load students' grades as well (take a little longer)
      * @param bool $rawdata       Whether to return students raw data
      * @return array $activestudents Array of active students.
      */
-    public function get_students(string $filter = 'active', bool $includeonhold = false, int $page = 0, bool $loadgrades = false, bool $rawdata = false) {
+    public function get_students(
+        string $filter = 'active',
+        bool $includeonhold = false,
+        int $page = 0,
+        int $perpage = 0,
+        bool $loadgrades = false,
+        bool $rawdata = false) {
+
         $activestudents = [];
         list($studentrecs, $this->activestudentscount) = participant_vault::get_students(
             $this->courseid,
             $filter,
             $includeonhold,
-            ($page * LOCAL_BOOKING_DASHBOARDPAGESIZE),
+            ($page * $perpage),
+            $perpage,
             $this->requirelessoncompletion);
         $colors = LOCAL_BOOKING_SLOTCOLORS;
 

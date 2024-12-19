@@ -25,15 +25,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-use \moodle_url;
-use \navigation_node;
 use local_booking\local\logbook\form\create as create_logentry_form;
 use local_booking\local\logbook\form\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
 
 // LOCAL_BOOKING_DASHBOARDPAGESIZE - constant value for the instructor dashboard page size
-define('LOCAL_BOOKING_DASHBOARDPAGESIZE', 50);
+define('LOCAL_BOOKING_DASHBOARDPAGESIZE', 20);
 
 // LOCAL_BOOKING_RECENCYWEIGHT - constant value for session recency weight multiplier
 define('LOCAL_BOOKING_RECENCYWEIGHT', 10);

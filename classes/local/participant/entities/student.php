@@ -179,7 +179,7 @@ class student extends participant {
      * Save a student list of slots
      *
      * @param array $params The year, and week.
-     * @return bool $result The result of the save transaction.
+     * @return array $result The result of the save transaction.
      */
     public function save_slots(array $params) {
         global $DB;
@@ -195,7 +195,7 @@ class student extends participant {
 
         try {
             // remove all week/year slots for the user to avoid updates
-            $result = slot_vault::delete_slots($this->courseid, $year, $week, $this->userid);
+            $result = slot_vault::delete_slots($this->courseid, $this->userid, $year, $week, true);
 
             if ($result) {
                 foreach ($slots as $slot) {
@@ -217,6 +217,7 @@ class student extends participant {
 
             if ($result) {
                 // commit transaction
+                $this->set_notify('posted_slots', $slotids);
                 $transaction->allow_commit();
             } else {
                 $transaction->rollback(new \moodle_exception(get_string('slotssaveunable', 'local_booking')));
@@ -244,7 +245,7 @@ class student extends participant {
         $transaction = $DB->start_delegated_transaction();
 
         // remove all week/year slots for the user to avoid updates
-        $result = slot_vault::delete_slots($this->courseid, $this->userid, $year, $week);
+        $result = slot_vault::delete_slots($this->courseid, $this->userid, $year, $week, true);
 
         if (empty($this->lastsessiondatets)) {
             $this->get_last_session_date();
@@ -253,6 +254,7 @@ class student extends participant {
         $this->update_statistic('lastsessiondate', $this->lastsessiondatets);
 
         if ($result) {
+            $this->set_notify('posted_slots');
             $transaction->allow_commit();
         } else {
             $transaction->rollback(new \moodle_exception(get_string('slotsdeleteunable', 'local_booking')));
@@ -797,16 +799,15 @@ class student extends participant {
      * @return bool  $enable
      */
     public function get_notify(string $notification) {
-        $enabled = false;
         $notifyjson = json_decode($this->get_statistic("notifyflags"), true);
 
         // verify the JSON string
         if (!empty($notifyjson)) {
-            $enabled = array_key_exists($notification, $notifyjson) ? $notifyjson[$notification] : false;
+            $value = array_key_exists($notification, $notifyjson) ? $notifyjson[$notification] : false;
         }
 
         // encode notifications
-        return $enabled;
+        return $value;
     }
 
     /**
@@ -814,9 +815,9 @@ class student extends participant {
      * the participant depending on the type of notification.
      *
      * @param string $notification
-     * @param bool   $enable
+     * @param ?  $value
      */
-    public function set_notify(string $notification, bool $enabled = true) {
+    public function set_notify(string $notification, $value = null) {
         $notifications = array();
         $notifyjson = json_decode($this->get_statistic("notifyflags"), true);
 
@@ -824,7 +825,7 @@ class student extends participant {
         if (!empty($notifyjson)) {
             $notifications = $notifyjson;
         }
-        $notifications[$notification] = $enabled;
+        $notifications[$notification] = $value;
 
         // encode notifications
         $this->update_statistic("notifyflags", json_encode($notifications));

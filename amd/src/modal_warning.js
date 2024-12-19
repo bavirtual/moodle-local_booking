@@ -76,7 +76,7 @@ export default class ModalWarning extends Modal {
 
         // Handle NO button event
         this.getModal().on(CustomEvents.events.activate, Selectors.regions.nobutton, function() {
-            let noEvent = $.Event(ModalEvents.noEvent);
+            let noEvent = $.Event(ModalEvents.noEvent, {'eventData': this.data});
             this.getRoot().trigger(noEvent, this);
 
             if (!noEvent.isDefaultPrevented()) {

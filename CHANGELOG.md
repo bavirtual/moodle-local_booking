@@ -1,5 +1,24 @@
 # Change log
 
+## [2024121900] - RELEASED 2024-12-19
+
+### Fixed
+
+- add log entry from logbook throws an AJAX exception on passed exercises
+- user search combo box on booking dashboard view is missing a clear link
+
+### Added
+
+- moodle 4.3 style action bar as tertiary navigation for booking dashboard, logbook, booking confirmation, and availability views
+- dirty calendar handling
+- sticky footer with filter student drop down, per page results drop down, and a paging bar
+- standard warning modal w/ multiple buttons formats and took out all js alerts
+
+### Changed
+
+- availability posting refactor to improve promise handling
+- require version support for Moodle 4.0 to support new action bar
+
 ## [2024121400] - RELEASED 2024-12-14
 
 ### Fixed

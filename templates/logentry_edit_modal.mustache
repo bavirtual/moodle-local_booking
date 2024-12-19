@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_booking/availability_warning_modal
+    @template local_booking/logentry_edit_modal
 
-    Moodle modal template with Ok button.
+    Moodle modal template with save and cancel buttons.
 
     The purpose of this template is to render a modal.
 
@@ -33,13 +33,22 @@
 
     Example context (json):
     {
-        "title": "Example delete logentry seriesmodal",
-        "body": "Do you want to delete this logentry"
+        "title": "Example save cancel modal",
+        "body": "Some example content for the body"
     }
 }}
 
 {{< core/modal }}
     {{$footer}}
-        <button type="button" class="btn btn-primary" data-action="ok">{{#str}} ok {{/str}}</button>
+        <button type="button"
+                class="btn btn-primary"
+                data-contextid="{{contextid}}"
+                data-action="save">
+
+            {{#str}} save {{/str}}
+            <span class="hidden" data-region="loading-icon-container">
+                {{> core/loading }}
+            </span>
+        </button>
     {{/footer}}
 {{/ core/modal }}

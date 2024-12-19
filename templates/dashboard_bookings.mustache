@@ -158,25 +158,4 @@
             {{/activestudents}}
         </tbody>
     </table>
-    <table class="booking-title mt-2">
-        <tr data-region="students-filter">
-            <td class="float-left me-3 text-sm-left small">
-                <input type="radio" id="showactive" {{showactive}} value="active" name="studentsfilter"> {{#str}} showactive , local_booking {{/str}}
-            </td>{{!
-            }}{{#restrictionsenabled}}{{!
-            }}
-            <td class="float-left me-3 text-sm-left small">
-                <input type="radio" id="showonhold" {{showonhold}} value="onhold" name="studentsfilter"> {{#str}} showonhold , local_booking {{/str}}
-            </td>{{!
-            }}{{/restrictionsenabled}}{{!
-            }}
-            <td class="float-left me-3 text-sm-left small"">
-                <input type="radio" id="showgraduates" {{showgraduates}} value="graduates" name="studentsfilter"> {{#str}} showgraduates , local_booking {{/str}}
-            </td>
-            <td class="float-left me-3 text-sm-left small">
-                <input type="radio" id="showsuspended" {{showsuspended}} value="suspended" name="studentsfilter"> {{#str}} showsuspended , local_booking {{/str}}
-            </td>
-        </tr>
-    </table>
-    <p>
 </div>

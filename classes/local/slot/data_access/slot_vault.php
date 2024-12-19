@@ -132,12 +132,10 @@ class slot_vault implements slot_vault_interface {
     /**
      * delete specific slot
      *
-     * @param   int     The course id
-     * @param   int     The user id
      * @param int $slotid The slot id.
      * @return bool
      */
-    public static function delete_slot($courseid, $userid, $slotid) {
+    public static function delete_slot($slotid) {
         global $DB;
 
         return $DB->delete_records(self::DB_SLOTS, ['id' => $slotid]);
@@ -147,14 +145,14 @@ class slot_vault implements slot_vault_interface {
      * remove all records for a user for a
      * specific year and week
      *
-     * @param int $course       The associated course.
-     * @param int $year         The associated course.
-     * @param int $week         The associated course.
-     * @param int $userid       The associated course.
-     * @param int $useredits    The associated course.
+     * @param int $course    The associated course.
+     * @param int $userid    The associated user.
+     * @param int $year      The year the slot is booked under.
+     * @param int $week      The week of year the slot is booked under.
+     * @param int $useredits Update to a slot for a particular year/week.
      * @return bool
      */
-    public static function delete_slots($course = 0, $userid = 0, $year = 0, $week = 0, $useredits = true) {
+    public static function delete_slots($course = 0, $userid = 0, $year = 0, $week = 0, $useredits = false) {
         global $DB;
 
         $condition = [

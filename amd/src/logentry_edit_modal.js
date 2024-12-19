@@ -18,7 +18,7 @@
 /**
  * This module handles logbook entry form.
  *
- * @module     local_booking/logentry_modal_form
+ * @module     local_booking/logentry_edit_modal
  * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -47,8 +47,8 @@ var SELECTORS = {
  * @param {object} root The root jQuery element for the modal
  */
 export default class ModalLogEntryForm extends Modal {
-    static TYPE = 'local_booking-logentry_modal_form';
-    static TEMPLATE = 'local_booking/logentry_modal_form';
+    static TYPE = 'local_booking-logentry_edit_modal';
+    static TEMPLATE = 'local_booking/logentry_edit_modal';
 
     /**
      * Constructor for the Modal.
@@ -358,7 +358,7 @@ export default class ModalLogEntryForm extends Modal {
         this.titlePromise = Repository.getExerciseName(this.courseId, this.exerciseId)
             .then(function(response) {
                 // Handle the response
-                return response.exercisename == '' ? 'New logentry' : response.exercisename;
+                return response.exercisename;
             })
         .fail(Notification.exception);
 
@@ -957,12 +957,10 @@ export default class ModalLogEntryForm extends Modal {
                     return;
                 } else {
                     // Check whether this was a new logbook entry or not.
-                    // check if the logentry is from the prgression view
+                    // check if the logentry is from the progression view
                     // logentry from the confirmation view
                     // The hide function unsets the form data so grab this before the hide.
                     var isExisting = this.hasLogentryId();
-
-                    // No problemo! Our work here is done.
                     this.hide();
 
                     // Trigger the appropriate logbook event so that the view can be updated.

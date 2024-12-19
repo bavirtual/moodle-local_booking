@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_booking/dashboard_my_bookings
+    @template local_booking/dashboard_mybookings
 
     Instructor bookings view.
 
@@ -31,7 +31,7 @@
     {
     }
 }}
-<div id="mybookings-{{uniqid}}" data-template="local_booking/dashboard_my_bookings">
+<div id="mybookings-{{uniqid}}" data-template="local_booking/dashboard_mybookings">
 <div{{!
 }} class="mybookingswrapper"{{!
 }}{{#courseid}} data-courseid="{{courseid}}"{{/courseid}}{{!
@@ -128,7 +128,7 @@
 </div>
 
 {{#js}}
-require(['jquery', 'local_booking/mybookings'], function($, Booking) {
+require(['jquery', 'local_booking/booking_mybookings'], function($, Booking) {
     Booking.init($("#mybookings-{{uniqid}}"));
 });
 {{/js}}

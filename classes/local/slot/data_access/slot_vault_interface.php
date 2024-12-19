@@ -67,18 +67,18 @@ interface slot_vault_interface {
     /**
      * Delete all slots for a user that fall on a specific year and week.
      *
-     * @param int|null              $userid     slots for this user
-     * @param int|null              $year       slots that fall in this year
-     * @param int|null              $week       slots that fall in this week
+     * @param int $courseid the course id
+     * @param int $userid   the user id
+     * @param int $year     slots that fall in this year
+     * @param int $week     slots that fall in this week
      *
-     * @return result               result
+     * @return bool               result
      */
     public static function delete_slots(
         $course = 0,
-        $year = 0,
-        $week = 0,
         $userid = 0,
-        $useredits = true
+        $year = 0,
+        $week = 0
     );
 
     /**

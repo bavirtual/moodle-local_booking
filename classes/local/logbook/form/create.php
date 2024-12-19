@@ -77,8 +77,8 @@ class create extends \moodleform {
         // display a list of all exercises when no exercise is selected
         $exerciseempty = $this->_customdata['exerciseid'] == 0;
         if ($exerciseempty) {
-            $exercises[] = '';
-            $exercises = $exercises + $subscriber->get_exercises();
+            $exercises = $subscriber->get_exercises();
+            $exercises = array_combine(array_column($exercises, 'id'), array_column($exercises, 'name'));
             $this->add_element($mform, 'exercises', [$exercises]);
         }
 
@@ -89,7 +89,7 @@ class create extends \moodleform {
         $this->add_elements($mform, $subscriber, $logentry, $flighttype, $exerciseempty);
 
         // Add the javascript required to enhance this mform.
-        $PAGE->requires->js_call_amd('local_booking/logentry_modal_form');
+        $PAGE->requires->js_call_amd('local_booking/logentry_edit_modal');
     }
 
     /**

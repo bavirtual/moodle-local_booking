@@ -24,22 +24,22 @@
  *
  * @module     local_booking/calendar
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2022
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define([
             'jquery',
             'local_booking/calendar_view_manager',
-            'local_booking/slot_actions',
+            'local_booking/calendar_actions',
             'local_booking/events',
             'local_booking/selectors',
         ],
         function(
             $,
             CalendarViewManager,
-            SlotActions,
-            ModalEvents,
+            CalendarActions,
+            BookingEvents,
             Selectors,
         ) {
 
@@ -52,7 +52,7 @@ define([
     const registerEventListeners = function(root) {
         // Get action type of the current week view or booking
         const action = root.find(Selectors.wrappers.calendarwrapper).data('action');
-        const warningModal = $('body');
+        const body = $('body');
 
 
         // Process previous/next week navigation links
@@ -60,64 +60,74 @@ define([
             const courseId = root.find(Selectors.wrappers.calendarwrapper).data('courseid'),
                 link = e.currentTarget;
 
-            e.preventDefault();
             CalendarViewManager.changeWeek(root, link.href, link.dataset.year, link.dataset.week, link.dataset.time, courseId);
+            e.preventDefault();
         });
 
-        warningModal.on(ModalEvents.yesEvent, function(e) {
+        // Refresh calendar after a booking or slots are saved
+        body.on(BookingEvents.slotssaved, function(e) {
             const courseId = root.find(Selectors.wrappers.calendarwrapper).data('courseid'),
-                link = e.eventData;
+                dataData = e.eventData;
 
-            if (action == 'book') {
-                SlotActions.saveBookedSlot(root);
-            } else {
-                SlotActions.saveWeekSlots(root);
+            CalendarViewManager.changeWeek(root, dataData.url, dataData.year, dataData.week, dataData.time, courseId);
+        });
+
+        // Save slot postings or bookings on dirty calendar response
+        body.on(BookingEvents.yesEvent + ' ' + BookingEvents.noEvent, function(e) {
+            const courseId = root.find(Selectors.wrappers.calendarwrapper).data('courseid'),
+                dataData = e.eventData;
+
+            if (e.type == BookingEvents.yesEvent) {
+                if (action == 'book') {
+                    CalendarActions.saveBookedSlot(root, e);
+                } else {
+                    CalendarActions.saveWeekSlots(root, e);
+                }
             }
-
-            CalendarViewManager.changeWeek(root, link.url, link.year, link.week, link.time, courseId);
+            CalendarViewManager.changeWeek(root, dataData.url, dataData.year, dataData.week, dataData.time, courseId);
         });
 
         // Listen the click on the Save button.
         root.on('click', Selectors.regions.savebutton, function() {
-            SlotActions.saveWeekSlots(root);
+            CalendarActions.saveWeekSlots(root);
         });
 
         // Listen the click on the Save Booking button.
         root.on('click', Selectors.regions.bookbutton, function() {
-            SlotActions.saveBookedSlot(root);
+            CalendarActions.saveBookedSlot(root);
         });
 
         // Listen the click on the Copy button.
         root.on('click', Selectors.regions.copybutton, function() {
-            SlotActions.copySlots(root);
+            CalendarActions.copySlots(root);
         });
 
         // Listen the click on the Paste button.
         root.on('click', Selectors.regions.pastebutton, function() {
-            SlotActions.pasteSlots(root);
+            CalendarActions.pasteSlots(root);
         });
 
         // Listen the click on the Clear button.
         root.on('click', Selectors.regions.clearbutton, function() {
-            SlotActions.clearWeekSlots();
+            CalendarActions.clearWeekSlots();
         });
 
         // Listen the mouse down on the calendar grid posting.
         root.on('mousedown', Selectors.regions.day, function(e) {
-            SlotActions.setPosting(true);
-            SlotActions.postSlots(root, action, $(e.target));
+            CalendarActions.setPosting(true);
+            CalendarActions.postSlots(root, action, $(e.target));
             e.preventDefault();
         });
 
         // Listen the mouse down on the calendar grid posting.
         root.on('mouseover', Selectors.regions.day, function(e) {
-            SlotActions.postSlots(root, action, $(e.target));
+            CalendarActions.postSlots(root, action, $(e.target));
             e.preventDefault();
         });
 
         // Listen the mouse down on the calendar grid posting.
         root.on('mouseup', Selectors.regions.day, function() {
-            SlotActions.setPosting(false);
+            CalendarActions.setPosting(false);
         });
 
         // Start listening for calendar slot posting changes.
@@ -139,7 +149,7 @@ define([
      */
     const beforeUnloadHandler = e => {
         // Check if the calendar is dirty
-        if (SlotActions.isDirty()) {
+        if (CalendarActions.isDirty()) {
             return e.preventDefault();
         }
 

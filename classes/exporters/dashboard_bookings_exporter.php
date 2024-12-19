@@ -300,6 +300,7 @@ class dashboard_bookings_exporter extends exporter {
             $sorttype = $this->data['sorttype'];
             $filter = $this->filter;
             $page = $this->data['page'] ?: 0;
+            $perpage = $this->data['perpage'] ?: LOCAL_BOOKING_DASHBOARDPAGESIZE;
 
             // get sorted preference
             if (empty($sorttype)) {
@@ -308,7 +309,7 @@ class dashboard_bookings_exporter extends exporter {
             set_user_preferences(array('local_booking_sorttype'=>$sorttype));
 
             // get the students list based on the requested filter for active or on-hold
-            $this->activestudents = $this->course->get_students($filter, false, $page, true);
+            $this->activestudents = $this->course->get_students($filter, false, $page, $perpage, true);
 
         } else {
             $this->activestudents[] = $this->course->get_student($this->studentid, 0, $this->filter);
@@ -324,7 +325,7 @@ class dashboard_bookings_exporter extends exporter {
             // data for the student's exporter
             $waringflag = $this->get_warning($this->filter == 'active' || $this->filter == 'onhold' ?  $student->get_recency_days() : -1);
             $data = [
-                'sequence'        => $i + ($this->data['page'] * LOCAL_BOOKING_DASHBOARDPAGESIZE),
+                'sequence'        => $i + ($this->data['page'] * $this->data['perpage']),
                 'instructor'      => $this->instructor,
                 'student'         => $student,
                 'overduewarning'  => $waringflag == self::OVERDUEWARNING,

@@ -102,7 +102,7 @@ class action_bar extends base_action_bar {
         $elements = (array) $this->additional['bookingparams'];
         $elements['justify'] = 'justify-content-left';
         $elements['bookingview'] = true;
-        $elements['userselect'] = $this->type == 'book' ? $this->users_selector() : false;
+        $elements['userselect'] = $this->type == 'book' ? $this->users_selector($this->additional['studentid']) : false;
 
         return $elements;
     }
@@ -224,10 +224,12 @@ class action_bar extends base_action_bar {
     protected function users_selector(int $userid = null, ?int $groupid = null): string {
         global $PAGE;
 
-        $course = $this->additional['course'];
+        $subscriber = $this->additional['course'];
+        $course = $subscriber->get_course();
         $courserenderer = $PAGE->get_renderer('core', 'course');
         $resetlink = new moodle_url('/local/booking/view.php', ['courseid' => $course->id]);
         $baseurl = new moodle_url('/local/booking/view.php', ['courseid' => $course->id]);
+        $usersearch = $userid ? $subscriber->get_student($userid)->get_name() : '';
         $PAGE->requires->js_call_amd('local_booking/user_search', 'init', [$baseurl->out(false)]);
 
         if ($userid) {
@@ -239,7 +241,9 @@ class action_bar extends base_action_bar {
             new \core_course\output\actionbar\user_selector(
                 course: $course,
                 resetlink: $resetlink,
-                userid: $userid
+                userid: $userid,
+                groupid: $groupid,
+                usersearch: $usersearch
             )
         );
     }

@@ -90,8 +90,8 @@ class subscriber_vault implements subscriber_vault_interface {
         global $DB;
 
         // insert record on enrolment where $value is the first course exercise, otherwise update based on the field to be updated w/ the value
-        $sql = "INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid)
-                VALUES ($userid, $courseid, 0, 0, 0, $value) " . (!empty($stat) ? "
+        $sql = "INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid, notifyflags)
+                VALUES ($userid, $courseid, 0, 0, 0, 0, '') " . (!empty($stat) ? "
                 ON DUPLICATE KEY UPDATE
                     $stat = :value" : "");
 

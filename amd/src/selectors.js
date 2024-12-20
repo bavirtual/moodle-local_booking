@@ -75,7 +75,6 @@ define([], function() {
             searchbutton: '[data-region="search-button"]',
             cancelbutton: '[data-region="cancel-button"]',
             noshowbutton: '[data-region="noshow-button"]',
-            studentsfilter: '[data-region="students-filter"]',
         },
         toggle: '[toggle-input]',
         onhold: '[onhold-toggle]',

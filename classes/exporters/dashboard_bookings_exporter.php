@@ -300,7 +300,7 @@ class dashboard_bookings_exporter extends exporter {
             $sorttype = $this->data['sorttype'];
             $filter = $this->filter;
             $page = $this->data['page'] ?: 0;
-            $perpage = $this->data['perpage'] ?: LOCAL_BOOKING_DASHBOARDPAGESIZE;
+            $perpage = $this->data['perpage'];
 
             // get sorted preference
             if (empty($sorttype)) {

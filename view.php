@@ -40,7 +40,7 @@ $sorttype = optional_param('sort', '', PARAM_ALPHA);
 $action   = optional_param('action', 'book', PARAM_ALPHA);
 $filter   = optional_param('filter', 'active', PARAM_ALPHA);
 $page     = optional_param('page', 0, PARAM_INT);
-$perpage  = optional_param('perpage', 0, PARAM_INT);
+$perpage  = optional_param('perpage', null, PARAM_INT);
 $context  = context_course::instance($courseid);
 
 require_login($course, false);

@@ -794,11 +794,12 @@ class student extends participant {
      * Get a specific notification scheduled to be sent
      *
      * @param string $notification
-     * @return bool  $enable
+     * @return mixed|null $value
      */
     public function get_notify(string $notification) {
         $notifyjson = json_decode($this->get_statistic("notifyflags"), true);
 
+        $value = null;
         // verify the JSON string
         if (!empty($notifyjson)) {
             $value = array_key_exists($notification, $notifyjson) ? $notifyjson[$notification] : false;
@@ -813,7 +814,7 @@ class student extends participant {
      * the participant depending on the type of notification.
      *
      * @param string $notification
-     * @param ?  $value
+     * @param mixed  $value
      */
     public function set_notify(string $notification, $value = null) {
         $notifications = array();

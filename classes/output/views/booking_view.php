@@ -92,7 +92,9 @@ class booking_view extends base_view
         $courseid = $course->get_id();
         $this->filter = $this->data['filter'];
         $this->page = $this->data['page'];
-        $this->perpage = $this->data['perpage'] ?: get_user_preferences("course-$courseid-$USER->id-perpage", 0, $USER->id);
+        $this->perpage = is_null($this->data['perpage']) ?
+            get_user_preferences("course-$courseid-$USER->id-perpage", LOCAL_BOOKING_DASHBOARDPAGESIZE, $USER->id) :
+            $this->data['perpage'];
         set_user_preferences(["course-$courseid-$USER->id-perpage"=>$this->perpage], $USER->id);
         $this->data['perpage'] = $this->perpage;
         $bookings = new dashboard_bookings_exporter($this->data, $this->related);

@@ -66,12 +66,6 @@ define([
             ViewManager.refreshBookingsContent(root);
         });
 
-        // Register the listeners required to refresh students progress table based on filter
-        root.on('change', 'input[type=radio][name=studentsfilter]', function() {
-            // Call redirect to assignment feedback page
-            ViewManager.refreshBookingsContent(root, 0, 0, 0, null, $('input[name="studentsfilter"]:checked').val());
-        });
-
         // Register the listeners required to redirect to the Moodle grade page
         root.on('click', Selectors.actions.gotoFeedback, function(e) {
             BookingActions.gotoFeedback(root, e);

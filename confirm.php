@@ -27,7 +27,6 @@
 use local_booking\local\message\notification;
 use local_booking\local\participant\entities\student;
 use local_booking\local\session\entities\booking;
-use local_booking\local\subscriber\entities\subscriber;
 
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
@@ -42,10 +41,20 @@ $context = context_course::instance($courseid);
 require_login($courseid, false);
 require_capability('local/booking:availabilityview', $context);
 
-$COURSE->subscriber = new subscriber($courseid);
+// Initialize variables.
 $result = -1;
 $time = time();
 $week = (int) date('W', time());
+
+// define session booking plugin subscriber globally
+$url = new moodle_url('/local/booking/availability.php', array(
+    'courseid'  => $courseid,
+    'userid'    => $studentid,
+    'time'      => $time,
+    'week'      => $week,
+    'confirm'   => true
+));
+$subscriber = get_course_subscriber_context($url->out(false), $courseid);
 
 // Get the student slot
 $booking = new booking(0, $courseid, $studentid, $exerciseid);
@@ -53,16 +62,17 @@ $booking->load();
 
 if (!empty($booking->get_id())) {
     // update the booking by the instructor.
-    $sessiondatetime = (new DateTime('@' . ($booking->get_slot())->get_starttime()))->format('D M j\, H:i');
+    $sessiondatetime = new DateTime('@' . ($booking->get_slot())->get_starttime());
+    $sessiondatetimestr = $sessiondatetime->format('D M j\, H:i');
     $strdata = [
-        'exercise'  => $COURSE->subscriber->get_exercise($exerciseid)->name,
+        'exercise'  => $subscriber->get_exercise($exerciseid)->name,
         'instructor'=> student::get_fullname($instructorid),
         'status'    => ucwords(get_string('statusbooked', 'local_booking')),
-        'sessiondate'=> $sessiondatetime
+        'sessiondate'=> $sessiondatetimestr
     ];
     if ($booking->confirm(get_string('bookingconfirmmsg', 'local_booking', $strdata))) {
         // notify the instructor of the student's confirmation
-        $message = new notification($COURSE->subscriber);
+        $message = new notification($subscriber);
         $result = $message->send_instructor_notification($studentid, $exerciseid, $sessiondatetime, $instructorid);
     }
     $time = ($booking->get_slot())->get_starttime();
@@ -78,15 +88,5 @@ if ($result == 1) {
 }
 
 if ($result) {
-    // redirect
-    $url = new moodle_url('/local/booking/availability.php', array(
-        'courseid'  => $courseid,
-        'userid'    => $studentid,
-        'time'      => $time,
-        'week'      => $week,
-        'confirm'   => true
-    ));
-
-    $PAGE->set_url($url);
     redirect($url);
 }

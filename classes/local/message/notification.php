@@ -48,7 +48,11 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
  */
 class notification extends \core\message\message {
 
+    // subscribing course
     protected subscriber $course;
+
+    // email signature footer html
+    protected string $signaturehtml;
 
     /**
      * Constructor.
@@ -56,12 +60,18 @@ class notification extends \core\message\message {
      */
     public function __construct(subscriber $course) {
 
-        $this->course            = $course;
-        $this->component         = 'local_booking';
-        $this->userfrom          = core_user::get_noreply_user();
+        $this->course        = $course;
+        $this->component     = 'local_booking';
+        $this->userfrom      = core_user::get_noreply_user();
         $this->fullmessageformat = FORMAT_MARKDOWN;
-        $this->notification      = 1; // Because this is a notification generated from Moodle, not a user-to-user message
-        $this->smallmessage      = '';
+        $this->notification  = 1; // Because this is a notification generated from Moodle, not a user-to-user message
+        $this->smallmessage  = '';
+        $atoname             = get_config('local_booking', 'atoname');
+        $ato                 = $course->get_booking_config('ato');
+        $this->signaturehtml = get_string('emailsignature', 'local_booking', [
+            'atoname' => $atoname,
+            'atologo' => ($ato ? "<p><a href='$ato->website'><img src='$ato->logourl' width='190' height='22' alt='{$atoname}'></a></p>" : '')
+        ]);
     }
 
     /**
@@ -69,8 +79,8 @@ class notification extends \core\message\message {
      *
      * @param int       $studentid the student id receiving the message.
      * @param int       $exerciseid the exercise id relating to the session.
-     * @param Datetime  $sessionstart the start date time object for the session.
-     * @param Datetime  $sessionend the end date time object for the session.
+     * @param DateTime  $sessionstart the start date time object for the session.
+     * @param DateTime  $sessionend the end date time object for the session.
      * @return bool     The notification message id.
      */
     public function send_booking_notification($studentid, $exerciseid, $sessionstart, $sessionend) {
@@ -94,8 +104,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = calendar_helper::get_msg_content('body', $data, 'html');
         $this->contexturl        = $data->confirmurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
-        $this->set_additional_content('email', array('*' => array(
-            'footer' => get_string('bookingfooter', 'local_booking', $data))));
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         return message_send($this) != 0;
     }
@@ -105,8 +114,8 @@ class notification extends \core\message\message {
      *
      * @param int        $studentid the student id receiving the message.
      * @param int        $exerciseid the exercise id relating to the session.
-     * @param Datetime   $sessionstart the start date time object for the session.
-     * @param Datetime   $sessionend the end date time object for the session.
+     * @param DateTime   $sessionstart the start date time object for the session.
+     * @param DateTime   $sessionend the end date time object for the session.
      * @return bool     The notification message id.
      */
     public function send_instructor_confirmation($studentid, $exerciseid, $sessionstart, $sessionend) {
@@ -130,8 +139,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = calendar_helper::get_msg_content('body', $data, 'html');
         $this->contexturl        = $data->bookingurl;
         $this->contexturlname    = get_config('local_booking', 'atoname') . ' ' . get_string('pluginname', 'local_booking');
-        $this->set_additional_content('email', array('*' => array(
-            'footer' => get_string('bookingfooter', 'local_booking', $data))));
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         return message_send($this) != 0;
     }
@@ -142,7 +150,7 @@ class notification extends \core\message\message {
      *
      * @param int       $studentid the student id sending the notification message.
      * @param int       $exerciseid the exercise id relating to the session.
-     * @param Datetime  $sessiondatetime the date time object for the session.
+     * @param DateTime  $sessiondatetime the date time object for the session.
      * @param int       $instructorid the instructor id receiving the message.
      * @return bool     The notification message id.
      */
@@ -167,8 +175,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailinstconfirmhtml', 'local_booking', $data);
         $this->contexturl        = $data->bookingurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
-        $this->set_additional_content('email', array('*' => array(
-            'footer' => get_string('bookingfooter', 'local_booking', $data))));
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         return message_send($this) != 0;
     }
@@ -213,6 +220,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emaillogentryhtml', 'local_booking', $data);
         $this->contexturl        = $data->courseurl;
         $this->contexturlname    = get_string('emaillogentry', 'local_booking');
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         return message_send($this) != 0;
     }
@@ -248,6 +256,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailcancelhtml', 'local_booking', $data);
         $this->contexturl        = $data->courseurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         // send student message
         $result = message_send($this) != 0;
@@ -305,6 +314,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailnoshow' . $noshowbookingscount . 'html', 'local_booking', $data);
         $this->contexturl        = $data->courseurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         $result = message_send($this) != 0;
         $result = $result && $this->copy_senior_instructors('noshow_instructor_notification', 'emailnoshowinst' . $noshowbookingscount,
@@ -342,6 +352,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailnoshowreinstatementhtml', 'local_booking', $data);
         $this->contexturl        = $data->courseurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         $result = message_send($this) != 0;
         $result = $result && $this->copy_senior_instructors('reinstatement_instructor_notification', 'emailnoshowreinstatement',
@@ -356,8 +367,8 @@ class notification extends \core\message\message {
      * being inactive after posting wait period.
      *
      * @param int       $studentid the student id sending the notification message.
-     * @param Datetime  $lastbookeddate the date object the student last booked a session.
-     * @param Datetime  $onholddate the date object the student is to be put on hold.
+     * @param DateTime  $lastbookeddate the date object the student last booked a session.
+     * @param DateTime  $onholddate the date object the student is to be put on hold.
      * @return bool     The notification message id.
      */
     public function send_inactive_warning($studentid, $lastbookeddate, $onholddate) {
@@ -379,6 +390,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailinactivewarninghtml', 'local_booking', $data);
         $this->contexturl        = $data->slotsurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         return message_send($this) != 0;
     }
@@ -388,7 +400,7 @@ class notification extends \core\message\message {
      * upcoming on-hold date.
      *
      * @param int       $studentid the student id sending the notification message.
-     * @param Datetime  $onholddate the date time object the student being put on hold.
+     * @param DateTime  $onholddate the date time object the student being put on hold.
      * @return bool     The notification message id.
      */
     public function send_onhold_warning($studentid, $onholddate) {
@@ -409,6 +421,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailonholdwarninghtml', 'local_booking', $data);
         $this->contexturl        = $data->slotsurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         return message_send($this) != 0;
     }
@@ -418,8 +431,8 @@ class notification extends \core\message\message {
      * of being placed on-hold.
      *
      * @param int       $studentid the student id sending the notification message.
-     * @param Datetime  $lastsessiondate the date time of the last session taken by the student.
-     * @param Datetime  $suspenddate the date time of the student will be suspended.
+     * @param DateTime  $lastsessiondate the date time of the last session taken by the student.
+     * @param DateTime  $suspenddate the date time of the student will be suspended.
      * @param string    $coursename the course name.
      * @param array     $seniorinstructors the list of senior instructors to be copied.
      * @return bool     The notification message id.
@@ -442,6 +455,7 @@ class notification extends \core\message\message {
         $this->fullmessage       = get_string('emailonholdnotifymsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailonholdnotifyhtml', 'local_booking', $data);
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         // send notification then copy senior instructors
         $result = message_send($this) != 0;
@@ -456,7 +470,7 @@ class notification extends \core\message\message {
      * of being placed on-hold.
      *
      * @param int       $studentid the student id sending the notification message.
-     * @param Datetime  $lastsessiondate the date time of the last session taken by the student.
+     * @param DateTime  $lastsessiondate the date time of the last session taken by the student.
      * @param array     $seniorinstructors the list of senior instructors to be copied.
      * @return bool     The notification message id.
      */
@@ -477,6 +491,7 @@ class notification extends \core\message\message {
         $this->fullmessage       = get_string('emailsuspendnotifymsg', 'local_booking', $data);
         $this->fullmessagehtml   = get_string('emailsuspendnotifyhtml', 'local_booking', $data);
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         // send notification then copy senior instructors
         $result = message_send($this) != 0;
@@ -514,6 +529,7 @@ class notification extends \core\message\message {
         $this->fullmessagehtml   = get_string('emailoverduenotifyhtml', 'local_booking', $data);
         $this->contexturl        = $data->bookingurl;
         $this->contexturlname    = get_string('studentavailability', 'local_booking');
+        $this->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
         // send notification then copy senior instructors
         $result = message_send($this) != 0;
@@ -546,7 +562,7 @@ class notification extends \core\message\message {
             $msg->fullmessagehtml   = get_string('emailavailpostingnotifyhtml', 'local_booking', $data);
             $msg->contexturl        = $data['bookingurl'];
             $msg->contexturlname    = get_config('local_booking', 'atoname') . ' ' . get_string('pluginname', 'local_booking');
-            $msg->set_additional_content('email', array('*' => array('footer'=>get_string('bookingfooter', 'local_booking', $data))));
+            $msg->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
             // send notification then copy senior instructors
             $result = $result && message_send($msg) != 0;
@@ -579,7 +595,7 @@ class notification extends \core\message\message {
             $msg->fullmessagehtml   = get_string('emailrecommendationnotifyhtml', 'local_booking', $data);
             $msg->contexturl        = $data['bookingurl'];
             $msg->contexturlname    = get_config('local_booking', 'atoname') . ' ' . get_string('pluginname', 'local_booking');
-            $msg->set_additional_content('email', array('*' => array('footer'=>get_string('bookingfooter', 'local_booking', $data))));
+            $msg->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
             $result = $result && (message_send($msg) != 0);
         }
@@ -621,6 +637,7 @@ class notification extends \core\message\message {
                 $msg->fullmessageformat = FORMAT_HTML;
                 $msg->fullmessage       = html_to_text($congratsmsgbodytext);
                 $msg->fullmessagehtml   = $congratsmsgbodytext;
+                $msg->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
                 $result = $result && (message_send($msg) != 0);
             }
@@ -651,6 +668,7 @@ class notification extends \core\message\message {
             $ccstaffmsg->subject           = get_string($msgsubject, 'local_booking', $msgdata);
             $ccstaffmsg->fullmessage       = get_string($msgtext, 'local_booking', $msgdata);
             $ccstaffmsg->fullmessagehtml   = get_string($msghtml, 'local_booking', $msgdata);
+            $ccstaffmsg->set_additional_content('email', array('*' => array('footer' => $this->signaturehtml)));
 
             $result = $result && (message_send($ccstaffmsg) != 0);
         }

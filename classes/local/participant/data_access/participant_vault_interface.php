@@ -119,6 +119,26 @@ interface participant_vault_interface {
     public function get_student_incomplete_lesson_ids(int $userid, int $courseid, int $nextexercise);
 
     /**
+     * Updates the progress table with a specific value
+     *
+     * @param int    $courseid  The course id
+     * @param int    $studentid The user id
+     * @param string $stat      The stat field being update
+     * @param string $value     The field value being update
+     * @return bool             The result
+     */
+    public static function update_student_progress(int $courseid, int $studentid, string $stat, $value);
+
+    /**
+     * Updates the progress table with a latest lesson completed
+     *
+     * @param int $courseid  The course id
+     * @param int $studentid The user id
+     * @return bool
+     */
+    public static function update_student_lessonscomplete(int $courseid, int $studentid);
+
+    /**
      * Updates a user's profile field with a value
      *
      * @param   int    $userid  The student user id

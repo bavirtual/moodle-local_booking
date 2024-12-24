@@ -256,7 +256,9 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
-     * Get the date of the last booking date
+     * Retrieve the date timestamp of the last booking past or future.
+     * For instructors it would be the date the instructor made the booking.
+     * For students it would be the date of the session (slot.starttime)
      *
      * @param int $courseid      The associated course
      * @param int $studentid     The student id conducted the session
@@ -266,15 +268,18 @@ class booking_vault implements booking_vault_interface {
     public static function get_user_last_booked_date(int $courseid, int $userid, bool $isinstructor = false) {
         global $DB;
 
-        $sql = 'SELECT MAX(timemodified) AS bookingdatets
-                FROM {' . static::DB_BOOKINGS . '}
-                WHERE courseid = :courseid AND ' . ($isinstructor ? 'userid = :userid' : 'studentid = :userid');
+        $sql = 'SELECT IF(' . ($isinstructor ? 'true' : 'false')  . ', b.timemodified, s.starttime) as bookeddatets
+                FROM {' . static::DB_BOOKINGS . '} b
+                INNER JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
+                WHERE b.courseid = :courseid AND ' . ($isinstructor ? 'b.userid = :userid' : 'b.studentid = :userid') . '
+                ORDER BY b.id DESC
+                LIMIT 1';
 
         return $DB->get_record_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
     }
 
     /**
-     * Get the date of the last session date
+     * Retrieve the date timestamp of the last booked session that had passed.
      *
      * @param int $courseid      The associated course
      * @param int $studentid     The student id conducted the session
@@ -285,23 +290,15 @@ class booking_vault implements booking_vault_interface {
         global $DB;
 
         // last booking w/ a slot starttime that had past, otherwise the booking before it (check for no booking / no slot)
-        $sql = 'SELECT b.timemodified as sessiondatets
+        $sql = 'SELECT s.starttime as sessiondatets
                 FROM {' . static::DB_BOOKINGS . '} b
                 INNER JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
                 WHERE b.courseid = :courseid AND ' . ($isinstructor ? 'b.userid = :userid' : 'b.studentid = :userid') . '
+                AND s.starttime < :now
                 ORDER BY b.id DESC
-                LIMIT 2';
+                LIMIT 1';
 
-        $records = $DB->get_records_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid]);
-        $sessiondatets = 0;
-        if ($records) {
-            $sessiontimes = array_values($records);
-            $sessiondatets = $sessiontimes[0]->sessiondatets;
-            if (!empty($sessiontimes[1]) && $sessiontimes[0]->sessiondatets > time()) {
-                $sessiondatets = $sessiontimes[1]->sessiondatets;
-            }
-        }
-        return $sessiondatets;
+        return $DB->get_record_sql($sql, ['courseid'=>$courseid, 'userid'=>$userid, 'now'=>time()]);
     }
 
     /**

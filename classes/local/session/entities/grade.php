@@ -139,7 +139,7 @@ class grade extends \grade_grade {
     }
 
     /**
-     * Get the studnet grade exercise id of the grade.
+     * Get the student grade exercise id of the grade.
      *
      * @return int
      */
@@ -148,7 +148,7 @@ class grade extends \grade_grade {
     }
 
     /**
-     * Get the studnet user id of the grade.
+     * Get the student user id of the grade.
      *
      * @return int
      */

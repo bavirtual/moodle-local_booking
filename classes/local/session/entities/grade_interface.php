@@ -43,14 +43,14 @@ interface grade_interface {
     public function get_assignment();
 
     /**
-     * Get the studnet grade exercise id of the grade.
+     * Get the student grade exercise id of the grade.
      *
      * @return int
      */
     public function get_exercise_id();
 
     /**
-     * Get the studnet user id of the grade.
+     * Get the student user id of the grade.
      *
      * @return int
      */

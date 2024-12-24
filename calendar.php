@@ -28,20 +28,12 @@ require_once(__DIR__ . '/lib.php');
 
 use local_booking\local\calendar\event;
 use local_booking\local\calendar\calendar_helper;
-use local_booking\local\subscriber\entities\subscriber;
-
 
 $courseid = optional_param('id', 0, PARAM_INT);
-// TODO: end time should include the last hour
 $extendendtime = empty(optional_param('oauth2code', null, PARAM_RAW));
 
-$coursecontext = context_course::instance($courseid);
-$PAGE->set_context($coursecontext);
-
-// define subscriber globally
-if (empty($COURSE->subscriber)) {
-    $COURSE->subscriber = new subscriber($courseid);
-}
+// define session booking plugin subscriber globally
+$subscriber = get_course_subscriber_context('/local/booking/availability.php', $courseid, true);
 
 // get the event from the URL parameters.
 $event = new event((object) $_GET, $extendendtime);

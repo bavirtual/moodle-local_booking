@@ -56,19 +56,19 @@ define([
     const registerEventListeners = (root) => {
 
         // Listen to logentry created events
-        $('body').on(BookingEvents.logentrycreated, function(e, logentry) {
+        $('body').on(BookingEvents.logentryCreated, function(e, logentry) {
             // Refresh logbook
             refreshNewLogentryContent(root, logentry);
         });
 
         // Listen to logentry updated events
-        $('body').on(BookingEvents.logentryupdated, function(e, logentry) {
+        $('body').on(BookingEvents.logentryUpdated, function(e, logentry) {
             // Refresh logbook
             refreshLogentryContent(root, logentry);
         });
 
         // Listen to logentry deleted event
-        $('body').on(BookingEvents.logentrydeleted, function(e, logentryid) {
+        $('body').on(BookingEvents.logentryDeleted, function(e, logentryid) {
             // Remove logentry from the logbook
             $('#logentry_' + logentryid).slideUp(300);
             e.stopImmediatePropagation();

@@ -88,7 +88,7 @@ if (empty($time)) {
     $time =  time();
 }
 
-$calendar = calendar_information::create($time, $courseid);
+$calendar = \calendar_information::create($time, $courseid);
 
 $PAGE->navbar->add(userdate($time, get_string('weekinyear','local_booking', date('W', $time))));
 $PAGE->set_pagelayout('standard');
@@ -101,13 +101,13 @@ $calendar->add_sidecalendar_blocks($calenderrenderer, true);
 
 // get data for calendar view
 $data = [
-    'calendar'   => $calendar,
-    'view'       => $view,
-    'action'     => $action,
-    'student'    => $student,
-    'exerciseid' => $exerciseid,
-    'confirm'    => $confirm,
-    ];
+    'calendar'    => $calendar,
+    'view'        => $view,
+    'action'      => $action,
+    'student'     => $student,
+    'exerciseid'  => $exerciseid,
+    'confirm'     => $confirm,
+];
 
     // get calendar view for Session booking
 $calendarview = new calendar_view($data, ['subscriber'=>$subscriber, 'context'=>$context]);

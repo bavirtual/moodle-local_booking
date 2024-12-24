@@ -196,7 +196,7 @@ export default class ModalEventSummary extends Modal {
             M.util.js_complete('local_booking/logentry_view_modal:registerEventListeners:bodyRendered');
         }.bind(this));
 
-        $('body').on(BookingEvents.logentrydeleted, function() {
+        $('body').on(BookingEvents.logentryDeleted, function() {
             // Close the dialogue on delete.
             this.hide();
         }.bind(this));

@@ -249,8 +249,8 @@ class subscriber implements subscriber_interface {
         $this->fullname = $this->course->fullname;
         $this->shortname = $this->course->shortname;
 
-        // filter exercise and quiz modules only
-        $this->coursemodules = $this->coursemodinfo->get_cms();
+        // filter visible exercise, quiz modules, and lessons (sections) only
+        $this->coursemodules = array_filter($this->coursemodinfo->get_cms(), function($cm){return $cm->visible;});
         $this->lessons = $this->coursemodinfo->get_section_info_all();
         $this->modules = array_filter($this->coursemodules, function($property) { return ($property->modname == 'assign' || $property->modname == 'quiz');});
         $this->lessonmods = array_filter($this->coursemodules, function($property) { return ($property->modname == 'lesson');});
@@ -376,7 +376,7 @@ class subscriber implements subscriber_interface {
         $participant = new participant($this, $participantid);
 
         if ($populate) {
-            $participantrec = participant_vault::get_participant($this->courseid, $participantid);
+            $participantrec = participant_vault::get_participant($this->courseid, $participantid, $active ? 'active' : 'any');
             if (!empty($participantrec->userid))
                 $participant->populate($participantrec);
         }
@@ -498,7 +498,7 @@ class subscriber implements subscriber_interface {
             $this->activeinstructors[$instructorid] : null;
 
         if (empty($instructor)) {
-            $instructorrec = participant_vault::get_participant($this->courseid, $instructorid, true, false);
+            $instructorrec = participant_vault::get_participant($this->courseid, $instructorid);
             // instantiate the instructor object and add to the list of activeinstructors
             $instructor = new instructor($this, $instructorid);
             $instructor->populate($instructorrec);
@@ -670,7 +670,8 @@ class subscriber implements subscriber_interface {
             }
 
             // return this course's exercise
-            $exercise = $this->modules[$exerciseid];
+            if (array_key_exists($exerciseid, $this->modules))
+                $exercise = $this->modules[$exerciseid] ;
         }
 
         return $exercise;
@@ -871,16 +872,6 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Checks if the subscribing course require
-     * skills evaluation.
-     *
-     * @return bool
-     */
-    public function requires_skills_evaluation() {
-        return $this->requiresskillseval;
-    }
-
-    /**
      * Checks if the passed course is a subscriber 'enabled'
      *
      * @param int $courseid
@@ -931,6 +922,16 @@ class subscriber implements subscriber_interface {
      */
     public function requires_lesson_completion() {
         return count($this->lessonmods) > 0 && $this->requirelessoncompletion;
+    }
+
+    /**
+     * Checks if the subscribing course require
+     * skills evaluation.
+     *
+     * @return bool
+     */
+    public function requires_skills_evaluation() {
+        return $this->requiresskillseval;
     }
 
     /**

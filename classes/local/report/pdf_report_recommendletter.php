@@ -25,6 +25,7 @@
 
 namespace local_booking\local\report;
 
+use DateTime;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\student;
@@ -157,11 +158,11 @@ class pdf_report_recommendletter extends pdf_report {
         parent::Footer();
 
         $footer = get_string('recommendationletterver', 'local_booking') . '<br />';
-        $footer .= get_string('copyright', 'local_booking', array('ato'=>get_config('local_booking', 'atoname'), 'year'=>(new \Datetime('@'.time()))->format('Y')));
+        $footer .= get_string('copyright', 'local_booking', array('ato'=>get_config('local_booking', 'atoname'), 'year'=>(new DateTime('@'.time()))->format('Y')));
         $this->SetY(-50);
         // Set font
         $this->SetFont('helvetica', '', 10);
         // Page number
-        $this->writeHTMLCell(0, 0, '', '', $footer, 0, 0, false,true, "C", true);
+        $this->writeHTMLCell(0, 0, 0, 0, $footer, 0, 0, false,true, "C", true);
     }
 }

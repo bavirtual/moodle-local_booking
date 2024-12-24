@@ -37,16 +37,17 @@
         <span class="h5 mb-0 pt-2 mr-5">{{#str}} availabilityposting, local_booking, {{posts}} {{/str}}</span>
     {{/editing}}
     {{^editing}}
-    <div>
+    <div class="text-wrap" style="width: 20rem;">
         <span class="h5 mb-0 pt-2 mr-5">{{username}}</span><br/>
         <span class="mb-0 pt-2 mr-5">{{exercisename}}</span>
     </div>
     {{/editing}}
 </div>
 <div class="navitem-divider d-none d-sm-flex order-1"></div>
+{{^confirm}}
+{{#editing}}
 <div class="navitem order-2">
-    {{#editing}}
-    <div class="text-nowrap">
+    <div class="text-nowrap justify-content-center">
         <div class="btn-group" role="group">
             <button type="submit" class="btn btn-primary"
                 data-region="save-button"
@@ -74,8 +75,12 @@
             </button>
         </div>
     </div>
-    {{/editing}}
-    {{^editing}}
+</div>
+<div class="navitem-divider d-none d-sm-flex order-2"></div>
+{{/editing}}
+{{/confirm}}
+{{^editing}}
+<div class="navitem order-2">
     <div>
         <button type="submit" class="btn {{#alreadybooked}}btn-secondary{{/alreadybooked}}{{^alreadybooked}}btn-primary{{/alreadybooked}}"
             data-region="book-button"
@@ -83,11 +88,14 @@
             title=""
             {{#alreadybooked}}disabled{{/alreadybooked}}>
             {{#str}} booksave, local_booking {{/str}}
+            <span class="hidden" data-region="loading-icon-container">
+                <span class="loading-icon icon-no-margin"><i class="icon fa fa-spinner fa-spin fa-fw " title="Loading" role="img" aria-label="Loading"></i></span>
+            </span>
         </button>
     </div>
-    {{/editing}}
 </div>
 <div class="navitem-divider d-none d-sm-flex order-2"></div>
+{{/editing}}
 {{/groupview}}
 {{#groupview}}
 <div class="navitem order-1">

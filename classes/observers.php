@@ -91,7 +91,7 @@ class observers {
             if ($participant->is_student()) {
                 // add stats record for the newly graded student
                 $student = new student($event->courseid, $data['userid']);
-                $student->update_lessonscomplete_stat();
+                $student->update_lessonscomplete();
             }
         }
     }
@@ -154,13 +154,13 @@ class observers {
                         $lastsessiondatets = !empty($lastsessiondate) ? $lastsessiondate->getTimestamp() : 0;
 
                         // add stats record for the newly graded student
-                        $student->update_statistic('currentexerciseid', $exerciseid);
-                        $student->update_statistic('nextexerciseid', $nextexerciseid);
-                        $student->update_statistic('lastsessiondate', $lastsessiondatets);
-                        $student->update_lessonscomplete_stat();
+                        $student->update_progress('currentexerciseid', $exerciseid);
+                        $student->update_progress('nextexerciseid', $nextexerciseid);
+                        $student->update_progress('lastsessiondate', $lastsessiondatets);
+                        $student->update_lessonscomplete();
 
                     } else {
-                        $student->update_statistic('currentexerciseid', $exerciseid);
+                        $student->update_progress('currentexerciseid', $exerciseid);
                     }
                 } else {
                     throw new exception(get_string('errorgradenotfound', 'local_booking'));

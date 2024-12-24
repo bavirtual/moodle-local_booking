@@ -26,7 +26,6 @@
  */
 
 use local_booking\local\participant\entities\participant;
-use local_booking\local\subscriber\entities\subscriber;
 use local_booking\output\views\profile_view;
 
 // Standard GPL and phpdocs
@@ -53,14 +52,12 @@ $title = get_string('profile' . ($role ? LOCAL_BOOKING_INSTRUCTORROLE : 'student
 require_login($course, false);
 require_capability('local/booking:view', $context);
 
-// define subscriber globally
-if (empty($COURSE->subscriber)) {
-    $COURSE->subscriber = new subscriber($courseid);
-}
+// define session booking plugin subscriber globally
+$subscriber = get_course_subscriber_context($url->out(false), $courseid);
 
 // process force course completion given right permissions
 if (has_capability('enrol/apply:manage', $context) && $forcecompletion) {
-    $COURSE->subscriber->force_student_course_completion($userid);
+    $subscriber->force_student_course_completion($userid);
     redirect($url);
 }
 
@@ -72,7 +69,7 @@ $PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-local-booking');
 
 // get student profile view
-$profileview = new profile_view(['userid'=>$userid, 'role'=>($role ? LOCAL_BOOKING_INSTRUCTORROLE : 'student')], ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
+$profileview = new profile_view(['userid'=>$userid, 'role'=>($role ? LOCAL_BOOKING_INSTRUCTORROLE : 'student')], ['subscriber'=>$subscriber, 'context'=>$context]);
 
 // output profile page
 echo $OUTPUT->header();

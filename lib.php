@@ -134,9 +134,11 @@ define('LOCAL_BOOKING_SLOTCOLORS', [
 function local_booking_extend_navigation_course(navigation_node $navigation) {
     global $COURSE, $USER;
 
-    $course = get_course_subscriber_context('/local/booking/', $COURSE->id);
+    if (subscriber::is_subscribed($COURSE->id)) {
 
-    if ($course->subscribed) {
+        // get subscribed coudse
+        $course = get_course_subscriber_context('/local/booking/', $COURSE->id);
+
         // for checking if the participant is active
         $participant = $course->get_participant($USER->id);
 
@@ -222,6 +224,37 @@ function local_booking_extend_navigation_course(navigation_node $navigation) {
             }
         }
     }
+}
+
+/**
+ * Sets the course subscriber and context url
+ *
+ * @param string $url      PAGE url
+ * @param int  $courseid   course id for context
+ * @param bool $setcontext sets the context for external api
+ * @return subscriber
+ */
+function get_course_subscriber_context(string $url, int $courseid, bool $setcontext = false) {
+    global $PAGE, $COURSE;
+
+    // ensure we have the right course context
+    if ($courseid == SITEID)
+        throw new coding_exception(get_string('errorcoursecontextnotset', 'local_booking'));
+
+    // define subscriber globally
+    if (empty($COURSE->subscriber)) {
+        $context = context_course::instance($courseid);
+        $PAGE->set_url($url);
+
+        // set the context when not set for external api
+        if ($setcontext) {
+            $PAGE->set_context($context);
+        }
+
+        $COURSE->subscriber = new subscriber($courseid);
+    }
+
+    return $COURSE->subscriber;
 }
 
 /**
@@ -331,25 +364,4 @@ function local_booking_get_fontawesome_icon_map() {
         'local_booking:user-times'      => 'fa-user-times',
         'local_booking:window-close'    => 'fa-window-close',
     ];
-}
-
-/**
- * Sets the course subscriber and context url
- *
- * @param string $url       PAGE url
- * @param int $courseid  course id for context
- * @return subscriber
- */
-function get_course_subscriber_context(string $url, int $courseid) {
-    global $PAGE, $COURSE;
-
-    // define subscriber globally
-    if (empty($COURSE->subscriber)) {
-        $context = context_course::instance($courseid);
-        $PAGE->set_url($url);
-        $PAGE->set_context($context);
-        $COURSE->subscriber = new subscriber($courseid);
-    }
-
-    return $COURSE->subscriber;
 }

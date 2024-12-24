@@ -27,6 +27,9 @@ namespace local_booking\local\session\entities;
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_booking\local\session\entities\booking;
+use local_booking\local\logbook\entities\logentry;
+
 /**
  * Class representing a course exercise session.
  *
@@ -56,12 +59,12 @@ class session implements session_interface {
     protected $status;
 
     /**
-     * @var string $info The session addtional information.
+     * @var string $info The session additional information.
      */
     protected $info;
 
     /**
-     * @var Datetime $sessiondate The date of this session.
+     * @var \DateTime $sessiondate The date of this session.
      */
     protected $sessiondate;
 
@@ -73,7 +76,7 @@ class session implements session_interface {
      * @param logentry          $logentry       The session logentry object.
      * @param string            $status         The session status.
      * @param string            $info           The session additional information.
-     * @param Datetime          $sessiondate    The date of this session.
+     * @param \DateTime          $sessiondate    The date of this session.
      */
     public function __construct(
         $grade = null,
@@ -148,7 +151,7 @@ class session implements session_interface {
     /**
      * Get the date of this session.
      *
-     * @return Datetime
+     * @return \DateTime
      */
     public function get_sessiondate() {
         return $this->sessiondate;
@@ -202,7 +205,7 @@ class session implements session_interface {
      * @return bool
      */
     public function empty() {
-        return (!$this->hasbooking() && !$this->hasgrade());
+        return !$this->hasbooking() && !$this->hasgrade();
     }
 
     /**

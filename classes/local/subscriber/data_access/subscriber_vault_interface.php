@@ -47,26 +47,6 @@ interface subscriber_vault_interface {
     public static function get_subscriber_stat(int $courseid, int $userid, string $stat);
 
     /**
-     * Updates the stats table with a specific value
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @param string $stat      The stat field being update
-     * @param string $value     The field value being update
-     * @return bool             The result
-     */
-    public static function update_subscriber_stat(int $courseid, int $userid, string $stat, $value);
-
-    /**
-     * Updates the stats table with a lastest lesson completed
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @return bool             The result
-     */
-    public static function update_subscriber_lessonscomplete_stat(int $courseid, int $userid);
-
-    /**
      * Get a based on its id
      *
      * @param int   $courseid The course id

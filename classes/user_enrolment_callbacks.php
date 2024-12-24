@@ -43,7 +43,7 @@ class user_enrolment_callbacks {
             if (get_all_roles()[$hook->roleid]->archetype == 'student') {
                 $student = new student($instance->courseid, $hook->get_userid());
                 $nextexerciseid = $student->get_next_exercise()->id;
-                $student->update_statistic('nextexerciseid', $nextexerciseid);
+                $student->update_progress('nextexerciseid', $nextexerciseid);
             }
         }
     }

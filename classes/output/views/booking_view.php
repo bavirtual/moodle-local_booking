@@ -92,7 +92,7 @@ class booking_view extends base_view
         $courseid = $course->get_id();
         $this->filter = $this->data['filter'];
         $this->page = $this->data['page'];
-        $this->perpage = is_null($this->data['perpage']) ?
+        $this->perpage = !array_key_exists('perpage', $this->data) || is_null($this->data['perpage']) ?
             get_user_preferences("course-$courseid-$USER->id-perpage", LOCAL_BOOKING_DASHBOARDPAGESIZE, $USER->id) :
             $this->data['perpage'];
         set_user_preferences(["course-$courseid-$USER->id-perpage"=>$this->perpage], $USER->id);
@@ -185,8 +185,7 @@ class booking_view extends base_view
     public function get_sticky_footer() {
         global $OUTPUT, $PAGE;
 
-        $output = '';
-        // $showpaging = $this->studentcount > LOCAL_BOOKING_DASHBOARDPAGESIZE;
+        $url = new moodle_url($PAGE->url, ['filter' => $this->filter]);
 
         // render page select
         $perpageselect = $this->get_perpage();
@@ -195,7 +194,7 @@ class booking_view extends base_view
         $studentfilterselect = $this->get_studentfilter();
 
         // render paging bar
-        $pagingbar = $OUTPUT->paging_bar($this->studentcount, $this->page, $this->perpage, $PAGE->url);
+        $pagingbar = $OUTPUT->paging_bar($this->studentcount, $this->page, $this->perpage, $url);
 
         // render footer content bar
         $footercontent = ['perpageselect' => $perpageselect, 'studentfilterselect' => $studentfilterselect, 'pagingbar' => $pagingbar];
@@ -203,9 +202,8 @@ class booking_view extends base_view
 
         // show paging bar
         $stickyfooter = new sticky_footer($footercontent);
-        $output = $OUTPUT->render($stickyfooter);
 
-        return $output;
+        return $OUTPUT->render($stickyfooter);
     }
 
     /**
@@ -216,7 +214,7 @@ class booking_view extends base_view
     public function get_perpage() {
         global $PAGE;
 
-        $url = new moodle_url($PAGE->url);
+        $url = new moodle_url($PAGE->url, ['filter' => $this->filter]);
         $numusers = $this->studentcount;
 
         // Print per-page dropdown.

@@ -40,6 +40,7 @@ export default class ModalWarning extends Modal {
     constructor(root) {
         super(root);
         this.data = null;
+        this.event = null;
         this.setRemoveOnClose(true);
     }
 
@@ -52,9 +53,9 @@ export default class ModalWarning extends Modal {
         // Apply parent event listeners.
         super.registerEventListeners(this);
 
-        // Handle OK button event
+        // Handle OK button event and trigger custom event if available
         this.getModal().on(CustomEvents.events.activate, Selectors.regions.okbutton, function(e, data) {
-            let okEvent = $.Event(ModalEvents.okEvent, {'eventData': this.data});
+            let okEvent = $.Event(this.event ??= ModalEvents.responseOK, {'eventData': this.data});
             this.getRoot().trigger(okEvent, this);
 
             if (!okEvent.isDefaultPrevented()) {
@@ -63,9 +64,9 @@ export default class ModalWarning extends Modal {
             }
         }.bind(this));
 
-        // Handle YES button event
+        // Handle YES button event and trigger custom event if available
         this.getModal().on(CustomEvents.events.activate, Selectors.regions.yesbutton, function(e, data) {
-            let yesEvent = $.Event(ModalEvents.yesEvent, {'eventData': this.data});
+            let yesEvent = $.Event(this.event ??= ModalEvents.responseYES, {'eventData': this.data});
             this.getRoot().trigger(yesEvent, this);
 
             if (!yesEvent.isDefaultPrevented()) {
@@ -74,15 +75,26 @@ export default class ModalWarning extends Modal {
             }
         }.bind(this));
 
-        // Handle NO button event
+        // Handle NO button event and trigger no event
         this.getModal().on(CustomEvents.events.activate, Selectors.regions.nobutton, function() {
-            let noEvent = $.Event(ModalEvents.noEvent, {'eventData': this.data});
+            let noEvent = $.Event(ModalEvents.responseNO, {'eventData': this.data});
             this.getRoot().trigger(noEvent, this);
 
             if (!noEvent.isDefaultPrevented()) {
                 this.hide();
             }
         }.bind(this));
+    }
+
+    /**
+     * Set custom data object to attach to events.
+     *
+     * @param  {array} event A custom event to trigger on valid confirmation (Yes|Ok).
+     * @method setCustomEvent
+     */
+    setCustomEvent(event) {
+        this.event = event;
+
     }
 
     /**

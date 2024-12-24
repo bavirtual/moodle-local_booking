@@ -28,6 +28,7 @@ namespace local_booking\external;
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
+require_once($CFG->dirroot . '/calendar/lib.php');
 
 use core_external\external_api;
 use core_external\external_value;
@@ -93,8 +94,8 @@ class get_weekly_view extends external_api {
             'exerciseid'=> $exerciseid,
         ]);
 
-        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
         require_login($params['courseid'], false);
+        $subscriber = get_course_subscriber_context('/local/booking/availability.php', $params['courseid']);
 
         $student = $userid ? $subscriber->get_student($userid) : null;
         $calendar = \calendar_information::create($time, $params['courseid']);
@@ -105,6 +106,7 @@ class get_weekly_view extends external_api {
             'action'    => $action,
             'student'   => $student,
             'exerciseid'=> $exerciseid == null ? 0 : $exerciseid,
+            'confirm'   => $action != 'book' && $action != 'post',
         ];
 
         $calendarview = new calendar_view($data, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);

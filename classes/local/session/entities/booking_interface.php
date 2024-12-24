@@ -25,6 +25,7 @@
 
 namespace local_booking\local\session\entities;
 
+use DateTime;
 use \local_booking\local\slot\entities\slot;
 
 defined('MOODLE_INTERNAL') || die();
@@ -151,14 +152,14 @@ interface booking_interface {
     public function get_instructorname();
 
     /**
-     * Get the studnet user id of the booking.
+     * Get the student user id of the booking.
      *
      * @return int
      */
     public function get_studentid();
 
     /**
-     * Get the studnet name of the booking.
+     * Get the student name of the booking.
      *
      * @return string
      */
@@ -190,24 +191,26 @@ interface booking_interface {
     public static function get_exercise_date(int $courseid, int $studentid, int $exerciseid);
 
     /**
-     * Get the date of the last conducted session.
+     * Return the date object of the last booking past or future, otherwise return null.
+     * For instructors it would be the date the instructor made the booking.
+     * For students it would be the date of the session (slot.starttime)
      *
-     * @param int $courseid     The associated course id
-     * @param int $userid       The user id for the booked session
-     * @param int $isinstructor Whether the user is an instructor
-     * @return DateTime         The date of last session for that exercise
-    */
-    public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false);
-
-    /**
-     * Get the date of the last booked session.
-     *
-     * @param int $courseid     The associated course id
-     * @param int $userid       The user id for the booked session
-     * @param int $isinstructor Whether the user is an instructor
-     * @return DateTime         The date of last session for that exercise
+     * @param int  $courseid      The associated course id
+     * @param int  $userid        The user id for the booked session
+     * @param bool $isinstructor  Whether the user is an instructor
+     * @return DateTime|null      The date of last session for that exercise
     */
     public static function get_last_booked_date(int $courseid, int $userid, bool $isinstructor = false);
+
+    /**
+     * Return the date object of the last booked session that had passed, otherwise return null.
+     *
+     * @param int  $courseid      The associated course id
+     * @param int  $userid        The user id for the booked session
+     * @param bool $isinstructor  Whether the user is an instructor
+     * @return DateTime|null      The date of last session for that exercise
+    */
+    public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
      * Get the current and next participant sessions.
@@ -230,60 +233,4 @@ interface booking_interface {
      * @return int              The total amount of sessions conducted for the student
      */
     public static function get_total_sessions(int $courseid, int $userid, bool $isinstructor = false);
-
-    /**
-     * Set the course  id for the booking.
-     *
-     * @param int
-     */
-    public function set_courseid(int $courseid);
-
-    /**
-     * Set the course exercise id for the booking.
-     *
-     * @param int
-     */
-    public function set_exerciseid(int $exerciseid);
-
-    /**
-     * Set the instructor user id of the booking.
-     *
-     * @param int
-     */
-    public function set_instructorid(int $instructorid);
-
-    /**
-     * Set the instructor name of the booking.
-     *
-     * @param string
-     */
-    public function set_instructorname(string $instructorname);
-
-    /**
-     * Set the studnet user id of the booking.
-     *
-     * @param int
-     */
-    public function set_studentid(int $studentid);
-
-    /**
-     * Set the studnet name of the booking.
-     *
-     * @param string
-     */
-    public function set_studentname(string $studentname);
-
-    /**
-     * Set the slot object of booking.
-     *
-     * @param slot
-     */
-    public function set_slot(slot $slot);
-
-    /**
-     * Set the date timestamp of the booking.
-     *
-     * @param int
-     */
-    public function set_bookingdate(int $bookingdate);
 }

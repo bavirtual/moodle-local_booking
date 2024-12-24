@@ -25,7 +25,6 @@
 
 use core_badges\badge;
 use local_booking\local\participant\entities\student;
-use local_booking\local\subscriber\entities\subscriber;
 
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
@@ -48,13 +47,15 @@ $context = context_course::instance($courseid);
 require_login($courseid);
 require_capability('local/booking:view', $context);
 
+// define session booking plugin subscriber globally
+$subscriber = get_course_subscriber_context($url->out(false), $courseid);
+
 // get the graduating student
-$COURSE->subscriber = new subscriber($courseid);
-$student = new student($COURSE->subscriber, $studentid);
+$student = new student($subscriber, $studentid);
 $title = $student->get_name()  . ' ' . get_string('coursecompletion', 'local_booking');
 
 // check if student evaluation is required and if so whether the student has been evaluated
-if ($COURSE->subscriber->requires_skills_evaluation()) {
+if ($subscriber->requires_skills_evaluation()) {
 
 // check if student evaluation is required and if so whether the student has been evaluated
 if ($COURSE->subscriber->requires_skills_evaluation()) {
@@ -65,7 +66,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
     $lastattempt = (count($grade->attempts) ?: 1) - 1;
     $examinerid = $grade->attempts[$lastattempt]->grader;
     // verify credentials, if the certifier is not the same as the examiner throw invalid permissions error
-    $exerciseid = $COURSE->subscriber->get_graduation_exercise_id();
+    $exerciseid = $subscriber->get_graduation_exercise_id();
     $grade = $student->get_grade($exerciseid, true);
     $lastattempt = (count($grade->attempts) ?: 1) - 1;
     $examinerid = $grade->attempts[$lastattempt]->grader;
@@ -122,7 +123,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
         groups_add_member($groupid, $studentid);
 
         // graduate student
-        $COURSE->subscriber->force_student_course_completion($studentid);
+        $subscriber->force_student_course_completion($studentid);
     }
 
     // output certification message
@@ -130,13 +131,13 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
         'courseid'         => $courseid,
         'userid'           => $studentid,
         'fullname'         => $student->get_name(),
-        'courseshortname'  => $COURSE->subscriber->get_shortname(),
+        'courseshortname'  => $subscriber->get_shortname(),
         'attempt'          => $lastattempt+1
     ];
-    $hascongratsmsg = !empty($COURSE->subscriber->gradmsgsubject) && !empty($COURSE->subscriber->gradmsgbody);
+    $hascongratsmsg = !empty($subscriber->gradmsgsubject) && !empty($subscriber->gradmsgbody);
     $gradmsg = get_string('graduationconfirmation', 'local_booking', $data);
     $gradmsg .= $badgecount > 0 ? get_string('graduationconfirmationbadges', 'local_booking', $data) : '';
-    $gradmsg .= $hascongratsmsg ? get_string('graduationconfirmationnotify'.$COURSE->subscriber->participantstonotify, 'local_booking') : '';
+    $gradmsg .= $hascongratsmsg ? get_string('graduationconfirmationnotify'.$subscriber->participantstonotify, 'local_booking') : '';
     $gradmsg .= '</ul>';
 
     // output graduation process status

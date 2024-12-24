@@ -325,6 +325,83 @@ class participant_vault implements participant_vault_interface {
     }
 
     /**
+     * Updates the progress table with a specific value
+     *
+     * @param int    $courseid  The course id
+     * @param int    $studentid The user id
+     * @param string $stat      The stat field being update
+     * @param string $value     The field value being update
+     * @return bool             The result
+     */
+    public static function update_student_progress(int $courseid, int $studentid, string $stat, $value) {
+        global $DB;
+
+        // insert record on enrolment where $value is the first course exercise, otherwise update based on the field to be updated w/ the value
+        $sql = "INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid, notifyflags)
+                VALUES ($studentid, $courseid, 0, 0, 0, 0, '') " . (!empty($stat) ? "
+                ON DUPLICATE KEY UPDATE
+                    $stat = :value" : "");
+
+        $params = [
+            'courseid' => $courseid,
+            'userid'   => $studentid,
+            'value'    => $value
+        ];
+
+        return $DB->execute($sql, $params);
+    }
+
+    /**
+     * Updates the progress table with a latest lesson completed
+     *
+     * @param int $courseid  The course id
+     * @param int $studentid The user id
+     * @return bool
+     */
+    public static function update_student_lessonscomplete(int $courseid, int $studentid) {
+        global $DB;
+
+        // get last recorded completed lesson
+        $lastlessonsql = "UPDATE mdl_local_booking_stats bs SET lessonscomplete =
+                            (
+                            SELECT IF(COUNT(modid)>0,0,1)
+                            FROM (
+                                SELECT ROW_NUMBER() OVER w AS row_num, cm.id AS modid, cm.course, m.name
+                                FROM {" . self::DB_COURSE_MODS . "} cm
+                                INNER JOIN {" . self::DB_COURSE_SECTIONS . "} s ON s.id = cm.section
+                                INNER JOIN {" . self::DB_MODULES . "} m ON m.id = cm.module
+                                WHERE m.name IN ('assign','lesson') WINDOW w AS (ORDER BY s.section, LOCATE(cm.id, s.sequence))
+                                ) d
+                            WHERE d.course = $courseid AND d.name = 'lesson' AND
+                                row_num <
+                                (
+                                    SELECT row_num2
+                                    FROM
+                                    (
+                                        SELECT ROW_NUMBER() OVER w AS row_num2, cm.id AS modid, cm.course
+                                        FROM {" . self::DB_COURSE_MODS . "} cm
+                                        INNER JOIN {" . self::DB_COURSE_SECTIONS . "} s ON s.id = cm.section
+                                        INNER JOIN {" . self::DB_MODULES . "} m ON m.id = cm.module
+                                        WHERE m.name IN ('assign','lesson') WINDOW w AS (ORDER BY s.section, LOCATE(cm.id, s.sequence))
+                                    ) r
+                                    WHERE r.modid = bs.nextexerciseid AND r.course = $courseid
+                                ) AND
+                                modid NOT IN
+                                (
+                                    SELECT cm.id
+                                    FROM {" . self::DB_COURSE_MODS_COMP . "} cmc
+                                    INNER JOIN {" . self::DB_COURSE_MODS . "} cm ON cm.id = cmc.coursemoduleid
+                                    INNER JOIN {" . self::DB_MODULES . "} m ON m.id = cm.module
+                                    INNER JOIN {" . self::DB_COURSE_SECTIONS . "} cs ON cs.id = cm.section
+                                    WHERE cmc.userid = $studentid AND cm.course = $courseid AND cmc.completionstate >= 1 AND m.name = 'lesson'
+                                )
+                            )
+                          WHERE bs.courseid = $courseid AND bs.userid = $studentid";
+
+        return $DB->execute($lastlessonsql);
+    }
+
+    /**
      * Updates a user's profile field with a value
      *
      * @param   int    $userid  The student user id
@@ -600,6 +677,7 @@ class participant_vault implements participant_vault_interface {
 
     /**
      * Get hasactiveposts field SQL clause.
+     * and have availability slots (not booked (slotstatus=0)
      *
      * @return string SQL query string
      */
@@ -607,7 +685,7 @@ class participant_vault implements participant_vault_interface {
         return 'IF(
           (
             SELECT MAX(a.starttime) FROM {' . self::DB_SLOTS . '} a
-            WHERE a.userid = u.id AND a.courseid = en.courseid
+            WHERE a.userid = u.id AND a.courseid = en.courseid AND a.slotstatus = ""
           ) > UNIX_TIMESTAMP(), IF(@hasbooking=1, 0, 1), 0)';
     }
 

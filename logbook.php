@@ -24,7 +24,6 @@
  */
 
 use local_booking\local\participant\entities\participant;
-use local_booking\local\subscriber\entities\subscriber;
 use local_booking\output\action_bar;
 use local_booking\output\views\logbook_view;
 
@@ -61,10 +60,9 @@ if (!has_capability('local/booking:view', $context) && $USER->id != $userid) {
     throw new required_capability_exception($context, $capability, 'nopermissions', '');
 }
 
-// define subscriber globally
-if (empty($COURSE->subscriber)) {
-    $COURSE->subscriber = new subscriber($courseid);
-}
+// define session booking plugin subscriber globally
+$subscriber = get_course_subscriber_context($url->out(false), $courseid);
+
 
 // add jquery, logbook_easa.js for EASA datatable, and RobinHerbots-Inputmask library to mask flight times in the Log Book modal form
 $PAGE->requires->jquery();
@@ -105,11 +103,11 @@ if (empty($format)) {
 }
 
 // get logbook view data
-$pilot   = $COURSE->subscriber->get_participant($userid);
-$editor  = $COURSE->subscriber->get_instructor($USER->id);
+$pilot   = $subscriber->get_participant($userid);
+$editor  = $subscriber->get_instructor($USER->id);
 $admin = has_capability('moodle/site:config', $context);
 $logbook = $pilot->get_logbook(true, $format == 'easa');
-$totals  = (array) $logbook->get_summary(true, $format == 'easa', $COURSE->subscriber->get_graduation_exercise_id());
+$totals  = (array) $logbook->get_summary(true, $format == 'easa', $subscriber->get_graduation_exercise_id());
 $data    = [
     'contextid'     => $context->id,
     'courseid'      => $courseid,
@@ -121,15 +119,15 @@ $data    = [
     'isinstructor'  => $pilot->is_instructor(),
     'isexaminer'    => $pilot->is_examiner(),
     'canedit'       => $editor->is_instructor() || $admin,
-    'hasfindpirep'  => $COURSE->subscriber->has_integration('external_data', 'pireps'),
+    'hasfindpirep'  => $subscriber->has_integration('external_data', 'pireps'),
     'format'        => $format,
     'easaformaturl' => $PAGE->url . '&format=easa',
     'stdformaturl'  => $PAGE->url . '&format=std',
     'shortdate'     => $format == 'easa'
 ];
 // get logbook view
-$logbookview = new logbook_view($data + $totals, ['subscriber'=>$COURSE->subscriber, 'context'=>$context]);
-$actionbar = new action_bar($PAGE, 'logbook', ['course'=>$COURSE->subscriber]);
+$logbookview = new logbook_view($data + $totals, ['subscriber'=>$subscriber, 'context'=>$context]);
+$actionbar = new action_bar($PAGE, 'logbook', ['course'=>$subscriber]);
 
 // output logbook page
 echo $OUTPUT->header();

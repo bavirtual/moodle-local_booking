@@ -92,7 +92,7 @@ class save_logentry extends external_api {
 
 
         // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $courseid);
+        $subscriber = get_course_subscriber_context('/local/booking/', $courseid, true);
 
         $formoptions = [
             'subscriber' => $subscriber,

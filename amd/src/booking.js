@@ -52,17 +52,17 @@ define([
      const registerBookingEventListeners = function(root) {
         const body = $('body');
 
-        body.on(BookingEvents.bookingcanceled, function() {
+        body.on(BookingEvents.bookingCanceled + " " + BookingEvents.noshowProcessed, function() {
             ViewManager.refreshBookingsContent(root);
         });
 
-        body.on(BookingEvents.logentrycreated, function() {
+        body.on(BookingEvents.logentryCreated, function() {
             ViewManager.refreshBookingsContent(root);
         });
-        body.on(BookingEvents.logentryupdated, function() {
+        body.on(BookingEvents.logentryUpdated, function() {
             ViewManager.refreshBookingsContent(root);
         });
-        body.on(BookingEvents.logentrydeleted, function() {
+        body.on(BookingEvents.logentryDeleted, function() {
             ViewManager.refreshBookingsContent(root);
         });
 

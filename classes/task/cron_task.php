@@ -148,7 +148,7 @@ class cron_task extends \core\task\scheduled_task {
                 $this->trace('        ' . $studentname);
 
                 // get last booked date, otherwise use last graded date instead
-                $lastsessionts = $student->get_last_booking_date();
+                $lastsessionts = $student->get_last_session_date(true);
                 if (empty($lastsessionts)) {
                     $lastgradeddate = $student->get_last_graded_date();
                     $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
@@ -160,9 +160,9 @@ class cron_task extends \core\task\scheduled_task {
                     $isactive = $student->has_completed_lessons() && $student->get_total_posts() > 0;
 
                     // posting overdue date from last booked session
-                    $lastsessiondate = new DateTime('@' . $lastsessionts);
-                    $onholddate = new DateTime('@' . $lastsessionts);
-                    $postingoverduedate = new DateTime('@' . $lastsessionts);
+                    $lastsessiondate = new DateTime("@$lastsessionts");
+                    $onholddate = new DateTime("@$lastsessionts");
+                    $postingoverduedate = new DateTime("@$lastsessionts");
                     $today = getdate(time());
 
                     // add a week to the posting wait period as the overdue date
@@ -207,7 +207,7 @@ class cron_task extends \core\task\scheduled_task {
                 $this->trace('        ' . $studentname);
 
                 // get last booked date, otherwise use last graded date instead
-                $lastsessionts = $student->get_last_booking_date();
+                $lastsessionts = $student->get_last_session_date(true);
                 if (empty($lastsessionts)) {
                     $lastgradeddate = $student->get_last_graded_date();
                     $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
@@ -221,9 +221,9 @@ class cron_task extends \core\task\scheduled_task {
                     $booked = !empty($student->get_active_booking());
 
                     // on-hold date from last booked session
-                    $lastsessiondate = new DateTime('@' . $lastsessionts);
-                    $onholddate = new DateTime('@' . $lastsessionts);
-                    $suspenddate = new DateTime('@' . $lastsessionts);
+                    $lastsessiondate = new DateTime("@$lastsessionts");
+                    $onholddate = new DateTime("@$lastsessionts");
+                    $suspenddate = new DateTime("@$lastsessionts");
                     date_add($onholddate, date_interval_create_from_date_string($course->onholdperiod . ' days'));
                     date_add($suspenddate, date_interval_create_from_date_string($course->suspensionperiod . ' days'));
 
@@ -281,33 +281,36 @@ class cron_task extends \core\task\scheduled_task {
         if ($suspensiondays > 0) {
             foreach ($students as $student) {
 
-                $studentname = participant::get_fullname($student->get_id());
-                $this->trace('        ' . $studentname);
-
                 // get suspension date, otherwise use last graded date instead
-                $lastsessionts = $student->get_last_booking_date();
+                $lastsessionts = $student->get_last_session_date(true);
                 if (empty($lastsessionts)) {
                     $lastgradeddate = $student->get_last_graded_date();
                     $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
                 }
 
                 if (!empty($lastsessionts)) {
-                    // Suspension (unenrolment) date is 9x wait period from last session
-                    $lastsessiondate = new DateTime('@' . $lastsessionts);
-                    $suspenddate = new DateTime('@' . $lastsessionts);
+                    // Suspension (unenrolment) date as specified in the course settings
+                    $lastsessiondate = new DateTime("@$lastsessionts");
+                    $suspenddate = new DateTime("@$lastsessionts");
                     $keepactive =  $student->is_kept_active();
+                    $isactive = $student->has_completed_lessons() && $student->get_total_posts() > 0;
+                    $booked = !empty($student->get_active_booking());
 
                     date_add($suspenddate, date_interval_create_from_date_string($suspensiondays . ' days'));
 
                     // SUSPENSION NOTIFICATION
                     // suspend when passed on-hold by 9x wait days process suspension and notify student and senior instructor roles
-                    $this->trace('            suspension date: ' . $suspenddate->format('M d, Y'));
-                    $message = new notification($course);
-                    if ($suspenddate->getTimestamp() <= time() && !$keepactive) {
-                        // unenrol the student from the course
+                    if ($suspenddate->getTimestamp() <= time() && !$keepactive && !$isactive && !$booked) {
+
+                        $studentname = participant::get_fullname($student->get_id());
+                        $this->trace('        ' . $studentname);
+                        $this->trace('            suspension date: ' . $suspenddate->format('M d, Y'));
+
+                        // suspend the student from the course
                         if ($student->suspend()) {
                             $this->trace('                Suspended!');
                             // send notification of unenrolment from the course and senior instructor roles
+                            $message = new notification($course);
                             if ($message->send_suspension_notification($student->get_id(), $lastsessiondate, $seniorinstructors)) {
                                 mtrace('                Student notified of suspension');
                             }

@@ -46,12 +46,8 @@ class subscriber_vault implements subscriber_vault_interface {
     const DB_USER_ENROL = 'user_enrolments';
 
     /** Grading tables. */
-    const DB_ASSIGN_GRADE = 'assign_grades';
     const DB_GRADE_GRADE = 'grade_grades';
     const DB_GRADE_ITEMS = 'grade_items';
-
-    /** Grouping tables. */
-    const DB_GROUP = 'groups';
 
     /** Booking tables. */
     const DB_STATS = 'local_booking_stats';
@@ -75,83 +71,6 @@ class subscriber_vault implements subscriber_vault_interface {
         ];
 
         return $DB->get_record_sql($sql, $params)->value;
-    }
-
-    /**
-     * Updates the stats table with a specific value
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @param string $stat      The stat field being update
-     * @param string $value     The field value being update
-     * @return bool             The result
-     */
-    public static function update_subscriber_stat(int $courseid, int $userid, string $stat, $value) {
-        global $DB;
-
-        // insert record on enrolment where $value is the first course exercise, otherwise update based on the field to be updated w/ the value
-        $sql = "INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid, notifyflags)
-                VALUES ($userid, $courseid, 0, 0, 0, 0, '') " . (!empty($stat) ? "
-                ON DUPLICATE KEY UPDATE
-                    $stat = :value" : "");
-
-        $params = [
-            'userid'   => $userid,
-            'courseid' => $courseid,
-            'value'    => $value
-        ];
-
-        return $DB->execute($sql, $params);
-    }
-
-    /**
-     * Updates the stats table with a lastest lesson completed
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @return bool             The result
-     */
-    public static function update_subscriber_lessonscomplete_stat(int $courseid, int $userid) {
-        global $DB;
-
-        // get last recorded completed lesson
-        $lastlessonsql = "UPDATE mdl_local_booking_stats bs SET lessonscomplete =
-                            (
-                            SELECT IF(COUNT(modid)>0,0,1)
-                            FROM (
-                                SELECT ROW_NUMBER() OVER w AS row_num, cm.id AS modid, cm.course, m.name
-                                FROM {" . self::DB_COURSE_MODS . "} cm
-                                INNER JOIN {" . self::DB_COURSE_SECTIONS . "} s ON s.id = cm.section
-                                INNER JOIN {" . self::DB_MODS . "} m ON m.id = cm.module
-                                WHERE m.name IN ('assign','lesson') WINDOW w AS (ORDER BY s.section, LOCATE(cm.id, s.sequence))
-                                ) d
-                            WHERE d.course = $courseid AND d.name = 'lesson' AND
-                                row_num <
-                                (
-                                    SELECT row_num2
-                                    FROM
-                                    (
-                                        SELECT ROW_NUMBER() OVER w AS row_num2, cm.id AS modid, cm.course
-                                        FROM {" . self::DB_COURSE_MODS . "} cm
-                                        INNER JOIN {" . self::DB_COURSE_SECTIONS . "} s ON s.id = cm.section
-                                        INNER JOIN {" . self::DB_MODS . "} m ON m.id = cm.module
-                                        WHERE m.name IN ('assign','lesson') WINDOW w AS (ORDER BY s.section, LOCATE(cm.id, s.sequence))
-                                    ) r
-                                    WHERE r.modid = bs.nextexerciseid AND r.course = $courseid
-                                ) AND
-                                modid NOT IN
-                                (
-                                    SELECT cm.id
-                                    FROM {" . self::DB_COURSE_MODS_COMP . "} cmc
-                                    INNER JOIN {" . self::DB_COURSE_MODS . "} cm ON cm.id = cmc.coursemoduleid
-                                    INNER JOIN {" . self::DB_MODS . "} m ON m.id = cm.module
-                                    INNER JOIN {" . self::DB_COURSE_SECTIONS . "} cs ON cs.id = cm.section
-                                    WHERE cmc.userid = $userid AND cm.course = $courseid AND cmc.completionstate >= 1 AND m.name = 'lesson'
-                                )
-                            )
-                          WHERE bs.courseid = $courseid AND bs.userid = $userid";
-
-        return $DB->execute($lastlessonsql);
     }
 
     /**
@@ -335,25 +254,6 @@ class subscriber_vault implements subscriber_vault_interface {
                 )
             )
             WHERE bs.courseid = $courseid");
-
-        // // update last session date from grading or enrolment for students that newly joind
-        // $result &= $DB->execute("
-        //     UPDATE {" . self::DB_STATS . "} bs SET lastsessiondate =
-        //         (
-        //         SELECT MAX(ag.timemodified) FROM {" . self::DB_ASSIGN_GRADE . "} ag
-        //         INNER JOIN {" . self::DB_COURSE_MODS . "} cm ON cm.instance = ag.assignment
-        //         WHERE cm.course = $courseid AND cm.deletioninprogress = 0 AND ag.userid = bs.userid
-        //         )
-        //     WHERE lastsessiondate = 0 AND courseid = $courseid");
-
-        // $result &= $DB->execute("
-        //     UPDATE {" . self::DB_STATS . "} bs SET lastsessiondate =
-        //         (
-        //         SELECT MAX(ue.timecreated) FROM {" . self::DB_USER_ENROL . "} ue
-        //         INNER JOIN {" . self::DB_ENROL . "} e ON e.id = ue.enrolid
-        //         WHERE e.courseid = :ecourseid AND ue.userid = bs.userid
-        //         )
-        //     WHERE lastsessiondate = 0 AND courseid = :courseid", ['courseid'=>$courseid, 'ecourseid'=>$courseid]);
 
         return $result;
     }

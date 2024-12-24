@@ -79,7 +79,7 @@ class set_suspended_status extends external_api {
         );
 
         // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $courseid);
+        $subscriber = get_course_subscriber_context('/local/booking/', $courseid, true);
 
         // suspend a student
         $student = new student($subscriber, $params['userid']);

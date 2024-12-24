@@ -72,14 +72,14 @@ export const refreshBookingsContent = (root, courseId, contextId, userId = 0, ta
 /**
  * Refresh student progression and mybookings content.
  *
- * @method  refreshInstructorBookingsContent
+ * @method  refreshMyBookingsContent
  * @param   {object} root The root element.
  * @param   {number} courseId The id of the course associated with the progression view shown
  * @param   {number} contextId The context id for the course
  * @param   {object} template The template to be used
  * @return  {promise}
  */
-export const refreshInstructorBookingsContent = (root, courseId, contextId, template = null) => {
+export const refreshMyBookingsContent = (root, courseId, contextId, template = null) => {
     startLoading(root);
 
     const mybookingstemplate = template || root.attr('data-template'),
@@ -261,7 +261,7 @@ export const renderCancelBookingConfirmation = async(e) => {
         modal = await BookingCancelForm.create({});
 
     modal.setBookingId(bookingId);
-    modal.show();
+    return modal.show();
 };
 
 /**

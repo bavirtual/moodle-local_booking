@@ -20,7 +20,7 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,7 +32,7 @@ require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 
 // Get URL parameters
-$courseid = optional_param('courseid', SITEID, PARAM_INT);
+$courseid = optional_param('courseid', $COURSE->id, PARAM_INT);
 $course   = get_course($courseid);
 $userid   = optional_param('userid', 0, PARAM_INT);
 $studentid= optional_param('studentid', 0, PARAM_INT);

@@ -92,7 +92,7 @@ class has_conflicting_booking extends external_api {
         if (!empty($conflictingbooking)) {
 
             // set the subscriber object
-            $subscriber = get_course_subscriber_context('/local/booking/', $conflictingbooking->courseid);
+            $subscriber = get_course_subscriber_context('/local/booking/', $conflictingbooking->courseid, true);
             require_login($conflictingbooking->courseid, false);
 
             $result = true;

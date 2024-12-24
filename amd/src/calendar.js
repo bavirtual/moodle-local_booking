@@ -65,26 +65,26 @@ define([
         });
 
         // Refresh calendar after a booking or slots are saved
-        body.on(BookingEvents.slotssaved, function(e) {
+        body.on(BookingEvents.slotsSaved, function(e) {
             const courseId = root.find(Selectors.wrappers.calendarwrapper).data('courseid'),
-                dataData = e.eventData;
+                eventData = e.eventData;
 
-            CalendarViewManager.changeWeek(root, dataData.url, dataData.year, dataData.week, dataData.time, courseId);
+            CalendarViewManager.changeWeek(root, eventData.url, eventData.year, eventData.week, eventData.time, courseId);
         });
 
         // Save slot postings or bookings on dirty calendar response
-        body.on(BookingEvents.yesEvent + ' ' + BookingEvents.noEvent, function(e) {
+        body.on(BookingEvents.responseYES + ' ' + BookingEvents.responseNO, function(e) {
             const courseId = root.find(Selectors.wrappers.calendarwrapper).data('courseid'),
-                dataData = e.eventData;
+                eventData = e.eventData;
 
-            if (e.type == BookingEvents.yesEvent) {
+            if (e.type == BookingEvents.responseYES) {
                 if (action == 'book') {
                     CalendarActions.saveBookedSlot(root, e);
                 } else {
                     CalendarActions.saveWeekSlots(root, e);
                 }
             }
-            CalendarViewManager.changeWeek(root, dataData.url, dataData.year, dataData.week, dataData.time, courseId);
+            CalendarViewManager.changeWeek(root, eventData.url, eventData.year, eventData.week, eventData.time, courseId);
         });
 
         // Listen the click on the Save button.

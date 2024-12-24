@@ -25,9 +25,6 @@
 
 define([
         'jquery',
-        'core/str',
-        'core/notification',
-        'core/pending',
         'local_booking/booking_view_manager',
         'local_booking/booking_actions',
         'local_booking/events',
@@ -35,9 +32,6 @@ define([
     ],
     function(
         $,
-        Str,
-        Notification,
-        Pending,
         ViewManager,
         BookingActions,
         BookingEvents,
@@ -54,38 +48,18 @@ define([
     const registerMyBookingsEventListeners = function(root) {
         const body = $('body');
 
-        body.on(BookingEvents.bookingcanceled, function() {
-            ViewManager.refreshInstructorBookingsContent(root);
+        body.on(BookingEvents.bookingCanceled + " " + BookingEvents.noshowProcessed, function() {
+            ViewManager.refreshMyBookingsContent(root);
         });
 
         // Listen to the click on the Cancel booking buttons in 'Instructor dashboard' page.
         root.on('click', Selectors.regions.cancelbutton, function(e) {
-            const pendingPromise = new Pending('local_booking/registerCancelBookingForm');
-
-            // Render the cancel booking confirmation modal form
-            ViewManager.renderCancelBookingConfirmation(e)
-            .then(pendingPromise.resolve())
-            .catch(e);
-
+            BookingActions.cancelBooking(root, e);
         });
 
         // Listen to the click on the 'No-show' booking buttons in 'Instructor dashboard' page.
-        root.on('click', Selectors.regions.noshowbutton, function(e) {
-            // Get number of no shows
-            const noshows = $(e.target).closest(Selectors.regions.noshowbutton).data('noshows');
-            // Get the message associated with the number of no-show occurence
-            const noShowComment = Str.get_string('commentnoshow' + noshows, 'local_booking').then(function(noshowMsg) {
-                return noshowMsg;
-            }).catch(Notification.exception);
-            // Chain the two retrieved strings in the prompt
-            $.when(Str.get_string('commentnoshow', 'local_booking'), noShowComment)
-            .then(function(promptMsg, noshowMsg) {
-                // eslint-disable-next-line no-alert
-                if (window.confirm(promptMsg + '\n\n' + noshowMsg)) {
-                    BookingActions.cancelBooking(root, e);
-                }
-                return;
-            }).catch(Notification.exception);
+        root.on('click', Selectors.regions.noshowbutton, function (e) {
+            BookingActions.processNoShow(root, e);
         });
     };
 

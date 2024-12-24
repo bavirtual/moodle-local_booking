@@ -249,7 +249,7 @@ class student extends participant {
             $this->get_last_session_date();
         }
 
-        $this->update_statistic('lastsessiondate', $this->lastsessiondatets);
+        $this->update_progress('lastsessiondate', $this->lastsessiondatets);
 
         if ($result) {
             $this->set_notify('posted_slots');
@@ -268,17 +268,17 @@ class student extends participant {
      * @param string $value     The field value being update
      * @return bool             The result
      */
-    public function update_statistic(string $stat = null, $value = null) {
-        return subscriber_vault::update_subscriber_stat($this->courseid, $this->userid, $stat, $value);
+    public function update_progress(string $stat = null, $value = null) {
+        return $this->vault->update_student_progress($this->courseid, $this->userid, $stat, $value);
     }
 
     /**
-     * Updates the stats table with a lastest lesson completed
+     * Updates the stats table with a latest lesson completed
      *
      * @return bool             The result
      */
-    public function update_lessonscomplete_stat() {
-        return subscriber_vault::update_subscriber_lessonscomplete_stat($this->courseid, $this->userid);
+    public function update_lessonscomplete() {
+        return $this->course->requires_lesson_completion() ? $this->vault->update_student_lessonscomplete($this->courseid, $this->userid) : true;
     }
 
     /**
@@ -505,17 +505,10 @@ class student extends participant {
             // process restriction if posting wait restriction is enabled or if the student doesn't have a waiver
             if ($this->course->postingwait > 0 && !$hasrestrictionwaiver) {
 
-                $lastsession = $this->get_last_booking_date();
-
                 // fallback to last graded then enrollment date
-                if (!empty($lastsession)) {
-                    $nextsessiondate = new \DateTime('@' . $lastsession);
-                } else {
+                if (empty($this->get_last_booked_date())) {
                     $lastgraded = $this->get_last_graded_date();
-                    if (!empty($lastgraded))
-                        $nextsessiondate = $lastgraded;
-                    else
-                        $nextsessiondate = $this->get_enrol_date();
+                    $nextsessiondate = $lastgraded ?: $this->get_enrol_date();
                 }
 
                 // add posting wait period to last session
@@ -568,7 +561,7 @@ class student extends participant {
      */
     public function get_next_exercise() {
 
-        if (empty($this->nextexercise)) {
+        if (empty($this->nextexercise) || $this->nextexercise->id == 0) {
 
             // initialize next exercise object with id=0 and erroneous exercise name
             $this->nextexercise = (object) ['id'=>0, 'name'=>get_string('errormissingexercise', 'local_booking')];
@@ -591,10 +584,12 @@ class student extends participant {
             // since this is not a new enrolment and no active booking, the next exercise is the one after the graded exercise
             $lastgrade = $this->get_last_grade();
             if (!empty($lastgrade)) {
-                // make sure last graded exercise is not the last course exercise
+                // make sure last graded exercise is not the last course exercise, if not then get the next exercise (current exercise + offset by 1)
                 if ($lastgrade->get_exercise_id() != $this->course->get_graduation_exercise_id()) {
-                    $this->course->get_exercise($lastgrade->get_exercise_id());
-                    $this->nextexercise = $this->course->get_exercise($lastgrade->get_exercise_id(), 0, 1);
+                    return $this->nextexercise = $this->course->get_exercise($lastgrade->get_exercise_id(), 0, 1);
+                // it is the last exercise, so check if the student had not passed the final exercise, the this is another attempt at the final exercise
+                } elseif (!$lastgrade->is_passed()) {
+                    return $this->nextexercise = $this->course->get_exercise($lastgrade->get_exercise_id());
                 }
             }
         }
@@ -671,15 +666,6 @@ class student extends participant {
     }
 
     /**
-     * Get the date timestamp of the last booked slot
-     *
-     * @return int The last booked session datetime
-     */
-    public function get_last_booking_date() {
-        return slot::get_last_booked_slot_date($this->course->get_id(), $this->userid);
-    }
-
-    /**
      * Get the student no-show bookings.
      *
      * @return array no-show bookings
@@ -691,15 +677,6 @@ class student extends participant {
         }
 
         return $this->noshowbookings;
-    }
-
-    /**
-     * Get the list of pending lessons
-     *
-     * @param  bool  $byname Whether to return the name or ids of pending lessons
-     * @return array list of pending lessons
-     */
-    public function get_completed_lessons(bool $byname = false) {
     }
 
     /**
@@ -794,11 +771,12 @@ class student extends participant {
      * Get a specific notification scheduled to be sent
      *
      * @param string $notification
-     * @return bool  $enable
+     * @return mixed|null $value
      */
     public function get_notify(string $notification) {
         $notifyjson = json_decode($this->get_statistic("notifyflags"), true);
 
+        $value = null;
         // verify the JSON string
         if (!empty($notifyjson)) {
             $value = array_key_exists($notification, $notifyjson) ? $notifyjson[$notification] : false;
@@ -813,7 +791,7 @@ class student extends participant {
      * the participant depending on the type of notification.
      *
      * @param string $notification
-     * @param ?  $value
+     * @param mixed  $value
      */
     public function set_notify(string $notification, $value = null) {
         $notifications = array();
@@ -826,7 +804,7 @@ class student extends participant {
         $notifications[$notification] = $value;
 
         // encode notifications
-        $this->update_statistic("notifyflags", json_encode($notifications));
+        $this->update_progress("notifyflags", json_encode($notifications));
     }
 
     /**
@@ -837,7 +815,7 @@ class student extends participant {
      * @return  bool    Whether the lessones were completed or not.
      */
     public function has_completed_lessons() {
-        return isset($this->lessonscomplete) ? $this->lessonscomplete : false;
+        return $this->course->requires_lesson_completion() ? (isset($this->lessonscomplete) ?? false) : true;
     }
 
     /**
@@ -990,7 +968,7 @@ class student extends participant {
             if (!empty($record->currentexerciseid))
                 $this->currentexercise = $this->course->get_exercise($record->currentexerciseid);
             if (!empty($record->nextexerciseid))
-                $this->nextexercise = $this->nextexercise = $this->course->get_exercise($record->nextexerciseid);
+                $this->nextexercise = $this->course->get_exercise($record->nextexerciseid);
             if (!empty($record->lessonscomplete))
                 $this->lessonscomplete = $record->lessonscomplete;
             if (!empty($record->graduateddate))

@@ -124,7 +124,7 @@ class dashboard_mybookings_exporter extends exporter {
             $slot = $booking->get_slot();
             $starttime = new DateTime('@' . $slot->get_starttime());
             // TODO: end time should include the last hour
-            $endtime = new DateTime('@' . ($slot->get_endtime()));
+            $endtime = new DateTime('@' . $slot->get_endtime());
 
             $data = [
             'bookingid'     => $booking->get_id(),

@@ -27,6 +27,8 @@ namespace local_booking\local\session\entities;
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_booking\local\logbook\entities\logentry;
+
 /**
  * Interface for a course exercise session class.
  *
@@ -80,7 +82,7 @@ interface session_interface {
     /**
      * Get the date of this session.
      *
-     * @return Datetime
+     * @return \DateTime
      */
     public function get_sessiondate();
 

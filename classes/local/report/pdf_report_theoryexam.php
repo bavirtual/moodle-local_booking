@@ -26,6 +26,7 @@
 namespace local_booking\local\report;
 
 use ArrayObject;
+use DateTime;
 use local_booking\local\participant\entities\student;
 use local_booking\local\subscriber\entities\subscriber;
 
@@ -81,12 +82,12 @@ class pdf_report_theoryexam extends pdf_report {
             $attempts = (new ArrayObject($exam->attempts))->getIterator();
             if (count($exam->attempts) > 0) {
                 $attempts->seek(count($exam->attempts)-1);
-                $starttime = new \Datetime('@' . $attempts->current()->timestart);
-                $endtime = new \Datetime('@' . $attempts->current()->timefinish);
+                $starttime = new DateTime('@' . $attempts->current()->timestart);
+                $endtime = new DateTime('@' . $attempts->current()->timefinish);
                 $interval = $starttime->diff($endtime);
                 $duration = $interval->format('%H:%I:%S');
                 } else {
-                $starttime = $endtime = new \Datetime('@' . $exam->timemodified);
+                $starttime = $endtime = new DateTime('@' . $exam->timemodified);
                 $duration = 'Manually graded!';
             }
 

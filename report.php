@@ -27,7 +27,6 @@
  */
 
 use local_booking\local\participant\entities\participant;
-use local_booking\local\subscriber\entities\subscriber;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -54,7 +53,8 @@ $context = context_course::instance($courseid);
 require_login($course, false);
 require_capability('local/booking:view', $context);
 
-$COURSE->subscriber = new subscriber($courseid);
+// define session booking plugin subscriber globally
+$subscriber = get_course_subscriber_context($url->out(false), $courseid);
 
 $navbartext = participant::get_fullname($userid);
 $PAGE->navbar->add($navbartext);

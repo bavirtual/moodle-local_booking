@@ -194,6 +194,7 @@ class availability_week_exporter extends exporter {
             'studentid'   => $studentid,
             'exerciseid'  => $exerciseid,
             'exercisename'=> $this->course->get_exercise($exerciseid)->name,
+            'confirm'     => $actiondata['confirm'],
             'editing'     => $this->view == 'user' && $this->actiondata['action'] != 'book',    // Editing is not allowed if user id is passed for booking
             'alreadybooked' => !empty($this->activebooking),
             'alreadybookedmsg' => !empty($activebookinginstrname) ? get_string('activebookingmsg', 'local_booking', $activebookinginstrname) : '',
@@ -243,6 +244,10 @@ class availability_week_exporter extends exporter {
             'exercisename' => [
                 'type' => PARAM_RAW,
                 'default' => '',
+            ],
+            'confirm' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
             ],
             'editing' => [
                 'type' => PARAM_BOOL,

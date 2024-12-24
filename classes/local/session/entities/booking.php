@@ -32,6 +32,7 @@ use local_booking\local\slot\data_access\slot_vault;
 use \local_booking\local\slot\entities\slot;
 use \local_booking\local\calendar\moodle_calendar;
 use moodle_exception;
+use DateTime;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -49,12 +50,12 @@ class booking implements booking_interface {
     protected $id;
 
     /**
-     * @var int $courseid The course id of this bookng.
+     * @var int $courseid The course id of this booking.
      */
     protected $courseid;
 
     /**
-     * @var int $exerciseid The course exercise id of this bookng.
+     * @var int $exerciseid The course exercise id of this booking.
      */
     protected $exerciseid;
 
@@ -203,7 +204,7 @@ class booking implements booking_interface {
 
     /**
      * Deletes this booking from database along with
-     * assocaited instructor and student Moodle calendar events
+     * associated instructor and student Moodle calendar events
      *
      * @return bool
      */
@@ -281,6 +282,7 @@ class booking implements booking_interface {
 
     /**
      * Process booking cancellation and no-shows
+     * Update the student statistics accordingly.
      *
      * @param bool $noshow Whether the student didn't show without prior notice
      * @return bool
@@ -292,6 +294,11 @@ class booking implements booking_interface {
         } else {
             $result = $this->delete();
         }
+
+        // update student's last session date statistic
+        $lastsessiondate = $this->get_last_session_date($this->courseid, $this->studentid, false);
+        $student = new student($this->courseid, $this->studentid);
+        $student->update_progress('lastsessiondate', !empty($lastsessiondate) ? $lastsessiondate->getTimestamp() : 0);
 
         return $result;
     }
@@ -385,38 +392,41 @@ class booking implements booking_interface {
      * @param int $courseid      The associated course id
      * @param int $studentid     The student id conducted the session
      * @param int $exerciseid    The exercise id for the session
-     * @return ?          The date of last session for that exercise
+     * @return DateTime|null     The date of last session for that exercise
      */
     public static function get_exercise_date(int $courseid, int $studentid, int $exerciseid) {
         $exercisedatets = booking_vault::get_booked_exercise_date($courseid, $studentid, $exerciseid);
-        return $exercisedatets ? new \DateTime('@' . $exercisedatets) : null;
+        return $exercisedatets ? new DateTime("@$exercisedatets") : null;
     }
 
     /**
-     * Get the date of the last conducted session.
+     * Return the date object of the last booking past or future, otherwise return null.
+     * For instructors it would be the date the instructor made the booking.
+     * For students it would be the date of the session (slot.starttime)
      *
      * @param int  $courseid      The associated course id
      * @param int  $userid        The user id for the booked session
      * @param bool $isinstructor  Whether the user is an instructor
-     * @return DateTime           The date of last session for that exercise
-    */
-    public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false) {
-        $lastbookeddatets = booking_vault::get_user_last_session_date($courseid, $userid, $isinstructor);
-        return $lastbookeddatets ? new \DateTime('@' . $lastbookeddatets) : null;
-    }
-
-    /**
-     * Get the date of the last booked session.
-     *
-     * @param int  $courseid      The associated course id
-     * @param int  $userid        The user id for the booked session
-     * @param bool $isinstructor  Whether the user is an instructor
-     * @return DateTime           The date of last session for that exercise
+     * @return DateTime|null      The date of last session for that exercise
     */
     public static function get_last_booked_date(int $courseid, int $userid, bool $isinstructor = false) {
         $lastbooked = booking_vault::get_user_last_booked_date($courseid, $userid, $isinstructor);
-        $lastbookeddatets = !empty($lastbooked) ? $lastbooked->bookingdatets : false;
-        return $lastbookeddatets ? new \DateTime('@' . $lastbookeddatets) : null;
+        $lastbookeddatets = !empty($lastbooked) ? $lastbooked->bookeddatets : false;
+        return $lastbookeddatets ? new DateTime("@$lastbookeddatets") : null;
+    }
+
+    /**
+     * Return the date object of the last booked session that had passed, otherwise return null.
+     *
+     * @param int  $courseid      The associated course id
+     * @param int  $userid        The user id for the booked session
+     * @param bool $isinstructor  Whether the user is an instructor
+     * @return DateTime|null      The date of last session for that exercise
+    */
+    public static function get_last_session_date(int $courseid, int $userid, bool $isinstructor = false) {
+        $lastsession = booking_vault::get_user_last_session_date($courseid, $userid, $isinstructor);
+        $lastsessiondatets = !empty($lastsession) ? $lastsession->sessiondatets : false;
+        return $lastsessiondatets ? new DateTime("@$lastsessiondatets") : null;
     }
 
     /**
@@ -457,78 +467,5 @@ class booking implements booking_interface {
      */
     public static function get_total_sessions(int $courseid, int $userid, bool $isinstructor = false) {
         return booking_vault::get_user_total_sessions($courseid, $userid, $isinstructor);
-    }
-
-    // Setter functions
-    /**
-     * Set the course exercise id for the booking.
-     *
-     * @return int
-     */
-    public function set_courseid(int $courseid) {
-        $this->courseid = $courseid;
-    }
-
-    /**
-     * Set the course exercise id for the booking.
-     *
-     * @return int
-     */
-    public function set_exerciseid(int $exerciseid) {
-        $this->exerciseid = $exerciseid;
-    }
-
-    /**
-     * Set the id of booked slot.
-     *
-     * @return slot
-     */
-    public function set_slot(slot $slot = null) {
-        $this->slot = $slot;
-    }
-
-    /**
-     * Set the instructor user id of the booking.
-     *
-     * @return int
-     */
-    public function set_instructorid(int $instructorid) {
-        $this->instructorid = $instructorid;
-    }
-
-    /**
-     * Set the instructor name of the booking.
-     *
-     * @return string
-     */
-    public function set_instructorname(string $instructorname) {
-        $this->instructorname = $instructorname;
-    }
-
-    /**
-     * Set the studnet user id of the booking.
-     *
-     * @return int
-     */
-    public function set_studentid(int $studentid) {
-        $this->studentid = $studentid;
-    }
-
-    /**
-     * Set the studnet name of the booking.
-     *
-     * @return string
-     */
-    public function set_studentname(string $studentname) {
-        $this->studentname = $studentname;
-    }
-
-    /**
-     * Set the date array of the booking.
-     *
-     * @return array
-     */
-    public function set_bookingdate(int $bookingdate) {
-        $this->bookingdate = $bookingdate;
     }
 }

@@ -27,6 +27,9 @@ namespace local_booking\local\participant\entities;
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_booking\local\subscriber\entities\subscriber;
+use local_booking\local\session\entities\booking;
+
 interface participant_interface {
 
     /**
@@ -74,7 +77,7 @@ interface participant_interface {
      * @param bool $isstudent   Whether to get student bookings
      * @param bool $activeonly  Whether to get active bookings only
      * @param bool $oldestfirst Whether to sort results by oldest
-     * @return booking[] An array of bookings.
+     * @return array An array of bookings.
      */
     public function get_bookings(bool $isstudent = true, bool $activeonly = false, bool $oldestfirst = false);
 
@@ -95,16 +98,16 @@ interface participant_interface {
     /**
      * Get an a's active bookings
      *
-     * @param  $loadentries Whether to load all enteries or not
-     * @param  bool $allentries whether to get entries for all courses
-     * @return logbook   An array of bookings.
+     * @param bool $loadentries Whether to load all entries or not
+     * @param bool $allentries whether to get entries for all courses
+     * @return array An array of bookings.
      */
     public function get_logbook(bool $loadentries = false, bool $allentries = false);
 
     /**
      * Get student's enrolment date.
      *
-     * @return DateTime $enroldate  The enrolment date of the student.
+     * @return \DateTime $enroldate  The enrolment date of the student.
      */
     public function get_enrol_date();
 
@@ -117,32 +120,45 @@ interface participant_interface {
 
     /**
      * Get student's last login date.
+     * The returned value is either the DateTime object
+     * or an int timestamp
      *
-     * @return \DateTime $lastlogindate  The participant's last login date.
+     * @param bool $timestamp     Whether to return an int timestamp or the DateTime object.
+     * @return \DateTime|int|null The participant's last login date.
      */
-    public function get_last_login_date();
+    public function get_last_login_date(bool $timestamp = false);
 
     /**
-     * Returns the date of the last
-     * graded session.
+     * Return the date object from the last booking past or future.
+     * For instructors it would be the date the instructor made the booking.
+     * For students it would be the date of the session (slot.starttime)
+     * The returned value is either the DateTime object
+     * or an int timestamp
      *
-     * @return  \DateTime    The date of the last grading
+     * @param bool $timestamp     Whether to return an int timestamp or the DateTime object.
+     * @return \DateTime|int|null The date of the last booked session
      */
-    public function get_last_graded_date();
+    public function get_last_booked_date(bool $timestamp = false);
 
     /**
-     * Returns the date of the last booked session.
+     * Return the date object from the last booked session that had passed.
+     * The returned value is either the DateTime object
+     * or an int timestamp
      *
-     * @return  \DateTime    The date of the last booked session
+     * @param bool $timestamp     Whether to return an int timestamp or the DateTime object.
+     * @return \DateTime|int|null The date of the last booked session
      */
-    public function get_last_booked_date();
+    public function get_last_session_date(bool $timestamp = false);
 
     /**
-     * Returns the date of the last session
+     * Returns the date of the last graded session.
+     * The returned value is either the DateTime object
+     * or an int timestamp
      *
-     * @return  \DateTime   The date of the last booked session
+     * @param bool $timestamp Whether to return an int timestamp or the DateTime object.
+     * @return \DateTime|int  The date of the last grading
      */
-    public function get_last_session_date();
+    public function get_last_graded_date(bool $timestamp = false);
 
     /**
      * Returns participant's simulator user field
@@ -214,7 +230,7 @@ interface participant_interface {
     public function populate($record);
 
     /**
-     * checkes whether the participant has a particular role.
+     * checks whether the participant has a particular role.
      *
      * @param string $role The role to check.
      * @return bool        Whether the participant has the role.
@@ -226,8 +242,8 @@ interface participant_interface {
      * the passed role otherwise returns a null.
      *
      * @param string $role      The role to check.
-     * @param bool   $tostring  Whether to return a string or the date object.
-     * @return DateTime|string  The date the participant had the role.
+     * @param bool $tostring    Whether to return a string or the date object.
+     * @return \DateTime|string  The date the participant had the role.
      */
     public function has_role_since(string $role, bool $tostring = true);
 

@@ -81,7 +81,7 @@ class get_student_names extends external_api {
         $warnings = [];
 
         // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
+        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
         // get extra required fields for user combobox search
         $userfieldsapi = \core_user\fields::for_identity($subscriber->get_context(), false)->with_userpic();

@@ -83,7 +83,7 @@ class get_logentry extends external_api {
                 )
             );
 
-        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
+        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
         $logentry = (new logbook($params['courseid'], $params['userid']))->get_logentry($params['logentryid']);
         $data = array('subscriber'=>$subscriber, 'logentry' => $logentry, 'view' => 'summary', 'canedit' => $subscriber->get_instructor($USER->id)->is_instructor()) + $params;

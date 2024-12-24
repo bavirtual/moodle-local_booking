@@ -28,7 +28,7 @@ namespace local_booking\exporters;
 defined('MOODLE_INTERNAL') || die();
 
 use ArrayObject;
-use \DateTime;
+use DateTime;
 use core\external\exporter;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
@@ -199,7 +199,7 @@ class dashboard_session_exporter extends exporter {
     /**
      * Get the additional values to inject while exporting.
      *
-     * @param renderer_base $output The renderer.
+     * @param \renderer_base $output The renderer.
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(\renderer_base $output) {
@@ -217,9 +217,7 @@ class dashboard_session_exporter extends exporter {
         if (!empty($this->session)) {
             $graded = $this->session->hasgrade();
             $logentrymissing = $this->is_logentry_missing();
-            $lastbookingdate = $logentrymissing ?
-                slot::get_last_booked_slot_date($this->data['courseid'], $this->student->get_id()) :
-                $this->session->get_sessiondate()->getTimestamp();
+            $lastbookingdate = $logentrymissing ? $this->student->get_last_booked_date(true) : $this->session->get_sessiondate()->getTimestamp();
 
             // consider 'No posts' tag when a 'no-show' occurs and the session is cancelled
             if ($this->session->isnoshow())

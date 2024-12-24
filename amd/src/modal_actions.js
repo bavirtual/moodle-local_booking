@@ -21,65 +21,52 @@
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define([
-    'jquery',
-    'core/str',
-    'core/notification',
-    'core/modal_events',
-    'core/pending',
-    'local_booking/repository',
-    'local_booking/modal_delete',
-    'local_booking/modal_warning',
-    'local_booking/events',
-    'local_booking/selectors',
-    'local_booking/booking_actions',
-],
-function(
-    $,
-    Str,
-    Notification,
-    ModalEvents,
-    Pending,
-    Repository,
-    ModalDelete,
-    ModalWarning,
-    BookingSessions,
-    Selectors,
-    BookingActions,
-) {
 
-    /**
-     * Prepares the action for the summary modal's delete action.
-     *
-     * @method  confirmDeletion
-     * @param   {Number} logentryId The ID of the logentry.
-     * @param   {Number} userId   The user of the logentry.
-     * @param   {Number} courseId The course of the logentry.
-     * @param   {bool}   cascade  Whether to cascade delete linked logentries.
-     * @return  {Promise}
-     */
-    const confirmDeletion = (logentryId, userId, courseId, cascade) => {
-        let pendingPromise = new Pending('local_booking/booking_actions:confirmDeletion');
-        let deleteStrings = [
-            {
-                key: 'deletelogentry',
-                component: 'local_booking'
-            },
-        ];
+import $ from 'jquery';
+import * as Str from 'core/str';
+import Notification from 'core/notification';
+import ModalEvents from 'core/modal_events';
+import Pending from 'core/pending';
+import Repository from 'local_booking/repository';
+import ModalDelete from 'local_booking/modal_delete';
+import ModalWarning from 'local_booking/modal_warning';
+import BookingSessions from 'local_booking/events';
+import BookingActions from 'local_booking/booking_actions';
+import Selectors from 'local_booking/selectors';
 
-        let deletePromise;
-        deleteStrings.push({
-            key: 'confirmlogentrydelete',
+/**
+ * Prepares the action for the summary modal's delete action.
+ *
+ * @method  confirmDeletion
+ * @param   {Number} logentryId The ID of the logentry.
+ * @param   {Number} userId   The user of the logentry.
+ * @param   {Number} courseId The course of the logentry.
+ * @param   {bool}   cascade  Whether to cascade delete linked logentries.
+ * @return  {Promise}
+ */
+export const confirmDeletion = (logentryId, userId, courseId, cascade) => {
+
+    let pendingPromise = new Pending('local_booking/booking_actions:confirmDeletion');
+    let deleteStrings = [
+        {
+            key: 'deletelogentry',
             component: 'local_booking'
-        });
+        },
+    ];
+
+    let deletePromise;
+    deleteStrings.push({
+        key: 'confirmlogentrydelete',
+        component: 'local_booking'
+    });
 
 
-        deletePromise = ModalDelete.create();
+    deletePromise = ModalDelete.create();
 
-        let stringsPromise = Str.get_strings(deleteStrings);
+    let stringsPromise = Str.get_strings(deleteStrings);
 
-        // Setup modal delete prompt form
-        let finalPromise = $.when(stringsPromise, deletePromise)
+    // Setup modal delete prompt form
+    let finalPromise = $.when(stringsPromise, deletePromise)
         .then(function(strings, deleteModal) {
             deleteModal.setRemoveOnClose(true);
             deleteModal.setTitle(strings[0]);
@@ -87,12 +74,12 @@ function(
 
             deleteModal.show();
 
-            deleteModal.getRoot().on(ModalEvents.save, function() {
+            deleteModal.getRoot().on(ModalEvents.save, function () {
                 let pendingPromise = new Pending('local_booking/booking_actions:initModal:deletedlogentry');
                 // eslint-disable-next-line promise/no-nesting
                 Repository.deleteLogentry(logentryId, userId, courseId, cascade)
                     .then(function() {
-                        $('body').trigger(BookingSessions.logentrydeleted, [logentryId, false]);
+                        $('body').trigger(BookingSessions.logentryDeleted, [logentryId, false]);
                         return;
                     })
                     .then(pendingPromise.resolve)
@@ -111,62 +98,65 @@ function(
         })
         .catch(Notification.exception);
 
-        return finalPromise;
-    };
+    return finalPromise;
+};
 
-    /**
-     * Displays a warning message.
-     *
-     * @method  showWarning
-     * @param   {array}  message       The warning message to display.
-     * @param   {array}  title         The modal title string.
-     * @param   {array}  data          Any additional message parameters.
-     * @param   {array}  options       Options array for the popup.
-     * @return  {Promise}
-     */
-    const showWarning = (message, title, data = {}, options = null) => {
+/**
+ * Displays a warning message.
+ *
+ * @method  showWarning
+ * @param   {array}  message       The warning message to display.
+ * @param   {array}  title         The modal title string.
+ * @param   {array}  data          Any additional message parameters.
+ * @param   {array}  options       Options array for the popup.
+ * @return  {Promise}
+ */
+export const showWarning = (message, title, data = {}, options = null) => {
 
-        title ??= 'wanringtitle';
-        options.buttonType ??= 'ok';
-        options.buttonDefault ??= 'ok';
-        options.stopExecution ??= true;
+    title ??= 'wanringtitle';
+    options ??= {};
+    options.buttonType ??= 'ok';
+    options.buttonDefault ??= 'ok';
+    options.stopExecution ??= true;
+    options.customEvent ??= null;
 
-        // Setup modal footer
-        let footer = '<button type="button" class="btn btn-primary" data-action="ok">Ok</button>';
-        if (options.buttonType == 'yesno') {
-            footer = '<button type="button" class="btn ' + (options.buttonDefault == 'no' ?
-                'btn-primary' : 'btn-secondary') + '" data-action="no">No</button>';
-            footer += '<button type="button" class="btn ' + (options.buttonDefault != 'no' ?
-                'btn-primary' : 'btn-secondary') + '" data-action="yes">Yes</button>';
+    // Setup modal footer
+    let footer = '<button type="button" class="btn btn-primary" data-action="ok">Ok</button>';
+    if (options.buttonType == 'yesno') {
+        footer = '<button type="button" class="btn ' + (options.buttonDefault == 'no' ?
+            'btn-primary' : 'btn-secondary') + '" data-action="no">No</button>';
+        footer += '<button type="button" class="btn ' + (options.buttonDefault != 'no' ?
+            'btn-primary' : 'btn-secondary') + '" data-action="yes">Yes</button>';
+    }
+
+    let pendingPromise = new Pending('local_booking/booking_actions:showWarning');
+    let warningPromise = ModalWarning.create();
+    let finalPromise;
+
+    if (options.fromComponent) {
+        let warningStrings = [
+            {
+                key: title,
+                component: 'local_booking'
+            }];
+
+        if (message) {
+            warningStrings.push({
+                key: message,
+                component: 'local_booking',
+                param: data
+            });
         }
 
-        let pendingPromise = new Pending('local_booking/booking_actions:showWarning');
-        let warningPromise = ModalWarning.create();
-        let finalPromise;
-
-        if (options.fromComponent) {
-            let warningStrings = [
-                {
-                    key: title,
-                    component: 'local_booking'
-                }];
-
-            if (message) {
-                warningStrings.push({
-                    key: message,
-                    component: 'local_booking',
-                    param: data
-                });
-            }
-
-            let stringsPromise = Str.get_strings(warningStrings).fail(Notification.exception);
-            // Setup modal warning prompt form
-            finalPromise = $.when(stringsPromise, warningPromise)
+        let stringsPromise = Str.get_strings(warningStrings).fail(Notification.exception);
+        // Setup modal warning prompt form
+        finalPromise = $.when(stringsPromise, warningPromise)
             .then(function(strings, warningModal) {
                 warningModal.setRemoveOnClose(true);
                 warningModal.setTitle(strings[0]);
                 warningModal.setBody(strings[1]);
                 warningModal.setData(data);
+                warningModal.setCustomEvent(options.customEvent);
                 warningModal.setFooter(footer);
                 warningModal.show();
 
@@ -177,14 +167,15 @@ function(
                 return modal;
             })
             .catch(Notification.exception);
-        } else {
-            // Setup modal warning prompt form
-            finalPromise = $.when(warningPromise)
+    } else {
+        // Setup modal warning prompt form
+        finalPromise = $.when(warningPromise)
             .then(function(warningModal) {
                 warningModal.setRemoveOnClose(true);
                 warningModal.setTitle(title);
                 warningModal.setBody(message);
                 warningModal.setData(data);
+                warningModal.setCustomEvent(options.customEvent);
                 warningModal.setFooter(footer);
                 warningModal.show();
 
@@ -195,53 +186,47 @@ function(
                 return modal;
             })
             .catch(Notification.exception);
-        }
+    }
 
-        return finalPromise;
-    };
+    return finalPromise;
+};
 
-    /**
-     * Register the listeners required to delete the logentry.
-     *
-     * @method  registerDelete
-     * @param   {jQuery} root
-     */
-     const registerDelete = (root) => {
-        root.on('click', Selectors.actions.deleteLogentry, function(e) {
-            // Fetch the logentry title, and pass them into the new dialogue.
-            const target = e.target;
-            let logentrySource = root.find(Selectors.logentryitem),
+/**
+ * Register the listeners required to delete the logentry.
+ *
+ * @method  registerDelete
+ * @param   {jQuery} root
+ */
+export const registerDelete = (root) => {
+
+    root.on('click', Selectors.actions.deleteLogentry, function(e) {
+        // Fetch the logentry title, and pass them into the new dialogue.
+        const target = e.target;
+        let logentrySource = root.find(Selectors.logentryitem),
             logentryId = logentrySource.data('logentryId') ||
                 target.closest(Selectors.containers.summaryForm).dataset.logentryId,
             userId = logentrySource.data('userId') || target.closest(Selectors.containers.summaryForm).dataset.userId,
             courseId = logentrySource.data('courseId') || $(Selectors.wrappers.logbookwrapper).data('courseid'),
             cascade = logentrySource.data('cascade') || target.closest(Selectors.containers.summaryForm).dataset.cascade;
 
-            confirmDeletion(logentryId, userId, courseId, cascade);
+        confirmDeletion(logentryId, userId, courseId, cascade);
 
-            e.preventDefault();
-        });
-    };
+        e.preventDefault();
+    });
+};
 
-    /**
-     * Register the listeners required to redirect to
-     * exercise (assignment) grading page.
-     *
-     * @method  registerRedirect
-     * @param   {jQuery} root
-     */
-     const registerRedirect = function(root) {
-        root.on('click', Selectors.actions.gotoFeedback, function(e) {
-            // Call redirect to assignment feedback page
-            BookingActions.gotoFeedback(root, e);
+/**
+ * Register the listeners required to redirect to
+ * exercise (assignment) grading page.
+ *
+ * @method  registerRedirect
+ * @param   {jQuery} root
+ */
+export const registerRedirect = function(root) {
+    root.on('click', Selectors.actions.gotoFeedback, function(e) {
+        // Call redirect to assignment feedback page
+        BookingActions.gotoFeedback(root, e);
 
-            e.preventDefault();
-        });
-    };
-
-    return {
-        registerDelete: registerDelete,
-        registerRedirect: registerRedirect,
-        showWarning: showWarning
-    };
-});
+        e.preventDefault();
+    });
+};

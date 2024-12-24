@@ -89,7 +89,7 @@ class get_pirep extends external_api {
             );
 
         // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
+        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
         $result = true;
         $warnings = array();

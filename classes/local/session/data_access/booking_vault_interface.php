@@ -104,7 +104,9 @@ interface booking_vault_interface {
     public static function get_booked_exercise_date(int $courseid, int $studentid, int $exerciseid);
 
     /**
-     * Get the date of the last booking date
+     * Retrieve the date timestamp of the last booking past or future.
+     * For instructors it would be the date the instructor made the booking.
+     * For students it would be the date of the session (slot.starttime)
      *
      * @param int $courseid      The associated course
      * @param int $studentid     The student id conducted the session
@@ -114,7 +116,7 @@ interface booking_vault_interface {
     public static function get_user_last_booked_date(int $courseid, int $userid, bool $isinstructor = false);
 
     /**
-     * Get the date of the last session date
+     * Retrieve the date timestamp of the last booked session that had passed.
      *
      * @param int $courseid      The associated course
      * @param int $studentid     The student id conducted the session
@@ -155,9 +157,9 @@ interface booking_vault_interface {
      * Retreives the conflicting booking if exists.
      *
      * @param int $instructorid The instructor id making a booking
-     * @param int $studnetid    The student id the booking is for
+     * @param int $studentid    The student id the booking is for
      * @param int $start        The start & end dates
-     * @param itn $end          The start & end dates
+     * @param int $end          The start & end dates
      * @return {object?}
      */
     public static function get_booking_conflict(int $instructorid, int $studentid, int $start, int $end);

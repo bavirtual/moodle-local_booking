@@ -102,6 +102,7 @@ class action_bar extends base_action_bar {
         $elements = (array) $this->additional['bookingparams'];
         $elements['justify'] = 'justify-content-left';
         $elements['bookingview'] = true;
+        $elements['heading'] = get_string("heading$this->type", 'local_booking');
         $elements['userselect'] = $this->type == 'book' ? $this->users_selector($this->additional['studentid']) : false;
 
         return $elements;

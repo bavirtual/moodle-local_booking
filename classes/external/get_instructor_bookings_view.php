@@ -75,7 +75,7 @@ class get_instructor_bookings_view extends external_api {
             );
 
         // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
+        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
         $bookingview = new booking_view(
             ['instructor' => $subscriber->get_instructor($USER->id)],

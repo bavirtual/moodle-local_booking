@@ -27,7 +27,7 @@ import $ from 'jquery';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
 import CalendarActions from 'local_booking/calendar_actions';
-import ModalActions from 'local_booking/modal_actions';
+import * as ModalActions from 'local_booking/modal_actions';
 import * as Repository from 'local_booking/repository';
 import * as Selectors from 'local_booking/selectors';
 
@@ -61,7 +61,7 @@ export async function changeWeek(root, url, year, week, time, courseId) {
         return renderCalendar(root, url, year, week, time, courseId)
             .then((...args) => {
                 if (url !== undefined && url.length && url !== '#') {
-                        window.history.pushState({}, '', url);
+                    window.history.pushState({}, '', url);
                 }
                 return args;
             });
@@ -101,6 +101,7 @@ async function renderCalendar(root, url, year, week, time, courseId) {
             return Templates.replaceNode(weekviewTarget, html, js);
         }).always(() => {
             CalendarActions.setPasteState(root);
+            Notification.fetchNotifications();
             stopLoading(root);
         })
         .fail(Notification.exception);

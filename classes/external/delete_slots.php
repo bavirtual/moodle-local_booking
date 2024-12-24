@@ -72,7 +72,7 @@ class delete_slots extends external_api {
         global $USER;
 
         // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $courseid);
+        $subscriber = get_course_subscriber_context('/local/booking/', $courseid, true);
 
         // Parameter validation.
         $params = self::validate_parameters(self::execute_parameters(), array(

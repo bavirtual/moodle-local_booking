@@ -366,7 +366,7 @@ class participant implements participant_interface {
     /**
      * Get participant's enrolment date.
      *
-     * @return \DateTime $enroldate  The enrolment date of the participant.
+     * @return DateTime $enroldate  The enrolment date of the participant.
      */
     public function get_enrol_date() {
         if (!isset($this->enroldate)) {
@@ -374,13 +374,13 @@ class participant implements participant_interface {
             $enroldate = 'enroldate';
             $this->enroldate = ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->$enroldate;
         }
-        return new \DateTime('@' . $this->enroldate);
+        return new DateTime("@$this->enroldate");
     }
 
     /**
      * Get participant's enrolment suspension date.
      *
-     * @return \DateTime $enroldate  The enrolment suspension date of the participant.
+     * @return DateTime $enroldate  The enrolment suspension date of the participant.
      */
     public function get_suspension_date() {
         if (!isset($this->suspenddate)) {
@@ -388,72 +388,87 @@ class participant implements participant_interface {
             $suspenddate = 'suspenddate';
             $this->suspenddate = ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->$suspenddate;
         }
-        return new \DateTime('@' . $this->suspenddate);
+        return new DateTime("@$this->suspenddate");
     }
 
     /**
      * Get student's last login date.
+     * The returned value is either the DateTime object
+     * or an int timestamp
      *
-     * @return DateTime $lastlogindate  The participant's last login date.
+     * @param bool $timestamp    Whether to return an int timestamp or the DateTime object.
+     * @return DateTime|int|null The participant's last login date.
      */
-    public function get_last_login_date() {
-        $lastlogindate = !empty($this->lastlogin) ? new \DateTime('@' . $this->lastlogin) : null;
-        return $lastlogindate;
+    public function get_last_login_date(bool $timestamp = false) {
+
+        $lastlogindate = null;
+        if (!empty($this->lastlogin) && !$timestamp) {
+            $lastlogindate = new DateTime("@$this->lastlogin");
+        }
+
+        return $timestamp ? $this->lastlogin : $lastlogindate;
+    }
+
+    /**
+     * Return the date object from the last booking past or future.
+     * For instructors it would be the date the instructor made the booking.
+     * For students it would be the date of the session (slot.starttime)
+     * The returned value is either the DateTime object
+     * or an int timestamp
+     *
+     * @param bool $timestamp    Whether to return an int timestamp or the DateTime object.
+     * @return DateTime|int|null The date of the last booked session
+     */
+    public function get_last_booked_date(bool $timestamp = false) {
+
+        $lastbookeddate = null;
+        if (!isset($this->lastbookeddatets) || empty($this->lastbookeddatets))
+            $lastbookeddate = booking::get_last_booked_date($this->course->get_id(), $this->userid, !$this->is_student);
+
+        if (!empty($lastbookeddate))
+            $this->lastbookeddatets = $lastbookeddate->getTimestamp();
+
+        return $timestamp ? $this->lastbookeddatets : $lastbookeddate;
+    }
+
+    /**
+     * Return the date object from the last booked session that had passed.
+     * The returned value is either the DateTime object
+     * or an int timestamp
+     *
+     * @param bool $timestamp    Whether to return an int timestamp or the DateTime object.
+     * @return DateTime|int|null The date of the last booked session
+     */
+    public function get_last_session_date(bool $timestamp = false) {
+
+        $lastsessiondate = null;
+        if (!isset($this->lastsessiondatets) || empty($this->lastsessiondatets))
+            $lastsessiondate = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
+
+        if (!empty($lastsessiondate))
+            $this->lastsessiondatets  = $lastsessiondate->getTimestamp();
+
+        return $timestamp ? $this->lastsessiondatets : $lastsessiondate;
     }
 
     /**
      * Returns the date of the last graded session.
+     * The returned value is either the DateTime object
+     * or an int timestamp
      *
-     * @return  \DateTime    The date of the last grading
+     * @param bool $timestamp Whether to return an int timestamp or the DateTime object.
+     * @return DateTime|int   The date of the last grading
      */
-    public function get_last_graded_date() {
+    public function get_last_graded_date(bool $timestamp = false) {
+
+        $lastgradeddate = null;
         if (!isset($this->lastgraded))
             $this->lastgraded = grading_vault::get_last_graded_date($this->userid, $this->course->get_id(), $this->is_student);
 
-        $lastgradeddate = !empty($this->lastgraded) ? new \DateTime('@' . $this->lastgraded->timemodified) : null;
+        if (!empty($this->lastgraded) && !$timestamp)
+            $lastgradeddate = new DateTime('@' . $this->lastgraded->timemodified);
 
-        return $lastgradeddate;
-    }
-
-    /**
-     * Returns the date of the last booked session.
-     *
-     * @return  \DateTime   The date of the last booked session
-     */
-    public function get_last_booked_date() {
-
-        $lastbookeddate = null;
-        if (!isset($this->lastbookeddatets) || empty($this->lastbookeddatets)) {
-
-            $lastbookeddate = booking::get_last_booked_date($this->course->get_id(), $this->userid, !$this->is_student);
-
-            if (!empty($lastbookeddate)) {
-                $this->lastbookeddatets = $lastbookeddate->getTimestamp();
-            }
-        } else {
-            $lastbookeddate = new \DateTime('@' . $this->lastbookeddatets);
-        }
-
-        return $lastbookeddate;
-    }
-
-    /**
-     * Returns the date of the last session
-     *
-     * @return  \DateTime   The date of the last booked session
-     */
-    public function get_last_session_date() {
-
-        $lastsessiondate = null;
-        if (!isset($this->lastsessiondatets) || empty($this->lastsessiondatets)) {
-            $this->lastsessiondatets = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
-        }
-
-        if (!empty($this->lastsessiondatets)) {
-            $lastsessiondate  = new \DateTime('@' . $this->lastsessiondatets);
-        }
-
-        return $lastsessiondate;
+        return $timestamp ? $this->lastgraded->timemodified : $lastgradeddate;
     }
 
     /**

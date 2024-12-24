@@ -41,6 +41,10 @@ define([
         Selectors,
     ) {
 
+    var SELECTORS = {
+        LOADING_ICON_CONTAINER: '[data-region="loading-icon-container"]',
+    };
+
     var Slots = [];
     var BookedSlots = [];
     var SlotIndexes = [];
@@ -96,7 +100,7 @@ define([
                         alert('Errors encountered: Unable to process availability posting action!');
                     }
                     clean();
-                    const slotsSavedEvent = $.Event(BookingEvents.slotssaved, {'eventData': eventData});
+                    const slotsSavedEvent = $.Event(BookingEvents.slotsSaved, {'eventData': eventData});
                     root.trigger(slotsSavedEvent, this);
 
                     return;
@@ -123,6 +127,11 @@ define([
      */
      async function saveBookedSlot(root) {
 
+        const bookButton = $(Selectors.regions.bookbutton),
+              loadingContainer = bookButton.find(SELECTORS.LOADING_ICON_CONTAINER);
+
+            loadingContainer.removeClass('hidden');
+            bookButton.prop('disabled', true);
             CalendarViewManager.startLoading(root);
 
             // Get exercise id and the user id from the URL
@@ -145,6 +154,8 @@ define([
                         if (response.result) {
                             ModalActions.showWarning(response.warnings[0].message, 'Warning');
                             CalendarViewManager.stopLoading(root);
+                            loadingContainer.addClass('hidden');
+                            bookButton.prop('disabled', false);
                         }
                     }
                     return response.result;

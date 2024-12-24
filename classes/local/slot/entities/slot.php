@@ -24,9 +24,9 @@
 
 namespace local_booking\local\slot\entities;
 
+use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
-use local_booking\local\slot\data_access\slot_vault;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -73,7 +73,7 @@ class slot implements slot_interface {
     protected $week;
 
     /**
-     * @var string $slotstatus The slot's booking stauts in the database.
+     * @var string $slotstatus The slot's booking status in the database.
      */
     protected $slotstatus;
 
@@ -152,14 +152,7 @@ class slot implements slot_interface {
      */
     public function delete() {
         $vault = new slot_vault();
-        $result = $vault->delete_slot($this->courseid, $this->userid, $this->id);
-
-        // update stats if the owner is a student
-        $participant = new participant($this->courseid, $this->userid);
-        if ($participant->is_student()) {
-            $student = new student($this->courseid, $this->userid);
-            $result &= $student->update_statistic('lastsessiondate', self::get_last_booked_slot_date($this->courseid, $this->userid));
-        }
+        $result = $vault->delete_slot($this->id);
 
         return $result;
     }
@@ -239,7 +232,7 @@ class slot implements slot_interface {
     /**
      * Get the status of this slot.
      *
-     * @return int
+     * @return string
      */
     public function get_slotstatus() {
         return $this->slotstatus;
@@ -248,21 +241,9 @@ class slot implements slot_interface {
     /**
      * Get the associated booking info for this slot.
      *
-     * @return int
+     * @return string
      */
     public function get_bookinginfo() {
         return $this->bookinginfo;
-    }
-
-    /**
-     * Get the date of the last booked availability slot
-     *
-     * @param int $courseid
-     * @param int $studentid
-     * @return int
-     */
-    public static function get_last_booked_slot_date(int $courseid, int $studentid) {
-        list($lastsession, $beforelastsession) = slot_vault::get_last_booked_slot($courseid, $studentid);
-        return $lastsession;
     }
 }

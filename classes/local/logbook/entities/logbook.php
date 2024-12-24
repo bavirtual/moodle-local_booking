@@ -283,7 +283,7 @@ class logbook implements logbook_interface {
     }
 
     /**
-     * Set the studnet user id of the log entry.
+     * Set the student user id of the log entry.
      *
      * @param int $userid
      */

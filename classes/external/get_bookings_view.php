@@ -82,7 +82,7 @@ class get_bookings_view extends external_api {
             );
 
         // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
+        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
         // data required get data
         $data = [

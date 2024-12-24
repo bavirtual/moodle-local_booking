@@ -90,7 +90,7 @@ class save_slots extends external_api {
             );
 
         // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid']);
+        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
         $warnings = [];
         $student = $subscriber->get_student($USER->id);

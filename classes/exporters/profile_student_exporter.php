@@ -35,6 +35,7 @@ use local_booking\local\subscriber\entities\subscriber;
 use local_booking\output\views\base_view;
 use renderer_base;
 use moodle_url;
+use DateTime;
 
 /**
  * Class for displaying student profile page.
@@ -333,7 +334,7 @@ class profile_student_exporter extends exporter {
         $noshowdates = [];
         if ($noshowslist = array_column($this->student->get_noshow_bookings(), 'starttime')) {
             foreach ($noshowslist as $noshowdate) {
-                $noshowdates[] = (new \DateTime('@' . $noshowdate))->format('M d, Y');
+                $noshowdates[] = (new DateTime('@' . $noshowdate))->format('M d, Y');
             }
             $noshows = implode('<br>', $noshowdates);
         }
@@ -356,7 +357,7 @@ class profile_student_exporter extends exporter {
                 $endorseronts = !empty($endorserid) ? get_user_preferences('local_booking_' . $this->courseid . '_endorsedate', '', $studentid) : time();
                 $endorsementmgs = [
                     'endorser' => $endorser,
-                    'endorsedate' =>  (new \Datetime('@'.$endorseronts))->format('M j\, Y')
+                    'endorsedate' =>  (new DateTime("@$endorseronts"))->format('M j\, Y')
                 ];
                 $endorsementmsg = get_string($endorsed ? 'endorsementmgs' : 'skilltestendorse', 'local_booking', $endorsementmgs);
             }

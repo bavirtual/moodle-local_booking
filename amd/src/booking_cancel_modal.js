@@ -80,7 +80,7 @@ export default class ModalCancel extends Modal {
         return Repository.cancelBooking(this.bookingId, comment, false)
             .then(function(response) {
                 if (response.result) {
-                    $('body').trigger(BookingEvents.bookingcanceled);
+                    $('body').trigger(BookingEvents.bookingCanceled);
                 }
                 return;
             })
@@ -90,7 +90,6 @@ export default class ModalCancel extends Modal {
                 return;
             })
             .fail(Notification.exception);
-
     }
 
     /**

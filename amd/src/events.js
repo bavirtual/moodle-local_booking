@@ -24,17 +24,18 @@
  */
 define([], function() {
     return {
-        slotssaved: 'booking-events:slots_saved',
-        bookingcanceled: 'booking-events:booking_canceled',
-        logentrycreated: 'booking-events:logentry_created',
-        logentrydeleted: 'booking-events:logentry_deleted',
-        logentryupdated: 'booking-events:logentry_updated',
+        slotsSaved: 'booking-events:slots_saved',
+        bookingCanceled: 'booking-events:booking_canceled',
+        noshowProcessed: 'booking-events:noshow_processed',
+        logentryCreated: 'booking-events:logentry_created',
+        logentryDeleted: 'booking-events:logentry_deleted',
+        logentryUpdated: 'booking-events:logentry_updated',
         addLogentry: 'booking-events:add_logentry',
         editLogentry: 'booking-events:edit_logentry',
         viewUpdated: 'booking-events:view_updated',
         gotoFeedback: 'booking-events:goto_feedback',
-        yesEvent: 'booking-events:response_yes',
-        noEvent: 'booking-events:response_no',
-        okEvent: 'booking-events:response_ok',
+        responseYES: 'booking-events:response_yes',
+        responseNO: 'booking-events:response_no',
+        responseOK: 'booking-events:response_ok',
     };
 });

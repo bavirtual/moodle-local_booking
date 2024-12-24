@@ -965,9 +965,9 @@ export default class ModalLogEntryForm extends Modal {
 
                     // Trigger the appropriate logbook event so that the view can be updated.
                     if (isExisting) {
-                        $('body').trigger(LogbookEvents.logentryupdated, [response.logentry]);
+                        $('body').trigger(LogbookEvents.logentryUpdated, [response.logentry]);
                     } else {
-                        $('body').trigger(LogbookEvents.logentrycreated, [response.logentry]);
+                        $('body').trigger(LogbookEvents.logentryCreated, [response.logentry]);
                     }
                 }
 

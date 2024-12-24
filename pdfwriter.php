@@ -28,7 +28,6 @@
  */
 
 use local_booking\local\report\pdf_report_mentor;
-use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\report\pdf_report_theoryexam;
 use local_booking\local\report\pdf_report_practicalexam;
 use local_booking\local\report\pdf_report_recommendletter;
@@ -56,28 +55,27 @@ require_capability('local/booking:view', $context);
 
 $PAGE->set_url($url);
 
-// header page information
-if (empty($COURSE->subscriber))
-    $COURSE->subscriber = new subscriber($courseid);
+// define session booking plugin subscriber globally
+$subscriber = get_course_subscriber_context($url->out(false), $courseid);
 
-$student = $COURSE->subscriber->get_student($userid);
+$student = $subscriber->get_student($userid);
 
 // create and output the pdf report
 switch ($reporttype) {
     case 'theoryexam':
-        $theoryexamreport = new pdf_report_theoryexam($COURSE->subscriber, $student);
+        $theoryexamreport = new pdf_report_theoryexam($subscriber, $student);
         $theoryexamreport->Generate();
         break;
     case 'mentor':
-        $mentorreport = new pdf_report_mentor($COURSE->subscriber, $student);
+        $mentorreport = new pdf_report_mentor($subscriber, $student);
         $mentorreport->Generate();
         break;
     case 'practicalexam':
-        $practicalreport = new pdf_report_practicalexam($COURSE->subscriber, $student);
+        $practicalreport = new pdf_report_practicalexam($subscriber, $student);
         $practicalreport->Generate();
         break;
     case 'recommendation':
-        $recommendationreport = new pdf_report_recommendletter($COURSE->subscriber, $student);
+        $recommendationreport = new pdf_report_recommendletter($subscriber, $student);
         $recommendationreport->Generate();
         break;
 }

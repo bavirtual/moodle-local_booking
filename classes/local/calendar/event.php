@@ -25,6 +25,8 @@
 
 namespace local_booking\local\calendar;
 
+use stdClass;
+use DateTime;
 use local_booking\local\participant\entities\participant;
 
 defined('MOODLE_INTERNAL') || die();
@@ -134,7 +136,7 @@ class event {
      * @param \stdClass $eventinfo  The event data object
      * @param bool      $extend     Whether to extend the end time by an hour
      */
-    public function __construct(\stdClass $eventinfo, bool $extend = true) {
+    public function __construct(stdClass $eventinfo, bool $extend = true) {
         global $COURSE;
 
         // parse parameters if exists
@@ -151,11 +153,11 @@ class event {
             $this->studentid    = $eventinfo->stdid;
             $this->student      = participant::get_fullname($eventinfo->stdid);
             $this->start        = $eventinfo->start;
-            $this->end          = $eventinfo->end + ($extend ? : 0); // TODO: 1 hr addition to end time is needed as the slot end time is incorrect
+            $this->end          = $eventinfo->end;
 
             // get DateTime objects
-            $this->startDateTime= new \DateTime('@' . $this->start);
-            $this->endDateTime  = new \DateTime('@' . $this->end);
+            $this->startDateTime= new DateTime("@$this->start");
+            $this->endDateTime  = new DateTime("@$this->end");
             $this->sessiondate  = $this->startDateTime->format('l M j \a\t H:i \z\u\l\u');
 
             // set event subject and body based on the instructor/student and the HTML/Plain text format
@@ -168,39 +170,35 @@ class event {
     /**
      * Create an event based on its type.
      *
-     * @return bool  $result The event creation result where applicable
      */
     public function download(string $format = 'ics') {
 
-        switch ($format) {
+        if ($format == 'ics'){
 
-            case 'ics':
+            $ato = get_config('local_booking', 'atoname');
+            $location = get_string('sessionvenue', 'local_booking');
+            $start = date('Ymd', $this->start) . 'T' . date('His', $this->start) . 'Z';
+            $end = date('Ymd', $this->start) . 'T' . date('His', $this->end) . 'Z';
+            $atoslug = strtolower(str_replace(array(' ', "'", '.'), array('_', '', ''), $ato));
+            $calfile = $atoslug . '_' . $this->coursename . '_' . $this->exerciseid;
 
-                $ato = get_config('local_booking', 'atoname');
-                $location = get_string('sessionvenue', 'local_booking');
-                $start = date('Ymd', $this->start) . 'T' . date('His', $this->start) . 'Z';
-                $end = date('Ymd', $this->start) . 'T' . date('His', $this->end) . 'Z';
-                $atoslug = strtolower(str_replace(array(' ', "'", '.'), array('_', '', ''), $ato));
-                $calfile = $atoslug . '_' . $this->coursename . '_' . $this->exerciseid;
+            header('Content-Type: text/Calendar;charset=utf-8');
+            header('Content-Disposition: inline; filename=' . $calfile . '.ics');
+            echo "BEGIN:VCALENDAR\n";
+            echo "VERSION:2.0\n";
+            echo "PRODID:-//{$ato}//NONSGML {$this->name}//EN\n";
+            echo "METHOD:REQUEST\n"; // requied by Outlook
+            echo "BEGIN:VEVENT\n";
+            echo "UID:".date('Ymd') . 'T' . date('His') . "-" . rand() . "-" . $atoslug . "\n"; // required by Outlook
+            echo "DTSTAMP:".date('Ymd').'T'.date('His')."\n"; // required by Outlook
+            echo "DTSTART:{$start}\n";
+            echo "DTEND:{$end}\n";
+            echo "LOCATION:{$location}\n";
+            echo "SUMMARY:{$this->name}\n";
+            echo "DESCRIPTION: {$this->body}\n";
+            echo "END:VEVENT\n";
+            echo "END:VCALENDAR\n";
 
-                header('Content-Type: text/Calendar;charset=utf-8');
-                header('Content-Disposition: inline; filename=' . $calfile . '.ics');
-                echo "BEGIN:VCALENDAR\n";
-                echo "VERSION:2.0\n";
-                echo "PRODID:-//{$ato}//NONSGML {$this->name}//EN\n";
-                echo "METHOD:REQUEST\n"; // requied by Outlook
-                echo "BEGIN:VEVENT\n";
-                echo "UID:".date('Ymd') . 'T' . date('His') . "-" . rand() . "-" . $atoslug . "\n"; // required by Outlook
-                echo "DTSTAMP:".date('Ymd').'T'.date('His')."\n"; // required by Outlook
-                echo "DTSTART:{$start}\n";
-                echo "DTEND:{$end}\n";
-                echo "LOCATION:{$location}\n";
-                echo "SUMMARY:{$this->name}\n";
-                echo "DESCRIPTION: {$this->body}\n";
-                echo "END:VEVENT\n";
-                echo "END:VCALENDAR\n";
-
-                break;
         }
     }
 }

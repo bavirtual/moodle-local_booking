@@ -431,8 +431,9 @@ class availability_week_exporter extends exporter {
 
         $days = [];
         // Calculate which day number is the first day of the week.
+        $type = \core_calendar\type_factory::get_calendar_instance();
         $daysinweek = count($type->get_weekdays());
-        $week_start = new DateTime('@'.$date[0]);
+        $week_start = $this->get_week_start($date);
 
         // The number of weeks allowed for posting from plugin settings
         $weekslookahead = get_config('local_booking', 'weeksahead');
@@ -442,10 +443,23 @@ class availability_week_exporter extends exporter {
             $day = $type->timestamp_to_date_array(date_timestamp_get($week_start), 0);
             date_add($week_start, date_interval_create_from_date_string("1 days"));
             $day['restricted'] = $this->day_restricted($day, $type, $weekslookahead);
-            $days[$i] = $day;
+            $days[] = $day;
         }
 
         return $days;
+    }
+
+    /**
+     * Return the days of the week where $date falls in.
+     *
+     * @return \DateTime array of days
+     */
+    protected function get_week_start($date) {
+        $week_start_date = new \DateTime();
+        date_timestamp_set($week_start_date, $date[0]);
+        $week_start_date->setISODate($date['year'], (int)date('W', $date[0]))->format('Y-m-d');
+
+        return $week_start_date;
     }
 
     /**

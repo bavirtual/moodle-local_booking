@@ -44,14 +44,14 @@ use \local_booking\local\session\entities\booking;
 class moodle_calendar implements calendar_interface {
 
     /**
-     * @var booking $booking The The booking assciated with the event
+     * @var booking $booking The The booking associated with the event
      */
     protected $booking;
 
     /**
      * Constructor.
      *
-     * @param booking $booking The booking assciated with the event
+     * @param booking $booking The booking associated with the event
      */
     public function __construct(booking $booking) {
         $this->booking = $booking;
@@ -69,7 +69,7 @@ class moodle_calendar implements calendar_interface {
         $moodleevent = new \stdClass();
         $moodleevent->userid = $event->userid;
         $moodleevent->type = CALENDAR_EVENT_TYPE_STANDARD; // This is used for events we only want to display on the calendar, and are not needed on the block_myoverview.
-        $moodleevent->name = substr($event->name,0,20);
+        $moodleevent->name = $event->name;
         $moodleevent->description = array('format'=>FORMAT_HTML, 'text'=>$event->body);
         $moodleevent->format = FORMAT_HTML;
         $moodleevent->timestart = $event->start;
@@ -105,10 +105,10 @@ class moodle_calendar implements calendar_interface {
         if (!empty($events)) {
             $eventid = array_values($events)[0]->id;
             $event = \calendar_event::load($eventid);
-            $event->delete();
+            return $event->delete();
         }
 
-        return;
+        return false;
     }
 
     /**
@@ -121,30 +121,30 @@ class moodle_calendar implements calendar_interface {
 
         // create instructor calendar event
         $instructorevent = $this->get_event($this->booking->get_instructorid());
-        $this->delete($instructorevent);
+        $result = $this->delete($instructorevent);
 
         // create student calendar event
         $studentevent = $this->get_event($this->booking->get_studentid());
-        $this->delete($studentevent);
-
-        return;
+        return $result && $this->delete($studentevent);
     }
 
     /**
-     * Get the total sessions for a user.
+     * Get the event object to be passed to Moodle calendar.
      *
      * @param int     $userid  The event's owner user id
      * @return event  The event object
      */
-    protected function get_event(int $usedid) {
+    protected function get_event(int $userid) {
         global $COURSE;
+
+        $course = $COURSE->subscriber;
 
         // get the event information object
         $eventdata = (object) [
             'type'  => 'moodle',
-            'userid'=> $usedid,
+            'userid'=> $userid,
             'id'    => $this->booking->get_courseid(),
-            'name'  => $COURSE->shortname,
+            'name'  => $course->get_shortname(),
             'cmid'  => $this->booking->get_exercise_id(),
             'instid'=> $this->booking->get_instructorid(),
             'stdid' => $this->booking->get_studentid(),

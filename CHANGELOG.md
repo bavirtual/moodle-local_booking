@@ -1,5 +1,12 @@
 # Change log
 
+## [2024122500] - RELEASED 2024-12-25
+
+### Fixed
+
+- calendar week days (day of month)
+- calendar event title in Moodle
+
 ## [2024122400] - RELEASED 2024-12-24
 
 ### Fixed

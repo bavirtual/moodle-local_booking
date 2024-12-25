@@ -70,7 +70,9 @@ class subscriber_vault implements subscriber_vault_interface {
             'courseid' => $courseid
         ];
 
-        return $DB->get_record_sql($sql, $params)->value;
+        $stat = $DB->get_record_sql($sql, $params);
+
+        return !empty($stat) ? $stat->value: false;
     }
 
     /**

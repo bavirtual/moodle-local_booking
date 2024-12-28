@@ -19,7 +19,7 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -57,7 +57,7 @@ class participant_vault implements participant_vault_interface {
     // session booking tables
     const DB_BOOKING = 'local_booking_sessions';
     const DB_SLOTS = 'local_booking_slots';
-    const DB_STATS = 'local_booking_stats';
+    const DB_PROG = 'local_booking_progress';
     const DB_LOGBOOKS = 'local_booking_logbooks';
 
     /**
@@ -325,22 +325,45 @@ class participant_vault implements participant_vault_interface {
     }
 
     /**
+     * Retrieve a data point from the stats table
+     *
+     * @param int    $courseid  The course id
+     * @param int    $userid    The user id
+     * @param string $field     The progress field value to retrieved
+     * @return mixed
+     */
+    public static function get_student_progress(int $courseid, int $userid, string $field) {
+        global $DB;
+
+        $sql = "SELECT $field AS value FROM {" . self::DB_PROG . "} WHERE courseid = :courseid AND userid = :userid";
+
+        $params = [
+            'userid'   => $userid,
+            'courseid' => $courseid
+        ];
+
+        $field = $DB->get_record_sql($sql, $params);
+
+        return !empty($field) ? $field->value: false;
+    }
+
+    /**
      * Updates the progress table with a specific value
      *
      * @param int    $courseid  The course id
      * @param int    $studentid The user id
-     * @param string $stat      The stat field being update
+     * @param string $field     The progress field being update
      * @param string $value     The field value being update
      * @return bool             The result
      */
-    public static function update_student_progress(int $courseid, int $studentid, string $stat, $value) {
+    public static function update_student_progress(int $courseid, int $studentid, string $field, $value) {
         global $DB;
 
         // insert record on enrolment where $value is the first course exercise, otherwise update based on the field to be updated w/ the value
-        $sql = "INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid, notifyflags)
-                VALUES ($studentid, $courseid, 0, 0, 0, 0, '') " . (!empty($stat) ? "
+        $sql = "INSERT IGNORE INTO {" . self::DB_PROG . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid, notifyflags)
+                VALUES ($studentid, $courseid, 0, 0, 0, 0, '') " . (!empty($field) ? "
                 ON DUPLICATE KEY UPDATE
-                    $stat = :value" : "");
+                    $field = :value" : "");
 
         $params = [
             'courseid' => $courseid,
@@ -362,7 +385,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // get last recorded completed lesson
-        $lastlessonsql = "UPDATE mdl_local_booking_stats bs SET lessonscomplete =
+        $lastlessonsql = "UPDATE " . self::DB_PROG . " bs SET lessonscomplete =
                             (
                             SELECT IF(COUNT(modid)>0,0,1)
                             FROM (
@@ -488,9 +511,8 @@ class participant_vault implements participant_vault_interface {
         // course roles
         $selects .= !empty($roles) ? self::sql_roles_field($courseid) . ', ': '';
 
-        // get student statistics if the role is a student
-        $corestudentfields = 's.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid, cc.timecompleted AS graduateddate,
-                        IF(s.lastsessiondate IS NULL OR s.lastsessiondate = 0, ue.timecreated, s.lastsessiondate) AS waitdate, ';
+        // get student progress info if the role is a student
+        $corestudentfields = 's.lessonscomplete, s.lastsessiondate, s.currentexerciseid, s.nextexerciseid, cc.timecompleted AS graduateddate, ';
 
         $selects .= !empty($roles) && $roles == 'student' ?
                 $corestudentfields .
@@ -524,7 +546,7 @@ class participant_vault implements participant_vault_interface {
     }
     /**
      * Get from tables for enroled participants.
-     * Include stats for students.
+     * Include student progress.
      *
      * @param  bool $isstudent Whether the participant is a student
      * @return string $selects The FROM SQL query string
@@ -538,7 +560,7 @@ class participant_vault implements participant_vault_interface {
 
         // get status for student role
         if ($isstudent) {
-            $from .= 'LEFT OUTER JOIN {' . self::DB_STATS . '} s ON s.userid = u.id AND s.courseid = en.courseid ';
+            $from .= 'LEFT OUTER JOIN {' . self::DB_PROG . '} s ON s.userid = u.id AND s.courseid = en.courseid ';
             $from .= 'LEFT JOIN {' . self::DB_COURSE_COMP . '} cc ON cc.userid = u.id AND cc.course = en.courseid ';
         }
 
@@ -547,7 +569,7 @@ class participant_vault implements participant_vault_interface {
 
     /**
      * Get where clause base on filter criteria.
-     * Include stats for students.
+     * Include student progress.
      *
      * @param  string $filter        The enroled participants filter
      * @param  string $courseid      The course id
@@ -568,7 +590,7 @@ class participant_vault implements participant_vault_interface {
         if ($filter == 'suspended')
             return $where .= ' AND ue.status = 1';
 
-        if ($filter == 'graduates')
+        if ($filter == 'graduated')
             return $where .= self::sql_graduated_participants($courseid);
 
         return $where;
@@ -599,7 +621,7 @@ class participant_vault implements participant_vault_interface {
 
         // return order by for students and whether the course require lesson completion
         return ' ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') .
-            ' hasactiveposts DESC, booked DESC, waitdate ASC' : 'lastsessiondate DESC');
+            ' hasactiveposts DESC, booked DESC, lastsessiondate ASC' : 'lastsessiondate DESC');
 
     }
 
@@ -668,7 +690,7 @@ class participant_vault implements participant_vault_interface {
     private static function sql_booked_field(){
         return '@hasbooking :=
             (
-                SELECT b.active FROM {' . self::DB_STATS . '} st
+                SELECT b.active FROM {' . self::DB_PROG . '} st
                 LEFT OUTER JOIN {' . self::DB_BOOKING . '} b ON b.studentid = st.userid AND b.courseid = st.courseid
                 WHERE b.studentid = u.id AND b.courseid = en.courseid
                 ORDER BY b.id DESC LIMIT 1

@@ -34,7 +34,6 @@ use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\session\entities\session;
 use local_booking\local\session\entities\booking;
-use local_booking\local\slot\entities\slot;
 
 /**
  * Class for displaying each session in progression view.

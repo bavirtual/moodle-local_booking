@@ -442,10 +442,17 @@ class participant implements participant_interface {
     public function get_last_session_date(bool $timestamp = false) {
 
         $lastsessiondate = null;
+
+        // set last session date
+        if (!empty($this->lastsessiondatets))
+            $lastsessiondate = new DateTime("@$this->lastsessiondatets");
+
+        // fallback to last booked date
         if (!isset($this->lastsessiondatets) || empty($this->lastsessiondatets))
             $lastsessiondate = booking::get_last_session_date($this->course->get_id(), $this->userid, !$this->is_student);
 
-        if (!empty($lastsessiondate))
+        // update last session date timestamp
+        if (empty($lastsessiondatets) && !empty($lastsessiondate))
             $this->lastsessiondatets  = $lastsessiondate->getTimestamp();
 
         return $timestamp ? $this->lastsessiondatets : $lastsessiondate;

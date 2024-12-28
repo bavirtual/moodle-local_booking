@@ -44,7 +44,7 @@ interface subscriber_interface {
      * Retrieves a Moodle course based on the courseid.
      *
      * @param int  $courseid  The courseid id.
-     * @return string
+     * @return \stdClass $course The course object.
      */
     public function get_course(int $courseid = 0);
 
@@ -271,13 +271,13 @@ interface subscriber_interface {
     public static function is_subscribed(int $courseid);
 
     /**
-     * Checks if the subscribed course has any student status or not.
+     * Checks if the subscribed course has any student progress or not.
      * If not then the course is new subscriber.
      *
      * @param int $courseid
      * @return bool
      */
-    public static function stats_exist(int $courseid);
+    public static function student_progress_exists(int $courseid);
 
     /**
      * Adds students stats for a newly enabled course subscriber

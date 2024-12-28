@@ -84,6 +84,9 @@ class cancel_booking extends external_api {
         $msg = '';
 
         // get the booking to be cancelled
+        if (empty($bookingid))
+            $msg = get_string('bookingcancelednotfound', 'local_booking');
+
         if (!empty($bookingid)) {
 
             $booking = new booking($params['bookingid']);
@@ -124,9 +127,6 @@ class cancel_booking extends external_api {
                 $msg = get_string('bookingcanceledsuccess', 'local_booking', ['studentname'=>student::get_fullname($booking->get_studentid())]);
                 $msg .= $noshow ? ' ' . get_string('bookingcanceledsuccesswnoshow', 'local_booking') : '';
             }
-
-        } else {
-            $msg = get_string('bookingcancelednotfound', 'local_booking');
         }
 
         if ($result) {

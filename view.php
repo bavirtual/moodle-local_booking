@@ -65,10 +65,16 @@ $PAGE->add_body_class('path-local-booking');
 $subscriber = get_course_subscriber_context($url->out(false), $courseid);
 $instructor = $subscriber->get_instructor($USER->id);
 
+// get the student when applicable
+$student = null;
+if ($studentid || $userid) {
+    $student = $subscriber->get_student($studentid ?: $userid);
+}
+
 // get booking view data
 $data = [
     'instructor' => $instructor,
-    'studentid'  => $studentid ?: $userid,
+    'student'    => $student,
     'action'     => $action,
     'view'       => $action == 'confirm' ? $action : 'sessions',
     'sorttype'   => $sorttype,

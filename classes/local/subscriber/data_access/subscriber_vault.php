@@ -50,30 +50,7 @@ class subscriber_vault implements subscriber_vault_interface {
     const DB_GRADE_ITEMS = 'grade_items';
 
     /** Booking tables. */
-    const DB_STATS = 'local_booking_stats';
-
-    /**
-     * Retreive a data point from the stats table
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @param string $stat      The stat field being update
-     * @return bool             The result
-     */
-    public static function get_subscriber_stat(int $courseid, int $userid, string $stat) {
-        global $DB;
-
-        $sql = "SELECT $stat AS value FROM {" . self::DB_STATS . "} WHERE courseid = :courseid AND userid = :userid";
-
-        $params = [
-            'userid'   => $userid,
-            'courseid' => $courseid
-        ];
-
-        $stat = $DB->get_record_sql($sql, $params);
-
-        return !empty($stat) ? $stat->value: false;
-    }
+    const DB_PROG = 'local_booking_progress';
 
     /**
      * Get a based on its id
@@ -95,7 +72,7 @@ class subscriber_vault implements subscriber_vault_interface {
      * @param int   $courseid The course id
      * @return bool Whether the course is subscribed or not
      */
-    public static function course_stats_exist(int $courseid) {
+    public static function student_progress_exists(int $courseid) {
         global $DB;
 
         // get active users enrolled in the specified course
@@ -116,7 +93,7 @@ class subscriber_vault implements subscriber_vault_interface {
         $activeenrols = array_keys($DB->get_records_sql($sql, ['contextid'=>\context_course::instance($courseid)->id, 'courseid'=>$courseid, 'studentrole'=>'student']));
 
         // get users enrolled with stats in the specified course
-        $sql = 'SELECT userid AS enrolled FROM {' . self::DB_STATS .'} WHERE courseid = :courseid';
+        $sql = 'SELECT userid AS enrolled FROM {' . self::DB_PROG .'} WHERE courseid = :courseid';
         $enroledstats = array_keys($DB->get_records_sql($sql, ['courseid'=>$courseid]));
 
         // cross check that all active enrolled users have stats records
@@ -131,13 +108,13 @@ class subscriber_vault implements subscriber_vault_interface {
      * @param int   $courseid The course id
      * @return bool           Whether the course is subscribed or not
      */
-    public static function add_new_subscriber_enrolments(int $courseid) {
+    public static function add_student_progress(int $courseid) {
         global $DB;
 
         $contextid = \context_course::instance($courseid)->id;
 
         // insert all new subscriber students from enrolment
-        $result = $DB->execute("INSERT IGNORE INTO {" . self::DB_STATS . "} (userid, courseid, currentexerciseid)
+        $result = $DB->execute("INSERT IGNORE INTO {" . self::DB_PROG . "} (userid, courseid, currentexerciseid)
             SELECT u.id, :courseid, 0 FROM {" . self::DB_USER . "} u
             INNER JOIN {" . self::DB_USER_ENROL . "} ue on u.id = ue.userid
             INNER JOIN {" . self::DB_ENROL . "} en on ue.enrolid = en.id
@@ -153,7 +130,7 @@ class subscriber_vault implements subscriber_vault_interface {
 
         // update stats with each student's current exercise/assignment id for the subscribing course
         $result &= $DB->execute("
-            UPDATE {" . self::DB_STATS . "} bs SET currentexerciseid =
+            UPDATE {" . self::DB_PROG . "} bs SET currentexerciseid =
                 (
                 SELECT cm.id FROM {" . self::DB_GRADE_GRADE . "} g
                 INNER JOIN {" . self::DB_GRADE_ITEMS . "} gi ON g.itemid = gi.id
@@ -167,7 +144,7 @@ class subscriber_vault implements subscriber_vault_interface {
 
         // update stats with each student's current exercise/assignment id for the subscribing course
         $result &= $DB->execute("
-            UPDATE {" . self::DB_STATS . "} bs SET nextexerciseid =
+            UPDATE {" . self::DB_PROG . "} bs SET nextexerciseid =
                 (
                 SELECT modid FROM
                     (
@@ -196,7 +173,7 @@ class subscriber_vault implements subscriber_vault_interface {
 
         // Update next exercise for new joiners to the first exercise in the course
         $result &= $DB->execute("
-            UPDATE {" . self::DB_STATS . "} bs SET nextexerciseid =
+            UPDATE {" . self::DB_PROG . "} bs SET nextexerciseid =
             (
                 SELECT cm.id
                 FROM {" . self::DB_COURSE_MODS . "} cm
@@ -216,7 +193,7 @@ class subscriber_vault implements subscriber_vault_interface {
          *         making the count > 0.
          * */
         $result &= $DB->execute("
-            UPDATE {" . self::DB_STATS . "} bs SET lessonscomplete =
+            UPDATE {" . self::DB_PROG . "} bs SET lessonscomplete =
                 (
                 SELECT IF( COUNT( modid ) > 0, 0, 1)
                 FROM
@@ -267,9 +244,9 @@ class subscriber_vault implements subscriber_vault_interface {
      * @param int $userid   The assign module id
      * @return bool
      */
-    public static function delete_subscriber_stat(int $courseid, int $userid) {
+    public static function delete_student_progress(int $courseid, int $userid) {
         global $DB;
 
-        return $DB->delete_records(self::DB_STATS, ['courseid'=>$courseid, 'userid'=>$userid]);
+        return $DB->delete_records(self::DB_PROG, ['courseid'=>$courseid, 'userid'=>$userid]);
     }
 }

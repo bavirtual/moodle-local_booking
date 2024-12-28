@@ -76,7 +76,7 @@ class booking_view extends base_view
      * List of allowed values for 'filter' setting
      * @var array $validfilter
      */
-    protected static $validfilter = ['active', 'onhold', 'graduates', 'suspended'];
+    protected static $validfilter = ['active', 'onhold', 'graduated', 'suspended'];
 
     /**
      * logbook view constructor.
@@ -88,8 +88,11 @@ class booking_view extends base_view
         global $USER;
         parent::__construct($data, $related, '');
 
+        // get course
         $course = $related['subscriber'];
         $courseid = $course->get_id();
+
+        // get filter and page info
         $this->filter = $this->data['filter'];
         $this->page = $this->data['page'];
         $this->perpage = !array_key_exists('perpage', $this->data) || is_null($this->data['perpage']) ?
@@ -97,6 +100,8 @@ class booking_view extends base_view
             $this->data['perpage'];
         set_user_preferences(["course-$courseid-$USER->id-perpage"=>$this->perpage], $USER->id);
         $this->data['perpage'] = $this->perpage;
+
+        // export bookings
         $bookings = new dashboard_bookings_exporter($this->data, $this->related);
         $this->exporteddata = $bookings->export($this->renderer);
         $this->studentcount = $course->get_students_count();
@@ -223,7 +228,6 @@ class booking_view extends base_view
             $pagingoptions[] = $this->perpage; // To make sure the current preference is within the options.
         }
         $pagingoptions = array_unique($pagingoptions);
-        sort($pagingoptions);
         $pagingoptions = array_combine($pagingoptions, $pagingoptions);
         if ($numusers > self::$maxperpage) {
             $pagingoptions['0'] = self::$maxperpage;
@@ -264,7 +268,6 @@ class booking_view extends base_view
         }
 
         $filteroptions = array_unique($filteroptions);
-        sort($filteroptions);
         $filteroptions = array_combine($filteroptions, $filteroptions);
 
         $studentfilterdata = [

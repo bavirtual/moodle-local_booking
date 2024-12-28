@@ -76,7 +76,7 @@ class notifications_task extends \core\task\scheduled_task {
                     mtrace('    Notifications for course: ' . $sitecourse->shortname . ' (id: ' . $sitecourse->id . ')');
 
                     // get active students
-                    $students = array_merge($course->get_students('active', true), $course->get_students('graduates'));
+                    $students = array_merge($course->get_students('active', true), $course->get_students('graduated'));
 
                     // process notifications for students
                     foreach ($students as $student) {

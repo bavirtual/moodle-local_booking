@@ -316,7 +316,7 @@ class subscriber implements subscriber_interface {
      * Retrieves a Moodle course based on the courseid.
      *
      * @param int  $courseid  The course id.
-     * @return string
+     * @return stdClass $course The course object.
      */
     public function get_course(int $courseid = 0) {
         $courseid = $courseid ?: $this->courseid;
@@ -393,7 +393,7 @@ class subscriber implements subscriber_interface {
      * @param string $wildcard      Wildcard value for autocomplete
      * @return array                Array of student ids & names
      */
-    public function get_student_names(string $filter = 'active', bool $includeonhold = false, string $roles = null) {
+    public function get_student_names(string $filter = 'active', bool $includeonhold = true, string $roles = null) {
         $participantrecs = participant_vault::get_student_names($this->courseid, $filter, $includeonhold, $roles);
         return $participantrecs;
     }
@@ -792,33 +792,43 @@ class subscriber implements subscriber_interface {
         $record = null;
 
         // get the integration object from settings
-        if (!isset($this->externaldataconfigs)) {
+        if (!isset($this->externaldataconfigs))
             $this->externaldataconfigs = (object) self::get_booking_config('external_data');
-        }
 
-        // Moodle user/password must have read access to the target host, database, and tables
-        // TODO: PHP9 deprecates dynamic properties
-        $conn = new \mysqli($this->externaldataconfigs->$key->host, $CFG->dbuser, $CFG->dbpass, $this->externaldataconfigs->$key->db);
+        // check if the integration is enabled
+        if (!empty($this->externaldataconfigs) && $this->externaldataconfigs->enabled && $this->externaldataconfigs->$key->enabled) {
 
-        if (!$conn->connect_errno) {
-            // get configurations
-            $target = $this->externaldataconfigs->$key->data;
-            $fieldnames = array_keys((array) $target->$data->fields);
-            $fields = implode(',', (array) $target->$data->fields);
-            $table = $target->$data->table;
-            $primarykey = $target->$data->primarykey;
+            // get connection configurations
+            $datasource = $this->externaldataconfigs->$key;
+            $connection = $datasource->connection;
+            $connconfig = $this->externaldataconfigs->connections->$connection;
 
-            $sql = 'SELECT ' . $fields . ' FROM ' . $table . ' WHERE ' . $primarykey . ' = "' . $value . '"';
-            // Return name of current default database
-            if ($result = $conn->query($sql)) {
-                $values = $result->fetch_row();
-                if (!empty($values))
-                    $record = array_combine( $fieldnames, $values);
-                $result->close();
+            if ($connconfig->enabled) {
+                // connect to the external database
+                // Moodle user/password must have read access to the target host, database, and tables
+                // TODO: PHP9 deprecates dynamic properties
+                $conn = new \mysqli($connconfig->host, $CFG->dbuser, $CFG->dbpass, $connconfig->db);
+
+                // check connection
+                if ($conn->connect_errno)
+                    throw new \Exception(get_string('errordbconnection', 'local_booking') . $conn->connect_error);
+
+                // get sql query
+                $table = $datasource->table;
+                $fields = implode(',', (array) $datasource->fields);
+                $mappedfields = array_keys((array) $datasource->fields);
+                $primarykey = $datasource->primarykey;
+                $sql = "SELECT $fields FROM $table WHERE $primarykey = '$value'";
+
+                // Return name of current default database
+                if ($result = $conn->query($sql)) {
+                    $values = $result->fetch_row();
+                    if (!empty($values))
+                        $record = array_combine($mappedfields, $values);
+                    $result->close();
+                }
+                $conn->close();
             }
-            $conn->close();
-        } else {
-            throw new \Exception(get_string('errordbconnection', 'local_booking') . $conn->connect_error);
         }
 
         return $record;
@@ -882,14 +892,14 @@ class subscriber implements subscriber_interface {
     }
 
     /**
-     * Checks if the subscribed course has any student status or not.
+     * Checks if the subscribed course has any student progress or not.
      * If not then the course is new subscriber.
      *
      * @param int $courseid
      * @return bool
      */
-    public static function stats_exist(int $courseid) {
-        return subscriber_vault::course_stats_exist($courseid);
+    public static function student_progress_exists(int $courseid) {
+        return subscriber_vault::student_progress_exists($courseid);
     }
 
     /**
@@ -900,7 +910,7 @@ class subscriber implements subscriber_interface {
      */
     public static function add_new_enrolments(int $courseid) {
         // if not already a subscriber then add new enrolments
-        return subscriber_vault::add_new_subscriber_enrolments($courseid);
+        return subscriber_vault::add_student_progress($courseid);
     }
 
     /**
@@ -911,7 +921,7 @@ class subscriber implements subscriber_interface {
      * @return bool
      */
     public static function delete_enrolment_stats(int $courseid, int $userid) {
-        return subscriber_vault::delete_subscriber_stat($courseid, $userid);
+        return subscriber_vault::delete_student_progress($courseid, $userid);
     }
 
     /**

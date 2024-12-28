@@ -282,7 +282,7 @@ class booking implements booking_interface {
 
     /**
      * Process booking cancellation and no-shows
-     * Update the student statistics accordingly.
+     * Update the student progress data accordingly.
      *
      * @param bool $noshow Whether the student didn't show without prior notice
      * @return bool
@@ -295,7 +295,7 @@ class booking implements booking_interface {
             $result = $this->delete();
         }
 
-        // update student's last session date statistic
+        // update student's last session date progress data
         $lastsessiondate = $this->get_last_session_date($this->courseid, $this->studentid, false);
         $student = new student($this->courseid, $this->studentid);
         $student->update_progress('lastsessiondate', !empty($lastsessiondate) ? $lastsessiondate->getTimestamp() : 0);

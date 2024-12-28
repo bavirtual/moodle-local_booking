@@ -108,19 +108,19 @@ class dashboard_participation_exporter extends exporter {
 
         $participation = [];
         foreach ($instructors as $instructor) {
-            $lastgradeddate = $instructor->get_last_graded_date();
             $lastbookeddate = $instructor->get_last_booked_date();
             $lastsessiondate = $instructor->get_last_session_date();
+            $lastgradeddate = $instructor->get_last_graded_date();
             $interval = !empty($lastsessiondate) ? date_diff($lastsessiondate, $today) : 0;
             $courserole = implode(', ', $instructor->get_roles('name'));
 
             $participation[] = [
                 'instructorid' => $instructor->get_id(),
                 'instructorname' => $instructor->get_name(),
+                'lastbookeddate' => !empty($lastbookeddate) ? $lastbookeddate->format('l M d, Y') : get_string('nogradingrecord', 'local_booking'),
                 'lastsessionts' => !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : 0,
-                'lastsessiondate' => !empty($lastsessiondate) ? $lastsessiondate->format('l M d, Y') : get_string('unknown', 'local_booking'),
-                'lastgradeddate' => !empty($lastgradeddate) ? $lastgradeddate->format('l M d, Y') : get_string('unknown', 'local_booking'),
-                'lastbookeddate' => !empty($lastbookeddate) ? $lastbookeddate->format('l M d, Y') : get_string('unknown', 'local_booking'),
+                'lastsessiondate' => !empty($lastsessiondate) ? $lastsessiondate->format('l M d, Y') : get_string('nogradingrecord', 'local_booking'),
+                'lastgradeddate' => !empty($lastgradeddate) ? $lastgradeddate->format('l M d, Y') : get_string('nogradingrecord', 'local_booking'),
                 'elapseddays' => !empty($lastsessiondate) ? $interval->days : '--',
                 'roles' => $courserole,
             ];

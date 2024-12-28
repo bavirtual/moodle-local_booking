@@ -84,10 +84,16 @@ class get_bookings_view extends external_api {
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
+        // get the student when applicable
+        $student = null;
+        if ($params['userid']) {
+            $student = $subscriber->get_student($params['userid']);
+        }
+
         // data required get data
         $data = [
             'instructor' => $subscriber->get_instructor($USER->id),
-            'studentid'  => $params['userid'],
+            'student'    => $student,
             'action'     => 'book',
             'view'       => 'sessions',
             'sorttype'   => '',

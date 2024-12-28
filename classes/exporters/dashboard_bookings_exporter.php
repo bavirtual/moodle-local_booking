@@ -75,9 +75,9 @@ class dashboard_bookings_exporter extends exporter {
     protected $instructor;
 
     /**
-     * @var int $studentid the user id of the student being booked, applicable in confirmation only.
+     * @var student $student the student, applicable in booking confirmation and student search.
      */
-    protected $studentid = 0;
+    protected $student;
 
     /**
      * @var string $viewtype The view type requested: session booking or session confirmation
@@ -117,7 +117,7 @@ class dashboard_bookings_exporter extends exporter {
         $this->viewtype   = $data['view'];
         $this->modules    = $this->course->get_modules(true);
         $this->instructor = key_exists('instructor', $data) ? $data['instructor'] : null;
-        $this->studentid  = $data['studentid'];
+        $this->student    = key_exists('student',$data) ? $data['student'] : null;
         $this->filter     = !empty($data['filter']) ? $data['filter'] : 'active';
 
         $url = new moodle_url('/local/booking/view.php', [
@@ -219,22 +219,6 @@ class dashboard_bookings_exporter extends exporter {
                 'type' => PARAM_BOOL,
                 'default' => false,
             ],
-            'showactive' => [
-                'type' => PARAM_RAW,
-                'default' => '',
-            ],
-            'showonhold' => [
-                'type' => PARAM_RAW,
-                'default' => '',
-            ],
-            'showgraduates' => [
-                'type' => PARAM_RAW,
-                'default' => '',
-            ],
-            'showsuspended' => [
-                'type' => PARAM_RAW,
-                'default' => '',
-            ],
             'showallcourses' => [
                 'type' => \PARAM_BOOL,
                 'default' => false,
@@ -258,7 +242,13 @@ class dashboard_bookings_exporter extends exporter {
      */
     protected function get_other_values(renderer_base $output) {
 
+        // get the custom header for the third column
         $col3customheader = 'col3header' . (preg_match('~(any|active|onhold)~', $this->filter) ? '' : $this->filter);
+        if (!empty($this->student)) {
+            $studentstatus = $this->student->get_status();
+            $col3customheader = 'col3header' . (preg_match('~(active|onhold)~', $studentstatus) ? '' : $studentstatus);
+        }
+
         $options = [
             'isinstructor' => !empty($this->instructor),
             'isexaminer'   => !empty($this->instructor) ? $this->instructor->is_examiner() : false,
@@ -272,11 +262,7 @@ class dashboard_bookings_exporter extends exporter {
             'scoresort'     => $this->data['sorttype'] == 's',
             'totalstudents' => $this->course->get_students_count(),
             'avgwait'       => $this->averagewait,
-            'showaction'    => $this->filter == 'active',
-            'showactive'    => $this->filter == 'active' || empty($this->filter) ? 'checked' : '',
-            'showonhold'    => $this->filter == 'onhold' ? 'checked' : '',
-            'showgraduates' => $this->filter == 'graduates' ? 'checked' : '',
-            'showsuspended' => $this->filter == 'suspended' ? 'checked' : '',
+            'showaction'    => $this->filter == 'active' || (!empty($this->student) && $this->student->get_status() == 'active'),
             'showallcourses'=> !empty(\get_user_preferences('local_booking_1_xcoursebookings', false, !empty($this->instructor) ? $this->instructor->get_id() : 0)),
             'restrictionsenabled'=> intval($this->course->onholdperiod) > 0,
             'col3header'=> get_string($col3customheader, 'local_booking'),
@@ -295,7 +281,7 @@ class dashboard_bookings_exporter extends exporter {
     protected function get_students($output) {
 
         // get all active students for the instructor dashboard view (sessions) or a single student of the interim step (confirm)
-        if ($this->studentid == 0) {
+        if (empty($this->student)) {
             // get the user preference for the student progression sort type by s = score or a = availability
             $sorttype = $this->data['sorttype'];
             $filter = $this->filter;
@@ -312,7 +298,7 @@ class dashboard_bookings_exporter extends exporter {
             $this->activestudents = $this->course->get_students($filter, false, $page, $perpage, true);
 
         } else {
-            $this->activestudents[] = $this->course->get_student($this->studentid, 0, $this->filter);
+            $this->activestudents[] = $this->student;
         }
 
         $i = 0;
@@ -336,7 +322,7 @@ class dashboard_bookings_exporter extends exporter {
             // get tooltip
             if (!empty($sorttype) && $this->filter == 'active') {
                 if ($sorttype == 'a') {
-                    $sequencetooltip = ['tag' => get_string('tag_' . $student->get_status(), 'local_booking')];
+                    $sequencetooltip = ['tag' => get_string('tag_' . $student->get_progression_status(), 'local_booking')];
                 } elseif ($sorttype == 's') {
                     $sequencetooltip = [
                         'score'     => $student->get_priority()->get_score(),
@@ -351,7 +337,7 @@ class dashboard_bookings_exporter extends exporter {
                         'completion'=> $student->get_priority()->get_completions(),
                     ];
                 }
-                $data['tag'] = $student->get_status();
+                $data['tag'] = $student->get_progression_status();
                 $data['sequencetooltip'] = get_string('sequencetooltip_' . (!empty($sorttype) ? $sorttype : 'a'), 'local_booking', $sequencetooltip);
             }
 

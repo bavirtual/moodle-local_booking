@@ -64,6 +64,9 @@ class dashboard_booking_exporter extends exporter {
             'studentname' => [
                 'type' => PARAM_RAW,
             ],
+            'profileurl' => [
+                'type' => PARAM_RAW,
+            ],
             'exerciseid' => [
                 'type' => \PARAM_INT,
             ],

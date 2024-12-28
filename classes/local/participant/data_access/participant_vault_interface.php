@@ -119,6 +119,16 @@ interface participant_vault_interface {
     public function get_student_incomplete_lesson_ids(int $userid, int $courseid, int $nextexercise);
 
     /**
+     * Retrieve a data point from the stats table
+     *
+     * @param int    $courseid  The course id
+     * @param int    $userid    The user id
+     * @param string $field     The progress field value to retrieved
+     * @return mixed
+     */
+    public static function get_student_progress(int $courseid, int $userid, string $field);
+
+    /**
      * Updates the progress table with a specific value
      *
      * @param int    $courseid  The course id

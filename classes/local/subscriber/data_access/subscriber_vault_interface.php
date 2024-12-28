@@ -37,16 +37,6 @@ defined('MOODLE_INTERNAL') || die();
 interface subscriber_vault_interface {
 
     /**
-     * Retreive a data point from the stats table
-     *
-     * @param int    $courseid  The course id
-     * @param int    $userid    The user id
-     * @param string $stat      The stat field being update
-     * @return bool             The result
-     */
-    public static function get_subscriber_stat(int $courseid, int $userid, string $stat);
-
-    /**
      * Get a based on its id
      *
      * @param int   $courseid The course id
@@ -60,7 +50,7 @@ interface subscriber_vault_interface {
      * @param int   $courseid The course id
      * @return bool Whether the course is subscribed or not
      */
-    public static function course_stats_exist(int $courseid);
+    public static function student_progress_exists(int $courseid);
 
     /**
      * Get a based on its id
@@ -68,7 +58,7 @@ interface subscriber_vault_interface {
      * @param int   $courseid The course id
      * @return bool           Whether the course is subscribed or not
      */
-    public static function add_new_subscriber_enrolments(int $courseid);
+    public static function add_student_progress(int $courseid);
 
     /**
      * Removes user stats data once student is unenroled from the course
@@ -77,5 +67,5 @@ interface subscriber_vault_interface {
      * @param int $userid   The assign module id
      * @return bool
      */
-    public static function delete_subscriber_stat(int $courseid, int $userid);
+    public static function delete_student_progress(int $courseid, int $userid);
 }

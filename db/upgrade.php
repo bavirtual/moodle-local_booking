@@ -20,7 +20,7 @@
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
  * @category   Uninstall
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -36,9 +36,7 @@ function xmldb_local_booking_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    // Automatically generated Moodle v3.11.0 release upgrade line.
-    // Put any upgrade step following this.
-
+    // Automatically generated release upgrade.
     // Add minium slot period course setting
     if ($oldversion < 2024092000) {
 
@@ -102,7 +100,7 @@ function xmldb_local_booking_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        // Update inacurate student statistic records
+        // Update inaccurate student progress data records
         $DB->execute("UPDATE mdl_local_booking_stats SET nextexerciseid = 0, currentexerciseid = 0 WHERE currentexerciseid = nextexerciseid");
         $DB->execute("UPDATE mdl_local_booking_stats s SET s.lastsessiondate = (SELECT MAX(b.timemodified) FROM mdl_local_booking_sessions b WHERE b.courseid = s.courseid AND b.studentid = s.userid) WHERE s.lastsessiondate IS NULL");
 
@@ -111,6 +109,20 @@ function xmldb_local_booking_upgrade($oldversion) {
 
         // Assignment savepoint reached.
         upgrade_plugin_savepoint(true, 2024101901, 'local', 'booking');
+    }
+
+    // change mdl_local_booking_stats to mdl_local_booking_progress to track student progress and
+    // associated student data relevant to session booking not in Moodle users table
+    if ($oldversion < 2024122700) {
+
+        // Rename table local_booking_stats to local_booking_progress.
+        $table = new xmldb_table('local_booking_stats');
+        if ($dbman->table_exists($table)) {
+            $dbman->rename_table($table, 'local_booking_progress');
+        }
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2024122700, 'local', 'booking');
     }
 
     return true;

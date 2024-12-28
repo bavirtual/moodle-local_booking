@@ -34,7 +34,7 @@ class slot_vault implements slot_vault_interface {
     const DB_SLOTS = 'local_booking_slots';
 
     /** Table name for the persistent. */
-    const DB_STATS = 'local_booking_stats';
+    const DB_PROG = 'local_booking_progress';
 
     /**
      * Get a based on its id

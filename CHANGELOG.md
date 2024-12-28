@@ -1,5 +1,18 @@
 # Change log
 
+## [2024122700] - UNRELEASED 2024-12-27
+
+### Fixed
+
+- Wait Days column showing incorrect data
+- instructor participation last session showing no grading records
+- no show exception
+
+### Changed
+
+- mdl_local_booking_stats to mdl_local_booking_progress to be more descriptive of its function
+- separate db connection from lookups configurations in JSON config string
+
 ## [2024122500] - RELEASED 2024-12-25
 
 ### Fixed

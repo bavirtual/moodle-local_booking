@@ -36,7 +36,6 @@ $courseid = optional_param('courseid', $COURSE->id, PARAM_INT);
 $course   = get_course($courseid);
 $userid   = optional_param('userid', 0, PARAM_INT);
 $studentid= optional_param('studentid', 0, PARAM_INT);
-$sorttype = optional_param('sort', '', PARAM_ALPHA);
 $action   = optional_param('action', 'book', PARAM_ALPHA);
 $filter   = optional_param('filter', 'active', PARAM_ALPHA);
 $page     = optional_param('page', 0, PARAM_INT);
@@ -77,7 +76,6 @@ $data = [
     'student'    => $student,
     'action'     => $action,
     'view'       => $action == 'confirm' ? $action : 'sessions',
-    'sorttype'   => $sorttype,
     'filter'     => $filter,
     'page'       => $page,
     'perpage'    => $perpage,

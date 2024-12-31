@@ -98,10 +98,10 @@ class cancel_booking extends external_api {
 
             // cancel the booking
             if ($result = $booking->cancel($noshow)) {
+                $student = new student($subscriber, $booking->get_studentid());
 
                 // suspend the student in the case of repetitive noshows
                 if ($noshow) {
-                    $student = new student($subscriber, $booking->get_studentid());
                     if (count($student->get_noshow_bookings()) > 1) {
                         $student->suspend();
                     }
@@ -111,10 +111,9 @@ class cancel_booking extends external_api {
                     $result = $message->send_noshow_notification( $booking, $subscriber->get_senior_instructors());
 
                 } else {
-
                     // enable restriction override if enabled to allow the student to repost slots sooner
                     if (intval($subscriber->overdueperiod) > 0) {
-                        set_user_preference('local_booking_' . $courseid . '_availabilityoverride', true, $booking->get_studentid());
+                        $student->add_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE'], true);
                     }
 
                     // send cancellation message to both instructor and student

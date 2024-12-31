@@ -44,7 +44,7 @@ use core_external\external_function_parameters;
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class set_student_preferences extends external_api {
+class set_user_preferences extends external_api {
     /**
      * Returns description of method parameters.
      *
@@ -67,7 +67,7 @@ class set_student_preferences extends external_api {
      * @param string $value      The value of the preference to be set.
      * @param int $courseid      The course id.
      * @param int $userid        The user id.
-     * @return array  The result of the availability override operation.
+     * @return array  The result of the preference update operation.
      */
     public static function execute(string $preference, string $value, int $courseid, int $userid) {
 
@@ -82,7 +82,7 @@ class set_student_preferences extends external_api {
 
         $msgdata = ['preference' => $params['preference'], 'value' => $params['value']];
         $warnings = array();
-        $result = set_user_preference("local_booking_$courseid" . "_$preference", $value, $params['userid']);
+        $result = set_user_preference(LOCAL_BOOKING_USERPERFPREFIX. ($courseid!=SITEID ? "$courseid-" : '') . $preference, $value, $params['userid']);
 
         if (!$result) {
             \core\notification::WARNING(get_string('bookingsetpreferencesunable', 'local_booking', $msgdata));

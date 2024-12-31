@@ -1,6 +1,6 @@
 # Change log
 
-## [2024122700] - UNRELEASED 2024-12-27
+## [2024123100] - UNRELEASED 2024-12-31
 
 ### Fixed
 
@@ -10,8 +10,12 @@
 
 ### Changed
 
-- mdl_local_booking_stats to mdl_local_booking_progress to be more descriptive of its function
+- mdl_local_booking_stats to mdl_local_booking_progress to be more descriptive of its function, and field notifyflags to progressflags
 - separate db connection from lookups configurations in JSON config string
+- removed score sorting
+- get_progress_flag/update_progress_flag key/value pair handling of json
+- moved flags formerly used Moodle user_preference to progress flags including endorsement, min period override, and notifications
+- plugin user preferences to use to LOCAL_BOOKING_USERPERFPREFIX.-<courseid>-<pref_name>
 
 ## [2024122500] - RELEASED 2024-12-25
 

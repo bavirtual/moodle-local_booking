@@ -35,7 +35,7 @@
         data-userid="{{userid}}"
         data-onholdgroup="{{onholdgroup}}"
         data-keepactivegroup="{{keepactivegroup}}"
-        data-endorser="{{endorser}}"
+        data-endorserid="{{endorserid}}"
         data-endorsername="{{endorsername}}">
         <div class="sb_profile_tree">
             {{! PROFILE SECTION }}
@@ -87,8 +87,8 @@
                         <dd>
                             {{#qualified}}
                             <div id="endorse-region" class="custom-control custom-switch">
-                                <input type="checkbox" class="toggle-input" id="endorse" {{#endorsed}}checked{{/endorsed}} {{#endorsementlocked}}disabled{{/endorsementlocked}}>
-                                <label id="endorsement-label" class="toggle-label" for="endorse">{{endorsementmgs}}</label>
+                                <input type="checkbox" class="toggle-input" id="endorsed" {{#endorsed}}checked{{/endorsed}} {{#endorsementlocked}}disabled{{/endorsementlocked}}>
+                                <label id="endorsement-label" class="toggle-label" for="endorsed">{{endorsementmgs}}</label>
                                 {{> core/overlay_loading}}
                             </div>
                             <div id="endorsement-letter" class="{{^endorsed}}hidden {{/endorsed}}mt-2">
@@ -131,8 +131,8 @@
                     {{#waitrestrictionenabled}}
                     <dl><dt><dd>
                         <div id="restriction-override-region" class="custom-control custom-switch">
-                            <input type="checkbox" class="toggle-input" id="availabilityoverride" {{#restrictionoverride}}checked{{/restrictionoverride}}>
-                            <label class="toggle-label" for="availabilityoverride">{{#str}} restrictionoverride , local_booking, {{postingwait}} {{/str}}</label>
+                            <input type="checkbox" class="toggle-input" id="overrideminslotperiod" {{#restrictionoverride}}checked{{/restrictionoverride}}>
+                            <label class="toggle-label" for="overrideminslotperiod">{{#str}} restrictionoverride , local_booking, {{postingwait}} {{/str}}</label>
                             {{> core/overlay_loading}}
                         </div>
                     </dd></dt></dl>

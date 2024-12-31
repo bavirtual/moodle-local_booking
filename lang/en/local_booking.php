@@ -88,9 +88,6 @@ $string['nograduatedate'] = 'No graduate date';
 $string['participation'] = 'Instructor participation';
 $string['pluginname'] = 'Session booking';
 $string['role'] = 'Role';
-$string['sequencetooltip_a'] = '{$a->tag}';
-$string['sequencetooltip_s'] = 'Activity score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
-<br/>Availability: {$a->slots} posts<br/>Completion: {$a->completion} lessons';
 $string['sessionaction'] = 'Action';
 $string['sessioncompleted'] = 'Session completed';
 $string['sessionconfirmed'] = 'Session booked and confirmed by student';
@@ -331,7 +328,7 @@ $string['dangerarea'] = 'Danger Area';
 $string['daysback'] = 'days back';
 $string['graduated'] = 'Graduated';
 $string['endorsement'] = 'Skill Test Recommendation';
-$string['endorsementmgs'] = 'Recommended by {$a->endorser} on {$a->endorsedate}';
+$string['endorsementmgs'] = 'Recommended by {$a->endorsername} on {$a->endorsedate}';
 $string['examinersince'] = 'Examiner since';
 $string['graduation'] = 'Certification';
 $string['graduationconfirmation'] = '<p><strong>Process completed successfully...</strong></p><p>&nbsp;\'{$a->fullname}\' certification is complete and the following actions were performed:</p><ul>
@@ -375,7 +372,7 @@ $string['sessionssummary'] = 'Sessions Summary';
 $string['sim1'] = 'Primary simulator';
 $string['sim2'] = 'Secondary simulator';
 $string['skilltest']='Skill Test';
-$string['skilltestendorse']='Recommend for skill test';
+$string['skilltestendorsed']='Recommend for skill test';
 $string['slots'] = 'Slots';
 $string['slotsactive'] = 'Posted slots';
 $string['theoryexamreport']='Theory examination report';
@@ -385,7 +382,7 @@ $string['totalexamsessions']='Total exam sessions';
 $string['totalsessionhours']='Total training hours';
 $string['totalsessionsbooked']='Total booked sessions';
 $string['totalsessionsgraded']='Total graded sessions';
-$string['xcoursebookings']='Show bookings from all courses';
+$string['xcoursebookings']='Show bookings from all courses in the \'My active bookings\' section';
 $string['xcoursebookings_help']='Show bookings from all course';
 
 // reports

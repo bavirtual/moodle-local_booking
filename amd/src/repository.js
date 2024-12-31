@@ -400,12 +400,36 @@ export const hasConflictingBooking = (studentid, bookedslot) => {
  */
  export const setUserPreferences = (preference, value, courseId, userId) => {
     const request = {
-        methodname: 'local_booking_set_student_preferences',
+        methodname: 'local_booking_set_user_preferences',
         args: {
             preference: preference,
             value: value,
             courseid: courseId,
             userid: userId
+        }
+    };
+
+    return Ajax.call([request])[0];
+};
+
+/**
+ * Update student progress information.
+ *
+ * @method updateStudentProgress
+ * @param  {string} progressKey The preference tag
+ * @param  {string} value  The value of the preference
+ * @param  {int} courseId  The course id
+ * @param  {int} studentId The student's user id
+ * @return {promise}  Resolved with progress set promise
+ */
+ export const updateStudentProgress = (progressKey, value, courseId, studentId) => {
+    const request = {
+        methodname: 'local_booking_update_student_progress',
+        args: {
+            progresskey: progressKey,
+            value: value,
+            courseid: courseId,
+            studentid: studentId
         }
     };
 

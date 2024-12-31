@@ -215,8 +215,10 @@ class student extends participant {
             }
 
             if ($result) {
+                // update progress flags with slots to notify instructors
+                $existingslotids = $this->get_progress_flag('notifypostedslots');
+                $this->add_progress_flag('notifypostedslots', $slotids ($existingslotids ? ",$existingslotids" : ''));
                 // commit transaction
-                $this->set_notify('posted_slots', $slotids);
                 $transaction->allow_commit();
             } else {
                 $transaction->rollback(new \moodle_exception(get_string('slotssaveunable', 'local_booking')));
@@ -253,7 +255,7 @@ class student extends participant {
         $this->update_progress('lastsessiondate', $this->lastsessiondatets);
 
         if ($result) {
-            $this->set_notify('posted_slots');
+            $this->add_progress_flag('notifypostedslots');
             $transaction->allow_commit();
         } else {
             $transaction->rollback(new \moodle_exception(get_string('slotsdeleteunable', 'local_booking')));
@@ -508,7 +510,7 @@ class student extends participant {
 
         if (empty($this->restrictiondate)) {
             // get wait time restriction waiver if exists
-            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->course->get_id() . '_availabilityoverride', false, $this->userid);
+            $hasrestrictionwaiver = (bool) $this->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE']);
             $today = new \DateTime('@' . time());
             $nextsessiondate = $today;
 
@@ -755,6 +757,54 @@ class student extends participant {
     }
 
     /**
+     * Get data from student progress information
+     *
+     * @param string $field
+     * @param $value
+     */
+    public function get_progress_info(string $field) {
+        return $this->vault->get_student_progress($this->course->get_id(), $this->userid, $field);
+    }
+
+    /**
+     * Get a specific progress flag
+     *
+     * @param string $progress flag
+     * @return mixed|null $value
+     */
+    public function get_progress_flag(string $progressflag) {
+        $flagsjson = json_decode($this->get_progress_info("progressflags"), true);
+
+        $value = null;
+        // verify the JSON string
+        if (!empty($flagsjson)) {
+            $value = array_key_exists($progressflag, $flagsjson) ? $flagsjson[$progressflag] : false;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Set student progress flag.
+     *
+     * @param string $progressflag
+     * @param mixed  $value
+     */
+    public function add_progress_flag(string $progressflag, $value = null) {
+        $progressflags = array();
+        $flagsjson = json_decode($this->get_progress_info("progressflags"), true);
+
+        // verify the JSON string
+        if (!empty($flagsjson)) {
+            $progressflags = $flagsjson;
+        }
+        $progressflags[$progressflag] = $value;
+
+        // encode progress flags
+        $this->update_progress("progressflags", json_encode($progressflags));
+    }
+
+    /**
      * Set the student's slot color.
      *
      * @param string $slotcolor
@@ -782,53 +832,13 @@ class student extends participant {
     }
 
     /**
-     * Get data from student progress information
+     * Returns whether the student has a wait restriction waiver.
      *
-     * @param string $field
-     * @param $value
+     * @return  bool    Whether the lessones were completed or not.
      */
-    public function get_progress_info(string $field) {
-        return $this->vault->get_student_progress($this->course->get_id(), $this->userid, $field);
-    }
-
-    /**
-     * Get a specific notification scheduled to be sent
-     *
-     * @param string $notification
-     * @return mixed|null $value
-     */
-    public function get_notify(string $notification) {
-        $notifyjson = json_decode($this->get_progress_info("notifyflags"), true);
-
-        $value = null;
-        // verify the JSON string
-        if (!empty($notifyjson)) {
-            $value = array_key_exists($notification, $notifyjson) ? $notifyjson[$notification] : false;
-        }
-
-        // encode notifications
-        return $value;
-    }
-
-    /**
-     * Set student notification to schedule a notification for
-     * the participant depending on the type of notification.
-     *
-     * @param string $notification
-     * @param mixed  $value
-     */
-    public function set_notify(string $notification, $value = null) {
-        $notifications = array();
-        $notifyjson = json_decode($this->get_progress_info("notifyflags"), true);
-
-        // verify the JSON string
-        if (!empty($notifyjson)) {
-            $notifications = $notifyjson;
-        }
-        $notifications[$notification] = $value;
-
-        // encode notifications
-        $this->update_progress("notifyflags", json_encode($notifications));
+    public function has_restriction_waiver() {
+        // wait restriction is enabled and the student has a waiver (restriction override)
+        return $this->course->minslotperiod == 0 || $this->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE']);
     }
 
     /**

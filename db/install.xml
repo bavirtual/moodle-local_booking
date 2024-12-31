@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/booking/db" VERSION="20241227" COMMENT="XMLDB file for Moodle local/booking"
+<XMLDB PATH="local/booking/db" VERSION="20241229" COMMENT="XMLDB file for Moodle local/booking"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -108,7 +108,7 @@
         <FIELD NAME="lastsessiondate" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Date timestamp of last session booked"/>
         <FIELD NAME="currentexerciseid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The current exercise assignment module id"/>
         <FIELD NAME="nextexerciseid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The next exercise assignment module id"/>
-        <FIELD NAME="notifyflags" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Flags to send notifications"/>
+        <FIELD NAME="progressflags" TYPE="char" LENGTH="500" NOTNULL="false" SEQUENCE="false" COMMENT="Flags to send notifications"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

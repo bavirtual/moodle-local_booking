@@ -292,7 +292,7 @@ class subscriber implements subscriber_interface {
 
         // get graduation notification type: 0 = notify all active participants, 1 = notify active participants with same group
         if ($graduationnotifications = self::get_booking_config('graduation_notification')) {
-            $gradcourse = 'course_' . $this->courseid;
+            $gradcourse = "course_$this->courseid";
             $this->participantstonotify = \property_exists($graduationnotifications, $gradcourse) ? $graduationnotifications->$gradcourse : 0;
         }
 

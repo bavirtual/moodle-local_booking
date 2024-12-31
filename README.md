@@ -49,7 +49,7 @@ The plugin can be installed either directly from Moodle or through CLI.
 
 ### Documentation
 
-- Detailed documentation can be found on [MoodleDocs](https://docs.moodle.org/400/en/Session_Booking)
+- Detailed documentation can be found on [MoodleDocs](https://docs.moodle.org/405/en/Session_Booking)
 
 ## Configuration
 

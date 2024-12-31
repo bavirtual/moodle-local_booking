@@ -305,7 +305,7 @@ class participant implements participant_interface {
 
         if (!isset($this->bookings)) {
             $bookings = [];
-            $allcourses = \get_user_preferences('local_booking_1_xcoursebookings', false, $this->userid);
+            $allcourses = \get_user_preferences(LOCAL_BOOKING_USERPERFPREFIX.'xcoursebookings', false, $this->userid);
             $bookingobjs = booking_vault::get_bookings($this->course->get_id(), $this->userid, $isstudent, $oldestfirst, $activeonly, $allcourses);
             foreach ($bookingobjs as $bookingobj) {
                 $booking = new booking();

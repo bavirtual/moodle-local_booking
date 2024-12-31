@@ -65,11 +65,6 @@ class availability_week_exporter extends exporter {
     protected $maxlanes;
 
     /**
-     * @var bool $showlocaltime Whether to show local time.
-     */
-    protected $showlocaltime;
-
-    /**
      * @var int $year The year based on the calendar's timestamp.
      */
     protected $year;
@@ -133,11 +128,9 @@ class availability_week_exporter extends exporter {
         $calendar = $related['calendar'];
         $type = $related['type'];
         $this->calendar = $calendar;
+        $this->course = $related['subscriber'];
         $this->actiondata = $actiondata;
         $this->view = $actiondata['view'];
-
-        // Get user preference to show local time column ## future feature ##
-        $this->showlocaltime = true;
 
         // identify the student to view the slots (single student view 'user' or 'all' students)
         $activebookinginstrname = '';
@@ -177,13 +170,9 @@ class availability_week_exporter extends exporter {
         $this->url = new moodle_url('/local/booking/availability.php', [
             'time' => $calendar->time,
             'week' => $this->weekofyear,
-            'year' => $calendarday['year']
+            'year' => $calendarday['year'],
+            'courseid' => $this->calendar->course->id
         ]);
-
-        if ($this->calendar->course && SITEID !== $this->calendar->course->id) {
-            $this->url->param('courseid', $this->calendar->course->id);
-            $this->course = $related['subscriber'];
-        }
 
         $exerciseid = $this->actiondata['exerciseid'];
         $data = [
@@ -313,9 +302,6 @@ class availability_week_exporter extends exporter {
             'maxlanes' => [
                 'type' => PARAM_INT,
             ],
-            'showlocaltime' => [
-                'type' => PARAM_BOOL,
-            ],
             'weekofyear' => [
                 'type' => PARAM_INT,
             ],
@@ -398,7 +384,6 @@ class availability_week_exporter extends exporter {
             'timeslots' => $this->get_time_slots($output),
             // day slots data
             'maxlanes' => $this->maxlanes <= LOCAL_BOOKING_MAXLANES ? $this->maxlanes : LOCAL_BOOKING_MAXLANES,
-            'showlocaltime' => $this->showlocaltime,
             'date' => (new date_exporter($date))->export($output),
             // navigation data
             'periodname' => get_string('weekinyear', 'local_booking', date('W', $this->calendar->time)),
@@ -428,38 +413,28 @@ class availability_week_exporter extends exporter {
      * @return array array of days
      */
     protected function get_week_days($date, structure $type) {
-
         $days = [];
         // Calculate which day number is the first day of the week.
         $type = \core_calendar\type_factory::get_calendar_instance();
         $daysinweek = count($type->get_weekdays());
-        $week_start = $this->get_week_start($date);
+
+        // get the start of the week
+        $week_start_date = new DateTime();
+        date_timestamp_set($week_start_date, $date[0]);
+        $week_start_date->modify('this week');
 
         // The number of weeks allowed for posting from plugin settings
         $weekslookahead = get_config('local_booking', 'weeksahead');
 
         // add remaining days of the week
         for ($i = 0; $i < $daysinweek; $i++) {
-            $day = $type->timestamp_to_date_array(date_timestamp_get($week_start), 0);
-            date_add($week_start, date_interval_create_from_date_string("1 days"));
+            $day = $type->timestamp_to_date_array(date_timestamp_get($week_start_date), 0);
+            date_add($week_start_date, date_interval_create_from_date_string("1 days"));
             $day['restricted'] = $this->day_restricted($day, $type, $weekslookahead);
             $days[] = $day;
         }
 
         return $days;
-    }
-
-    /**
-     * Return the days of the week where $date falls in.
-     *
-     * @return \DateTime array of days
-     */
-    protected function get_week_start($date) {
-        $week_start_date = new \DateTime();
-        date_timestamp_set($week_start_date, $date[0]);
-        $week_start_date->setISODate($date['year'], (int)date('W', $date[0]))->format('Y-m-d');
-
-        return $week_start_date;
     }
 
     /**
@@ -480,12 +455,11 @@ class availability_week_exporter extends exporter {
         $datepassed = $datedifference < 0;
 
         // when course posting wait restriction is enabled, a day prior to that wait restriction period is restricted
-        $lastsessionwait = true;
-        $hasrestrictionwaiver = false;
-        if ($this->view == 'all' || $this->actiondata['action'] == 'book') {
-            $lastsessionwait = false;
-        } else {
-            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->calendar->courseid . '_availabilityoverride', false, $this->student->get_id());
+        $hasrestrictionwaiver = !empty($this->student) ? $this->student->has_restriction_waiver() : false;
+        $lastsessionwait = $this->view != 'all' && $this->actiondata['action'] != 'book' && !$hasrestrictionwaiver;
+        false;
+        if ($lastsessionwait) {
+            $hasrestrictionwaiver = (bool) $this->student->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE']);
             if (!$hasrestrictionwaiver) {
                 $nextsessiondt = $this->student->get_next_allowed_session_date();
                 $nextsessiondate = $type->timestamp_to_date_array($nextsessiondt->getTimestamp());
@@ -502,7 +476,10 @@ class availability_week_exporter extends exporter {
         // also ensure weeks lookahead setting is not disabled (unlimited)
         $unlimited = !is_null($weekslookahead)  &&  $weekslookahead == 0;
 
-        return $datepassed || $lastsessionwait || ($beyondlookahead && !$unlimited);
+        // restrict posting on days in the past, beyond lookahead, or prior to last session wait period
+        $restricted = $datepassed || $lastsessionwait || ($beyondlookahead && !$unlimited);
+
+        return $restricted;
     }
 
     /**

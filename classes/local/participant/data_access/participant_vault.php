@@ -360,7 +360,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // insert record on enrolment where $value is the first course exercise, otherwise update based on the field to be updated w/ the value
-        $sql = "INSERT IGNORE INTO {" . self::DB_PROG . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid, notifyflags)
+        $sql = "INSERT IGNORE INTO {" . self::DB_PROG . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid, progressflags)
                 VALUES ($studentid, $courseid, 0, 0, 0, 0, '') " . (!empty($field) ? "
                 ON DUPLICATE KEY UPDATE
                     $field = :value" : "");

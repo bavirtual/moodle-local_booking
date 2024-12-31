@@ -30,6 +30,26 @@ use local_booking\local\logbook\form\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
 
+// LOCAL_BOOKING_USERPERFPREFIX - constant value for plugin user preferences prefix
+define('LOCAL_BOOKING_USERPERFPREFIX', 'local_booking-course-');
+
+// LOCAL_BOOKING_USERPERFS - constant object of plugin user preferences
+define('LOCAL_BOOKING_USERPERFS', ['LOGFRMT'=>'logbookformat', 'PERPAGE'=>'perpage', 'SHOWXCOURSEBOOKS' => 'xcoursebookings']);
+
+// DEFAULT_LOGBOOK_FORMAT - constant for default logbook format - standard course format
+define('DEFAULT_LOGBOOK_FORMAT', 'std');
+
+// LOCAL_BOOKING_PROGFLAGS - constant object of plugin user preferences
+define('LOCAL_BOOKING_PROGFLAGS', [
+    'POSTOVERRIDE'=>'overrideminslotperiod',
+    'NOTIFYPOSTS'=>'notifypostedslots',
+    'NOTIFYGRAD'=>'notifygraduation',
+    'NOTIFYENDORSE'=>'notifyendorsement',
+    'ENDORSED'=>'endorsed',
+    'ENDORSER'=>'endorseid',
+    'ENDORSEDATE'=>'endorsedate'
+]);
+
 // LOCAL_BOOKING_DASHBOARDPAGESIZE - constant value for the instructor dashboard page size
 define('LOCAL_BOOKING_DASHBOARDPAGESIZE', 20);
 
@@ -136,8 +156,8 @@ function local_booking_extend_navigation_course(navigation_node $navigation) {
 
     if (subscriber::is_subscribed($COURSE->id)) {
 
-        // get subscribed coudse
-        $course = get_course_subscriber_context('/local/booking/', $COURSE->id);
+        // get subscribed course
+        $course = get_course_subscriber_context('/local/booking/', $COURSE->id, false, false);
 
         // for checking if the participant is active
         $participant = $course->get_participant($USER->id);
@@ -231,10 +251,11 @@ function local_booking_extend_navigation_course(navigation_node $navigation) {
  *
  * @param string $url      PAGE url
  * @param int  $courseid   course id for context
- * @param bool $setcontext sets the context for external api
+ * @param bool $setcontext sets the context, used for external api
+ * @param bool $setpageurl sets the page url, used for external api
  * @return subscriber
  */
-function get_course_subscriber_context(string $url, int $courseid, bool $setcontext = false) {
+function get_course_subscriber_context(string $url, int $courseid, bool $setcontext = false, bool $setpageurl = true) {
     global $PAGE, $COURSE;
 
     // ensure we have the right course context
@@ -244,7 +265,11 @@ function get_course_subscriber_context(string $url, int $courseid, bool $setcont
     // define subscriber globally
     if (empty($COURSE->subscriber)) {
         $context = context_course::instance($courseid);
-        $PAGE->set_url($url);
+
+        // set the page url when not set for external api
+        if ($setpageurl) {
+            $PAGE->set_url($url);
+        }
 
         // set the context when not set for external api
         if ($setcontext) {

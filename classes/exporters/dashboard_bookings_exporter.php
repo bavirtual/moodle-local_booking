@@ -202,9 +202,6 @@ class dashboard_bookings_exporter extends exporter {
                 'type' => dashboard_student_exporter::read_properties_definition(),
                 'multiple' => true,
             ],
-            'scoresort' => [
-                'type' => PARAM_BOOL,
-            ],
             'totalstudents' => [
                 'type' => PARAM_INT,
             ],
@@ -252,14 +249,19 @@ class dashboard_bookings_exporter extends exporter {
             'readonly'     => $this->data['action'] == 'readonly'
         ];
 
+        $showcrosscoursebookings = false;
+        if (!empty($this->instructor)) {
+            $showcrosscoursebookings = get_user_preferences(LOCAL_BOOKING_USERPERFPREFIX.$this->course->get_id().'-'.
+                LOCAL_BOOKING_USERPERFS['SHOWXCOURSEBOOKS'], false, $this->instructor->get_id());
+        }
+
         $return = [
             'coursemodules' => base_view::get_modules($output, $this->course, $options),
             'activestudents'=> $this->get_students($output),
-            'scoresort'     => $this->data['sorttype'] == 's',
             'totalstudents' => $this->course->get_students_count(),
             'avgwait'       => $this->averagewait,
             'showaction'    => $this->filter == 'active' || (!empty($this->student) && $this->student->get_status() == 'active'),
-            'showallcourses'=> !empty(\get_user_preferences('local_booking_1_xcoursebookings', false, !empty($this->instructor) ? $this->instructor->get_id() : 0)),
+            'showallcourses'=> $showcrosscoursebookings,
             'restrictionsenabled'=> intval($this->course->onholdperiod) > 0,
             'col3header'=> get_string($col3customheader, 'local_booking'),
         ];
@@ -279,16 +281,9 @@ class dashboard_bookings_exporter extends exporter {
         // get all active students for the instructor dashboard view (sessions) or a single student of the interim step (confirm)
         if (empty($this->student)) {
             // get the user preference for the student progression sort type by s = score or a = availability
-            $sorttype = $this->data['sorttype'];
             $filter = $this->filter;
             $page = $this->data['page'] ?: 0;
             $perpage = $this->data['perpage'];
-
-            // get sorted preference
-            if (empty($sorttype)) {
-                $sorttype = get_user_preferences('local_booking_sorttype', 'a');
-            }
-            set_user_preferences(array('local_booking_sorttype'=>$sorttype));
 
             // get the students list based on the requested filter for active or on-hold
             $this->activestudents = $this->course->get_students($filter, false, $page, $perpage, true);
@@ -315,21 +310,8 @@ class dashboard_bookings_exporter extends exporter {
             ];
 
             // get tooltip
-            if (!empty($sorttype) && $this->filter == 'active') {
-                if ($sorttype == 'a') {
-                    $sequencetooltip = ['tag' => get_string('tag_' . $student->get_progression_status(), 'local_booking')];
-                } elseif ($sorttype == 's') {
-                    $sequencetooltip = [
-                        'score'     => $student->get_priority()->get_score(),
-                        'recency'   => $student->get_recency_days(),
-                        'slots'     => $student->get_total_posts(),
-                        'activity'  => $student->get_priority()->get_activity_count(false),
-                        'completion'=> $student->get_priority()->get_completions(),
-                    ];
-                }
-                $data['tag'] = $student->get_progression_status();
-                $data['sequencetooltip'] = get_string('sequencetooltip_' . (!empty($sorttype) ? $sorttype : 'a'), 'local_booking', $sequencetooltip);
-            }
+            $data['tag'] = $student->get_progression_status();
+            $data['sequencetooltip'] = get_string('tag_' . $student->get_progression_status(), 'local_booking');
 
             $studentexporter = new dashboard_student_exporter($data, [
                 'context'       => $context,

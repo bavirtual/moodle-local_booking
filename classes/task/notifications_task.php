@@ -107,7 +107,7 @@ class notifications_task extends \core\task\scheduled_task {
     protected function process_recommendations(student $student, subscriber $course) {
 
         // check if the student has recommendation notification pending in their preferences settings
-        if (get_user_preferences('local_booking_' . $course->get_id() . '_endorsenotify', false, $student->get_id())) {
+        if ($student->get_progress_flag('notifyendorsement')) {
 
             // get message data
             $data = array(
@@ -115,7 +115,7 @@ class notifications_task extends \core\task\scheduled_task {
                 'studentname'   => $student->get_name(),
                 'firstname'     => $student->get_profile_field('firstname', true),
                 'skilltest'     => $course->get_graduation_exercise_id(true),
-                'instructorname'=> instructor::get_fullname(get_user_preferences('local_booking_' . $course->get_id() . '_endorser', 0, $student->get_id())),
+                'instructorname'=> instructor::get_fullname($student->get_progress_flag('endorserid')),
                 'recommendltrurl'=> (new \moodle_url('/local/booking/report.php', array('courseid'=>$course->get_id(), 'userid'=>$student->get_id(), 'report'=>'recommendation')))->out(false),
                 'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$course->get_id())))->out(false),
                 'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
@@ -131,7 +131,7 @@ class notifications_task extends \core\task\scheduled_task {
             mtrace('                recommendation notifications sent...');
 
             // reset notification setting
-            set_user_preference('local_booking_' . $course->get_id() . '_endorsenotify', false, $student->get_id());
+            $student->add_progress_flag('notifyendorsement', false);
         }
     }
 
@@ -145,7 +145,7 @@ class notifications_task extends \core\task\scheduled_task {
 
         $haspostings = false;
 
-        $slotstonotify = $student->get_notify('posted_slots');
+        $slotstonotify = $student->get_progress_flag('notifypostedslots');
         if (!empty($slotstonotify)) {
 
             $slotids = explode(',', $slotstonotify);
@@ -206,7 +206,7 @@ class notifications_task extends \core\task\scheduled_task {
             }
 
             // reset notification setting
-            $student->set_notify('posted_slots');
+            $student->add_progress_flag('notifypostedslots');
         }
     }
 
@@ -220,7 +220,7 @@ class notifications_task extends \core\task\scheduled_task {
 
         if (!empty($course->gradmsgsubject) && !empty($course->gradmsgbody)) {
 
-            $graduationnotify = $student->get_notify('graduation');
+            $graduationnotify = $student->get_progress_flag('notifygraduation');
 
             if (!empty($graduationnotify)) {
 
@@ -292,7 +292,7 @@ class notifications_task extends \core\task\scheduled_task {
                 mtrace('                graduation notifications sent...');
 
                 // reset notification setting
-                $student->set_notify('graduation', false);
+                $student->add_progress_flag('graduation', false);
             }
         }
     }

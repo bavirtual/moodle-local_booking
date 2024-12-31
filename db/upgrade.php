@@ -112,17 +112,22 @@ function xmldb_local_booking_upgrade($oldversion) {
     }
 
     // change mdl_local_booking_stats to mdl_local_booking_progress to track student progress and
-    // associated student data relevant to session booking not in Moodle users table
-    if ($oldversion < 2024122700) {
+    // notifyflags to progressflags for associated student data relevant to session booking not in Moodle users table
+    if ($oldversion < 2024123000) {
 
         // Rename table local_booking_stats to local_booking_progress.
         $table = new xmldb_table('local_booking_stats');
+        $field = new xmldb_field('notifyflags', XMLDB_TYPE_CHAR, '500', null, false, null, '', 'nextexerciseid');
         if ($dbman->table_exists($table)) {
+            if ($dbman->field_exists($table, $field)) {
+                $dbman->change_field_type($table, $field);
+                $dbman->rename_field($table, $field, 'progressflags');
+            }
             $dbman->rename_table($table, 'local_booking_progress');
         }
 
         // Assignment savepoint reached.
-        upgrade_plugin_savepoint(true, 2024122700, 'local', 'booking');
+        upgrade_plugin_savepoint(true, 2024123000, 'local', 'booking');
     }
 
     return true;

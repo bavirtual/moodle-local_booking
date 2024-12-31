@@ -371,7 +371,7 @@ class profile_instructor_exporter extends exporter {
             'totalexams'       => $totalexams,
             'loginasurl'       => $loginas->out(false),
             'admin'            => has_capability('moodle/user:loginas', $this->related['context']),
-            'xcoursebookings'  => \get_user_preferences('local_booking_1_xcoursebookings', false, $instructorid),
+            'xcoursebookings'  => get_user_preferences(LOCAL_BOOKING_USERPERFPREFIX.LOCAL_BOOKING_USERPERFS['SHOWXCOURSEBOOKS'], false, $instructorid),
             'rolesincename'    => $currentrole,
             'roles'            => implode(', ', $roles),
             'coursemodules'    => $exercisenames,

@@ -25,6 +25,8 @@
 
 namespace local_booking\exporters;
 
+use moodle_url;
+
 require_once($CFG->dirroot . '/lib/completionlib.php');
 
 defined('MOODLE_INTERNAL') || die();
@@ -32,6 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 use renderer_base;
 use core\external\exporter;
 use local_booking\local\session\entities\action;
+use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\participant\entities\student;
 
 /**
@@ -43,6 +46,11 @@ use local_booking\local\participant\entities\student;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dashboard_student_exporter extends exporter {
+
+    /**
+     * @var subscriber $course The subscribing course.
+     */
+    protected $course;
 
     /**
      * @var student $student The student.
@@ -58,31 +66,32 @@ class dashboard_student_exporter extends exporter {
     public function __construct($data, $related) {
         global $CFG;
 
+        $this->course = $related['subscriber'];
         $this->student = $data['student'];
         $data['studentid'] = $this->student->get_id();
         $data['studentname'] = $this->student->get_name();
         $data['fleet'] = $this->student->get_fleet();
         $data['simulator'] = $this->student->get_simulator();
-        $data['profileurl'] = $CFG->wwwroot . '/local/booking/profile.php?courseid=' . $related['subscriber']->get_id() . '&userid=' . $this->student->get_id();
+        $profileurlparams = ['courseid' => $this->course->get_id(), 'userid' => $this->student->get_id()];
+        $data['profileurl'] = (new moodle_url('/local/booking/profile.php', $profileurlparams))->out(false);
 
-        // get recency or relevant information dates depending on the filter view
-        switch ($related['filter']) {
+        // get recency days or relevant information dates depending on the student's enrolment status
+        $studentstatus = $this->student->get_status();
+        switch ($studentstatus) {
             case 'active':
             case 'onhold':
                 $source = !empty($this->student->get_last_booked_date()) ? 'book' : 'enrol';
-                $data['dayssincelast'] = $this->student->get_recency_days();
+                $data['dayinfo'] = $this->student->get_recency_days();
                 $data['recencytooltip'] = get_string("bookingrecencyfrom$source" . "tooltip", 'local_booking', $this->student->get_wait_date()->format('j M \'y'));
                 break;
-            case 'graduates':
-                $data['dateinfo'] = get_string('nograduatedate', 'local_booking');
+            case 'graduated':
+                $data['dayinfo'] = get_string('nograduatedate', 'local_booking');
                 $graduatedate = $this->student->get_graduated_date();
-                if (!empty($graduatedate)) {
-                    $data['dateinfo'] = $graduatedate->format('M d, y');
-                }
-
+                if (!empty($graduatedate))
+                    $data['dayinfo'] = $graduatedate->format('M d, y');
                 break;
             case 'suspended':
-                $data['dateinfo'] = $this->student->get_suspension_date()->format('M d, y');
+                $data['dayinfo'] = $this->student->get_suspension_date()->format('M d, y');
                 break;
             }
 
@@ -129,13 +138,8 @@ class dashboard_student_exporter extends exporter {
             'studentname' => [
                 'type' => PARAM_RAW,
             ],
-            'dayssincelast' => [
-                'type' => PARAM_INT,
-                'optional' => true,
-                'default' => 0,
-            ],
-            'dateinfo' => [
-                'type' => \PARAM_RAW,
+            'dayinfo' => [
+                'type' => PARAM_RAW,
                 'optional' => true,
                 'default' => '',
             ],
@@ -233,7 +237,7 @@ class dashboard_student_exporter extends exporter {
         $sessions = $this->get_sessions($output, $this->student, $this->related);
         $return = ['sessions'=>$sessions];
 
-        if ($this->related['filter'] == 'active') {
+        if ($this->related['filter'] == 'active' || $this->student->get_status() == 'active') {
 
             // action is grading if the student has any active booking, completed coursework
             // awaiting certification, or graduated already; otherwise it is a booking action
@@ -244,9 +248,9 @@ class dashboard_student_exporter extends exporter {
             else
                 $actiontype = 'book';
 
-            $graduationsessionidx = array_search($this->related['subscriber']->get_graduation_exercise_id(), array_column($sessions, 'exerciseid'));
-            $action = new action($this->related['subscriber'], $this->student, $actiontype, $sessions[$graduationsessionidx]->sessionid);
-            $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;
+            $graduationsessionidx = array_search($this->course->get_graduation_exercise_id(), array_column($sessions, 'exerciseid'));
+            $action = new action($this->course, $this->student, $actiontype, $sessions[$graduationsessionidx]->sessionid);
+            $posts = $this->data['view'] == 'confirm' ? $this->student->get_statistics()->get_total_posts() : 0;
 
             $return = array_merge(array(
                 'actionurl'         => $action->get_url()->out(false),

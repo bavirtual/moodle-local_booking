@@ -34,7 +34,6 @@ use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\session\entities\session;
 use local_booking\local\session\entities\booking;
-use local_booking\local\slot\entities\slot;
 
 /**
  * Class for displaying each session in progression view.
@@ -211,7 +210,8 @@ class dashboard_session_exporter extends exporter {
         if ($this->related['filter'] == 'active' || $this->related['filter'] == 'onhold') {
             // get student posts for active and onhold students
             $nextexerciseid = $this->student->get_next_exercise()->id;
-            $noposts = ($nextexerciseid == $this->data['exerciseid'] && $this->student->get_total_posts() == 0) ? get_string('bookingnoposts', 'local_booking') : '';
+            $noposts = ($nextexerciseid == $this->data['exerciseid'] && $this->student->get_statistics()->get_total_posts() == 0) ?
+                get_string('bookingnoposts', 'local_booking') : '';
         }
 
         if (!empty($this->session)) {

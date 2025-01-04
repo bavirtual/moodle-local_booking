@@ -16,7 +16,7 @@ $string['actiondisabledexaminersonlytooltip'] = 'Examiners only';
 $string['actiondisabledseniorsonlytooltip'] = 'Senior instructors only';
 $string['actiondisabledsubmissionmissingtooltip'] = 'Exercise submission missing.<br/>Request the student to submit the PLog to enable grading.';
 $string['actiondisabledwrongexaminerstooltip'] = 'Action reserved for examiner \'{$a}\'';
-$string['actiondisablednologentrytooltip'] = 'Missing logbook entry.<br/>Please add an entry for the exam from the student\'s profile (Logbook link > {$a} logbook)';
+$string['actiondisablednologentrytooltip'] = 'Missing logbook entry.<br/>Please add an entry for the exam. Alternatively, you can add the entry from the student\'s profile (Logbook link > {$a} logbook)';
 $string['actiongradesession'] = 'Grade session';
 $string['actiongraduatetooltip'] = 'Graduate \'{$a->studentname}\' from the course';
 $string['alreadybooked'] = 'You are currently booked. Availability slots can only be posted when the student has no active booking.';
@@ -54,7 +54,7 @@ $string['bookingsortbyavailabilitytooltip'] = 'Sorts by students with availabili
 $string['bookingtotalstudents'] = 'Total active students';
 $string['booksave'] = 'Save booking';
 $string['col3header'] = 'Wait Days';
-$string['col3headergraduates'] = 'Grad. Date';
+$string['col3headergraduated'] = 'Grad. Date';
 $string['col3headersuspended'] = 'Suspend Date';
 $string['commentcancel'] = 'Comment';
 $string['commentcancelhelp'] = 'Please provide the student with a short comment on this cancellation:';
@@ -83,13 +83,11 @@ $string['lastgradeddate'] = 'Last graded';
 $string['lastsessiondate'] = 'Last session';
 $string['nextlesson'] = 'Next Lesson';
 $string['nobookingtoconfirm'] = 'You have no booking to confirm.';
+$string['nogradingrecord'] = 'No grading record!';
 $string['nograduatedate'] = 'No graduate date';
 $string['participation'] = 'Instructor participation';
 $string['pluginname'] = 'Session booking';
 $string['role'] = 'Role';
-$string['sequencetooltip_a'] = '{$a->tag}';
-$string['sequencetooltip_s'] = 'Activity score: {$a->score}<br/>Last session: {$a->recency} days<br/>Course activity: {$a->activity} views
-<br/>Availability: {$a->slots} posts<br/>Completion: {$a->completion} lessons';
 $string['sessionaction'] = 'Action';
 $string['sessioncompleted'] = 'Session completed';
 $string['sessionconfirmed'] = 'Session booked and confirmed by student';
@@ -105,10 +103,6 @@ $string['sessionprogressing'] = 'Objective Not Met<br/>(click for feedback)<br/>
 $string['sessionnotconfirmed'] = 'Session booked but not confirm by student';
 $string['sessionstart'] = 'Start time';
 $string['sessionvenue'] = 'Discord';
-$string['showactive'] = 'Active';
-$string['showonhold'] = 'On-hold';
-$string['showgraduates'] = 'Graduated';
-$string['showsuspended'] = 'Suspended';
 $string['simulator'] = 'Sim';
 $string['slots'] = 'slots';
 $string['statusbooked'] = 'confirmed';
@@ -123,7 +117,6 @@ $string['tag_status_book_noposts'] = 'No availability<br/>slots posted';
 $string['tag_status_lessons_incomplete'] = 'Can not book<br/>Did not complete lesson';
 $string['taskcron'] = 'Background processing for session booking activity';
 $string['tasknotifications'] = 'Background processing of session booking scheduled notifications';
-$string['unknown'] = 'No grading record!';
 $string['wanringtitle'] = 'Warning';
 $string['zulutime'] = 'Zulu';
 
@@ -335,15 +328,15 @@ $string['dangerarea'] = 'Danger Area';
 $string['daysback'] = 'days back';
 $string['graduated'] = 'Graduated';
 $string['endorsement'] = 'Skill Test Recommendation';
-$string['endorsementmgs'] = 'Recommended by {$a->endorser} on {$a->endorsedate}';
+$string['endorsementmsg'] = 'Recommended by {$a->endorsername} on {$a->endorsedate}';
 $string['examinersince'] = 'Examiner since';
 $string['graduation'] = 'Certification';
 $string['graduationconfirmation'] = '<p><strong>Process completed successfully...</strong></p><p>&nbsp;\'{$a->fullname}\' certification is complete and the following actions were performed:</p><ul>
-    <li style="padding-bottom: 20px;">\'{$a->fullname}\' <strong>course completion</strong> has been processed.</li>';
+    <li style="padding-bottom: 20px;">\'{$a->fullname}\' <strong>course completion</strong> has been processed. This will be reflected in the active students list a in few minutes.</li>';
 $string['graduationconfirmationbadges'] = '<li style="padding-bottom: 20px;"><strong>Course badge</strong> for {$a->courseshortname} was generated and sent via email to \'{$a->fullname}\'.&nbsp; A copy of the generated badge notification was sent to you as well.</li>';
-$string['graduationconfirmationnotify0'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent informing course managers.</li>';
-$string['graduationconfirmationnotify1'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to active course participants.</li>';
-$string['graduationconfirmationnotify2'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> was sent to members of the same group.</li>';
+$string['graduationconfirmationnotify0'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> is scheduled to be sent informing course managers.</li>';
+$string['graduationconfirmationnotify1'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> is scheduled to be sent to active course participants.</li>';
+$string['graduationconfirmationnotify2'] = '<li style="padding-bottom: 20px;">A <strong>congratulatory message</strong> is scheduled to be sent to members of the same group.</li>';
 $string['feedbackreport'] = 'Feedback report';
 $string['forcecompletion'] = 'Force course completion';
 $string['forcecompletion_help'] = 'Intended for forcing course completion for legacy graduates';
@@ -353,7 +346,7 @@ $string['keepactive'] = 'Keep active';
 $string['lastlesson'] = 'Last lesson completed';
 $string['lastgraded'] = 'Last session graded';
 $string['mentorreport']='Mentored sessions report';
-$string['modulescompleted'] = 'Modules completed';
+$string['modulescompleted'] = 'Exercises completed';
 $string['moodleprofile'] = 'Moodle profile';
 $string['modscompletemsg'] = '{$a->usermods} out of {$a->coursemods} ({$a->percent}% complete)';
 $string['noshows'] = 'No Shows';
@@ -368,7 +361,7 @@ $string['profileinstructor'] = 'Instructor profile';
 $string['progression'] = 'Session progression';
 $string['putonhold'] = 'Put on-hold';
 $string['qualified'] = 'Qualified for';
-$string['recency'] = 'Recency';
+$string['recency'] = 'Active since';
 $string['recommendationletterlink'] = 'Recommendation letter';
 $string['reportdate'] = 'Report date';
 $string['restrictionoverride'] = 'Override {$a} day restriction';
@@ -379,7 +372,7 @@ $string['sessionssummary'] = 'Sessions Summary';
 $string['sim1'] = 'Primary simulator';
 $string['sim2'] = 'Secondary simulator';
 $string['skilltest']='Skill Test';
-$string['skilltestendorse']='Recommend for skill test';
+$string['skilltestendorsed']='Recommend for skill test';
 $string['slots'] = 'Slots';
 $string['slotsactive'] = 'Posted slots';
 $string['theoryexamreport']='Theory examination report';
@@ -389,7 +382,7 @@ $string['totalexamsessions']='Total exam sessions';
 $string['totalsessionhours']='Total training hours';
 $string['totalsessionsbooked']='Total booked sessions';
 $string['totalsessionsgraded']='Total graded sessions';
-$string['xcoursebookings']='Show bookings from all courses';
+$string['xcoursebookings']='Show bookings from all courses in the \'My active bookings\' section';
 $string['xcoursebookings_help']='Show bookings from all course';
 
 // reports
@@ -493,13 +486,14 @@ $string['emailconfirmhtml'] = '<div style="font-family:sans-serif"><p><a href=\'
 // calendar links for booked sessions
 $string['calendarshtmlstart'] = '<div style="font-family:sans-serif"><p style="font-size: .9em;">Add a reminder to your calendar:<br />
     <table style="border-collapse: collapse; width: 100%;"><tbody>';
-$string['calendarshtmlgoogle'] = '<tr><td style="width: 50px; text-align: center;"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.png" alt="Add to Google calendar"/></td>
+$string['calendarshtmlgoogle'] = '<tr><td style="width: 50px; text-align: center;"><a style="text-decoration: none;" href="{$a->outlookurl}">
+        <a style="text-decoration: none;" href="{$a->googleurl}"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.png" alt="Add to Google calendar"/></a></td>
         <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td></tr>';
-$string['calendarshtmlmicrosoft'] = '<tr><td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 0 6 0 6px">
-        <img src="{$a->pixrooturl}/btn_outlook.png" alt="Add to Outlook Live calendar" width="25" height="25" /></div></td>
+$string['calendarshtmlmicrosoft'] = '<tr><td style="width: 50px; text-align: center;"><a style="text-decoration: none;" href="{$a->outlookurl}">
+        <img src="{$a->pixrooturl}/btn_outlook.png" alt="Add to Outlook Live calendar" width="25" height="25" /></a></td>
         <td><a style="text-decoration: none;" href="{$a->outlookurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td></tr><tr>';
-$string['calendarshtmlics'] = '<td style="width: 50px; text-align: center;"><div style="box-shadow: 0 0 2px 2px #e1e1e1; padding: 5px 0px; margin: 3 6 0 6px">
-            <img src="{$a->pixrooturl}/btn_ical.png" alt="Add to desktop calendar" width="28" height="28" /></div></td>
+$string['calendarshtmlics'] = '<td style="width: 50px; text-align: center;"><a style="text-decoration: none;" href="{$a->icsurl}">
+            <img src="{$a->pixrooturl}/btn_ical.png" alt="Add to desktop calendar" width="28" height="28" /></a></td>
         <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td></tr>';
 $string['calendarshtmlend'] = '</tbody></table><hr /></div>';
 
@@ -703,12 +697,8 @@ $string['emailsignature'] = '<div class="mt-5"><font face="sans-serif"><p>{$a->a
 
 
 // settings
-$string['activitycountweight'] = 'Course activity prioritization';
-$string['activitycountweightdesc'] = 'weight multiplier to calculate prioritization for course activity';
 $string['atoname'] = 'Name';
 $string['atosection'] = 'Authorized Training Organization (ATO)';
-$string['completionweight'] = 'Lesson completion prioritization';
-$string['completionweightdesc'] = 'weight multiplier to calculate prioritization of lesson completion';
 $string['gradmsgbody'] = 'Message body';
 $string['gradmsgbodydesc'] = 'message body for the congratulatory notification of graduating students sent to course participants. Leave blank to prevent notifications from being sent.
     For more details refer to <a href="https://docs.moodle.org/400/en/Session_Booking#Skillset_evaluation_%26_graduation" target="_blank" rel="noopener noreferrer">Skillset evaluation & graduation</a>';
@@ -723,12 +713,8 @@ $string['configsjson'] = 'Advanced configurations';
 $string['configsjsondesc'] = 'custom configuration to access external data and other hidden features in JSON format (<a href="https://docs.moodle.org/400/en/Session_Booking#Advanced_configurations" target="_blank" rel="noopener noreferrer">Advanced configurations</a>)';
 $string['postingsection'] = 'Availability posting';
 $string['prioritizationsection'] = 'Booking prioritization';
-$string['recencydaysweight'] = 'Recency prioritization';
-$string['recencydaysweightdesc'] = 'weight multiplier to calculate prioritization for session recency';
-$string['slotcountweight'] = 'Slot count prioritization';
-$string['slotcountweightdesc'] = 'weight multiplier to calculate prioritization for availability slots';
 $string['weeksahead'] = 'Availability posting weeks lookahead';
-$string['weeksaheaddesc'] = 'allowable weeks lookahead of availability posting. 0=Unlimited';
+$string['weeksaheaddesc'] = 'The number of weeks into the future that a student can post availability. 0=Unlimited';
 
 // install
 $string['exercisetitles'] = 'Course exercise titles';
@@ -769,8 +755,8 @@ $string['errorcoresubscriber'] = 'The site can not be a Session Booking plugin s
 $string['errorcoursecontextnotset'] = 'The subscriber course context is not set.';
 $string['errordelete'] = 'Failed to delete logentry';
 $string['errorexercisemissing'] = 'No exercise specified!';
-$string['errorgradeitemnotfound'] = 'Assignment grade item not found. Unable to update student statistics.';
-$string['errorgradenotfound'] = 'Assignment grade not found. Unable to update student statistics.';
+$string['errorgradeitemnotfound'] = 'Assignment grade item not found. Unable to update student progress data.';
+$string['errorgradenotfound'] = 'Assignment grade not found. Unable to update student progress data.';
 $string['errorinvaliddate'] = 'Flight date cannot be before booked session date';
 $string['errorinvalidarrtime'] = 'Arrival date/time must be greater than departure date/time';
 $string['errorlandings'] = 'Number from 1-9';

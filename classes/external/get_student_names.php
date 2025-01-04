@@ -104,7 +104,7 @@ class get_student_names extends external_api {
                 $userforselector->$field = $user->$field ?? null;
             }
             return $userforselector;
-        }, $subscriber->get_student_names('active', true, 'student'));
+        }, $subscriber->get_student_names('any', true, 'student'));
         sort($users);
 
         return [

@@ -63,33 +63,6 @@ if ($hassiteconfig) {
             5, PARAM_INT)
         );
 
-        // add prioritization settings section
-        $settingspage->add(new admin_setting_heading('local_booking_addheading_priority', new lang_string('prioritizationsection', 'local_booking'),''));
-
-        // last session recency days weight multiplier
-        $settingspage->add(new admin_setting_configtext('local_booking/recencydaysweight',
-            new lang_string('recencydaysweight', 'local_booking'), new lang_string('recencydaysweightdesc', 'local_booking'),
-            10, PARAM_INT)
-        );
-
-        // slot count weight multiplier
-        $settingspage->add(new admin_setting_configtext('local_booking/slotcountweight',
-            new lang_string('slotcountweight', 'local_booking'), new lang_string('slotcountweightdesc', 'local_booking'),
-            50, PARAM_INT)
-        );
-
-        // activity count weight multiplier
-        $settingspage->add(new admin_setting_configtext('local_booking/activitycountweight',
-            new lang_string('activitycountweight', 'local_booking'), new lang_string('activitycountweightdesc', 'local_booking'),
-            1, PARAM_INT)
-        );
-
-        // lesson completion weight multiplier
-        $settingspage->add(new admin_setting_configtext('local_booking/completionweight',
-            new lang_string('completionweight', 'local_booking'), new lang_string('completionweightdesc', 'local_booking'),
-            10, PARAM_INT)
-        );
-
         // add plugin configurations settings section
         $settingspage->add(new admin_setting_heading('local_booking_addheading_configs', new lang_string('pluginconfigssection', 'local_booking'),''));
 

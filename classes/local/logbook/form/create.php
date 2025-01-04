@@ -299,7 +299,7 @@ class create extends \moodleform {
                     $mform->hideIf($element, 'exercises', 'eq', $options[1]);
                     $mform->hideIf($element, 'exercises', 'eq', '0');
                 } else {
-                    $mform->hideIf($element, 'flighttype', 'eq', 'check');
+                    $mform->hideIf($element, 'flighttypehidden', 'eq', 'check');
                     $mform->hideIf($element, 'trainingtype', 'noteq', 'Dual');
                 }
                 // freeze changing flight type in a solo flight edit
@@ -320,7 +320,7 @@ class create extends \moodleform {
                 if ($options[0]) {
                     $mform->hideIf($element, 'exercises', 'noteq', $options[1]);
                 } else {
-                    $mform->hideIf($element, 'flighttype', 'noteq', 'check');
+                    $mform->hideIf($element, 'flighttypehidden', 'noteq', 'check');
                 }
                 break;
 

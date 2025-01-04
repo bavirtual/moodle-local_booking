@@ -23,27 +23,29 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_booking\local\session\data_access;
+namespace local_booking\local\participant\entities;
 
 defined('MOODLE_INTERNAL') || die();
 
-interface analytics_vault_interface {
+/**
+ * Interface for a statistics class.
+ *
+ * @copyright  BAVirtual.co.uk © 2021
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+interface statistics_interface {
 
     /**
      * Get course activity for a student from the logs.
      *
-     * @param int   $courseid   The course id in reference
-     * @param int   $studentid      The student id in reference
      * @return int  $activitycount  The number of activity events in the log.
      */
-    public static function get_activity_count(int $courseid, int $studentid);
+    public function get_activity_count(bool $normalized = true);
 
     /**
      * Get course activity for a student from the logs.
      *
-     * @param int   $courseid   The course id in reference
-     * @param int   $studentid      The student id in reference
      * @return int  $completions    The number of lesson completions.
      */
-    public static function get_lesson_completions(int $courseid, int $studentid);
+    public function get_completed_exercise_count();
 }

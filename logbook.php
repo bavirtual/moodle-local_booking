@@ -95,11 +95,11 @@ $PAGE->add_body_class('path-local-booking');
 
 // set user preference for logbook template format
 if (empty($format)) {
-    $format = get_user_preferences('local_booking_logbookformat', 'std');
+    $format = get_user_preferences(LOCAL_BOOKING_USERPERFPREFIX . "$courseid-" . LOCAL_BOOKING_USERPERFS['LOGFRMT'], DEFAULT_LOGBOOK_FORMAT);
 } else {
-    $setformat = get_user_preferences('local_booking_logbookformat', 'std');
+    $setformat = get_user_preferences(LOCAL_BOOKING_USERPERFPREFIX . "$courseid-" . LOCAL_BOOKING_USERPERFS['LOGFRMT'], DEFAULT_LOGBOOK_FORMAT);
     if ($format != $setformat)
-        set_user_preferences(array('local_booking_logbookformat'=>$format));
+        set_user_preferences(array(LOCAL_BOOKING_USERPERFPREFIX . "$courseid-" . LOCAL_BOOKING_USERPERFS['LOGFRMT']=>$format));
 }
 
 // get logbook view data

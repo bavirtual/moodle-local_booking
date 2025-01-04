@@ -30,10 +30,8 @@ require_once($CFG->dirroot . '/mod/assign/externallib.php');
 use ArrayObject;
 use DateTime;
 use Exception;
-use local_booking\local\subscriber\data_access\subscriber_vault;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
-use local_booking\local\session\entities\priority;
 use local_booking\local\session\entities\grade;
 use local_booking\local\slot\entities\slot;
 
@@ -75,14 +73,14 @@ class student extends participant {
     protected $slotcolor;
 
     /**
-     * @var string $progressionstatus The progression status
+     * @var string $status The enrolment activity status
      */
-    protected $progressionstatus = '';
+    protected $status = '';
 
     /**
-     * @var int $total_posts The student's total number of availability posted.
+     * @var string $progressstatus The progression status
      */
-    protected $total_posts;
+    protected $progressstatus = '';
 
     /**
      * @var bool $lessonscomplete List of student's completed lessons.
@@ -115,14 +113,9 @@ class student extends participant {
     protected $graduateddate = 0;
 
     /**
-     * @var priority $priority The student's priority object.
+     * @var statistics $statistics The student's statistics object.
      */
-    protected $priority;
-
-    /**
-     * @var int $waitdate The date from which the student was waiting since (enroled or last booked).
-     */
-    protected $waitdate;
+    protected $statistics;
 
     /**
      * @var int $recencydays The amount of days since the waiting date.
@@ -214,8 +207,10 @@ class student extends participant {
             }
 
             if ($result) {
+                // update progress flags with slots to notify instructors
+                $existingslotids = $this->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYPOSTS']);
+                $this->set_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYPOSTS'], $slotids . (!empty($existingslotids) ? ",$existingslotids" : ''));
                 // commit transaction
-                $this->set_notify('posted_slots', $slotids);
                 $transaction->allow_commit();
             } else {
                 $transaction->rollback(new \moodle_exception(get_string('slotssaveunable', 'local_booking')));
@@ -252,7 +247,7 @@ class student extends participant {
         $this->update_progress('lastsessiondate', $this->lastsessiondatets);
 
         if ($result) {
-            $this->set_notify('posted_slots');
+            $result &= $this->set_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYPOSTS'], '');
             $transaction->allow_commit();
         } else {
             $transaction->rollback(new \moodle_exception(get_string('slotsdeleteunable', 'local_booking')));
@@ -262,7 +257,7 @@ class student extends participant {
     }
 
     /**
-     * Updates the student statistics with a specific value
+     * Updates the student progress info with a specific value
      *
      * @param string $stat      The stat field being update
      * @param string $value     The field value being update
@@ -441,12 +436,21 @@ class student extends participant {
     }
 
     /**
-     * Get student progression status.
+     * Get student enrolment activity status.
      *
-     * @return string $progressionstatus;
+     * @return string
      */
     public function get_status() {
-        return $this->progressionstatus;
+        return $this->status;
+    }
+
+    /**
+     * Get student progression status.
+     *
+     * @return string
+     */
+    public function get_progress_status() {
+        return $this->progressstatus;
     }
 
     /**
@@ -468,7 +472,7 @@ class student extends participant {
     public function get_first_slot_date() {
         $firstsession = slot_vault::get_first_posted_slot($this->userid);
         $sessiondatets = !empty($firstsession) ? $firstsession->starttime : time();
-        $sessiondate = new \DateTime('@' . $sessiondatets);
+        $sessiondate = new \DateTime("@$sessiondatets");
 
         return $sessiondate;
     }
@@ -483,7 +487,7 @@ class student extends participant {
     public function get_graduated_date(bool $timestamp = false) {
         $graduatedate = null;
         if (!empty($this->graduateddate)) {
-            $graduatedate = new \DateTime('@' . $this->graduateddate);
+            $graduatedate = new \DateTime("@$this->graduateddate");
         }
         return $timestamp ? $this->graduateddate : $graduatedate;
     }
@@ -498,7 +502,7 @@ class student extends participant {
 
         if (empty($this->restrictiondate)) {
             // get wait time restriction waiver if exists
-            $hasrestrictionwaiver = (bool) get_user_preferences('local_booking_' . $this->course->get_id() . '_availabilityoverride', false, $this->userid);
+            $hasrestrictionwaiver = (bool) $this->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE']);
             $today = new \DateTime('@' . time());
             $nextsessiondate = $today;
 
@@ -598,17 +602,17 @@ class student extends participant {
     }
 
     /**
-     * Returns the student's priority object.
+     * Returns the student's statistics object.
      *
-     * @return priority The student's priority object
+     * @return statistics The student's statistics object
      */
-    public function get_priority() {
+    public function get_statistics() {
 
-        if (empty($this->priority)) {
-            $this->priority = new priority($this);
+        if ($this->statistics === null) {
+            $this->statistics = new statistics($this);
         }
 
-        return $this->priority;
+        return $this->statistics;
     }
 
     /**
@@ -618,7 +622,7 @@ class student extends participant {
      */
     public function get_recency_days() {
 
-        if (!isset($this->recencydays)) {
+        if (!isset($this->recencydays) || empty($this->recencydays)) {
             $today = new DateTime('@' . time());
             $this->recencydays =  (date_diff($this->get_wait_date(), $today))->days;
         }
@@ -632,20 +636,21 @@ class student extends participant {
      * @return DateTime
      */
     public function get_wait_date() {
-        return new DateTime('@' . $this->waitdate);
-    }
 
-    /**
-     * Returns the total number of active posts.
-     *
-     * @return int The number of active posts
-     */
-    public function get_total_posts() {
+        // get the wait date from the last session date
+        if (!empty($this->lastsessiondatets)) {
+            $waitdate = $this->get_last_session_date();
+        }
+        // if no last session date, fallback to the last graded date
+        if (empty($waitdate)) {
+            $waitdate = $this->get_last_graded_date();
+        }
+        // if no last graded date, fallback to the enrollment date
+        if (empty($waitdate)) {
+            $waitdate = $this->get_enrol_date();
+        }
 
-        if (!isset($this->total_posts))
-            $this->total_posts = slot_vault::get_slot_count($this->course->get_id(), $this->userid);
-
-        return $this->total_posts;
+        return $waitdate;
     }
 
     /**
@@ -731,6 +736,84 @@ class student extends participant {
     }
 
     /**
+     * Get data from student progress information
+     *
+     * @param string $field
+     * @param $value
+     */
+    public function get_progress_info(string $field) {
+        return $this->vault->get_student_progress($this->course->get_id(), $this->userid, $field);
+    }
+
+    /**
+     * Get a specific progress flag
+     *
+     * @param string $path The flag to retrieve
+     * @return mixed|null $value
+     */
+    public function get_progress_flag(string $path) {
+
+        // get JSON string
+        $flagsjson = $this->get_progress_info("progressflags");
+
+        if (!empty($flagsjson)) {
+            // decode JSON
+            $flags = json_decode($flagsjson, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                debugging('Invalid JSON string: ' . json_last_error_msg());
+                return null;
+            }
+
+            // split path into parts
+            $parts = explode('.', $path);
+            $current = $flags;
+
+            // navigate through nested structure
+            foreach ($parts as $part) {
+                if (!is_array($current) || !array_key_exists($part, $current)) {
+                    return null;
+                }
+                $current = $current[$part];
+            }
+
+            return is_array($current) ? (object) $current : $current;
+        }
+        return null;
+    }
+
+    /**
+     * Set student progress flag.
+     *
+     * @param string $path
+     * @param mixed  $value
+     */
+    public function set_progress_flag(string $path, $value = null) {
+
+        // get the progress flags as a JSON array
+        $flagsjsonarray = json_decode($this->get_progress_info("progressflags"), true);
+
+        $keys = explode('.', $path);
+        $last_key = array_pop($keys);
+
+        $currentlevel = &$flagsjsonarray;
+
+        // traverse the path to the parent node
+        foreach ($keys as $key) {
+            // create the node if it doesn't exist
+            if (!isset($currentlevel[$key])) {
+                $currentlevel[$key] = [];
+            }
+          $currentlevel = &$currentlevel[$key];
+        }
+
+        // set the JSON value for the of the key
+        $currentlevel[$last_key] = $value;
+
+        // encode progress flags
+        return $this->update_progress("progressflags", json_encode($flagsjsonarray));
+    }
+
+    /**
      * Set the student's slot color.
      *
      * @param string $slotcolor
@@ -742,10 +825,10 @@ class student extends participant {
     /**
      * Set the student's progression status.
      *
-     * @param string $slotcolor
+     * @param string $progressstatus
      */
-    public function set_status(string $progressionstatus) {
-        $this->progressionstatus = $progressionstatus;
+    public function set_status(string $progressstatus) {
+        $this->progressstatus = $progressstatus;
     }
 
     /**
@@ -758,53 +841,13 @@ class student extends participant {
     }
 
     /**
-     * Get data from student statistics
+     * Returns whether the student has a wait restriction waiver.
      *
-     * @param string $stat
-     * @param $value
+     * @return  bool    Whether the lessones were completed or not.
      */
-    public function get_statistic(string $stat) {
-        return subscriber_vault::get_subscriber_stat($this->course->get_id(), $this->userid, $stat);
-    }
-
-    /**
-     * Get a specific notification scheduled to be sent
-     *
-     * @param string $notification
-     * @return mixed|null $value
-     */
-    public function get_notify(string $notification) {
-        $notifyjson = json_decode($this->get_statistic("notifyflags"), true);
-
-        $value = null;
-        // verify the JSON string
-        if (!empty($notifyjson)) {
-            $value = array_key_exists($notification, $notifyjson) ? $notifyjson[$notification] : false;
-        }
-
-        // encode notifications
-        return $value;
-    }
-
-    /**
-     * Set student notification to schedule a notification for
-     * the participant depending on the type of notification.
-     *
-     * @param string $notification
-     * @param mixed  $value
-     */
-    public function set_notify(string $notification, $value = null) {
-        $notifications = array();
-        $notifyjson = json_decode($this->get_statistic("notifyflags"), true);
-
-        // verify the JSON string
-        if (!empty($notifyjson)) {
-            $notifications = $notifyjson;
-        }
-        $notifications[$notification] = $value;
-
-        // encode notifications
-        $this->update_progress("notifyflags", json_encode($notifications));
+    public function has_restriction_waiver() {
+        // wait restriction is enabled and the student has a waiver (restriction override)
+        return $this->course->minslotperiod == 0 || $this->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE']);
     }
 
     /**
@@ -953,7 +996,13 @@ class student extends participant {
      * @return bool  Whether the student had graduated.
      */
     public function graduated(bool $getcompletion = false) {
-        return $getcompletion ? (new \completion_info($this->course->get_course()))->is_course_complete($this->userid) : !empty($this->graduateddate);
+        $graduated = !empty($this->graduateddate);
+        if ($getcompletion) {
+            $course = $this->course->get_course();
+            $coursecompletion = new \completion_info($course);
+            $graduated = !empty($coursecompletion) ? $coursecompletion->is_course_complete($this->userid) : false;
+        }
+        return $graduated;
     }
 
     /**
@@ -967,38 +1016,52 @@ class student extends participant {
         if (!empty($record)) {
             if (!empty($record->currentexerciseid))
                 $this->currentexercise = $this->course->get_exercise($record->currentexerciseid);
+
             if (!empty($record->nextexerciseid))
                 $this->nextexercise = $this->course->get_exercise($record->nextexerciseid);
+
             if (!empty($record->lessonscomplete))
                 $this->lessonscomplete = $record->lessonscomplete;
-            if (!empty($record->graduateddate))
+
+            if (!empty($record->graduateddate)) {
                 $this->graduateddate = $record->graduateddate;
-            if (!empty($record->waitdate))
-                $this->waitdate = $record->waitdate;
+                $this->status = 'graduated';
+            }
+
+            if (!empty($record->lastsessiondate))
+                $this->lastsessiondatets = $record->lastsessiondate;
         }
 
-        // set activity status tag
+        // set student enrolment activity status, and status is not set from record as graduated
+        if ($this->status != 'graduated') {
+            if (!$this->is_active) {
+                $this->status = 'suspended';
+            } elseif ($this->is_onhold()) {
+                $this->status = 'onhold';
+            } elseif ($this->is_active) {
+                $this->status = 'active';
+            }
+        }
+
+        // set student progression status for info tag
         // check graduating students first
         if ($this->has_completed_coursework()) {
-            $this->progressionstatus = 'status_graduating';
+            $this->progressstatus = 'status_graduating';
             return;
         }
-
         // checking for lesson completion (if enabled) and booked status
         if ($this->lessonscomplete || !$this->course->requires_lesson_completion()) {
 
             // status booked and is waiting to be graded next
             if ($record->booked) {
-                $this->progressionstatus = 'status_grade';
+                $this->progressstatus = 'status_grade';
                 return;
             }
-
             // status lessons completed (if enabled) and either has posts or not
-            $this->progressionstatus = $record->hasactiveposts ? 'status_book' : 'status_book_noposts';
+            $this->progressstatus = $record->hasactiveposts ? 'status_book' : 'status_book_noposts';
             return;
         }
-
         // status lessons incomplete
-        $this->progressionstatus = 'status_lessons_incomplete';
+        $this->progressstatus = 'status_lessons_incomplete';
     }
 }

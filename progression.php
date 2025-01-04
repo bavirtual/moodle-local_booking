@@ -54,9 +54,9 @@ $instructor = $subscriber->get_instructor($USER->id);
 
 // get students progression view
 $data = [
+    'instructor'=> $instructor,
     'studentid' => 0,
     'view'      => 'sessions',
-    'sorttype'  => '',
     'filter'    => 'active',
     'action'    => 'readonly',
     'page'      => $page,

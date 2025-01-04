@@ -61,11 +61,9 @@
             <table id="week-detail" data-region="slots-week" class="calendarmonth slotcalendartable mb0 table-hover">
                 <thead>
                     <tr>
-                        {{#showlocaltime}}
                         <th class="header text-xs-center localtime">
                             <br><span class="media-body small" aria-hidden="true">{{#str}} local, local_booking {{/str}}</span></br>
                         </th>
-                        {{/showlocaltime}}
                         <th class="header text-xs-center zulutime">
                             <span class="media-body" aria-hidden="true">{{#str}} zulutime, local_booking {{/str}}</span>
                         </th>
@@ -81,11 +79,9 @@
                 <tbody>
                 {{#timeslots}}
                     <tr data-region="month-view-week">
-                        {{#showlocaltime}}
                         <td class="text-sm-center text-md-left localtimecol">
                             <span class="media-body small" style="display:block; text-align:center;" aria-hidden="true">{{localtimeslot}}</span>
                         </td>
-                        {{/showlocaltime}}
                         <td class="text-sm-center text-md-left zulutimecol"
                             data-slot="{{timeslot}}">
                             <span class="media-body small font-weight-bold" style="display:block; text-align:center;" aria-hidden="true">{{timeslot}}</span>

@@ -105,9 +105,13 @@ class notifications_task extends \core\task\scheduled_task {
      * @param subscriber $course    The subscribing course.
      */
     protected function process_recommendations(student $student, subscriber $course) {
-
         // check if the student has recommendation notification pending in their preferences settings
-        if ($student->get_progress_flag('notifyendorsement')) {
+        $notify = $student->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYENDORSE']);
+
+        if ($notify) {
+
+            // get endorser
+            $endorsement = $student->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['ENDORSE']);
 
             // get message data
             $data = array(
@@ -115,7 +119,7 @@ class notifications_task extends \core\task\scheduled_task {
                 'studentname'   => $student->get_name(),
                 'firstname'     => $student->get_profile_field('firstname', true),
                 'skilltest'     => $course->get_graduation_exercise_id(true),
-                'instructorname'=> instructor::get_fullname($student->get_progress_flag('endorserid')),
+                'instructorname'=> instructor::get_fullname($endorsement->endorserid),
                 'recommendltrurl'=> (new \moodle_url('/local/booking/report.php', array('courseid'=>$course->get_id(), 'userid'=>$student->get_id(), 'report'=>'recommendation')))->out(false),
                 'bookingurl'    => (new \moodle_url('/local/booking/view.php', array('courseid'=>$course->get_id())))->out(false),
                 'courseurl'     => (new \moodle_url('/course/view.php', array('id'=> $course->get_id())))->out(false),
@@ -131,7 +135,7 @@ class notifications_task extends \core\task\scheduled_task {
             mtrace('                recommendation notifications sent...');
 
             // reset notification setting
-            $student->add_progress_flag('notifyendorsement', false);
+            $student->set_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYENDORSE'], false);
         }
     }
 
@@ -144,11 +148,11 @@ class notifications_task extends \core\task\scheduled_task {
     protected function process_availability_postings(student $student, subscriber $course) {
 
         $haspostings = false;
+        $postedslots = $student->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYPOSTS']);
 
-        $slotstonotify = $student->get_progress_flag('notifypostedslots');
-        if (!empty($slotstonotify)) {
+        if (!empty($postedslots)) {
 
-            $slotids = explode(',', $slotstonotify);
+            $slotids = explode(',', $postedslots);
             $postingstext = '';
             $postingshtml = '<table style="border-collapse: collapse; width: 400px"><tbody>';
             $previousday = '';
@@ -206,7 +210,7 @@ class notifications_task extends \core\task\scheduled_task {
             }
 
             // reset notification setting
-            $student->add_progress_flag('notifypostedslots');
+            $student->set_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYPOSTS'], '');
         }
     }
 
@@ -220,9 +224,12 @@ class notifications_task extends \core\task\scheduled_task {
 
         if (!empty($course->gradmsgsubject) && !empty($course->gradmsgbody)) {
 
-            $graduationnotify = $student->get_progress_flag('notifygraduation');
+            $notify = false;
+            if ($notifications = $student->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFY'])) {
+                $notify = property_exists($notifications, 'graduation') ? $notifications->graduation : false;
+            }
 
-            if (!empty($graduationnotify)) {
+            if (!empty($notify)) {
 
                 // get message data
                 $grade = $student->get_grade($course->get_graduation_exercise_id());
@@ -292,7 +299,7 @@ class notifications_task extends \core\task\scheduled_task {
                 mtrace('                graduation notifications sent...');
 
                 // reset notification setting
-                $student->add_progress_flag('graduation', false);
+                $student->set_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYGRAD'], false);
             }
         }
     }

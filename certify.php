@@ -105,8 +105,8 @@ if ($subscriber->requires_skills_evaluation()) {
         }
 
 
-        // flag the student activating graduation notifications
-        $student->add_progress_flag('notifygraduation');
+        // set notifications flag so a notification is sent about the student's graduation
+        $student->set_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYGRAD'], true);
 
         // add student to graduates group
         $groupid = groups_get_group_by_name($courseid, LOCAL_BOOKING_GRADUATESGROUP);

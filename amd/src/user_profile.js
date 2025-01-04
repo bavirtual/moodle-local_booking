@@ -123,7 +123,7 @@ function(
                 break;
             case 'overrideminslotperiod':
                 // Process availability override in user preferences and handle UI
-                response = processProgressUpdate(key, value, courseId, userId, key);
+                response = processProgressFlag(key, value, courseId, userId, key);
                 break;
             case 'suspend':
                 // Toggle enrolment status suspension on/off and handle UI
@@ -154,15 +154,15 @@ function(
      const setEndorsement = function(courseId, userId, endorse, root) {
         // Get endorsement information (endorser, date, and message) from template
         let userProfile = root.find(Selectors.wrappers.userprofilewrapper),
-        endorserName = userProfile.data('endorserName'),
-        endorserId = userProfile.data('endorserId'),
+        endorserName = userProfile.data('endorsername'),
+        endorserId = userProfile.data('endorserid'),
         endorseDate = new Date(),
         endorsedOn = endorseDate.toDateString(),
         endorseDateTS = Math.round(endorseDate.getTime() / 1000),
-        endorsestr = endorse ? 'endorsementmgs' : 'skilltestendorsed';
+        endorsestr = endorse ? 'endorsementmsg' : 'skilltestendorsed';
 
         // Process endorsement message
-        let endorseMsgPromise = Str.get_string(endorsestr, 'local_booking', {endorserId: endorserName, endorseDate: endorsedOn});
+        let endorseMsgPromise = Str.get_string(endorsestr, 'local_booking', {endorsername: endorserName, endorsedate: endorsedOn});
         endorseMsgPromise.then(function(message) {
             // Set endorsement message
             $('#endorsement-label').html(message);
@@ -176,21 +176,20 @@ function(
         })
         .fail(Notification.exception);
 
-         let result = endorseMsgPromise.trim().length !== 0;
+        // Set endorsement object
+        const endorsement = {endorsed: endorse, endorserid: endorserId, endorsedate: endorseDateTS};
 
-        // Persist endorsement in user preferences
-        result &= processProgressUpdate('endorsed', endorse, courseId, userId, 'endorsed');
-        result &= processProgressUpdate('endorserid', endorse ? endorserId : '', courseId, userId, 'endorsed');
-        result &= processProgressUpdate('endorsedate', endorse ? endorseDateTS : '', courseId, userId, 'endorsed');
-        result &= processProgressUpdate('notifyendorsement', endorse, courseId, userId, 'endorsed');
+        // Process endorsement and notification to be setEndorsement
+        let result = processProgressFlag('endorsement', JSON.stringify(endorsement), courseId, userId, 'endorsed');
+        result &= processProgressFlag('notifications.endorsement', endorse, courseId, userId);
 
-         return result;
+        return result;
     };
 
     /**
      * Process student progress update.
      *
-     * @method processProgressUpdate
+     * @method processProgressFlag
      * @param  {string} progressKey The progress key.
      * @param  {string} value       The value data.
      * @param  {string} courseId    The associated course id.
@@ -198,9 +197,9 @@ function(
      * @param  {string} element     The element to handle GUI.
      * @return {bool}
      */
-     const processProgressUpdate = function(progressKey, value, courseId, studentId, element) {
+     const processProgressFlag = function(progressKey, value, courseId, studentId, element = null) {
 
-        return Repository.updateStudentProgress(progressKey, value, courseId, studentId)
+        return Repository.setProgressFlag(progressKey, value, courseId, studentId)
         .then(function(result) {
             return result.saved;
         })
@@ -210,7 +209,10 @@ function(
         .fail(function(ex) {
             Notification.exception(ex);
             // Handle toggle failure
-            $('#' + element).prop('checked', !$('#' + element).prop('checked'));
+            if (element !== null) {
+                $('#' + element).prop('checked', !$('#' + element).prop('checked'));
+            }
+
             return true;
         });
     };

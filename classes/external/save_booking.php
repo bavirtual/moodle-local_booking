@@ -125,7 +125,7 @@ class save_booking extends external_api {
         if ($result) {
             // remove restriction override for the user
             $student = new student($subscriber, $studentid);
-            $student->add_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE'], false);
+            $student->set_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE'], false);
 
             // remove instructor from inactive group where applicable
             $instructor = new instructor($subscriber, $instructorid);

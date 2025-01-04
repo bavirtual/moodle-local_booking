@@ -212,11 +212,11 @@ $functions = array(
         'loginrequired' => true,
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
-    'local_booking_update_student_progress' => array(
-        'classname' => '\local_booking\external\update_student_progress',
-        'classpath' => 'local/booking/external/update_student_progress.php',
+    'local_booking_set_progress_flag' => array(
+        'classname' => '\local_booking\external\set_progress_flag',
+        'classpath' => 'local/booking/external/set_progress_flag.php',
         'methodname' => 'execute',
-        'description' => 'Persist student progress information',
+        'description' => 'Persist student progress flag information',
         'type' => 'write',
         'capabilities' => 'local/booking:view',
         'ajax' => true,

@@ -310,8 +310,8 @@ class dashboard_bookings_exporter extends exporter {
             ];
 
             // get tooltip
-            $data['tag'] = $student->get_progression_status();
-            $data['sequencetooltip'] = get_string('tag_' . $student->get_progression_status(), 'local_booking');
+            $data['tag'] = $student->get_progress_status();
+            $data['sequencetooltip'] = get_string('tag_' . $student->get_progress_status(), 'local_booking');
 
             $studentexporter = new dashboard_student_exporter($data, [
                 'context'       => $context,

@@ -250,7 +250,7 @@ class dashboard_student_exporter extends exporter {
 
             $graduationsessionidx = array_search($this->course->get_graduation_exercise_id(), array_column($sessions, 'exerciseid'));
             $action = new action($this->course, $this->student, $actiontype, $sessions[$graduationsessionidx]->sessionid);
-            $posts = $this->data['view'] == 'confirm' ? $this->student->get_total_posts() : 0;
+            $posts = $this->data['view'] == 'confirm' ? $this->student->get_statistics()->get_total_posts() : 0;
 
             $return = array_merge(array(
                 'actionurl'         => $action->get_url()->out(false),

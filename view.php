@@ -36,7 +36,6 @@ $courseid = optional_param('courseid', $COURSE->id, PARAM_INT);
 $course   = get_course($courseid);
 $userid   = optional_param('userid', 0, PARAM_INT);
 $studentid= optional_param('studentid', 0, PARAM_INT);
-$sorttype = optional_param('sort', '', PARAM_ALPHA);
 $action   = optional_param('action', 'book', PARAM_ALPHA);
 $filter   = optional_param('filter', 'active', PARAM_ALPHA);
 $page     = optional_param('page', 0, PARAM_INT);
@@ -65,13 +64,18 @@ $PAGE->add_body_class('path-local-booking');
 $subscriber = get_course_subscriber_context($url->out(false), $courseid);
 $instructor = $subscriber->get_instructor($USER->id);
 
+// get the student when applicable
+$student = null;
+if ($studentid || $userid) {
+    $student = $subscriber->get_student($studentid ?: $userid);
+}
+
 // get booking view data
 $data = [
     'instructor' => $instructor,
-    'studentid'  => $studentid ?: $userid,
+    'student'    => $student,
     'action'     => $action,
     'view'       => $action == 'confirm' ? $action : 'sessions',
-    'sorttype'   => $sorttype,
     'filter'     => $filter,
     'page'       => $page,
     'perpage'    => $perpage,

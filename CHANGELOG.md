@@ -1,5 +1,24 @@
 # Change log
 
+## [2025010401] - RELEASED 2025-01-04
+
+### Fixed
+
+- Wait Days column showing incorrect data
+- instructor participation last session showing no grading records
+- no show exception
+- incorrect completed exercises in student profile
+
+### Changed
+
+- mdl_local_booking_stats to mdl_local_booking_progress to be more descriptive of its function, and field notifyflags to progressflags
+- separate db connection from lookups configurations in JSON config string
+- removed score sorting
+- get_progress_flag/set_progress_flag key/value pair handling of json string
+- moved flags formerly used Moodle user_preference to progress flags including endorsement, min period override, and notifications
+- plugin user preferences to use to LOCAL_BOOKING_USERPERFPREFIX.-<courseid>-<pref_name>
+- removed prioritization from plugin settings
+
 ## [2024122500] - RELEASED 2024-12-25
 
 ### Fixed

@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/local/booking/lib.php');
 /**
  * Group observers class to listen to graded assignments
  * for clearing previously posted student availability,
- * and user enrolments to add the user stats for
+ * and user enrolments to add the user progress info for
  * subscribed courses.
  *
  * @package    local_booking
@@ -65,7 +65,7 @@ class observers {
     public static function course_updated(course_updated $event) {
 
         // check if the user is enroled to a subscribing course
-        if (subscriber::is_subscribed($event->courseid) && !subscriber::stats_exist($event->courseid)) {
+        if (subscriber::is_subscribed($event->courseid) && !subscriber::student_progress_exists($event->courseid)) {
             // check if the course update
             subscriber::add_new_enrolments($event->courseid);
         }
@@ -82,14 +82,14 @@ class observers {
         // check if the user is enroled to a subscribing course
         if (subscriber::is_subscribed($event->courseid)) {
 
-            // update stats with the student's last lesson completion
+            // update progress info with the student's last lesson completion
             $data = $event->get_data();
 
-            // check if the user being enrolled is a student and update statistics if so
+            // check if the user being enrolled is a student and update progress info if so
             $participant = new participant($event->courseid, $data['userid']);
 
             if ($participant->is_student()) {
-                // add stats record for the newly graded student
+                // add progress info record for the newly graded student
                 $student = new student($event->courseid, $data['userid']);
                 $student->update_lessonscomplete();
             }
@@ -103,7 +103,7 @@ class observers {
      * @return void
      */
     public static function course_module_completion_updated(course_module_completion_updated $event) {
-        // TODO: update stats with subscribed course module completion
+        // TODO: update progress info with subscribed course module completion
     }
 
     /**
@@ -135,13 +135,13 @@ class observers {
                 groups_remove_member($groupid, $studentid);
             }
 
-            // update stats based on passing
+            // update progress info based on passing the exercise
             $assign = $event->get_assign();
             $gradeitem = $assign->get_grade_item();
             if ($gradeitem) {
                 $gradegrade = grade_grade::fetch(array('userid' => $studentid, 'itemid' => $gradeitem->id));
 
-                // update current & next exercise stats,
+                // update current & next exercise progress info,
                 // update last completed session date (confirming the session had took place)
                 // reset required lesson completed if the grade is passed
                 if (!empty($gradegrade)) {
@@ -153,7 +153,7 @@ class observers {
                         $lastsessiondate = $booking->get_last_session_date($courseid, $studentid);
                         $lastsessiondatets = !empty($lastsessiondate) ? $lastsessiondate->getTimestamp() : 0;
 
-                        // add stats record for the newly graded student
+                        // add progress info record for the newly graded student
                         $student->update_progress('currentexerciseid', $exerciseid);
                         $student->update_progress('nextexerciseid', $nextexerciseid);
                         $student->update_progress('lastsessiondate', $lastsessiondatets);

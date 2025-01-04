@@ -25,16 +25,17 @@
 
 namespace local_booking\external;
 
+use local_booking\local\participant\entities\student;
+
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/local/booking/lib.php');
 
 use core_external\external_api;
 use core_external\external_value;
+use core_external\external_warnings;
 use core_external\external_single_structure;
 use core_external\external_function_parameters;
-use local_booking\exporters\dashboard_bookings_exporter;
-use local_booking\output\views\booking_view;
 
 /**
  * Session Booking Plugin
@@ -44,76 +45,74 @@ use local_booking\output\views\booking_view;
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class get_bookings_view extends external_api {
+class set_progress_flag extends external_api {
 
     /**
      * Returns description of method parameters.
      *
      * @return external_function_parameters
-     * @since Moodle 2.5
      */
     public static function execute_parameters() {
-        return new external_function_parameters(
-            array(
-                'courseid'  => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
-                'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
-                'filter'  => new external_value(PARAM_RAW, 'The results filter', VALUE_DEFAULT),
-            )
-        );
-    }
+        return new external_function_parameters(array(
+            'key' => new external_value(PARAM_RAW, 'The progress key', VALUE_DEFAULT),
+            'value' => new external_value(PARAM_RAW, 'The value of the progress information', VALUE_DEFAULT),
+            'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
+            'studentid' => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
+        )
+    );
+}
 
     /**
-     * Retrieve students booking progression view.
+     * Updates a student's progress flag in the course.
      *
-     * @param int $courseid  The course id for context.
-     * @param int $userid    The user id for single user selection.
-     * @param string $filter The filter to show students, inactive (including graduates), suspended, and default to active.
-     * @return \stdClass|null Student bookings object array.
+     * @param string $key    The progress key of to be set.
+     * @param string $value  The value of the progress flag to be set.
+     * @param int $courseid  The course id.
+     * @param int $studentid The user id.
+     * @return array  The result of the progress update operation.
      */
-    public static function execute(int $courseid, int $userid, string $filter) {
-        global $USER;
+    public static function execute(string $key, string $value, int $courseid, int $studentid) {
 
         // Parameter validation.
         $params = self::validate_parameters(self::execute_parameters(), array(
-                'courseid' => $courseid,
-                'userid' => $userid,
-                'filter' => $filter,
-                )
-            );
+            'key' => $key,
+            'value' => $value,
+            'courseid' => $courseid,
+            'studentid' => $studentid,
+            )
+        );
 
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
-        // get the student when applicable
-        $student = null;
-        if ($params['userid']) {
-            $student = $subscriber->get_student($params['userid']);
+        // get the student
+        $student = new student($subscriber, $params['studentid']);
+
+        // check if the value is a json string
+        if (json_validate($params['value'])) {
+            $params['value'] = json_decode($params['value'], true);
         }
 
-        // data required get data
-        $data = [
-            'instructor' => $subscriber->get_instructor($USER->id),
-            'student'    => $student,
-            'action'     => 'book',
-            'view'       => 'sessions',
-            'sorttype'   => '',
-            'filter'     => $filter,
-            'page'       => 0,
-        ];
+        // update student's progress
+        $result = $student->set_progress_flag($params['key'], $params['value']);
 
-        $bookingview = new booking_view($data, ['subscriber'=>$subscriber, 'context'=>$subscriber->get_context()]);
-        $bookings = $bookingview->get_student_progression(false);
-
-        return $bookings;
+        return array(
+            'result' => $result,
+            'warnings' => array()
+        );
     }
 
     /**
      * Returns description of method result value.
      *
      * @return external_single_structure
-     *
      */
     public static function execute_returns() {
-        return dashboard_bookings_exporter::get_read_structure();
+        return new external_single_structure(
+            array(
+                'result' => new external_value(PARAM_BOOL, get_string('processingresult', 'local_booking')),
+                'warnings' => new external_warnings()
+            )
+        );
     }
 }

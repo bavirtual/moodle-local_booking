@@ -19,7 +19,7 @@
  *
  * @module     local_booking/administration
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2023
+ * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define([
@@ -38,27 +38,132 @@ function(
 ) {
 
     /**
+     * Create all of the event listeners for the message preferences page.
+     *
+     * @method registerEventListeners
+     * @param  {object} root    The root element.
+     */
+    const registerEventListeners = function(root) {
+
+        var userProfile = root.find(Selectors.wrappers.userprofilewrapper),
+        courseId = userProfile.data('courseid'),
+        userId = userProfile.data('userid');
+
+        // Handle endorsement toggle clicks
+        $('#endorsed').click(function() {
+            processSetting(courseId, userId, 'endorsed', this.checked, root);
+        });
+
+        // Handle suspension toggle clicks
+        $('#suspended').click(function() {
+            processSetting(courseId, userId, 'suspend', this.checked);
+        });
+
+        // Handle on-hold toggle clicks
+        $('#onhold').click(function() {
+            // Add to OnHold group then trigger Keep Active if successful
+            processSetting(courseId, userId, 'onhold', this.checked, root)
+                .then((response) => {
+                    if (0 !== response) {
+                        // Toggle 'Keep Alive' so the student is not automatically placed on-hold again
+                        $('#keepactive').prop("checked", !this.checked);
+                        return processSetting(courseId, userId, 'keepactive', !this.checked, root);
+                    }
+                    return true;
+                })
+                .fail(Notification.exception);
+        });
+
+        // Handle keep active toggle clicks
+        $('#keepactive').click(function() {
+            processSetting(courseId, userId, 'keepactive', this.checked, root);
+        });
+
+        // Handle restriction override toggle clicks
+        $('#overrideminslotperiod').click(function() {
+            processSetting(courseId, userId, 'overrideminslotperiod', this.checked, root);
+        });
+
+        // Handle show cross-course bookings toggle clicks
+        $('#xcoursebookings').click(function() {
+            processSetting(courseId, userId, 'xcoursebookings', this.checked, root);
+        });
+
+        // Handle save comment click
+        $('#save_comment_button').click(function() {
+            updateComment(courseId, userId, root);
+        });
+    };
+
+    /**
+     * Create all of the event listeners for the message preferences page.
+     *
+     * @method processSetting
+     * @param  {string} courseId    The course id for suspension.
+     * @param  {string} userId      The user id to be suspended.
+     * @param  {string} key         The key of the setting.
+     * @param  {string} value       Setting value.
+     * @param  {object} root        The root element.
+     */
+    const processSetting = function(courseId, userId, key, value, root) {
+
+        // Show progressing icon
+        startLoading($('#' + key + '-region'));
+
+        let response;
+        // Process the different toggle actions
+        switch (key) {
+            case 'endorsed':
+                // Process student endorsement and handle UI
+                response = setEndorsement(courseId, userId, value, root);
+                break;
+            case 'xcoursebookings':
+                // Process availability override in user preferences and handle UI, site level courseid=1
+                response = processUserPreference(key, value, 1, userId, key);
+                break;
+            case 'overrideminslotperiod':
+                // Process availability override in user preferences and handle UI
+                response = processProgressFlag(key, value, courseId, userId, key);
+                break;
+            case 'suspend':
+                // Toggle enrolment status suspension on/off and handle UI
+                response = processSuspendedStatus(value, courseId, userId);
+                break;
+            case 'onhold':
+            case 'keepactive':
+                // Process keep active in user preferences and handle UI
+                response = processGroup(key, value, courseId, userId, root);
+                break;
+        }
+
+        // Stop showing progressing icon
+        stopLoading($('#' + key + '-region'));
+
+        return response;
+    };
+
+    /**
      * Set the endorsed message.
      *
+     * @method setEndorsement
      * @param  {string} courseId    The course id for suspension.
      * @param  {string} userId      The user id to be suspended.
      * @param  {string} endorse     Endorse true/false.
      * @param  {object} root        The root element.
-     * @method setEndorsement
      */
      const setEndorsement = function(courseId, userId, endorse, root) {
         // Get endorsement information (endorser, date, and message) from template
         let userProfile = root.find(Selectors.wrappers.userprofilewrapper),
-        endorsername = userProfile.data('endorsername'),
-        endorser = userProfile.data('endorser'),
-        endorsedate = new Date(),
-        endorsedon = endorsedate.toDateString(),
-        endorsedatets = Math.round(endorsedate.getTime() / 1000),
-        endorsestr = endorse ? 'endorsementmgs' : 'skilltestendorse';
+        endorserName = userProfile.data('endorsername'),
+        endorserId = userProfile.data('endorserid'),
+        endorseDate = new Date(),
+        endorsedOn = endorseDate.toDateString(),
+        endorseDateTS = Math.round(endorseDate.getTime() / 1000),
+        endorsestr = endorse ? 'endorsementmsg' : 'skilltestendorsed';
 
         // Process endorsement message
-        let endorsemsgPromise = Str.get_string(endorsestr, 'local_booking', {endorser: endorsername, endorsedate: endorsedon});
-        endorsemsgPromise.then(function(message) {
+        let endorseMsgPromise = Str.get_string(endorsestr, 'local_booking', {endorsername: endorserName, endorsedate: endorsedOn});
+        endorseMsgPromise.then(function(message) {
             // Set endorsement message
             $('#endorsement-label').html(message);
             // Show/hide recommendation letter link
@@ -71,27 +176,57 @@ function(
         })
         .fail(Notification.exception);
 
-         let result = endorsemsgPromise.trim().length !== 0;
+        // Set endorsement object
+        const endorsement = {endorsed: endorse, endorserid: endorserId, endorsedate: endorseDateTS};
 
-        // Persist endorsement in user preferences
-        result &= processUserPreference('endorse', endorse, courseId, userId, 'endorse');
-        result &= processUserPreference('endorser', endorse ? endorser : '', courseId, userId, 'endorse');
-        result &= processUserPreference('endorsedate', endorse ? endorsedatets : '', courseId, userId, 'endorse');
-        result &= processUserPreference('endorsenotify', endorse, courseId, userId, 'endorse');
+        // Process endorsement and notification to be setEndorsement
+        let result = processProgressFlag('endorsement', JSON.stringify(endorsement), courseId, userId, 'endorsed');
+        result &= processProgressFlag('notifications.endorsement', endorse, courseId, userId);
 
-         return result;
+        return result;
+    };
+
+    /**
+     * Process student progress update.
+     *
+     * @method processProgressFlag
+     * @param  {string} progressKey The progress key.
+     * @param  {string} value       The value data.
+     * @param  {string} courseId    The associated course id.
+     * @param  {string} studentId   The student.
+     * @param  {string} element     The element to handle GUI.
+     * @return {bool}
+     */
+     const processProgressFlag = function(progressKey, value, courseId, studentId, element = null) {
+
+        return Repository.setProgressFlag(progressKey, value, courseId, studentId)
+        .then(function(result) {
+            return result.saved;
+        })
+        .always(function() {
+            Notification.fetchNotifications();
+        })
+        .fail(function(ex) {
+            Notification.exception(ex);
+            // Handle toggle failure
+            if (element !== null) {
+                $('#' + element).prop('checked', !$('#' + element).prop('checked'));
+            }
+
+            return true;
+        });
     };
 
     /**
      * Process the user setting preference depending on the passed
      * preference and value pairs.
      *
+     * @method processUserPreference
      * @param  {string} preference  The preference key of the setting.
      * @param  {string} value       The value data.
      * @param  {string} courseId    The course id for suspension.
      * @param  {string} userId      The user id to be suspended.
      * @param  {string} element     The element to handle GUI.
-     * @method processUserPreference
      * @return {bool}
      */
      const processUserPreference = function(preference, value, courseId, userId, element) {
@@ -114,10 +249,10 @@ function(
     /**
      * Process the user suspension status.
      *
+     * @method processSuspendedStatus
      * @param  {bool}   suspend     Suspend true/false.
      * @param  {string} courseId    The course id for suspension.
      * @param  {string} userId      The user id to be suspended.
-     * @method processSuspendedStatus
      * @return {bool}
      */
      const processSuspendedStatus = function(suspend, courseId, userId) {
@@ -138,12 +273,12 @@ function(
     /**
      * Process the user group membership status on-hold and keep active.
      *
+     * @method processGroup
      * @param  {string} key      The key of the setting.
      * @param  {bool}   add      Join or leave true/false.
      * @param  {string} courseId The course id for suspension.
      * @param  {string} userId   The user id to be suspended.
      * @param  {object} root     The root element.
-     * @method processGroup
      * @return {bool}
      */
     const processGroup = function(key, add, courseId, userId, root) {
@@ -166,53 +301,6 @@ function(
                 $('#' + key).prop('checked', !$('#' + key).prop('checked'));
                 return false;
             });
-    };
-
-    /**
-     * Create all of the event listeners for the message preferences page.
-     *
-     * @param  {string} courseId    The course id for suspension.
-     * @param  {string} userId      The user id to be suspended.
-     * @param  {string} key         The key of the setting.
-     * @param  {string} value       Setting value.
-     * @param  {object} root        The root element.
-     * @method processSetting
-     */
-     const processSetting = function(courseId, userId, key, value, root) {
-
-        // Show progressing icon
-        startLoading($('#' + key + '-region'));
-
-        let response;
-        // Process the different toggle actions
-        switch (key) {
-            case 'endorse':
-                // Process student endorsement and handle UI
-                response = setEndorsement(courseId, userId, value, root);
-                break;
-            case 'xcoursebookings':
-                // Process availability override in user preferences and handle UI, site level courseid=1
-                response = processUserPreference(key, value, 1, userId, key);
-                break;
-            case 'availabilityoverride':
-                // Process availability override in user preferences and handle UI
-                response = processUserPreference(key, value, courseId, userId, key);
-                break;
-            case 'suspend':
-                // Toggle enrolment status suspension on/off and handle UI
-                response = processSuspendedStatus(value, courseId, userId);
-                break;
-            case 'onhold':
-            case 'keepactive':
-                // Process keep active in user preferences and handle UI
-                response = processGroup(key, value, courseId, userId, root);
-                break;
-        }
-
-        // Stop showing progressing icon
-        stopLoading($('#' + key + '-region'));
-
-        return response;
     };
 
     /**
@@ -252,64 +340,6 @@ function(
             stopLoading(root);
         })
         .fail(Notification.exception);
-    };
-
-    /**
-     * Create all of the event listeners for the message preferences page.
-     *
-     * @param  {object} root    The root element.
-     * @method registerEventListeners
-     */
-    const registerEventListeners = function(root) {
-
-        var userProfile = root.find(Selectors.wrappers.userprofilewrapper),
-        courseId = userProfile.data('courseid'),
-        userId = userProfile.data('userid');
-
-        // Handle endorsement toggle clicks
-        $('#endorse').click(function() {
-            processSetting(courseId, userId, 'endorse', this.checked, root);
-        });
-
-        // Handle suspension toggle clicks
-        $('#suspended').click(function() {
-            processSetting(courseId, userId, 'suspend', this.checked);
-        });
-
-        // Handle on-hold toggle clicks
-        $('#onhold').click(function() {
-            // Add to OnHold group then trigger Keep Active if successful
-            processSetting(courseId, userId, 'onhold', this.checked, root)
-                .then((response) => {
-                    if (0 !== response) {
-                        // Toggle 'Keep Alive' so the student is not automatically placed on-hold again
-                        $('#keepactive').prop("checked", !this.checked);
-                        return processSetting(courseId, userId, 'keepactive', !this.checked, root);
-                    }
-                    return true;
-                })
-                .fail(Notification.exception);
-        });
-
-        // Handle keep active toggle clicks
-        $('#keepactive').click(function() {
-            processSetting(courseId, userId, 'keepactive', this.checked, root);
-        });
-
-        // Handle restriction override toggle clicks
-        $('#availabilityoverride').click(function() {
-            processSetting(courseId, userId, 'availabilityoverride', this.checked, root);
-        });
-
-        // Handle show cross-course bookings toggle clicks
-        $('#xcoursebookings').click(function() {
-            processSetting(courseId, userId, 'xcoursebookings', this.checked, root);
-        });
-
-        // Handle save comment click
-        $('#save_comment_button').click(function() {
-            updateComment(courseId, userId, root);
-        });
     };
 
     /**

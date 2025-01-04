@@ -28,6 +28,7 @@ namespace local_booking\exporters;
 defined('MOODLE_INTERNAL') || die();
 
 use DateTime;
+use moodle_url;
 use core\external\exporter;
 use local_booking\local\session\entities\action;
 
@@ -120,6 +121,8 @@ class dashboard_mybookings_exporter extends exporter {
 
         foreach ($this->mybookings as $booking) {
             $student = $course->get_student($booking->get_studentid(), $booking->get_courseid());
+            $profileurlparams = ['courseid' => $course->get_id(), 'userid' => $student->get_id()];
+            $profileurl = new moodle_url('/local/booking/profile.php', $profileurlparams);
             $action = new action($course, $student, 'cancel', $booking->get_exercise_id());
             $slot = $booking->get_slot();
             $starttime = new DateTime('@' . $slot->get_starttime());
@@ -130,6 +133,7 @@ class dashboard_mybookings_exporter extends exporter {
             'bookingid'     => $booking->get_id(),
             'studentid'     => $booking->get_studentid(),
             'studentname'   => $student->get_name(),
+            'profileurl'    => $profileurl->out(false),
             'exerciseid'    => $booking->get_exercise_id(),
             'noshows'       => count($student->get_noshow_bookings()),
             'exercise'      => $course->get_exercise($booking->get_exercise_id(), $booking->get_courseid())->name,

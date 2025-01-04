@@ -56,6 +56,13 @@ require_capability('local/booking:view', $context);
 // define session booking plugin subscriber globally
 $subscriber = get_course_subscriber_context($url->out(false), $courseid);
 
+// embed the pdf report
+$reporturl = new moodle_url('/local/booking/pdfwriter.php');
+$reporturl->param('courseid', $courseid);
+$reporturl->param('userid', $userid);
+$reporturl->param('report', $reporttype);
+$reporturl->param('attempt', $attempt);
+
 $navbartext = participant::get_fullname($userid);
 $PAGE->navbar->add($navbartext);
 $PAGE->set_pagelayout('admin');
@@ -85,18 +92,11 @@ echo html_writer::script('document.onreadystatechange = function () {
     }
   }
 ');
-echo html_writer::start_tag('div', array('id'=>'loadingicon', 'style'=>'height: 500px; text-align: center; line-height:150px;'));
-echo html_writer::start_tag('i', array('class'=>'fa fa-circle-o-notch fa-spin', 'style'=>'font-size:48px', 'title'=>'Loading', 'aria-label'=>'Loading'));
-echo html_writer::end_tag('i');
-echo html_writer::end_tag('div');
+
+// show loading icon
+echo '<div id="loadingicon" class="mt-6 text-center"><i class="mt-6 fa-solid fa-spinner fa-spin fa-2xl" title="Loading" aria-label="Loading"></i></div>';
 
 // embed the pdf report
-$reporturl = new moodle_url('/local/booking/pdfwriter.php');
-$reporturl->param('courseid', $courseid);
-$reporturl->param('userid', $userid);
-$reporturl->param('report', $reporttype);
-$reporturl->param('attempt', $attempt);
-
 echo html_writer::tag('embed', '', array('id'=>'report', 'src'=>$reporturl->out(false), 'type'=>'application/pdf', 'height'=>'1200', 'width'=>'100%'));
 
 echo html_writer::end_tag('div');

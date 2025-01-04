@@ -102,14 +102,18 @@ export const confirmDeletion = (logentryId, userId, courseId, cascade) => {
 };
 
 /**
- * Displays a warning message.
+ * Displays a warning modal with the specified message and title.
  *
- * @method  showWarning
- * @param   {array}  message       The warning message to display.
- * @param   {array}  title         The modal title string.
- * @param   {array}  data          Any additional message parameters.
- * @param   {array}  options       Options array for the popup.
- * @return  {Promise}
+ * @param {string} message - The message to display in the modal.
+ * @param {string} title - The title of the modal.
+ * @param {Object} [data={}] - Additional data to pass to the modal.
+ * @param {Object} [options=null] - Options to customize the modal.
+ * @param {string} [options.buttonType='ok'] - The type of buttons to display ('ok' or 'yesno').
+ * @param {string} [options.buttonDefault='ok'] - The default button ('ok' or 'no').
+ * @param {boolean} [options.stopExecution=true] - Whether to stop execution.
+ * @param {string|null} [options.customEvent=null] - Custom event to trigger.
+ * @param {boolean} [options.fromComponent=false] - Whether the warning is from a component.
+ * @returns {Promise} - A promise that resolves when the modal is shown.
  */
 export const showWarning = (message, title, data = {}, options = null) => {
 
@@ -131,62 +135,50 @@ export const showWarning = (message, title, data = {}, options = null) => {
 
     let pendingPromise = new Pending('local_booking/booking_actions:showWarning');
     let warningPromise = ModalWarning.create();
-    let finalPromise;
+    let stringsPromise, finalPromise;
+    let warningStrings = [{}];
 
-    if (options.fromComponent) {
-        let warningStrings = [
-            {
-                key: title,
-                component: 'local_booking'
-            }];
+    /**
+     * Setup modal warning prompt form
+     * @param {Array} warningStrings - The warning strings to display.
+     */
+    async function setupModalWarningPromptForm(warningStrings) {
+        try {
+            if (options.fromComponent) {
+                // Add title and message to the warning strings
+                warningStrings = [{key: title, component: 'local_booking'}];
+                warningStrings.push({key: message, component: 'local_booking', param: data});
 
-        if (message) {
-            warningStrings.push({
-                key: message,
-                component: 'local_booking',
-                param: data
-            });
+                // Get strings for the warning modal
+                stringsPromise = Str.get_strings(warningStrings);
+            }
+
+            const warningModal = await warningPromise;
+
+            if (stringsPromise) {
+                const strings = await stringsPromise;
+                title = strings[0];
+                message = strings[1];
+            }
+
+            warningModal.setRemoveOnClose(true);
+            warningModal.setTitle(title);
+            warningModal.setBody(message);
+            warningModal.setData(data);
+            warningModal.setCustomEvent(options.customEvent);
+            warningModal.setFooter(footer);
+            warningModal.show();
+
+            pendingPromise.resolve();
+            return warningModal;
+        } catch (error) {
+            Notification.exception(error);
         }
-
-        let stringsPromise = Str.get_strings(warningStrings).fail(Notification.exception);
-        // Setup modal warning prompt form
-        finalPromise = $.when(stringsPromise, warningPromise)
-            .then(function(strings, warningModal) {
-                warningModal.setRemoveOnClose(true);
-                warningModal.setTitle(strings[0]);
-                warningModal.setBody(strings[1]);
-                warningModal.setData(data);
-                warningModal.setCustomEvent(options.customEvent);
-                warningModal.setFooter(footer);
-                warningModal.show();
-
-                return warningModal;
-            })
-            .then(function(modal) {
-                pendingPromise.resolve();
-                return modal;
-            })
-            .catch(Notification.exception);
-    } else {
-        // Setup modal warning prompt form
-        finalPromise = $.when(warningPromise)
-            .then(function(warningModal) {
-                warningModal.setRemoveOnClose(true);
-                warningModal.setTitle(title);
-                warningModal.setBody(message);
-                warningModal.setData(data);
-                warningModal.setCustomEvent(options.customEvent);
-                warningModal.setFooter(footer);
-                warningModal.show();
-
-                return warningModal;
-            })
-            .then(function(modal) {
-                pendingPromise.resolve();
-                return modal;
-            })
-            .catch(Notification.exception);
+        return null;
     }
+
+    // Call the async function
+    setupModalWarningPromptForm(warningStrings);
 
     return finalPromise;
 };

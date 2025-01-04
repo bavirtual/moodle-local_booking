@@ -18,10 +18,11 @@ Session Booking provides a workflow for posting availability slots, booking agai
 - Provides a custom student prioritization mechanism for booking sessions based on student's session recency, course activity, availability posting, and lesson completion
 - Provides session calendar integration with Moodle, Google, and Outlook Live calendars, including (ics) standard iCal calendar file download
 - Provides simple course specific logbook and EASA format.
-- Allows for Administration and flight time analysis reporting.
-- Allows for configuration-specific integration with external data sources for PIREP, aircraft, and fleet lookup.
+- Provides student progression administration and flight time analysis reporting.
+- Allows for external data configuration to connect to external data sources for PIREP, aircraft, fleet, and engine-type lookups.
 - Provides automatic notification of student inactivity warnings, placement on-hold and warning, suspension and instructor inactivity warning communication.
 - Provides course-specific student profile with relevant information along with administration functions to manage logbook entries, on-hold management, overdue restriction override, keep alive for inactive students placed on-hold.
+- Allows for advanced configuration for hidden features extending the capability of the plugin such as outgoing notifications signature, student graduation notifications, and more.
 
 ## Setup
 
@@ -46,6 +47,10 @@ The plugin can be installed either directly from Moodle or through CLI.
 - [Robin Herbots Inputmask](https://github.com/RobinHerbots/Inputmask) (package already included in js folder)
    - npm install inputmask --save
 
+### Documentation
+
+- Detailed documentation can be found on [MoodleDocs](https://docs.moodle.org/405/en/Session_Booking)
+
 ## Configuration
 
 There are three areas of configurations:
@@ -54,7 +59,6 @@ There are three areas of configurations:
 
    - User custom fields (primary & secondary simulators, and callsign)
    - Course custom fields (restrictions, home airport and training aircraft ICAOs, course titles)
-   - ## Session Booking Configurations:
    - Capability and role assignment: the plugin should have the same configuration as what is shown below. Note that the `Beta User` role is meant for beta rollout, afterwhich the `student` role should have the same capability as the `Beta User`:
      <img src="pix/capability.png" alt="capabilities">
 

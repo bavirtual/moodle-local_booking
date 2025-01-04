@@ -60,6 +60,9 @@ class participant_vault implements participant_vault_interface {
     const DB_PROG = 'local_booking_progress';
     const DB_LOGBOOKS = 'local_booking_logbooks';
 
+    // Moodle logstore log table name for querying
+    const DB_LOGSTORE = 'logstore_standard_log';
+
     /**
      * Get a participant from the database.
      *
@@ -345,6 +348,21 @@ class participant_vault implements participant_vault_interface {
         $field = $DB->get_record_sql($sql, $params);
 
         return !empty($field) ? $field->value: false;
+    }
+
+    /**
+     * Get course activity for a student from the logs.
+     *
+     * @param int $courseid  The course id in reference
+     * @param int $studentid The student id in reference
+     * @return int The number of activity events in the log.
+     */
+    public static function get_student_activity_count(int $courseid, int $studentid) {
+        global $DB;
+
+        $activitycount = $DB->count_records(self::DB_LOGSTORE, ['userid' => $studentid, 'courseid' => $courseid]);
+
+        return $activitycount;
     }
 
     /**

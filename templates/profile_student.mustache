@@ -88,7 +88,7 @@
                             {{#qualified}}
                             <div id="endorse-region" class="custom-control custom-switch">
                                 <input type="checkbox" class="toggle-input" id="endorsed" {{#endorsed}}checked{{/endorsed}} {{#endorsementlocked}}disabled{{/endorsementlocked}}>
-                                <label id="endorsement-label" class="toggle-label" for="endorsed">{{endorsementmgs}}</label>
+                                <label id="endorsement-label" class="toggle-label" for="endorsed">{{endorsementmsg}}</label>
                                 {{> core/overlay_loading}}
                             </div>
                             <div id="endorsement-letter" class="{{^endorsed}}hidden {{/endorsed}}mt-2">
@@ -158,6 +158,8 @@
                     <dl><dt>Moodle
                         <dd><span><a href="{{outlinereporturl}}">{{#str}} outlinereport , local_booking {{/str}}</a></span></dd>
                         <dd><span><a href="{{completereporturl}}">{{#str}} completereport , local_booking {{/str}}</a></span></dd>
+                    </dt></dl>
+                    <dl><dt>{{#str}} course {{/str}}
                         <dd><span><a href="{{logbookurl}}">{{#str}} logbooklabel , local_booking {{/str}}</a></span></dd>
                     </dt></dl>
                     <dl><dt>{{#str}} auditreports , local_booking {{/str}}

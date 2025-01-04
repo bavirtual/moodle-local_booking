@@ -42,12 +42,14 @@ define('DEFAULT_LOGBOOK_FORMAT', 'std');
 // LOCAL_BOOKING_PROGFLAGS - constant object of plugin user preferences
 define('LOCAL_BOOKING_PROGFLAGS', [
     'POSTOVERRIDE'=>'overrideminslotperiod',
-    'NOTIFYPOSTS'=>'notifypostedslots',
-    'NOTIFYGRAD'=>'notifygraduation',
-    'NOTIFYENDORSE'=>'notifyendorsement',
-    'ENDORSED'=>'endorsed',
-    'ENDORSER'=>'endorseid',
-    'ENDORSEDATE'=>'endorsedate'
+    'NOTIFY'=>'notifications',
+    'NOTIFYPOSTS'=>'notifications.postedslots',
+    'NOTIFYGRAD'=>'notifications.graduation',
+    'NOTIFYENDORSE'=>'notifications.endorsement',
+    'ENDORSE'=>'endorsement',
+    'ENDORSED'=>'endorsement.endorsed',
+    'ENDORSER'=>'endorsement.endorseid',
+    'ENDORSEDATE'=>'endorsement.endorsedate'
 ]);
 
 // LOCAL_BOOKING_DASHBOARDPAGESIZE - constant value for the instructor dashboard page size
@@ -365,15 +367,15 @@ function local_booking_output_fragment_logentry_form($args) {
  */
 function local_booking_get_fontawesome_icon_map() {
     return [
-        'local_booking:availability'    => 'fa-calendar-plus-o',
+        'local_booking:availability'    => 'fa-regular fa-calendar-plus',
         'local_booking:book'            => 'fa-plane',
         'local_booking:booking'         => 'fa-plane',
-        'local_booking:check'           => 'fa-check',
+        'local_booking:check'           => 'fa-solid fa-check',
         'local_booking:copy'            => 'fa-copy',
         'local_booking:download'        => 'fa-download',
         'local_booking:grade'           => 'fa-pencil-square',
         'local_booking:graduate'        => 'fa-graduation-cap',
-        'local_booking:info-circle'     => 'fa-info-circle',
+        'local_booking:info-circle'     => 'fa-solid fa-circle-info',
         'local_booking:check-circle-o'  => 'fa-check-circle-o',
         'local_booking:logbook'         => 'fa-address-book-o',
         'local_booking:noslot'          => 'fa-calendar-times-o',

@@ -45,7 +45,7 @@ use core_external\external_function_parameters;
  * @copyright  BAVirtual.co.uk © 2024
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class update_student_progress extends external_api {
+class set_progress_flag extends external_api {
 
     /**
      * Returns description of method parameters.
@@ -54,7 +54,7 @@ class update_student_progress extends external_api {
      */
     public static function execute_parameters() {
         return new external_function_parameters(array(
-            'progresskey' => new external_value(PARAM_RAW, 'The progress key', VALUE_DEFAULT),
+            'key' => new external_value(PARAM_RAW, 'The progress key', VALUE_DEFAULT),
             'value' => new external_value(PARAM_RAW, 'The value of the progress information', VALUE_DEFAULT),
             'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
             'studentid' => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
@@ -63,22 +63,22 @@ class update_student_progress extends external_api {
 }
 
     /**
-     * Update user group membership add/remove for the course.
+     * Updates a student's progress flag in the course.
      *
-     * @param string $progresskey The preference key of to be set.
-     * @param string $value  The value of the preference to be set.
+     * @param string $key    The progress key of to be set.
+     * @param string $value  The value of the progress flag to be set.
      * @param int $courseid  The course id.
      * @param int $studentid The user id.
      * @return array  The result of the progress update operation.
      */
-    public static function execute(string $progresskey, $value, int $courseid, int $studentid) {
+    public static function execute(string $key, string $value, int $courseid, int $studentid) {
 
         // Parameter validation.
         $params = self::validate_parameters(self::execute_parameters(), array(
-            'key'=> $progresskey,
-            'value'=> $value,
-            'courseid'=> $courseid,
-            'userid'  => $studentid,
+            'key' => $key,
+            'value' => $value,
+            'courseid' => $courseid,
+            'studentid' => $studentid,
             )
         );
 
@@ -88,8 +88,13 @@ class update_student_progress extends external_api {
         // get the student
         $student = new student($subscriber, $params['studentid']);
 
+        // check if the value is a json string
+        if (json_validate($params['value'])) {
+            $params['value'] = json_decode($params['value'], true);
+        }
+
         // update student's progress
-        $result = $student->update_progress($params['key'], $params['value']);
+        $result = $student->set_progress_flag($params['key'], $params['value']);
 
         return array(
             'result' => $result,

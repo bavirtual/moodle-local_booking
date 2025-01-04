@@ -113,7 +113,7 @@ function xmldb_local_booking_upgrade($oldversion) {
 
     // change mdl_local_booking_stats to mdl_local_booking_progress to track student progress and
     // notifyflags to progressflags for associated student data relevant to session booking not in Moodle users table
-    if ($oldversion < 2024123000) {
+    if ($oldversion < 2025010400) {
 
         // Rename table local_booking_stats to local_booking_progress.
         $table = new xmldb_table('local_booking_stats');
@@ -127,7 +127,7 @@ function xmldb_local_booking_upgrade($oldversion) {
         }
 
         // Assignment savepoint reached.
-        upgrade_plugin_savepoint(true, 2024123000, 'local', 'booking');
+        upgrade_plugin_savepoint(true, 2025010400, 'local', 'booking');
     }
 
     return true;

@@ -113,7 +113,7 @@ class cancel_booking extends external_api {
                 } else {
                     // enable restriction override if enabled to allow the student to repost slots sooner
                     if (intval($subscriber->overdueperiod) > 0) {
-                        $student->add_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE'], true);
+                        $student->set_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE'], true);
                     }
 
                     // send cancellation message to both instructor and student

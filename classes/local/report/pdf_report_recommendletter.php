@@ -80,13 +80,15 @@ class pdf_report_recommendletter extends pdf_report {
         $totalpictime = $logbooksummary->totalpictime ?: 0;
 
         // recommendation letter info
-        $endorserid = $this->student->get_progress_flag('endorserid');
+        $endorsement = $this->student->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['ENDORSE']);
+        $endorserid = !empty($endorsement) ? $endorsement->endorserid : 0;
+        $recomendedonts = !empty($endorsement) ? $endorsement->endorsedate : 0;
         $instructor = new instructor($this->course, $endorserid);
         $vatsimid = $instructor->get_profile_field('vatsimid') ?: get_string('notfound', 'local_booking');
 
         $recomendedby = !empty($instructor) ? $instructor->get_name() : get_string('notfound', 'local_booking');
         $recomendedbyVATSIM = $vatsimid;
-        $recomendedonts = !empty($instructor) ? $this->student->get_progress_flag('endorsedate') : get_string('notfound', 'local_booking');
+        $recomendedonts = !empty($instructor) ? $recomendedonts : get_string('notfound', 'local_booking');
         $recomendedon = !empty($recomendedonts) ? (new \DateTime('@'.$recomendedonts))->format('M j\, Y') : get_string('notfound', 'local_booking');
 
         // write student name and VATSIM ID

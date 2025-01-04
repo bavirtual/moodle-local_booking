@@ -129,6 +129,15 @@ interface participant_vault_interface {
     public static function get_student_progress(int $courseid, int $userid, string $field);
 
     /**
+     * Get course activity for a student from the logs.
+     *
+     * @param int $courseid  The course id in reference
+     * @param int $studentid The student id in reference
+     * @return int The number of activity events in the log.
+     */
+    public static function get_student_activity_count(int $courseid, int $studentid);
+
+    /**
      * Updates the progress table with a specific value
      *
      * @param int    $courseid  The course id

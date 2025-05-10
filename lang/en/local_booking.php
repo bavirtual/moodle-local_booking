@@ -486,13 +486,13 @@ $string['emailconfirmhtml'] = '<div style="font-family:sans-serif"><p><a href=\'
 // calendar links for booked sessions
 $string['calendarshtmlstart'] = '<div style="font-family:sans-serif"><p style="font-size: .9em;">Add a reminder to your calendar:<br />
     <table style="border-collapse: collapse; width: 100%;"><tbody>';
-$string['calendarshtmlgoogle'] = '<tr><td style="width: 50px; text-align: center;"><a style="text-decoration: none;" href="{$a->outlookurl}">
-        <a style="text-decoration: none;" href="{$a->googleurl}"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.png" alt="Add to Google calendar"/></a></td>
-        <td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td></tr>';
-$string['calendarshtmlmicrosoft'] = '<tr><td style="width: 50px; text-align: center;"><a style="text-decoration: none;" href="{$a->outlookurl}">
+$string['calendarshtmlgoogle'] = '<tr><td style="width: 25px; height: 45px; text-align: center;"><a style="text-decoration: none;" href="{$a->outlookurl}">
+        <a style="text-decoration: none;" href="{$a->googleurl}"><img src="{$a->pixrooturl}/btn_google_light_normal_ios.png" alt="Add to Google calendar"
+        width="45" height="45"/></a></td><td><a style="text-decoration: none;" href="{$a->googleurl}"><span style="font-size: 13px; color: #01579b;">Google Calendar</span></a></td></tr>';
+$string['calendarshtmlmicrosoft'] = '<tr><td style="width: 25px; height: 45px; text-align: center;"><a style="text-decoration: none;" href="{$a->outlookurl}">
         <img src="{$a->pixrooturl}/btn_outlook.png" alt="Add to Outlook Live calendar" width="25" height="25" /></a></td>
-        <td><a style="text-decoration: none;" href="{$a->outlookurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td></tr><tr>';
-$string['calendarshtmlics'] = '<td style="width: 50px; text-align: center;"><a style="text-decoration: none;" href="{$a->icsurl}">
+        <td><a style="text-decoration: none;" href="{$a->outlookurl}"><span style="font-size: 13px; color: #01579b;">Outlook Live Calendar</span></a></td></tr>';
+$string['calendarshtmlics'] = '<tr><td style="width: 25px; height: 45px; text-align: center;"><a style="text-decoration: none;" href="{$a->icsurl}">
             <img src="{$a->pixrooturl}/btn_ical.png" alt="Add to desktop calendar" width="28" height="28" /></a></td>
         <td><a style="text-decoration: none;" href="{$a->icsurl}"><span style="font-size: 13px; color: #01579b;">Download ics/iCal file</span></a></td></tr>';
 $string['calendarshtmlend'] = '</tbody></table><hr /></div>';

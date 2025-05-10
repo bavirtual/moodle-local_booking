@@ -160,7 +160,7 @@ class notification extends \core\message\message {
         $data = (object) array(
             'coursename'    => $this->course->get_shortname(),
             'student'       => student::get_fullname($studentid),
-            'sessiondate'   => $sessiondatetime,
+            'sessiondate'   => $sessiondatetime->format('D M j\, H:i'),
             'exercise'      => $this->course->get_exercise($exerciseid)->name,
             'courseurl'     => (new \moodle_url('/course/view.php', array('id'=>$this->course->get_id())))->out(false),
             'assignurl'     => (new \moodle_url('/mod/assign/index.php', array('id'=>$this->course->get_id())))->out(false),

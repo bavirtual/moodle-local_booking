@@ -1,5 +1,12 @@
 # Change log
 
+## [2025051000] - RELEASED 2025-05-10
+
+### Fixed
+
+- Google calendar icon oversized
+- session booking confirmation missing date tag
+
 ## [2025010401] - RELEASED 2025-01-04
 
 ### Fixed

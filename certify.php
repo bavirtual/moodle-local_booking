@@ -57,15 +57,15 @@ $title = $student->get_name()  . ' ' . get_string('coursecompletion', 'local_boo
 // check if student evaluation is required and if so whether the student has been evaluated
 if ($subscriber->requires_skills_evaluation()) {
 
+// check if student evaluation is required and if so whether the student has been evaluated
+if ($COURSE->subscriber->requires_skills_evaluation()) {
+
     // verify credentials, if the certifier is not the same as the examiner throw invalid permissions error
-    $exerciseid = $subscriber->get_graduation_exercise_id();
+    $exerciseid = $COURSE->subscriber->get_graduation_exercise();
     $grade = $student->get_grade($exerciseid, true);
     $lastattempt = (count($grade->attempts) ?: 1) - 1;
     $examinerid = $grade->attempts[$lastattempt]->grader;
-    $badgecount = 0;
-    $data = new stdClass();
-    $data->userid = $studentid;
-
+  
     if ($examinerid != $USER->id)
         throw new \Error(get_string('errorcertifiernotexaminer', 'local_booking'));
 

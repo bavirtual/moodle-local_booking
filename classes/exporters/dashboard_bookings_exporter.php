@@ -295,6 +295,7 @@ class dashboard_bookings_exporter extends exporter {
         $i = 0;
         $totaldays = 0;
         $context = \context_system::instance();
+
         foreach ($this->activestudents as $student) {
             $i++;
 

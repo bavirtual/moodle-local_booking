@@ -142,18 +142,9 @@ class dashboard_student_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true,
                 'default' => '',
-                'optional' => true,
-                'default' => 0,
-            ],
-            'dateinfo' => [
-                'type' => \PARAM_RAW,
-                'optional' => true,
-                'default' => '',
             ],
             'recencytooltip' => [
                 'type' => PARAM_RAW,
-                'optional' => true,
-                'default' => '',
                 'optional' => true,
                 'default' => '',
             ],
@@ -190,14 +181,9 @@ class dashboard_student_exporter extends exporter {
                 'type' => \PARAM_RAW,
                 'optional' => true,
                 'default' => '',
-                'type' => \PARAM_RAW,
-                'optional' => true,
-                'default' => '',
             ],
             'actiontype' => [
                 'type' => PARAM_RAW,
-                'optional' => true,
-                'default' => '',
                 'optional' => true,
                 'default' => '',
             ],
@@ -205,42 +191,34 @@ class dashboard_student_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true,
                 'default' => '',
-                'optional' => true,
-                'default' => '',
             ],
             'actionbook' => [
                 'type' => PARAM_BOOL,
-                'optional' => true,
                 'optional' => true,
                 'default' => false,
             ],
             'actionenabled' => [
                 'type' => PARAM_BOOL,
                 'optional' => true,
-                'optional' => true,
                 'default' => false,
             ],
             'actiontooltip' => [
                 'type' => PARAM_RAW,
-                'optional' => true,
                 'optional' => true,
                 'default' => '',
             ],
             'sessionoptions' => [
                 'type' => PARAM_BOOL,
                 'optional' => true,
-                'optional' => true,
                 'multiple' => true,
             ],
             'posts' => [
                 'type' => PARAM_INT,
                 'optional' => true,
-                'optional' => true,
                 'default' => 0,
             ],
             'week' => [
                 'type' => PARAM_INT,
-                'optional' => true,
                 'optional' => true,
                 'default' => 0,
             ],
@@ -288,20 +266,6 @@ class dashboard_student_exporter extends exporter {
         }
 
         return $return;
-            $return = array_merge(array(
-                'actionurl'         => $action->get_url()->out(false),
-                'actiontype'        => $action->get_type(),
-                'actionname'        => $action->get_name(),
-                'actionbook'        => $action->get_name() == 'Book',
-                'actionenabled'     => $action->is_enabled(),
-                'actiontooltip'     => $action->get_tooltip(),
-                'sessionoptions'    => $this->get_session_options($action),
-                'posts'             => $posts,
-                'week'              => $this->get_booking_week(),
-            ), $return);
-        }
-
-        return $return;
     }
 
     /**
@@ -310,7 +274,6 @@ class dashboard_student_exporter extends exporter {
      * @param   $output  The output to be rendered
      * @return  $sessions[]
      */
-    public static function get_sessions($output, student $student, $related) {
     public static function get_sessions($output, student $student, $related) {
         $sessions = [];
 
@@ -324,12 +287,9 @@ class dashboard_student_exporter extends exporter {
 
         // export all exercise sessions, quizes, and exams
         $coursemods = $related['coursemodules'];
-        $coursemods = $related['coursemodules'];
         foreach ($coursemods as $coursemod) {
             $studentinfo = [];
             $studentinfo = [
-                'student'     => $student,
-                'studentname' => $studentname,
                 'student'     => $student,
                 'studentname' => $studentname,
                 'exerciseid'  => $coursemod->id,
@@ -337,14 +297,8 @@ class dashboard_student_exporter extends exporter {
                 'grades'      => $grades,
                 'bookings'    => $bookings,
                 'logbook'     => $logbook,
-                'logbook'     => $logbook,
             ];
-<<<<<<< HEAD:classes/external/booking_student_exporter.php
-            $coursemodsession = new booking_session_exporter($studentinfo, $related);
-            $coursemodsession = new booking_session_exporter($studentinfo, $related);
-=======
             $coursemodsession = new dashboard_session_exporter($studentinfo, $related);
->>>>>>> 63798e5bb7 (unique slots and student profile progres fix):classes/external/dashboard_student_exporter.php
             $sessions[] = $coursemodsession->export($output);
         }
 

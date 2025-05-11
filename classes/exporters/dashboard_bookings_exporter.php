@@ -30,7 +30,6 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\participant\entities\instructor;
 use local_booking\output\views\base_view;
 use renderer_base;
@@ -48,12 +47,10 @@ class dashboard_bookings_exporter extends exporter {
 
     /**
      * Warning flag of an overdue session (orange)
-     * Warning flag of an overdue session (orange)
      */
     const OVERDUEWARNING = 1;
 
     /**
-     * Warning flag of a late session past overdue (red)
      * Warning flag of a late session past overdue (red)
      */
     const LATEWARNING = 2;
@@ -66,7 +63,6 @@ class dashboard_bookings_exporter extends exporter {
     /**
      * @var subscriber $subscriber The subscribing course.
      */
-    protected $course;
     protected $course;
 
     /**
@@ -299,7 +295,7 @@ class dashboard_bookings_exporter extends exporter {
         $i = 0;
         $totaldays = 0;
         $context = \context_system::instance();
-        $context = \context_system::instance();
+
         foreach ($this->activestudents as $student) {
             $i++;
 
@@ -319,7 +315,6 @@ class dashboard_bookings_exporter extends exporter {
             $data['sequencetooltip'] = get_string('tag_' . $student->get_progress_status(), 'local_booking');
 
             $studentexporter = new dashboard_student_exporter($data, [
-                'context'       => $context,
                 'context'       => $context,
                 'coursemodules' => $this->modules,
                 'subscriber'    => $this->course,
@@ -344,8 +339,6 @@ class dashboard_bookings_exporter extends exporter {
      */
     protected function get_warning($dayssincelast) {
         $warning = 0;
-        $waitdays = intval($this->course->postingwait);
-        $onholdperiod = intval($this->course->onholdperiod);
         $waitdays = intval($this->course->postingwait);
         $onholdperiod = intval($this->course->onholdperiod);
 

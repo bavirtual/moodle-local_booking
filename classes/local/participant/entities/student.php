@@ -124,9 +124,7 @@ class student extends participant {
 
     /**
      * @var array $incompletelessons the list of pending lessons.
-     * @var array $incompletelessons the list of pending lessons.
      */
-    protected $incompletelessons;
     protected $incompletelessons;
 
     /**

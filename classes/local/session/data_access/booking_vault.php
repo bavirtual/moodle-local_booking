@@ -45,12 +45,6 @@ class booking_vault implements booking_vault_interface {
     /** Assignment grades table name for the persistent. */
     const DB_ASSIGN_GRADES = 'assign_grades';
 
-    /** Course modules for graded sessions */
-    const DB_COURSE_MODS = 'course_modules';
-
-    /** Availability Slots table name for the persistent. */
-    const DB_ASSIGN_GRADES = 'assign_grades';
-
     /**
      * remove all bookings for a user for a
      *
@@ -162,7 +156,6 @@ class booking_vault implements booking_vault_interface {
         $sql = 'SELECT b.id, b.userid, b.courseid, b.studentid, b.exerciseid,
                        b.slotid, b.confirmed, b.noshow, b.active, b.timemodified
                 FROM {' . static::DB_BOOKINGS . '} b
-                FROM {' . static::DB_BOOKINGS . '} b
                 INNER JOIN {' . static::DB_SLOTS . '} s on s.id = b.slotid
                 WHERE ' . ($allcourses ? '' : 'b.courseid = :courseid AND ' ) .
                     ($isstudent ? 'b.studentid' : 'b.userid') . ' = :userid' .
@@ -245,8 +238,6 @@ class booking_vault implements booking_vault_interface {
         global $DB;
 
         $sql = 'SELECT s.starttime as exercisedate
-                FROM {' . static::DB_BOOKINGS . '} b
-                INNER JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
                 FROM {' . static::DB_BOOKINGS . '} b
                 INNER JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
                 WHERE b.courseid = :courseid
@@ -458,7 +449,6 @@ class booking_vault implements booking_vault_interface {
 
         $sql = 'SELECT b.courseid, b.studentid, b.exerciseid, s.starttime
             FROM {' . static::DB_BOOKINGS . '} b
-            INNER JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
             INNER JOIN {' . static::DB_SLOTS . '} s ON s.id = b.slotid
             WHERE (b.userid = :instructorid
                 OR b.studentid = :studentid)

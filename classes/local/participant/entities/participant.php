@@ -369,7 +369,7 @@ class participant implements participant_interface {
      * @return DateTime $enroldate  The enrolment date of the participant.
      */
     public function get_enrol_date() {
-        if (!isset($this->enroldate)) {
+        if (!isset($this->enroldate) || empty($this->enroldate)) {
             // TODO: PHP9 deprecates dynamic properties
             $enroldate = 'enroldate';
             $this->enroldate = ($this->vault->get_enrol_date($this->course->get_id(), $this->userid))->$enroldate;

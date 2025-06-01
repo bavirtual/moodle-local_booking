@@ -27,7 +27,6 @@ namespace local_booking\local\participant\entities;
 
 require_once($CFG->dirroot . '/group/lib.php');
 
-use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\session\data_access\grading_vault;
 

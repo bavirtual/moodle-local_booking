@@ -73,8 +73,10 @@ class profile_instructor_exporter extends exporter {
         $this->courseid = $this->subscriber->get_id();
         $this->instructor = $this->subscriber->get_instructor($data['userid']);
 
-        $url = new moodle_url('/local/booking/view.php', [
-                'courseid' => $this->courseid
+        $url = new moodle_url('/local/booking/profile.php', [
+                'courseid' => $this->courseid,
+                'userid'=>$data['userid'],
+                'role'=>1
             ]);
 
         $data['url'] = $url->out(false);

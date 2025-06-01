@@ -1,5 +1,16 @@
 # Change log
 
+## [2025051000] - RELEASED 2025-05-31
+
+### Fixed
+
+- course participant profile enrol date
+- removed missing enrolment observer events from db/events
+
+### Changed
+
+- iCal calendar icon
+
 ## [2025051000] - RELEASED 2025-05-10
 
 ### Fixed

@@ -35,14 +35,16 @@ class user_enrolment_callbacks {
      * @param \core_enrol\hook\after_user_enrolled $hook
      */
     public static function user_enrolment_created(\core_enrol\hook\after_user_enrolled $hook): void {
+        global $PAGE;
 
         $instance = $hook->get_enrolinstance();
         // check if the user is enroled to a subscribing course
         if (subscriber::is_subscribed($instance->courseid)) {
             // check for enrolment role
             if (get_all_roles()[$hook->roleid]->archetype == 'student') {
-                // check if context is set to course
-                require_login($instance->courseid, false);
+                // set context for the module and other requirements by the assignment
+                $context = \context_course::instance($instance->courseid);
+                $PAGE->set_context($context);
                 $student = new student($instance->courseid, $hook->get_userid());
                 $nextexerciseid = $student->get_next_exercise()->id;
                 $student->update_progress('nextexerciseid', $nextexerciseid);
@@ -56,12 +58,14 @@ class user_enrolment_callbacks {
      * @param \core_enrol\hook\after_user_enrolled $hook
      */
     public static function user_enrolment_deleted(\core_enrol\hook\before_user_enrolment_removed $hook): void {
+        global $PAGE;
 
         $instance = $hook->enrolinstance;
         // check if the user is enroled to a subscribing course
         if (subscriber::is_subscribed($instance->courseid)) {
-            // check if context is set to course
-            require_login($instance->courseid, false);
+            // set context for the module and other requirements by the assignment
+            $context = \context_course::instance($instance->courseid);
+            $PAGE->set_context($context);
             // check for enrolment role
             $participant = new participant($instance->courseid, $hook->get_userid());
             if ($participant->is_student()) {

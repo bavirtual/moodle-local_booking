@@ -1,6 +1,6 @@
 # Change log
 
-## [2025060400] - RELEASED 2025-06-04
+## [2025060401] - RELEASED 2025-06-04
 
 ### Fixed
 

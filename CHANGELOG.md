@@ -1,5 +1,11 @@
 # Change log
 
+## [2025060400] - RELEASED 2025-06-04
+
+### Fixed
+
+- user enrolment hook theme already set fix
+
 ## [2025051000] - RELEASED 2025-05-31
 
 ### Fixed

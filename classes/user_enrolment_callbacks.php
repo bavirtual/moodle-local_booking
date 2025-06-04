@@ -41,8 +41,6 @@ class user_enrolment_callbacks {
         if (subscriber::is_subscribed($instance->courseid)) {
             // check for enrolment role
             if (get_all_roles()[$hook->roleid]->archetype == 'student') {
-                // check if context is set to course
-                require_login($instance->courseid, false);
                 $student = new student($instance->courseid, $hook->get_userid());
                 $nextexerciseid = $student->get_next_exercise()->id;
                 $student->update_progress('nextexerciseid', $nextexerciseid);
@@ -60,8 +58,6 @@ class user_enrolment_callbacks {
         $instance = $hook->enrolinstance;
         // check if the user is enroled to a subscribing course
         if (subscriber::is_subscribed($instance->courseid)) {
-            // check if context is set to course
-            require_login($instance->courseid, false);
             // check for enrolment role
             $participant = new participant($instance->courseid, $hook->get_userid());
             if ($participant->is_student()) {

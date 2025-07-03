@@ -102,7 +102,7 @@ class action implements action_interface {
                 // if the user is an examiner in the case of graduation skill tests
 
                 // get action enabled status and tooltip
-                if ($course->requires_lesson_completion() && !$student->has_completed_lessons()) {
+                if ($course->requires_lesson_completion() && !$student->has_completed_lessons() && !$student->is_newly_joined()) {
 
                     $enabled = false;
                     $tooltip = get_string('actiondisabledincompletelessonstooltip', 'local_booking');

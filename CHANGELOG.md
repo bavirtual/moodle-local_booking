@@ -1,10 +1,11 @@
 # Change log
 
-## [2025070300] - RELEASED 2025-07-03
+## [2025070301] - RELEASED 2025-07-03
 
 ### Fixed
 
 - newly joined student availability exception
+- newly joined active status
 
 ## [2025060401] - RELEASED 2025-06-04
 

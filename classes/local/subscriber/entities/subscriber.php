@@ -712,18 +712,20 @@ class subscriber implements subscriber_interface {
      */
     public function get_grading_item(int $modid) {
         // get grading items for all modules
-        $mod = $this->get_modules()[$modid];
-        $idx = array_search($mod->instance, array_column($this->gradeitems, 'iteminstance'));
-        if (empty($idx)) {
-            $params = array('itemtype' => 'mod',
-                'itemmodule' => $mod->modname,
-                'iteminstance' => $mod->instance,
-                'courseid' => $this->courseid,
-                'itemnumber' => 0);
-            $gradeitem = \grade_item::fetch($params);
-            $this->gradeitems[] = $gradeitem;
-        } else {
-            $gradeitem = $this->gradeitems[$idx];
+        if (!empty($modid)) {
+            $mod = $this->get_modules()[$modid];
+            $idx = array_search($mod->instance, array_column($this->gradeitems, 'iteminstance'));
+            if (empty($idx)) {
+                $params = array('itemtype' => 'mod',
+                    'itemmodule' => $mod->modname,
+                    'iteminstance' => $mod->instance,
+                    'courseid' => $this->courseid,
+                    'itemnumber' => 0);
+                $gradeitem = \grade_item::fetch($params);
+                $this->gradeitems[] = $gradeitem;
+            } else {
+                $gradeitem = $this->gradeitems[$idx];
+            }
         }
         return $gradeitem;
     }

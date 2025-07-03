@@ -364,7 +364,7 @@ class availability_week_exporter extends exporter {
             if ($this->student->is_onhold()) {
                 \core\notification::ERROR(get_string('studentonhold', 'local_booking'));
             }
-            if ($this->course->requires_lesson_completion() && !$this->student->has_completed_lessons()) {
+            if ($this->course->requires_lesson_completion() && !$this->student->has_completed_lessons() && !$this->student->is_newly_joined()) {
                 \core\notification::WARNING(get_string('lessonsincomplete', 'local_booking', \implode(', ', $this->student->get_pending_lessons(true))));
             }
         }

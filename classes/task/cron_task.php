@@ -157,7 +157,7 @@ class cron_task extends \core\task\scheduled_task {
                 if (!empty($lastsessionts)) {
                     // get status of already being on-hold or student is in active standings
                     $alreayonhold = $student->is_onhold();
-                    $isactive = $student->has_completed_lessons() && $student->get_statistics()->get_total_posts() > 0;
+                    $isactive = ($student->has_completed_lessons() || $student->is_newly_joined()) && $student->get_statistics()->get_total_posts() > 0;
 
                     // posting overdue date from last booked session
                     $lastsessiondate = new DateTime("@$lastsessionts");
@@ -217,7 +217,7 @@ class cron_task extends \core\task\scheduled_task {
                     // get status of already being on-hold, kept active, or student is in active standings
                     $alreayonhold = $student->is_onhold();
                     $keepactive =  $student->is_kept_active();
-                    $isactive = $student->has_completed_lessons() && $student->get_statistics()->get_total_posts() > 0;
+                    $isactive = ($student->has_completed_lessons() || $student->is_newly_joined()) && $student->get_statistics()->get_total_posts() > 0;
                     $booked = !empty($student->get_active_booking());
 
                     // on-hold date from last booked session
@@ -293,7 +293,7 @@ class cron_task extends \core\task\scheduled_task {
                     $lastsessiondate = new DateTime("@$lastsessionts");
                     $suspenddate = new DateTime("@$lastsessionts");
                     $keepactive =  $student->is_kept_active();
-                    $isactive = $student->has_completed_lessons() && $student->get_statistics()->get_total_posts() > 0;
+                    $isactive = ($student->has_completed_lessons() || $student->is_newly_joined()) && $student->get_statistics()->get_total_posts() > 0;
                     $booked = !empty($student->get_active_booking());
 
                     date_add($suspenddate, date_interval_create_from_date_string($suspensiondays . ' days'));

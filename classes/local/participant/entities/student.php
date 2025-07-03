@@ -338,12 +338,14 @@ class student extends participant {
      */
     public function get_grade(int $coursemodid, bool $getattempts = false) {
 
+        $grade = null;
+
         // get the grade if already exists otherwise create a new one making sure it's not empty
         if ($this->gradesloaded) {
 
             $grade = array_key_exists($coursemodid, $this->grades) ? $this->grades[$coursemodid] : null;
 
-        } else {
+        } elseif (!empty($coursemodid)) {
 
             // fetch grade_grade then ensure it is graded!
             $gradeitem = $this->course->get_grading_item($coursemodid);
@@ -905,6 +907,16 @@ class student extends participant {
         }
 
         return $hassubmission;
+    }
+
+    /**
+     * Returns whether the student has just joined the course
+     * and has no grade history.
+     *
+     * @return  bool    Whether the student is newly joined.
+     */
+    public function is_newly_joined() {
+        return empty($this->get_grades());
     }
 
     /**

@@ -403,7 +403,7 @@ class participant_vault implements participant_vault_interface {
         global $DB;
 
         // get last recorded completed lesson
-        $lastlessonsql = "UPDATE " . self::DB_PROG . " bs SET lessonscomplete =
+        $lastlessonsql = "UPDATE {" . self::DB_PROG . "} bs SET lessonscomplete =
                             (
                             SELECT IF(COUNT(modid)>0,0,1)
                             FROM (

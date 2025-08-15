@@ -1,5 +1,11 @@
 # Change log
 
+## [2025081500] - RELEASED 2025-08-15
+
+### Fixed
+
+- lesson completion not updating student's progress
+
 ## [2025070301] - RELEASED 2025-07-03
 
 ### Fixed

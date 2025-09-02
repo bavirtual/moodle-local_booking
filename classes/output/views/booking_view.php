@@ -113,7 +113,6 @@ class booking_view extends base_view
      * @return  ?stdClass
      */
     public function get_student_progression(bool $html = true) {
-        global $OUTPUT, $PAGE;
         $output = '';
 
         // export bookings

@@ -1,5 +1,11 @@
 # Change log
 
+## [2025090200] - RELEASED 2025-09-02
+
+### Fixed
+
+- invalidresponse exception when lastbooking is not there
+
 ## [2025081500] - RELEASED 2025-08-15
 
 ### Fixed

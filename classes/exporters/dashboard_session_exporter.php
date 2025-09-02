@@ -218,6 +218,7 @@ class dashboard_session_exporter extends exporter {
             $graded = $this->session->hasgrade();
             $logentrymissing = $this->is_logentry_missing();
             $lastbookingdate = $logentrymissing ? $this->student->get_last_booked_date(true) : $this->session->get_sessiondate()->getTimestamp();
+            if (empty($lastbookingdate)) $lastbookingdate = 0;
 
             // consider 'No posts' tag when a 'no-show' occurs and the session is cancelled
             if ($this->session->isnoshow())

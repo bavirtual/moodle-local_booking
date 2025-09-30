@@ -1,5 +1,18 @@
 # Change log
 
+## [2025093000] - RELEASED 2025-09-30
+
+### Fixed
+
+- certification process badge award exception
+- handles aircraft ICAO mismatch between submitted PIREP the training aircraft ICAO from the Session Booming section of the course Settings.
+- session conflict incorrect conflict when a tentative session is showing  on the same week for the same student
+
+### Changed
+
+- cert. button to prompt for confirmation
+- fallback to config.php db connection values when plugin settings db connection configs are missing
+
 ## [2025090200] - RELEASED 2025-09-02
 
 ### Fixed

@@ -50,18 +50,50 @@ require_capability('local/booking:view', $context);
 // define session booking plugin subscriber globally
 $subscriber = get_course_subscriber_context($url->out(false), $courseid);
 
-// get the graduating student
-$student = new student($subscriber, $studentid);
-$title = $student->get_name()  . ' ' . get_string('coursecompletion', 'local_booking');
-
 // check if student evaluation is required and if so whether the student has been evaluated
 if ($COURSE->subscriber->requires_skills_evaluation()) {
 
+    // get the graduating student
+    $student = new student($subscriber, $studentid);
+    $title = $student->get_name()  . ' ' . get_string('coursecompletion', 'local_booking');
+
+    // output graduation process and confirmation
+    $navbartext = $student->get_fullname($studentid);
+    $PAGE->navbar->add($navbartext);
+    $PAGE->set_pagelayout('standard');
+    $PAGE->set_context($context);
+    $PAGE->set_title($COURSE->shortname . ': ' . $title);
+    $PAGE->set_heading($title);
+    $PAGE->add_body_class('path-local-booking');
+
+    $renderer = $PAGE->get_renderer('local_booking');
+
+    // start output
+    echo $OUTPUT->header();
+    echo $renderer->start_layout();
+
+    // The initial request just shows the confirmation page; we don't do anything further unless
+    // certification is confirmed.
+    if (!optional_param('confirm', 0, PARAM_INT)) {
+        echo $OUTPUT->confirm(get_string('certifyconfirm', 'local_booking', $student->get_name()),
+                new single_button(new moodle_url('/local/booking/certify.php',
+                        ['confirm' => 1, 'sesskey' => sesskey(), 'courseid' => $courseid, 'userid' => $studentid]),
+                get_string('certify', 'local_booking')),
+                new single_button(new moodle_url('/local/booking/view.php',
+                        ['courseid' => $courseid]),
+                get_string('cancel'), false));
+        echo $OUTPUT->footer();
+        exit;
+    }
+
     // verify credentials, if the certifier is not the same as the examiner throw invalid permissions error
-    $exerciseid = $COURSE->subscriber->get_graduation_exercise();
+    $exerciseid = $COURSE->subscriber->get_graduation_exercise_id();
     $grade = $student->get_grade($exerciseid, true);
     $lastattempt = (count($grade->attempts) ?: 1) - 1;
     $examinerid = $grade->attempts[$lastattempt]->grader;
+    $badgecount = 0;
+    $data = new stdClass();
+    $data->userid = $studentid;
 
     if ($examinerid != $USER->id)
         throw new \Error(get_string('errorcertifiernotexaminer', 'local_booking'));
@@ -127,20 +159,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
     $gradmsg .= $hascongratsmsg ? get_string('graduationconfirmationnotify'.$subscriber->participantstonotify, 'local_booking') : '';
     $gradmsg .= '</ul>';
 
-    // output graduation process status
-    $navbartext = $student->get_fullname($studentid);
-
-    $PAGE->navbar->add($navbartext);
-    $PAGE->set_pagelayout('standard');
-    $PAGE->set_context($context);
-    $PAGE->set_title($COURSE->shortname . ': ' . $title);
-    $PAGE->set_heading($title);
-    $PAGE->add_body_class('path-local-booking');
-
-    $renderer = $PAGE->get_renderer('local_booking');
-
-    echo $OUTPUT->header();
-    echo $renderer->start_layout();
+    // output graducation message and process status
     echo html_writer::start_tag('div');
     echo $gradmsg;
     echo html_writer::end_tag('div');

@@ -809,7 +809,13 @@ class subscriber implements subscriber_interface {
                 // connect to the external database
                 // Moodle user/password must have read access to the target host, database, and tables
                 // TODO: PHP9 deprecates dynamic properties
-                $conn = new \mysqli($connconfig->host, $CFG->dbuser, $CFG->dbpass, $connconfig->db);
+                $dbhost = \property_exists($connconfig, 'host') ? $connconfig->host : $CFG->dbhost;
+                $dbname = \property_exists($connconfig, 'db') ? $connconfig->db : $CFG->dbname;
+                $dbuser = \property_exists($connconfig, 'dbuser') ? $connconfig->dbuser : $CFG->dbuser;
+                $dbpass = \property_exists($connconfig, 'dbpass') ? $connconfig->dbpass : $CFG->dbpass;
+
+                // open connection
+                $conn = new \mysqli($dbhost, $dbuser, $dbpass, $dbname);
 
                 // check connection
                 if ($conn->connect_errno)

@@ -121,6 +121,11 @@ class create extends \moodleform {
                 $errors['arrtime'] = get_string('errorinvalidarrtime', 'local_booking');
         }
 
+        // validate the aircraft is not null
+        if (empty($data['aircraft'])) {
+            $errors['aircraft'] = get_string('errorinvalidaircraft', 'local_booking');
+        }
+
         return $errors;
     }
 

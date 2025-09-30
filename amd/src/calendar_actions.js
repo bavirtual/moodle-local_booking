@@ -215,9 +215,9 @@ define([
 
         // Get all slots for this week from the UI table
         for (let i = colOffset; i <= colCount; i++) {
-            // Get slots for the current day
+            // Get slots for the current day: [slottype, slottimestamp, bookable]
             const dayHour = $('#' + tableId + ' td:nth-child(' + i + ')').map(function() {
-                return [[$(this).data(slotType), $(this).data('slot-timestamp')]];
+                return [[$(this).data(slotType), $(this).data('slot-timestamp'), $(this).data('slot-status')]];
             }).get();
 
             // Get each slot in the day (start and end times)
@@ -226,9 +226,10 @@ define([
             // Check each day (column) and record marked slot start-end times
             dayHour.forEach((hourSlot, index) => {
                 let isLastElement = index == dayHour.length - 1;
+                let bookable = hourSlot[2] != 'tentative'; // Already booked slots are not bookable
 
-                // Check if the slot is marked to record start or end time in marked sequence
-                if (hourSlot[0]) {
+                // Check if the slot is marked to record start or end time in marked sequence, and bookable
+                if (hourSlot[0] && bookable) {
                     if (Object.keys(aSlot).length === 0 && aSlot.constructor === Object) {
                         aSlot.starttime = hourSlot[1];
                         aSlot.endtime = hourSlot[1] + minute59;
@@ -236,13 +237,13 @@ define([
                         aSlot.endtime = hourSlot[1] + minute59;
                     }
 
-                // Add the slot if it has start and end, and this slot is empty => slot sequence ended
-                } else if (!(Object.keys(aSlot).length === 0 && aSlot.constructor === Object)) {
+                // Add the slot if it has start and end, and this slot is empty => slot sequence ended, and bookable
+                } else if (!(Object.keys(aSlot).length === 0 && aSlot.constructor === Object) && bookable) {
                     aSlot = addSlot(aSlot, slotType, week, year);
                 }
 
-                // Add slot if it ends at the end of the day, edge case handling
-                if (isLastElement && !(Object.keys(aSlot).length === 0 && aSlot.constructor === Object)) {
+                // Add slot if it ends at the end of the day, edge case handling, and slot status is empty (bookable)
+                if (isLastElement && !(Object.keys(aSlot).length === 0 && aSlot.constructor === Object) && bookable) {
                     aSlot = addSlot(aSlot, slotType, week, year);
                 }
             });

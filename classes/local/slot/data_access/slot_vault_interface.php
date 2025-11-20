@@ -89,11 +89,13 @@ interface slot_vault_interface {
     public static function confirm_slot(slot $slot, string $bookinginfo);
 
     /**
-     * Get the date of the last posted availability slot
+     * Get the date of the first or last unbooked posted availability slot
      *
      * @param int $studentid
+     * @param bool $firstslot
+     * @return mixed the requested slot record
      */
-    public static function get_first_posted_slot(int $studentid);
+    public static function get_posted_slot(int $studentid, bool $firstslot=true);
 
     /**
      * Get the date of the last booked availability slot
@@ -105,11 +107,13 @@ interface slot_vault_interface {
     public static function get_last_booked_slot(int $courseid, int $studentid);
 
     /**
-     * Returns the total number of active posts.
+     * Returns the total number of slot posts.
      *
-     * @param   int     The course id
-     * @param   int     The student id
-     * @return  int     The number of active posts
+     * @param int $courseid  The course id
+     * @param int $studentid The student id
+     * @param string $filter The filter for slots requested
+     * @param int $onholddays The number of days in the course on-hold restriction
+     * @return int The number of slot posts
      */
-    public static function get_slot_count(int $courseid, int $studentid);
+    public static function get_slot_count(int $courseid, int $studentid, string $filter = 'active', int $onholddays = 0);
 }

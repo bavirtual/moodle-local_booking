@@ -152,7 +152,7 @@ $string['slotssavesuccess'] = 'Slots saved';
 $string['slotssaveunable'] = 'Unable to save slots!';
 $string['slotsstatusbooked'] = 'Booked';
 $string['slotsstatustentative'] = 'Tentative';
-$string['studentonhold'] = 'You are currently on-hold and instructors will NOT see your postings. Please contact your instructor to be re-activated.';
+$string['studentonhold'] = 'You are currently on-hold and instructors will NOT see your postings. Please post availability to be re-activated.';
 $string['warnminslotperiod'] = 'Minimum slot period not met. Please make sure all slots are at a minimum of {$a} hours.';
 $string['warnminslotperiodtitle'] = 'Slot time warning';
 $string['warnsomeslotsnotsaved'] = 'Some slots were not saved due to date/time restrictions.';
@@ -376,7 +376,7 @@ $string['sim2'] = 'Secondary simulator';
 $string['skilltest']='Skill Test';
 $string['skilltestendorsed']='Recommend for skill test';
 $string['slots'] = 'Slots';
-$string['slotsactive'] = 'Posted slots';
+$string['slotsactive'] = 'Total posted slots';
 $string['theoryexamreport']='Theory examination report';
 $string['totalatohours']='Total {$a} hours';
 $string['totalexamhours']='Total exam hours';
@@ -617,43 +617,43 @@ $string['emailnoshowreinstatementinsthtml'] = '<font face="sans-serif"><p><a hre
 
 // email to student: inactive warning
 $string['emailinactivewarning'] = '{$a->coursename}: Inactivity notification';
-$string['emailinactivewarningmsg'] = 'Since your last booking on \'{$a->lastbookeddate}\' you have not posted availability and/or completed next lesson.  Please post availability slots
+$string['emailinactivewarningmsg'] = 'Since your last booking on \'{$a->lastbookeddate}\' you have not posted availability and/or completed the next lesson.  Please post availability slots
     and/or complete next lesson to avoid being automatically placed on-hold on \'{$a->onholddate}\'. You can post an availability slot for
     the \'{$a->coursename}\' from the following link: {$a->slotsurl}';
 $string['emailinactivewarninghtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Since your last booking on <strong>\'{$a->lastbookeddate}\'</strong> you have not posted availability and/or completed next lesson.  Please post an availability slots
-    and/or complete next lesson to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong>.</p><p>You can post availability slot for
+    <p>Since your last booking on <strong>\'{$a->lastbookeddate}\'</strong> you have not posted availability and/or completed the next lesson.  Please post an availability slots
+    and/or complete the next lesson to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong>.</p><p>You can post availability slot for
     the \'{$a->coursename}\' course <a href="{$a->slotsurl}">here</a>.</p><hr />';
 
 // email to student: on-hold warning
 $string['emailonholdwarning'] = '{$a->coursename}: On-hold warning';
-$string['emailonholdwarningmsg'] = 'Please post an availability slot to avoid being automatically placed on-hold on \'{$a->onholddate}\'. You can post an availability slot for
+$string['emailonholdwarningmsg'] = 'Please post availability slots to avoid being automatically placed on-hold on \'{$a->onholddate}\'. You can post an availability slot for
     the \'{$a->coursename}\' from the following link: {$a->slotsurl}';
 $string['emailonholdwarninghtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Please post an availability slot to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong>.</p><p>You can post an availability slot for
+    <p>Please post availability slots to avoid being automatically placed on-hold on <strong>\'{$a->onholddate}\'</strong>.</p><p>You can post an availability slot for
     the \'{$a->coursename}\' course <a href="{$a->slotsurl}">here</a>.</p><hr />';
 
 // email to student: on-hold notification
 $string['emailonholdnotify'] = '{$a->coursename}: Student placed on-hold';
-$string['emailonholdnotifymsg'] = 'Due to inactivity since your last posting on \'{$a->lastsessiondate}\', you have been placed on-hold. Please contact your instructor if you are still interested in resuming the \'{$a->coursename}\' course work.';
+$string['emailonholdnotifymsg'] = 'Due to inactivity since \'{$a->lastactivitydate}\', you have been placed on-hold. Please post availability slots if you are still interested in resuming the \'{$a->coursename}\' course work.';
 $string['emailonholdnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Due to inactivity since your last posting on <strong>\'{$a->lastsessiondate}\'</strong>, you have been placed on-hold. Please contact your instructor if you are
+    <p>Due to inactivity since <strong>\'{$a->lastactivitydate}\'</strong>, you have been placed on-hold. Please post availability slots if you are
     still interested in resuming \'{$a->coursename}\' course work.</p><p>Please note, if you are no longer interested in continuing course work, you will be automatically
     unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p><hr />';
-$string['emailonholdinstnotifymsg'] = 'Due to inactivity since last posting on \'{$a->lastsessiondate}\', {$a->studentname} has been placed on-hold.';
+$string['emailonholdinstnotifymsg'] = 'Due to inactivity since last posting on \'{$a->lastactivitydate}\', {$a->studentname} has been placed on-hold.';
 $string['emailonholdinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Due to inactivity since last posting on <strong>\'{$a->lastsessiondate}\'</strong>, {$a->studentname} has been placed on-hold.</p>
+    <p>Due to inactivity since last posting on <strong>\'{$a->lastactivitydate}\'</strong>, {$a->studentname} has been placed on-hold.</p>
     <p>Please note, {$a->studentname} will be automatically unenrolled from the course on <strong>\'{$a->suspenddate}\'</strong>.</p><hr />';
 
 // email to student: suspension notification
 $string['emailsuspendnotify'] = '{$a->coursename}: Suspension notification';
-$string['emailsuspendnotifymsg'] = 'Please note that you have been suspended from the \'{$a->coursename}\' course due to session booking inactivity since \'{$a->lastsessiondate}\'.  Please contact your instructor if you are still interested in being enrolled in this course.';
+$string['emailsuspendnotifymsg'] = 'Please note that you have been suspended from the \'{$a->coursename}\' course due to session booking inactivity since \'{$a->lastactivitydate}\'.  Please contact your instructor if you are still interested in being enrolled in this course.';
 $string['emailsuspendnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Please note you have been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.</p>
+    <p>Please note you have been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastactivitydate}\'</strong>.</p>
     <p>Please contact your instructor if you are still interested in being enrolled in this course.</p><hr />';
-$string['emailsuspendinstnotifymsg'] = 'Please note that {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since \'{$a->lastsessiondate}\'.';
+$string['emailsuspendinstnotifymsg'] = 'Please note that {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since \'{$a->lastactivitydate}\'.';
 $string['emailsuspendinstnotifyhtml'] = '<font face="sans-serif"><p><a href=\'{$a->courseurl}\'>{$a->coursename}</a> -> <a href=\'{$a->assignurl}\'>Assignment</a></p><hr />
-    <p>Please note {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastsessiondate}\'</strong>.</p><hr />';
+    <p>Please note {$a->studentname} has been suspended from the \'{$a->coursename}\' course due to session booking inactivity since <strong>\'{$a->lastactivitydate}\'</strong>.</p><hr />';
 
 // email to instructor: session overdue notification
 $string['emailoverduenotify'] = '{$a->coursename}: Session overdue notification';

@@ -64,7 +64,6 @@ class dashboard_student_exporter extends exporter {
      * @param array $related Related objects.
      */
     public function __construct($data, $related) {
-        global $CFG;
 
         $this->course = $related['subscriber'];
         $this->student = $data['student'];
@@ -76,13 +75,13 @@ class dashboard_student_exporter extends exporter {
         $data['profileurl'] = (new moodle_url('/local/booking/profile.php', $profileurlparams))->out(false);
 
         // get recency days or relevant information dates depending on the student's enrolment status
-        $studentstatus = $this->student->get_status();
+        $studentstatus = $related['filter'];// $this->student->get_status();
         switch ($studentstatus) {
             case 'active':
             case 'onhold':
                 $source = !empty($this->student->get_last_booked_date()) ? 'book' : 'enrol';
                 $data['dayinfo'] = $this->student->get_recency_days();
-                $data['recencytooltip'] = get_string("bookingrecencyfrom$source" . "tooltip", 'local_booking', $this->student->get_wait_date()->format('j M \'y'));
+                $data['recencytooltip'] = get_string("bookingrecencyfrom$source" . "tooltip", 'local_booking', $this->student->get_last_activity_date()->format('j M \'y'));
                 break;
             case 'graduated':
                 $data['dayinfo'] = get_string('nograduatedate', 'local_booking');
@@ -234,7 +233,7 @@ class dashboard_student_exporter extends exporter {
     protected function get_other_values(renderer_base $output) {
         global $CFG;
 
-        $sessions = $this->get_sessions($output, $this->student, $this->related);
+        $sessions = $this->get_sessions($output, $this->course, $this->student, $this->related);
         $return = ['sessions'=>$sessions];
 
         if ($this->related['filter'] == 'active' || $this->student->get_status() == 'active') {
@@ -250,7 +249,7 @@ class dashboard_student_exporter extends exporter {
 
             $graduationsessionidx = array_search($this->course->get_graduation_exercise_id(), array_column($sessions, 'exerciseid'));
             $action = new action($this->course, $this->student, $actiontype, $sessions[$graduationsessionidx]->sessionid);
-            $posts = $this->data['view'] == 'confirm' ? $this->student->get_statistics()->get_total_posts() : 0;
+            $posts = $this->data['view'] == 'confirm' ? $this->student->get_statistics()->get_active_posts_count() : 0;
 
             $return = array_merge(array(
                 'actionurl'         => $action->get_url()->out(false),
@@ -274,13 +273,19 @@ class dashboard_student_exporter extends exporter {
      * @param   $output  The output to be rendered
      * @return  $sessions[]
      */
-    public static function get_sessions($output, student $student, $related) {
+    public static function get_sessions($output, subscriber $course, student $student, $related) {
         $sessions = [];
 
         // get details for active and on-hold students only
         $grades = $student->get_grades();
         $bookings = $student->get_bookings();
+        $getlastbookeddate = $student->get_last_booked_date(true);
         $logbook = $student->get_logbook();
+        $hasposts = $student->get_statistics()->get_active_posts_count()>0;
+        $nextexerciseid = $student->get_next_exercise()->id;
+        $lastgrade = $student->get_last_grade();
+        $passedlastgrade =  !empty($lastgrade) ? $lastgrade->is_passed() : false;
+        $nopoststagposition = $passedlastgrade ? $nextexerciseid : $course->get_exercise($nextexerciseid, $course->get_id(),1)->id;
 
         $studentname = $student->get_name();
         $gradexercise = $related['subscriber']->get_graduation_exercise_id();
@@ -296,6 +301,9 @@ class dashboard_student_exporter extends exporter {
                 'flighttype'  => $gradexercise != $coursemod->id ? 'training' : 'check',
                 'grades'      => $grades,
                 'bookings'    => $bookings,
+                'getlastbookeddate' => $getlastbookeddate,
+                'hasposts'    => $hasposts,
+                'nopoststagposition' => $nopoststagposition,
                 'logbook'     => $logbook,
             ];
             $coursemodsession = new dashboard_session_exporter($studentinfo, $related);
@@ -352,7 +360,8 @@ class dashboard_student_exporter extends exporter {
         $week = 0;
 
         if ($this->data['view'] == 'confirm') {
-            $nextslotdate = ($this->student->get_first_slot_date())->getTimestamp();
+            $firstslotdate = $this->student->get_first_slot_date();
+            $nextslotdate = (!is_null($firstslotdate) ? $firstslotdate->getTimestamp() : time());
             $waitenddate = ($this->student->get_next_allowed_session_date())->getTimestamp();
             $week = $nextslotdate > time() ? $nextslotdate : $waitenddate;
         }

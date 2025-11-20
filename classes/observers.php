@@ -145,18 +145,21 @@ class observers {
                 // update last completed session date (confirming the session had took place)
                 // reset required lesson completed if the grade is passed
                 if (!empty($gradegrade)) {
+                    // get student entity
                     $student = new student($event->courseid, $studentid);
+
+                    // update last session as this submission grading confirms the session took place
+                    $lastsessiondate = $booking->get_last_session_date($courseid, $studentid);
+                    $lastsessiondatets = !empty($lastsessiondate) ? $lastsessiondate->getTimestamp() : 0;
+                    $student->update_progress('lastsessiondate', $lastsessiondatets);
+
+                    // update current & next exercise info based on grade
                     if ($gradegrade->is_passed()) {
 
-                        // get last session
-                        $nextexerciseid = $student->get_next_exercise()->id;
-                        $lastsessiondate = $booking->get_last_session_date($courseid, $studentid);
-                        $lastsessiondatets = !empty($lastsessiondate) ? $lastsessiondate->getTimestamp() : 0;
-
                         // add progress info record for the newly graded student
+                        $nextexerciseid = $student->get_next_exercise()->id;
                         $student->update_progress('currentexerciseid', $exerciseid);
                         $student->update_progress('nextexerciseid', $nextexerciseid);
-                        $student->update_progress('lastsessiondate', $lastsessiondatets);
                         $student->update_lessonscomplete();
 
                     } else {

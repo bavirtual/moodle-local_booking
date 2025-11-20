@@ -262,7 +262,7 @@ class dashboard_bookings_exporter extends exporter {
             'avgwait'       => $this->averagewait,
             'showaction'    => $this->filter == 'active' || (!empty($this->student) && $this->student->get_status() == 'active'),
             'showallcourses'=> $showcrosscoursebookings,
-            'restrictionsenabled'=> intval($this->course->onholdperiod) > 0,
+            'restrictionsenabled'=> intval($this->course->get_on_hold_days_restriction()) > 0,
             'col3header'=> get_string($col3customheader, 'local_booking'),
         ];
 
@@ -339,8 +339,8 @@ class dashboard_bookings_exporter extends exporter {
      */
     protected function get_warning($dayssincelast) {
         $warning = 0;
-        $waitdays = intval($this->course->postingwait);
-        $onholdperiod = intval($this->course->onholdperiod);
+        $waitdays = $this->course->get_student_posting_wait_days_restriction();
+        $onholdperiod = $this->course->get_on_hold_days_restriction();
 
         // Color code amber and red for inactivity one week after wait period
         // since last session (amber) and one week before on-hold date (red)

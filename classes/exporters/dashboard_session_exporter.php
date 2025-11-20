@@ -70,6 +70,9 @@ class dashboard_session_exporter extends exporter {
                 'courseid'      => $this->student->get_courseid(),
                 'studentid'     => $this->student->get_id(),
                 'exerciseid'    => $data['exerciseid'],
+                'getlastbookeddate' => $data['getlastbookeddate'],
+                'hasposts'      => $data['hasposts'],
+                'nopoststagposition' => $data['nopoststagposition'],
                 'sessionid'     => $this->session->get_id(),
                 'flighttype'    => $data['flighttype'],
                 'sessionstatus' => $this->session->get_status(),
@@ -207,22 +210,16 @@ class dashboard_session_exporter extends exporter {
         $marknoposts = false;
         $noposts = '';
 
-        if ($this->related['filter'] == 'active' || $this->related['filter'] == 'onhold') {
-            // get student posts for active and onhold students
-            $nextexerciseid = $this->student->get_next_exercise()->id;
-            $noposts = ($nextexerciseid == $this->data['exerciseid'] && $this->student->get_statistics()->get_total_posts() == 0) ?
-                get_string('bookingnoposts', 'local_booking') : '';
+        // determine if we need to show no posts warning for active students
+        if ($this->related['filter'] == 'active' && $this->data['exerciseid'] == $this->data['nopoststagposition'] && !$this->data['hasposts']) {
+            $noposts = get_string('bookingnoposts', 'local_booking');
         }
 
         if (!empty($this->session)) {
             $graded = $this->session->hasgrade();
             $logentrymissing = $this->is_logentry_missing();
-            $lastbookingdate = $logentrymissing ? $this->student->get_last_booked_date(true) : $this->session->get_sessiondate()->getTimestamp();
+            $lastbookingdate = $logentrymissing ? $this->data['getlastbookeddate'] : $this->session->get_sessiondate()->getTimestamp();
             if (empty($lastbookingdate)) $lastbookingdate = 0;
-
-            // consider 'No posts' tag when a 'no-show' occurs and the session is cancelled
-            if ($this->session->isnoshow())
-                $noposts = get_string('bookingnoposts', 'local_booking');
 
             $return = [
                 'graded'        => $graded,

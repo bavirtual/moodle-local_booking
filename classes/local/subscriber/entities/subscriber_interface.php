@@ -255,6 +255,34 @@ interface subscriber_interface {
     public function get_external_data($key, $data, $value);
 
     /**
+     * Returns the number of days a student can stay inactive (without posts or sessions) before they are put on hold.
+     *
+     * @return int
+     */
+    public function get_on_hold_days_restriction();
+
+    /**
+     * Returns the number of days a student can stay inactive (without posts or sessions) before they are suspended.
+     *
+     * @return int
+     */
+    public function get_suspend_days_restriction();
+
+    /**
+     * Returns the number of days an instructor is committed to pickup at least 1 session
+     *
+     * @return int
+     */
+    public function get_instructor_commitment_days();
+
+    /**
+     * Returns the number of days a student needs to wait before posting slots again after their last session.
+     *
+     * @return int
+     */
+    public function get_student_posting_wait_days_restriction();
+
+    /**
      * Checks if the subscribing course require
      * skills evaluation.
      *

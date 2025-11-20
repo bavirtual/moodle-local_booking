@@ -138,6 +138,15 @@ interface participant_vault_interface {
     public static function get_student_activity_count(int $courseid, int $studentid);
 
     /**
+     * Returns participant's profile comment, user description field
+     *
+     * @param int $groupid The group id
+     * @param int $participantid The user id
+     * @return mixed The participant group record
+     */
+    public function get_group_member(int $groupid, int $participantid);
+
+    /**
      * Updates the progress table with a specific value
      *
      * @param int    $courseid  The course id

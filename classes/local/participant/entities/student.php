@@ -123,6 +123,11 @@ class student extends participant {
     protected $recencydays;
 
     /**
+     * @var DateTime $lastactivitydate The date to count activity from.
+     */
+    protected $lastactivitydate;
+
+    /**
      * @var array $incompletelessons the list of pending lessons.
      */
     protected $incompletelessons;
@@ -170,7 +175,7 @@ class student extends participant {
      * Save a student list of slots
      *
      * @param array $params The year, and week.
-     * @return array $result The result of the save transaction.
+     * @return string $slotids The list of slot ids saved.
      */
     public function save_slots(array $params) {
         global $DB;
@@ -207,9 +212,18 @@ class student extends participant {
             }
 
             if ($result) {
+
+                // take off hold
+                if ($this->is_onhold()) {
+                    // get group id by group name and remove the student from it
+                    $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_ONHOLDGROUP);
+                    groups_remove_member($groupid, $this->userid);
+                }
+
                 // update progress flags with slots to notify instructors
                 $existingslotids = $this->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYPOSTS']);
                 $this->set_progress_flag(LOCAL_BOOKING_PROGFLAGS['NOTIFYPOSTS'], $slotids . (!empty($existingslotids) ? ",$existingslotids" : ''));
+
                 // commit transaction
                 $transaction->allow_commit();
             } else {
@@ -466,17 +480,32 @@ class student extends participant {
 
     /**
      * Returns the timestamp of the first
-     * nonbooked availability slot for
+     * unbooked availability slot for
      * the student.
      *
      * @return  DateTime
      */
     public function get_first_slot_date() {
-        $firstsession = slot_vault::get_first_posted_slot($this->userid);
-        $sessiondatets = !empty($firstsession) ? $firstsession->starttime : time();
-        $sessiondate = new \DateTime("@$sessiondatets");
+        $firstslot = slot_vault::get_posted_slot($this->userid);
+        $firstslotdatets = !empty($firstslot) ? $firstslot->starttime : 0;
+        $firstslotdate = $firstslotdatets != 0 ? new DateTime("@$firstslotdatets") : null;
 
-        return $sessiondate;
+        return $firstslotdate;
+    }
+
+    /**
+     * Returns the timestamp of the last
+     * unbooked availability slot for
+     * the student.
+     *
+     * @return  DateTime
+     */
+    public function get_last_slot_date() {
+        $lastslot = slot_vault::get_posted_slot($this->userid, false);
+        $lastslotdatets = !empty($lastslot) ? $lastslot->starttime : 0;
+        $lastslotdate = $lastslotdatets != 0 ? new DateTime("@$lastslotdatets") : null;
+
+        return $lastslotdate;
     }
 
     /**
@@ -489,7 +518,7 @@ class student extends participant {
     public function get_graduated_date(bool $timestamp = false) {
         $graduatedate = null;
         if (!empty($this->graduateddate)) {
-            $graduatedate = new \DateTime("@$this->graduateddate");
+            $graduatedate = new DateTime("@$this->graduateddate");
         }
         return $timestamp ? $this->graduateddate : $graduatedate;
     }
@@ -505,11 +534,11 @@ class student extends participant {
         if (empty($this->restrictiondate)) {
             // get wait time restriction waiver if exists
             $hasrestrictionwaiver = (bool) $this->get_progress_flag(LOCAL_BOOKING_PROGFLAGS['POSTOVERRIDE']);
-            $today = new \DateTime('@' . time());
-            $nextsessiondate = $today;
+            $today = new DateTime('@' . time());
+            $nextsessiondate = clone $today;
 
             // process restriction if posting wait restriction is enabled or if the student doesn't have a waiver
-            if ($this->course->postingwait > 0 && !$hasrestrictionwaiver) {
+            if ($this->course->get_student_posting_wait_days_restriction() > 0 && !$hasrestrictionwaiver) {
 
                 // fallback to last graded then enrollment date
                 if (empty($this->get_last_booked_date())) {
@@ -518,7 +547,7 @@ class student extends participant {
                 }
 
                 // add posting wait period to last session
-                date_add($nextsessiondate, date_interval_create_from_date_string($this->course->postingwait . ' days'));
+                date_add($nextsessiondate, date_interval_create_from_date_string($this->course->get_student_posting_wait_days_restriction() . ' days'));
 
                 // return today's date if the posting wait restriction date had passed
                 if ($nextsessiondate->getTimestamp() < time()) {
@@ -626,33 +655,36 @@ class student extends participant {
 
         if (!isset($this->recencydays) || empty($this->recencydays)) {
             $today = new DateTime('@' . time());
-            $this->recencydays =  (date_diff($this->get_wait_date(), $today))->days;
+            $this->recencydays =  (date_diff($this->get_last_activity_date(), $today))->days;
         }
 
         return $this->recencydays;
     }
 
     /**
-     * Returns the date the student was waiting since
+     * Returns the date of since the last activity for the student.
+     * This could be last session date, last graded date or enrollment date.
      *
      * @return DateTime
      */
-    public function get_wait_date() {
+    public function get_last_activity_date() {
 
-        // get the wait date from the last session date
-        if (!empty($this->lastsessiondatets)) {
-            $waitdate = $this->get_last_session_date();
-        }
-        // if no last session date, fallback to the last graded date
-        if (empty($waitdate)) {
-            $waitdate = $this->get_last_graded_date();
-        }
-        // if no last graded date, fallback to the enrollment date
-        if (empty($waitdate)) {
-            $waitdate = $this->get_enrol_date();
+        if (!isset($this->lastactivitydate) || empty($this->lastactivitydate)) {
+            // get the wait date from the last session date
+            $this->lastactivitydate = $this->get_last_session_date();
+
+            // if no last session date, fallback to the last graded date
+            if (empty($this->lastactivitydate)) {
+                $this->lastactivitydate = $this->get_last_graded_date();
+            }
+
+            // if no last graded date, fallback to the enrollment date
+            if (empty($this->lastactivitydate)) {
+                $this->lastactivitydate = $this->get_enrol_date();
+            }
         }
 
-        return $waitdate;
+        return $this->lastactivitydate;
     }
 
     /**
@@ -781,6 +813,17 @@ class student extends participant {
             return is_array($current) ? (object) $current : $current;
         }
         return null;
+    }
+
+    /**
+     * Returns the date when the student was put on hold.
+     *
+     * @return mixed The date timestamp the student was put on hold.
+     */
+    public function get_onhold_date() {
+        $groupid = groups_get_group_by_name($this->courseid, LOCAL_BOOKING_ONHOLDGROUP);
+        $member = groups_is_member($groupid, $this->userid);
+        return $member ? new DateTime("@".$this->get_group_member_timeadded($groupid, $this->userid)) : null;
     }
 
     /**
@@ -922,7 +965,7 @@ class student extends participant {
     /**
      * Returns whether the student is on hold or not.
      *
-     * @return  bool    Whether the student is on hold.
+     * @return mixed Whether the student is on hold.
      */
     public function is_onhold() {
         return $this->is_member_of(LOCAL_BOOKING_ONHOLDGROUP);

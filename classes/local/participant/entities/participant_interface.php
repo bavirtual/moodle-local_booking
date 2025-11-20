@@ -207,6 +207,15 @@ interface participant_interface {
     public function get_comment();
 
     /**
+     * Returns participant's profile comment, user description field
+     *
+     * @param int $groupid The group id
+     * @param int $participantid The user id
+     * @return int The participant group added date timestamp
+     */
+    public function get_group_member_timeadded(int $groupid, int $participantid);
+
+    /**
      * Updates a participant's profile comment, user description field
      *
      * @param string $comment   The participant comment

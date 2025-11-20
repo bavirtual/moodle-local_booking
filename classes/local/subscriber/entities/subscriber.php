@@ -117,16 +117,6 @@ class subscriber implements subscriber_interface {
     protected $lessons;
 
     /**
-     * @var array $resources The subscribing course's content resources.
-     */
-    public $resources;
-
-    /**
-     * @var array $roles The subscribing course's role.
-     */
-    public $roles;
-
-    /**
      * @var array $modules The subscribing course's modules (exercises & quizes).
      */
     protected $modules;
@@ -140,6 +130,36 @@ class subscriber implements subscriber_interface {
      * @var object $externaldataconfigs The external data configuration object.
      */
     protected $externaldataconfigs;
+
+    /**
+     * @var int $onholdperiod The number of days a student can stay inactive (without posts or sessions) before they are put on hold.
+     */
+    protected $onholdperiod;
+
+    /**
+     * @var int $suspensionperiod The number of days the student can stay inactive (without posts or sessions) before they are suspended.
+     */
+    protected $suspensionperiod;
+
+    /**
+     * @var int $overdueperiod The number of days the instructor is committed to pickup at least 1 session.
+     */
+    protected $overdueperiod;
+
+    /**
+     * @var int $postingwait The number of days a student needs to wait before posting slots again after their last session.
+     */
+    protected $postingwait;
+
+    /**
+     * @var array $resources The subscribing course's content resources.
+     */
+    public $resources;
+
+    /**
+     * @var array $roles The subscribing course's role.
+     */
+    public $roles;
 
     /**
      * @var bool $subscribed Whether the course is subscribed to Session Booking plugin.
@@ -204,26 +224,6 @@ class subscriber implements subscriber_interface {
      * @var string[] $aircrafticao The ICAO code of the training aircraft.
      */
     public $aircrafticao = [];
-
-    /**
-     * @var int $postingwait The period the student needs to wait prior to posting slots again.
-     */
-    public $postingwait;
-
-    /**
-     * @var int $onholdperiod The period the student will stay on hold for.
-     */
-    public $onholdperiod;
-
-    /**
-     * @var int $suspensionperiod The period the student will be in suspension for.
-     */
-    public $suspensionperiod;
-
-    /**
-     * @var int $overdueperiod The period the instructor can stay without booking until their overdue.
-     */
-    public $overdueperiod;
 
     /**
      * @var bool $requiresskillseval Whether the subscribing course require students to go through a skills evaluation exercise.
@@ -840,6 +840,42 @@ class subscriber implements subscriber_interface {
         }
 
         return $record;
+    }
+
+    /**
+     * Returns the number of days a student can stay inactive (without posts or sessions) before they are put on hold.
+     *
+     * @return int
+     */
+    public function get_on_hold_days_restriction() {
+        return intval($this->onholdperiod);
+    }
+
+    /**
+     * Returns the number of days a student can stay inactive (without posts or sessions) before they are suspended.
+     *
+     * @return int
+     */
+    public function get_suspend_days_restriction() {
+        return intval($this->suspensionperiod);
+    }
+
+    /**
+     * Returns the number of days an instructor is committed to pickup at least 1 session
+     *
+     * @return int
+     */
+    public function get_instructor_commitment_days() {
+        return intval($this->overdueperiod);
+    }
+
+    /**
+     * Returns the number of days a student needs to wait before posting slots again after their last session.
+     *
+     * @return int
+     */
+    public function get_student_posting_wait_days_restriction() {
+        return intval($this->postingwait);
     }
 
     /**

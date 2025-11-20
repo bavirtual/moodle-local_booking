@@ -43,6 +43,27 @@ interface statistics_interface {
     public function get_activity_count(bool $normalized = true);
 
     /**
+     * Returns the total number of posts ever made.
+     *
+     * @return int The number of posts
+     */
+    public function get_all_posts_count();
+
+    /**
+     * Returns the total number of active posts.
+     *
+     * @return int The number of active posts
+     */
+    public function get_active_posts_count();
+
+    /**
+     * Returns the number of posts based on course on-hold restriction.
+     *
+     * @return int The number of valid posts
+     */
+    public function get_valid_posts_count();
+
+    /**
      * Get course activity for a student from the logs.
      *
      * @return int  $completions    The number of lesson completions.

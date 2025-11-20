@@ -154,7 +154,7 @@ class availability_week_exporter extends exporter {
         }
 
         if (!empty($this->student)) {
-            $studentposts = $this->student->get_statistics()->get_total_posts();
+            $studentposts = $this->student->get_statistics()->get_active_posts_count();
             $studentid = $this->student->get_id();
             $fullname = $this->student->get_name();
         }

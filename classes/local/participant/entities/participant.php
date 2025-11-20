@@ -559,6 +559,18 @@ class participant implements participant_interface {
     }
 
     /**
+     * Returns participant's profile comment, user description field
+     *
+     * @param int $groupid The group id
+     * @param int $participantid The user id
+     * @return int The participant group added date timestamp
+     */
+    public function get_group_member_timeadded(int $groupid, int $participantid) {
+        $member = $this->vault->get_group_member($groupid, $participantid);
+        return $member ? $member->timeadded : 0;
+    }
+
+    /**
      * Sets the participant's last completed and active bookings.
      *
      */

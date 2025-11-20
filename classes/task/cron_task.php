@@ -78,47 +78,47 @@ class cron_task extends \core\task\scheduled_task {
 
                 if (!empty($course->subscribed)) {
 
-                    mtrace('    Course: ' . $sitecourse->shortname . ' (id: ' . $sitecourse->id . ')');
+                    // get on-hold, suspension, and instructor overdue restrictions
+                    $onholddays = $course->get_on_hold_days_restriction();
+                    $suspensiondays = $course->get_suspend_days_restriction();
+                    $overdueperiod = $course->get_instructor_commitment_days();
 
-                    // get on-hold, suspension, and instructor overdue restrictins
-                    $onholddays = intval($course->onholdperiod);
-                    $suspensiondays = intval($course->suspensionperiod);
-                    $overdueperiod = intval($course->overdueperiod);
+                    $restrictionsenabled = $onholddays > 0 || $suspensiondays > 0 || $overdueperiod > 0;
+                    mtrace("    Course: $sitecourse->shortname (id=$sitecourse->id) -- RESTRICTIONS " . ($restrictionsenabled ? 'ENABLED' : 'DISABLED') . ".");
 
                     // get list of senior instructors for communication
                     $seniorinstructors = $course->get_senior_instructors();
 
-                    // check if any of the restrictions are enabled
-                    if ($onholddays > 0 || $suspensiondays > 0 || $overdueperiod > 0) {
+                    // check for student's session overdue restriction if enabled
+                    if ($onholddays > 0 || $suspensiondays > 0) {
 
                         // get list of active students and instructors
                         $students = $course->get_students('active', true);
                         $instructors = $course->get_instructors();
 
-                        // note students
-                        mtrace('    Students to evaluate: ' . count($students));
+                        // log trace info for students
+                        mtrace('');
+                        mtrace(str_repeat(" ", 8) . '## Students to evaluate: ' . count($students));
 
                         // PROCESS POSTING RESTRICTION
-                        $this->process_student_notifications($course, $students);
+                        $this->process_student_inactivity_notifications($course, $students, $course->get_student_posting_wait_days_restriction());
 
                         // PROCESS ON-HOLD RESTRICTION
-                        $this->process_onhold_restriction($course, $students, $seniorinstructors);
+                        $this->process_onhold_restriction($course, $students, $seniorinstructors, $onholddays);
 
                         // PROCESS SUSPENSION RESTRICTION
-                        $this->process_suspension_restriction($course, $students, $seniorinstructors);
+                        $this->process_suspension_restriction($course, $students, $seniorinstructors, $suspensiondays);
 
-                        // note instructors
-                        mtrace('    Instructors to evaluate: ' . count($instructors));
-
-                        // PROCESS SUSPENSION RESTRICTION
-                        $this->process_instructor_notifications($course, $instructors, $seniorinstructors);
-
-                    } else {
-                        mtrace('        Restrictions disabled.');
                     }
 
                     // PROCESS NOSHOW REINSTATEMENT
                     $this->process_noshow_reinstatement($course, $seniorinstructors);
+
+                    // PROCESS INSTRUCTOR COMMITMENT NOTIFICATIONS
+                    if ($overdueperiod > 0) {
+                        mtrace(str_repeat(" ", 8) . '## Instructors to evaluate: ' . count($instructors));
+                        $this->process_instructor_notifications($course, $instructors, $seniorinstructors, $overdueperiod);
+                    }
                 }
             }
         }
@@ -127,200 +127,174 @@ class cron_task extends \core\task\scheduled_task {
     }
 
     /**
-     * Process overdue lesson completion and availability posting notification.
+     * Process student notifications for overdue lesson completion and availability posting.
      *
-     * @param subscriber $course    The subscribed course
-     * @param array      $students  Array of all course students to be evaluated
+     * @param subscriber $course The subscribed course
+     * @param array $students array of all course students to be evaluated
      */
-    private function process_student_notifications($course, $students) {
-
-        // check if wait-period restriction is enabled
-        $postingwait = intval($course->postingwait);
+    private function process_student_inactivity_notifications(subscriber $course, array $students, int $postingwait) {
 
         // trace on debug mode
-        $this->trace('');
-        $this->trace('        #### POSTING WAIT RESTRICTION ' . ($postingwait > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+        $this->trace(str_repeat(" ", 8) . '#### INACTIVITY RESTRICTION ' . ($postingwait > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
 
         if ($postingwait > 0) {
             foreach ($students as $student) {
 
-                $studentname = participant::get_fullname($student->get_id());
-                $this->trace('        ' . $studentname);
-
                 // get last booked date, otherwise use last graded date instead
-                $lastsessionts = $student->get_last_session_date(true);
-                if (empty($lastsessionts)) {
-                    $lastgradeddate = $student->get_last_graded_date();
-                    $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
-                }
+                if (!$student->is_onhold()) {
 
-                if (!empty($lastsessionts)) {
+                    $studentname = participant::get_fullname($student->get_id());
+                    $this->trace(str_repeat(" ", 8) .  $studentname);
+
                     // get status of already being on-hold or student is in active standings
-                    $alreayonhold = $student->is_onhold();
-                    $isactive = ($student->has_completed_lessons() || $student->is_newly_joined()) && $student->get_statistics()->get_total_posts() > 0;
+                    $isactive = ($student->has_completed_lessons() || $student->is_newly_joined()) && $student->get_statistics()->get_active_posts_count() > 0;
+                    $booked = !empty($student->get_active_booking());
 
-                    // posting overdue date from last booked session
-                    $lastsessiondate = new DateTime("@$lastsessionts");
-                    $onholddate = new DateTime("@$lastsessionts");
-                    $postingoverduedate = new DateTime("@$lastsessionts");
+                    // get last activity date, otherwise use last slot date instead
+                    $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date());
+                    $lastsessiondate = $student->get_last_session_date();
+                    $postingoverduedate = clone $lastsessiondate;
+                    $onholddate = clone $lastactivitydate;
                     $today = getdate(time());
 
-                    // add a week to the posting wait period as the overdue date
+                    // add a week to the posting wait period as the overdue date, and on-hold date
                     date_add($postingoverduedate, date_interval_create_from_date_string(($postingwait + LOCAL_BOOKING_OVERDUE_PERIOD) . ' days'));
-                    date_add($onholddate, date_interval_create_from_date_string($course->onholdperiod . ' days'));
+                    date_add($onholddate, date_interval_create_from_date_string($course->get_on_hold_days_restriction() . ' days'));
 
                     // POSTING OVERDUE WARNING NOTIFICATION
                     // notify student a week before being placed
-                    $this->trace('            posting overdue warning date: ' . $postingoverduedate->format('M d, Y'));
-                    $this->trace('            on-hold date: ' . $onholddate->format('M d, Y'));
+                    $this->trace(str_repeat(" ", 12) . 'posting overdue warning date: ' . $postingoverduedate->format('M d, Y'));
+                    $this->trace(str_repeat(" ", 12) . 'on-hold date: ' . $onholddate->format('M d, Y'));
                     $message = new notification($course);
-                    if (getdate($postingoverduedate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$isactive) {
+                    if (getdate($postingoverduedate->getTimestamp())['yday'] == $today['yday'] && !$isactive && !$booked) {
                         $message->send_inactive_warning($student->get_id(), $lastsessiondate, $onholddate);
-                        mtrace('        Sending student inactivity warning (10 days inactive after posting wait period)');
+                        mtrace(str_repeat(" ", 8) . 'Sending student inactivity warning (10 days inactive after posting wait period)');
                     }
-                } else {
-                    $this->trace('            last session: NONE ON RECORD!');
                 }
             }
         }
+        $this->trace('');
     }
 
     /**
      * Process on-hold restriction.
      *
      * @param subscriber $course    The subscribed course
-     * @param array      $students  Array of all course students to be evaluated
-     * @param array      $seniorinstructors An array of senior instructors to notify
+     * @param array $students  Array of all course students to be evaluated
+     * @param array $seniorinstructors An array of senior instructors to notify
+     * @param int $onholddays The number of days for the on-hold restriction
      */
-    private function process_onhold_restriction($course, $students, $seniorinstructors) {
+    private function process_onhold_restriction(subscriber $course, array $students, array $seniorinstructors, int $onholddays) {
 
-        // check if on-hold restriction is enabled
-        $onholddays = intval($course->onholdperiod);
-
-        $this->trace('');
-        $this->trace('        #### ON-HOLD RESTRICTION ' . ($onholddays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+        $this->trace(str_repeat(" ", 8) . '#### ON-HOLD RESTRICTION ' . ($onholddays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
 
         if ($onholddays > 0) {
             foreach ($students as $student) {
 
-                $studentname = participant::get_fullname($student->get_id());
-                $this->trace('        ' . $studentname);
+                if (!$student->is_onhold()) {
 
-                // get last booked date, otherwise use last graded date instead
-                $lastsessionts = $student->get_last_session_date(true);
-                if (empty($lastsessionts)) {
-                    $lastgradeddate = $student->get_last_graded_date();
-                    $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
-                }
+                    $studentname = participant::get_fullname($student->get_id());
+                    $this->trace(str_repeat(" ", 8) . $studentname);
 
-                if (!empty($lastsessionts)) {
+                    // get last activity date, otherwise use last slot date instead
+                    $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date());
+
                     // get status of already being on-hold, kept active, or student is in active standings
-                    $alreayonhold = $student->is_onhold();
-                    $keepactive =  $student->is_kept_active();
-                    $isactive = ($student->has_completed_lessons() || $student->is_newly_joined()) && $student->get_statistics()->get_total_posts() > 0;
+                    $keptactive =  $student->is_kept_active();
+                    $hasvalidposts = $student->get_statistics()->get_valid_posts_count() > 0;
+                    $hasactiveposts = $student->get_statistics()->get_active_posts_count() > 0;
                     $booked = !empty($student->get_active_booking());
 
                     // on-hold date from last booked session
-                    $lastsessiondate = new DateTime("@$lastsessionts");
-                    $onholddate = new DateTime("@$lastsessionts");
-                    $suspenddate = new DateTime("@$lastsessionts");
-                    date_add($onholddate, date_interval_create_from_date_string($course->onholdperiod . ' days'));
-                    date_add($suspenddate, date_interval_create_from_date_string($course->suspensionperiod . ' days'));
-
-                    // on-hold warning date: 7 days before on-hold date
-                    $onholdwarningdate = new DateTime('@' . $lastsessiondate->getTimestamp());
                     $today = getdate(time());
+                    $onholdwarningdate = clone $lastactivitydate;
+                    $onholddate = clone $lastactivitydate;
+                    $suspenddate = clone $lastactivitydate;
                     date_add($onholdwarningdate, date_interval_create_from_date_string(($onholddays -  7) . ' days'));
+                    date_add($onholddate, date_interval_create_from_date_string($course->get_on_hold_days_restriction() . ' days'));
+                    date_add($suspenddate, date_interval_create_from_date_string($course->get_suspend_days_restriction() . ' days'));
+                    // get the greater of either last session date or last slot date
 
                     // ON HOLD WARNING NOTIFICATION
+                    // log trace info
+                    $this->trace(str_repeat(" ", 12) . 'on-hold date: ' . $onholddate->format('M d, Y'));
+                    $this->trace(str_repeat(" ", 12) . 'on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
+                    $this->trace(str_repeat(" ", 12) . 'keep active status: ' . ($keptactive ? 'ON' : 'OFF'));
                     // notify student a week before being placed
-                    $this->trace('            on-hold date: ' . $onholddate->format('M d, Y'));
-                    $this->trace('            on-hold warning date: ' . $onholdwarningdate->format('M d, Y'));
-                    $this->trace('            keep active status: ' . ($keepactive ? 'ON' : 'OFF'));
                     $message = new notification($course);
-                    if (getdate($onholdwarningdate->getTimestamp())['yday'] == $today['yday'] && !$alreayonhold && !$keepactive && !$isactive && !$booked) {
+                    if (getdate($onholdwarningdate->getTimestamp())['yday'] == $today['yday'] && !$keptactive && !$hasactiveposts && !$booked) {
                         $message->send_onhold_warning($student->get_id(), $onholddate);
-                        mtrace('        Notifying student of becoming on-hold in a week');
+                        mtrace(str_repeat(" ", 16) . 'Notifying student of becoming on-hold in a week');
                     }
 
                     // ON-HOLD PLACEMENT NOTIFICATION
                     // place student on-hold and send notification
-                    if ($onholddate->getTimestamp() <= time() && !$alreayonhold && !$keepactive && !$isactive && !$booked) {
+                    if ($onholddate->getTimestamp() <= time() && !$keptactive && !$hasvalidposts && !$booked) {
 
                         // add student to on-hold group
                         $onholdgroupid = groups_get_group_by_name($course->get_id(), LOCAL_BOOKING_ONHOLDGROUP);
                         groups_add_member($onholdgroupid, $student->get_id());
 
                         // send notification of upcoming placement on-hold to student and senior instructor roles
-                        if ($message->send_onhold_notification($student->get_id(), $lastsessiondate, $suspenddate, $seniorinstructors)) {
-                            $this->trace('                Placed \'' . $studentname . '\' on-hold (notified)...');
+                        if ($message->send_onhold_notification($student->get_id(), $lastactivitydate, $suspenddate, $seniorinstructors)) {
+                            $this->trace(str_repeat(" ", 16) . 'Placed \'' . $studentname . '\' on-hold (notified)...');
                         }
                     }
-                } else {
-                    $this->trace('            last session: NONE ON RECORD!');
                 }
             }
         }
+        $this->trace('');
     }
 
     /**
      * Process suspension restriction.
      *
      * @param subscriber $course    The subscribed course
-     * @param array      $students  Array of all course students to be evaluated
-     * @param array      $seniorinstructors An array of senior instructors to notify
+     * @param array $students  Array of all course students to be evaluated
+     * @param array $seniorinstructors An array of senior instructors to notify
+     * @param int $suspensiondays The number of days for the suspension restriction
      */
-    private function process_suspension_restriction($course, $students, $seniorinstructors) {
+    private function process_suspension_restriction($course, $students, $seniorinstructors, $suspensiondays) {
 
         // check for suspension restriction is enabled
-        $suspensiondays = intval($course->suspensionperiod);
-
-        $this->trace('');
-        $this->trace('        #### SUSPENSION RESTRICTION ' . ($suspensiondays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+        $this->trace(str_repeat(" ", 8) . '#### SUSPENSION RESTRICTION ' . ($suspensiondays > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
 
         if ($suspensiondays > 0) {
             foreach ($students as $student) {
 
-                // get suspension date, otherwise use last graded date instead
-                $lastsessionts = $student->get_last_session_date(true);
-                if (empty($lastsessionts)) {
-                    $lastgradeddate = $student->get_last_graded_date();
-                    $lastsessionts = !empty($lastgradeddate) ? $lastgradeddate->getTimestamp() : ($student->get_enrol_date())->getTimestamp();
-                }
+                if ($student->is_onhold()) {
 
-                if (!empty($lastsessionts)) {
-                    // Suspension (unenrolment) date as specified in the course settings
-                    $lastsessiondate = new DateTime("@$lastsessionts");
-                    $suspenddate = new DateTime("@$lastsessionts");
-                    $keepactive =  $student->is_kept_active();
-                    $isactive = ($student->has_completed_lessons() || $student->is_newly_joined()) && $student->get_statistics()->get_total_posts() > 0;
-                    $booked = !empty($student->get_active_booking());
+                    // get suspension date, otherwise use last graded date instead
+                    $studentname = participant::get_fullname($student->get_id());
+
+                    // Suspension (unenrolment) date as per the last activity date and days of inactivity to suspension.
+                    $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date());
+                    $suspenddate = clone $lastactivitydate;
 
                     date_add($suspenddate, date_interval_create_from_date_string($suspensiondays . ' days'));
 
                     // SUSPENSION NOTIFICATION
                     // suspend when passed on-hold by 9x wait days process suspension and notify student and senior instructor roles
-                    if ($suspenddate->getTimestamp() <= time() && !$keepactive && !$isactive && !$booked) {
+                    if ($suspenddate->getTimestamp() <= time() && !$student->is_kept_active()) {
 
                         $studentname = participant::get_fullname($student->get_id());
-                        $this->trace('        ' . $studentname);
-                        $this->trace('            suspension date: ' . $suspenddate->format('M d, Y'));
+                        $this->trace(str_repeat(" ", 8) . $studentname);
+                        $this->trace(str_repeat(" ", 12) . 'suspension date: ' . $suspenddate->format('M d, Y'));
 
                         // suspend the student from the course
                         if ($student->suspend()) {
-                            $this->trace('                Suspended!');
+                            $this->trace(str_repeat(" ", 16) . 'Suspended!');
                             // send notification of unenrolment from the course and senior instructor roles
                             $message = new notification($course);
-                            if ($message->send_suspension_notification($student->get_id(), $lastsessiondate, $seniorinstructors)) {
-                                mtrace('                Student notified of suspension');
+                            if ($message->send_suspension_notification($student->get_id(), $lastactivitydate, $seniorinstructors)) {
+                                mtrace(str_repeat(" ", 16) . 'Student notified of suspension');
                             }
                         }
                     }
-                } else {
-                    $this->trace('            last session: NONE ON RECORD!');
                 }
             }
         }
+        $this->trace('');
     }
 
     /**
@@ -328,19 +302,18 @@ class cron_task extends \core\task\scheduled_task {
      *
      * @param subscriber $course      The subscribed course
      * @param instructor $instructor  The instructor to be evaluated
-     * @param array      $seniorinstructors An array of senior instructors to notify
+     * @param array $seniorinstructors An array of senior instructors to notify
+     * @param int $overdueperiod The number of days for the instructor overdue notification
      */
-    private function process_instructor_notifications($course, $instructors, $seniorinstructors) {
+    private function process_instructor_notifications($course, $instructors, $seniorinstructors, $overdueperiod) {
 
         // check for suspension restriction is enabled
-        $overdueperiod = intval($course->overdueperiod);
-        $this->trace('');
-        $this->trace('        #### INSTRUCTOR OVERDUE NOTIFICATION ' . ($overdueperiod > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
+        $this->trace(str_repeat(" ", 8) . '#### INSTRUCTOR OVERDUE NOTIFICATION ' . ($overdueperiod > 0 ? 'ENABLED' : 'DISABLED') . ' ####');
         if ($overdueperiod > 0) {
             foreach ($instructors as $instructor) {
 
                 $instructorname = participant::get_fullname($instructor->get_id());
-                $this->trace('        ' . $instructorname);
+                $this->trace(str_repeat(" ", 12) . $instructorname);
 
                 // get instructor last booked session, otherwise use the last login for date compare
                 $lastsessiondate = $instructor->get_last_booked_date();
@@ -352,22 +325,23 @@ class cron_task extends \core\task\scheduled_task {
                     // check if overdue period had past without a grading and send a notification each time this interval passes
                     $sendnotification = ($dayssincelast % $overdueperiod) == 0 && $dayssincelast >= $overdueperiod;
                     $status = get_string('emailoverduestatus', 'local_booking', $lastsessiondate->format('M d, Y'));
-                    $this->trace('            last session: ' . $lastsessiondate->format('M d, Y'));
+                    $this->trace(str_repeat(" ", 12) . 'last session: ' . $lastsessiondate->format('M d, Y'));
 
                     // notify the instructors of overdue status
                     if ($sendnotification) {
                         $message = new notification($course);
                         $message->send_session_overdue_notification($instructor->get_id(), $status, $seniorinstructors);
-                        mtrace('                inactivity notification sent (retry=' . round($dayssincelast / $overdueperiod) . ')...');
+                        mtrace(str_repeat(" ", 16) . 'inactivity notification sent (retry=' . round($dayssincelast / $overdueperiod) . ')...');
                     }
                 }
                 else {
-                    $this->trace('            last session: NONE ON RECORD!');
+                    $this->trace(str_repeat(" ", 12) . 'last session: NONE ON RECORD!');
                 }
             }
         } else {
-            $this->trace('            instructor overdue notifications disabled.');
+            $this->trace(str_repeat(" ", 12) . 'instructor overdue notifications disabled.');
         }
+        mtrace('');
     }
 
     /**
@@ -379,8 +353,7 @@ class cron_task extends \core\task\scheduled_task {
      */
     private function process_noshow_reinstatement($course, $seniorinstructors) {
 
-        $this->trace('');
-        $this->trace('        #### SUSPENDED NO-SHOW STUDENTS REINSTATEMENT ####');
+        $this->trace(str_repeat(" ", 8) . '#### NO-SHOW STUDENTS SUSPENDED REINSTATEMENT ####');
 
         // evaluate suspended students with 2 no-shows that completed their suspension period
         $students = $course->get_students('suspended');
@@ -403,10 +376,11 @@ class cron_task extends \core\task\scheduled_task {
                     // notify the student and senior instructors of reinstatement
                     $message = new notification($course);
                     $message->send_noshow_reinstatement_notification($student, $exerciseid, $seniorinstructors);
-                    mtrace('                no-show student reinstated');
+                    mtrace(str_repeat(" ", 16) . 'no-show student reinstated');
                 }
             }
         }
+        $this->trace('');
     }
 
     /**

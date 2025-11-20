@@ -106,12 +106,40 @@ class statistics implements statistics_interface {
      *
      * @return int The number of active posts
      */
-    public function get_total_posts() {
+    public function get_all_posts_count() {
 
         if (!isset($this->total_posts))
-            $this->total_posts = slot_vault::get_slot_count($this->student->get_courseid(), $this->student->get_id());
+            $this->total_posts = slot_vault::get_slot_count($this->student->get_courseid(), $this->student->get_id(), 'all');
 
         return $this->total_posts;
+    }
+
+    /**
+     * Returns the total number of active posts.
+     *
+     * @return int The number of active posts
+     */
+    public function get_active_posts_count() {
+
+        return slot_vault::get_slot_count($this->student->get_courseid(), $this->student->get_id());
+    }
+
+    /**
+     * Returns the number of posts based on course on-hold restriction.
+     *
+     * @return int The number of valid posts
+     */
+    public function get_valid_posts_count() {
+
+        $subscriber = $this->student->get_course();
+        $onholddays = $subscriber->get_on_hold_days_restriction();
+
+        return slot_vault::get_slot_count(
+            $this->student->get_courseid(),
+            $this->student->get_id(),
+            'valid',
+            $onholddays
+        );
     }
 
     /**

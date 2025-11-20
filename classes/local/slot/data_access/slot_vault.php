@@ -189,18 +189,20 @@ class slot_vault implements slot_vault_interface {
     }
 
     /**
-     * Get the date of the last posted availability slot
+     * Get the date of the first or last unbooked posted availability slot
      *
      * @param int $studentid
+     * @param bool $firstslot
+     * @return mixed the requested slot record
      */
-    public static function get_first_posted_slot(int $studentid) {
+    public static function get_posted_slot(int $studentid, bool $firstslot=true) {
         global $DB;
 
         $sql = 'SELECT starttime
                 FROM {' . static::DB_SLOTS. '}
                 WHERE userid = :studentid
                 AND slotstatus = ""
-                ORDER BY starttime
+                ORDER BY starttime ' . ($firstslot ? 'ASC' : 'DESC') . '
                 LIMIT 1';
 
         return $DB->get_record_sql($sql, ['studentid'=>$studentid]);
@@ -240,27 +242,41 @@ class slot_vault implements slot_vault_interface {
     }
 
     /**
-     * Returns the total number of active posts.
+     * Returns the total number of slot posts.
      *
-     * @param   int     The course id
-     * @param   int     The user id
-     * @return  int     The number of active posts
+     * @param int $courseid  The course id
+     * @param int $studentid The student id
+     * @param string $filter The filter for slots requested
+     * @param int $onholddays The number of days in the course on-hold restriction
+     * @return int The number of slot posts
      */
-    public static function get_slot_count(int $courseid, int $userid) {
+    public static function get_slot_count(int $courseid, int $studentid, string $filter = 'active', int $onholddays = 0) {
         global $DB;
+
+        $params = array(
+            'courseid'  => $courseid,
+            'userid'    => $studentid
+        );
+
+        $where = '';
+        switch ($filter) {
+            case 'active':
+                $where = ' AND slotstatus = :slotstatus AND starttime > :slottime';
+                $params['slotstatus'] = '';
+                $params['slottime'] = time();
+                break;
+            case 'all':
+                break;
+            case 'valid':
+                $where = ' AND starttime > :slottime';
+                $params['slottime'] = strtotime("-$onholddays days", time());
+                break;
+        }
 
         $sql = 'SELECT COUNT(id) AS slotcount
                 FROM {' . static::DB_SLOTS. '}
                 WHERE courseid = :courseid
-                AND userid = :userid
-                AND slotstatus = :slotstatus
-                AND starttime > :slottime';
-        $params = array(
-            'courseid'  => $courseid,
-            'userid'    => $userid,
-            'slotstatus'=> '',
-            'slottime'  => time()
-        );
+                AND userid = :userid' . $where;
 
         $rc = $DB->get_record_sql($sql, $params);
         return $rc->slotcount;

@@ -366,6 +366,29 @@ class participant_vault implements participant_vault_interface {
     }
 
     /**
+     * Returns participant's profile comment, user description field
+     *
+     * @param int $groupid The group id
+     * @param int $participantid The user id
+     * @return mixed The participant group record
+     */
+    public function get_group_member(int $groupid, int $participantid) {
+        global $DB;
+
+        $sql = 'SELECT *
+                FROM {' . self::DB_GROUPS_MEM . '}
+                WHERE groupid = :groupid
+                    AND userid = :userid';
+
+        $params = [
+            'groupid' => $groupid,
+            'userid'  => $participantid
+        ];
+
+        return $DB->get_record_sql($sql, $params);
+    }
+
+    /**
      * Updates the progress table with a specific value
      *
      * @param int    $courseid  The course id
@@ -507,7 +530,7 @@ class participant_vault implements participant_vault_interface {
             'from'    => self::get_sql_from($isstudent),
             'where'   => self::get_sql_where($filter, $courseid, $isstudent, $includeonhold),
             'groupby' => self::get_sql_groupby(),
-            'orderby' => self::get_sql_orderby($isstudent, $filter == 'suspended', $requirescompletion)
+            'orderby' => self::get_sql_orderby($isstudent, $filter, $requirescompletion)
         ];
 
         return (object) $sql;
@@ -626,16 +649,20 @@ class participant_vault implements participant_vault_interface {
     /**
      * Get ORDER BY SQL clause sort order.
      *
-     * @param  bool $isstudent          Whether the participant is a student
-     * @param  bool $suspended          Whether the participant is a student
+     * @param  bool $isstudent Whether the participant is a student
+     * @param  string $filter The participant filter
      * @param  bool $requirescompletion Whether or not include on-hold students
      * @return string $orderby The WHERE SQL query string
      */
-    private static function get_sql_orderby(bool $isstudent, bool $suspended, bool $requirescompletion){
+    private static function get_sql_orderby(bool $isstudent, string $filter, bool $requirescompletion){
 
         // evaluate order by for suspended students
-        if ($suspended)
-            return ' ORDER BY suspenddate, userid DESC';
+        if ($filter == 'suspended')
+            return ' ORDER BY suspenddate DESC';
+
+        // evaluate order by for graduated students
+        if ($filter == 'graduated')
+            return ' ORDER BY graduateddate DESC';
 
         // return order by for students and whether the course require lesson completion
         return ' ORDER BY ' . ($isstudent ? ($requirescompletion ? 'lessonscomplete DESC,' : '') .

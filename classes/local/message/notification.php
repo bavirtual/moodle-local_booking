@@ -431,18 +431,17 @@ class notification extends \core\message\message {
      * of being placed on-hold.
      *
      * @param int       $studentid the student id sending the notification message.
-     * @param DateTime  $lastsessiondate the date time of the last session taken by the student.
+     * @param DateTime  $lastactivitydate the date time of the last session taken by the student.
      * @param DateTime  $suspenddate the date time of the student will be suspended.
-     * @param string    $coursename the course name.
      * @param array     $seniorinstructors the list of senior instructors to be copied.
      * @return bool     The notification message id.
      */
-    public function send_onhold_notification($studentid, $lastsessiondate, $suspenddate, $seniorinstructors) {
+    public function send_onhold_notification(int $studentid, DateTime $lastactivitydate, DateTime $suspenddate, array $seniorinstructors) {
 
         // notification message data
         $data = (object) array(
             'coursename'        => $this->course->get_shortname(),
-            'lastsessiondate'   => $lastsessiondate->format('M d, Y'),
+            'lastactivitydate'   => $lastactivitydate->format('M d, Y'),
             'suspenddate'       => $suspenddate->format('M d, Y'),
             'studentname'       => student::get_fullname($studentid),
             'courseurl'         => (new \moodle_url('/course/view.php', array('id'=>$this->course->get_id())))->out(false),
@@ -470,17 +469,17 @@ class notification extends \core\message\message {
      * of being placed on-hold.
      *
      * @param int       $studentid the student id sending the notification message.
-     * @param DateTime  $lastsessiondate the date time of the last session taken by the student.
+     * @param DateTime  $lastactivitydate the date time of the last session taken by the student.
      * @param array     $seniorinstructors the list of senior instructors to be copied.
      * @return bool     The notification message id.
      */
-    public function send_suspension_notification($studentid, $lastsessiondate, $seniorinstructors) {
+    public function send_suspension_notification(int $studentid, DateTime $lastactivitydate, array $seniorinstructors) {
 
         // notification message data
         $data = (object) array(
             'coursename'        => $this->course->get_shortname(),
             'studentname'       => student::get_fullname($studentid),
-            'lastsessiondate'   => $lastsessiondate->format('M d, Y'),
+            'lastactivitydate'   => $lastactivitydate->format('M d, Y'),
             'courseurl'         => (new \moodle_url('/course/view.php', array('id'=>$this->course->get_id())))->out(false),
             'assignurl'         => (new \moodle_url('/mod/assign/index.php', array('id'=>$this->course->get_id())))->out(false),
         );

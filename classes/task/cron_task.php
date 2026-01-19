@@ -153,7 +153,7 @@ class cron_task extends \core\task\scheduled_task {
                     // get last activity date, otherwise use last slot date instead
                     $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date());
                     $lastsessiondate = $student->get_last_session_date();
-                    $postingoverduedate = clone $lastsessiondate;
+                    $postingoverduedate = empty($lastsessiondate) ? clone $lastactivitydate : clone $lastsessiondate;
                     $onholddate = clone $lastactivitydate;
                     $today = getdate(time());
 

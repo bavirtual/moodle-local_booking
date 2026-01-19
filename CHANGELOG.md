@@ -1,6 +1,12 @@
 # Change log
 
-## [20251120000] - RELEASED 2025-11-20
+## [2026011900] - RELEASED 2025-11-20
+
+### Fixed
+
+- cron_task clone last session date when null in process_student_inactivity_notifications
+
+## [2025112000] - RELEASED 2025-11-20
 
 ### Fixed
 

@@ -101,11 +101,11 @@ interface participant_vault_interface {
      * Returns the list of completed lesson ids
      * for a student in a course.
      *
-     * @param   int     The student user id
      * @param   int     The course id
+     * @param   int     The student user id
      * @return  array   List of completed lesson ids
      */
-    public function get_student_completed_lesson_ids(int $userid, int $courseid);
+    public function get_student_completed_lesson_ids(int $courseid, int $userid);
 
     /**
      * Returns the list of incomplete lessons for a student

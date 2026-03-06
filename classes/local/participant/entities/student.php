@@ -478,6 +478,22 @@ class student extends participant {
         return $this->nextlesson;
     }
 
+
+    /**
+     * Return student's last lesson module completed.
+     *
+     * @return string $lastlessonmodcompleted
+     */
+    public function get_last_lesson_mod_complete() {
+        $lessonmodscompleted = $this->vault->get_student_completed_lesson_ids($this->courseid, $this->userid);
+        if (empty($lessonmodscompleted)) {
+            return get_string('nolessonrecord', 'local_booking');
+        }
+        $completedlessonmods = explode(',', $lessonmodscompleted->lessonmods);
+        $lastlessonmodcompleted = !empty($completedlessonmods) ? $this->course->get_lesson_module(end($completedlessonmods))->name : get_string('nolessonrecord', 'local_booking');
+        return $lastlessonmodcompleted;
+    }
+
     /**
      * Returns the timestamp of the first
      * unbooked availability slot for

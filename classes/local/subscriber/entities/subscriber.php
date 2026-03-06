@@ -656,7 +656,8 @@ class subscriber implements subscriber_interface {
             // get offset exercise id
             $mods = array_values($this->get_exercises());
             $exerciseidx = array_search($exerciseid, array_column($mods,'id'));
-            return $mods[($exerciseidx + $offset > count($mods) - 1) ? count($mods) - 1 : ($exerciseidx + $offset < 0) ? 0 : $exerciseidx + $offset];
+            $idx = ($exerciseidx + $offset > count($mods) - 1) ? count($mods) - 1 : (($exerciseidx + $offset < 0) ? 0 : $exerciseidx + $offset);
+            return $mods[$idx];
         }
 
         // look in another course

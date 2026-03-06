@@ -285,7 +285,7 @@ class dashboard_student_exporter extends exporter {
         $nextexerciseid = $student->get_next_exercise()->id;
         $lastgrade = $student->get_last_grade();
         $passedlastgrade =  !empty($lastgrade) ? $lastgrade->is_passed() : false;
-        $nopoststagposition = $passedlastgrade ? $nextexerciseid : $course->get_exercise($nextexerciseid, $course->get_id(),1)->id;
+        $nopoststagposition = $passedlastgrade || $student->is_newly_joined() ? $nextexerciseid : $course->get_exercise($nextexerciseid, $course->get_id(),1)->id;
 
         $studentname = $student->get_name();
         $gradexercise = $related['subscriber']->get_graduation_exercise_id();

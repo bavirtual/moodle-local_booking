@@ -274,9 +274,9 @@ class subscriber implements subscriber_interface {
                     array_walk($fieldvalues,
                         function(&$item) {
                             // strip html tags
-                            $item = strip_tags($item);
+                            $item = strip_tags($item, "<br>");
                             // put back <br/> tags if exist for exercise titles
-                            $item = str_replace("&lt;br/&gt;", "<br/>", $item);
+                            $item = str_replace(['&lt;br/&gt;','&lt;br /&gt;'], "<br/>", $item);
                         }
                     );
                     $finalvalues = array_combine($fieldvalues, $fieldvalues);
@@ -656,7 +656,7 @@ class subscriber implements subscriber_interface {
             // get offset exercise id
             $mods = array_values($this->get_exercises());
             $exerciseidx = array_search($exerciseid, array_column($mods,'id'));
-            return $mods[$exerciseidx + $offset];
+            return $mods[($exerciseidx + $offset > count($mods) - 1) ? count($mods) - 1 : ($exerciseidx + $offset < 0) ? 0 : $exerciseidx + $offset];
         }
 
         // look in another course

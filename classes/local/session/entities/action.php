@@ -102,6 +102,11 @@ class action implements action_interface {
                 // if the user is an examiner in the case of graduation skill tests
 
                 // get action enabled status and tooltip
+                // TODO: update student progress in case the session requires lesson completion and the student did in fact complete required lessons.
+                // updating lessons complete should be debugged in the event observer for lesson module completion and there should not be the need to update lessons completed here.
+                if ($course->requires_lesson_completion() && !$student->has_completed_lessons() && !$student->is_newly_joined()) {
+                    $student->update_lessonscomplete();
+                }
                 if ($course->requires_lesson_completion() && !$student->has_completed_lessons() && !$student->is_newly_joined()) {
 
                     $enabled = false;

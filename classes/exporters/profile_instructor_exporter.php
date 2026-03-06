@@ -349,38 +349,36 @@ class profile_instructor_exporter extends exporter {
         $lastbookeddate = $this->instructor->get_last_booked_date();
         $lastbookeddate = !empty($lastbookeddate) ? $lastbookeddate->format('M j\, Y') : '';
 
-        $return = [
-            'fullname'         => $this->instructor->get_name(),
-            'timezone'         => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone,
-            'fleet'            => $this->instructor->get_fleet() ?: get_string('none'),
-            'sim1'             => $this->instructor->get_simulator(),
-            'sim2'             => $this->instructor->get_simulator(false),
-            'moodleprofileurl' => $moodleprofile->out(false),
-            'enroldate'        => $this->instructor->get_enrol_date()->format('M j\, Y'),
-            'lastlogin'        => $lastlogindate,
-            'instructordate'   => $instructorsince,
-            'examiner'         => $this->instructor->is_examiner(),
-            'examinerdate'     => $this->instructor->has_role_since(LOCAL_BOOKING_EXAMINERROLE),
-            'lastgraded'       => $lastgradeddate,
-            'lastbooked'       => $lastbookeddate,
-            'logbookurl'       => $logbookurl->out(false),
-            'totalgroundhours' => logbook::convert_time($summary->totalgroundtime),
-            'totalflighthours' => logbook::convert_time($summary->totalflighttime),
-            'totalhours'       => logbook::convert_time($summary->totalgroundtime+$summary->totalflighttime),
-            'totalatohours'    => logbook::convert_time($this->instructor->get_ato_hours()),
-            'totalbookedsessions'=> $totalbookedsessions,
-            'totalexamhours'   => logbook::convert_time($summary->totalexaminertime),
-            'totalexams'       => $totalexams,
-            'loginasurl'       => $loginas->out(false),
-            'admin'            => has_capability('moodle/user:loginas', $this->related['context']),
-            'xcoursebookings'  => get_user_preferences(LOCAL_BOOKING_USERPERFPREFIX.LOCAL_BOOKING_USERPERFS['SHOWXCOURSEBOOKS'], false, $instructorid),
-            'rolesincename'    => $currentrole,
-            'roles'            => implode(', ', $roles),
-            'coursemodules'    => $exercisenames,
-            'sessions'         => $sessions,
-            'totalgradedsessions'=> $totalgradedsessions,
-            'comment'          => $this->instructor->get_comment(),
-        ];
+        $return = ['fullname'          => $this->instructor->get_name()];
+        $return += ['timezone'         => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone];
+        $return += ['fleet'            => $this->instructor->get_fleet() ?: get_string('none')];
+        $return += ['sim1'             => $this->instructor->get_simulator()];
+        $return += ['sim2'             => $this->instructor->get_simulator(false)];
+        $return += ['moodleprofileurl' => $moodleprofile->out(false)];
+        $return += ['enroldate'        => $this->instructor->get_enrol_date()->format('M j\, Y')];
+        $return += ['lastlogin'        => $lastlogindate];
+        $return += ['instructordate'   => $instructorsince];
+        $return += ['examiner'         => $this->instructor->is_examiner()];
+        $return += ['examinerdate'     => $this->instructor->has_role_since(LOCAL_BOOKING_EXAMINERROLE)];
+        $return += ['lastgraded'       => $lastgradeddate];
+        $return += ['lastbooked'       => $lastbookeddate];
+        $return += ['logbookurl'       => $logbookurl->out(false)];
+        $return += ['totalgroundhours' => logbook::convert_time($summary->totalgroundtime)];
+        $return += ['totalflighthours' => logbook::convert_time($summary->totalflighttime)];
+        $return += ['totalhours'       => logbook::convert_time($summary->totalgroundtime+$summary->totalflighttime)];
+        $return += ['totalatohours'    => logbook::convert_time($this->instructor->get_ato_hours())];
+        $return += ['totalbookedsessions'=> $totalbookedsessions];
+        $return += ['totalexamhours'   => logbook::convert_time($summary->totalexaminertime)];
+        $return += ['totalexams'       => $totalexams];
+        $return += ['loginasurl'       => $loginas->out(false)];
+        $return += ['admin'            => has_capability('moodle/user:loginas', $this->related['context'])];
+        $return += ['xcoursebookings'  => get_user_preferences(LOCAL_BOOKING_USERPERFPREFIX.LOCAL_BOOKING_USERPERFS['SHOWXCOURSEBOOKS'], false, $instructorid)];
+        $return += ['rolesincename'    => $currentrole];
+        $return += ['roles'            => implode(', ', $roles)];
+        $return += ['coursemodules'    => $exercisenames];
+        $return += ['sessions'         => $sessions];
+        $return += ['totalgradedsessions'=> $totalgradedsessions];
+        $return += ['comment'          => $this->instructor->get_comment()];
 
         return $return;
     }

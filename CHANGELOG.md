@@ -1,6 +1,15 @@
 # Change log
 
-## [2026011900] - RELEASED 2025-11-20
+## [2026030700] - RELEASED 2026-03-07
+
+### Fixed
+
+- 'no posts' flag in session booking dashboard is offset by one table cell for newly joined pilots
+- dashboard exercise titles to allow `<br />` tags
+- incomplete lesson modules although the student did complete last lesson module required. temporary forced update completion implemented
+- subscriber $mods[$exerciseidx + $offset] edge cases exception handling
+
+## [2026011900] - RELEASED 2026-01-19
 
 ### Fixed
 

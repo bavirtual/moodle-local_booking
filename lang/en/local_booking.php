@@ -345,7 +345,8 @@ $string['forcecompletion_help'] = 'Intended for forcing course completion for le
 $string['forcecompletionconfirm'] = 'Forcing completion will flag all course requirements as complete. Are you sure you want to force course completion?';
 $string['instructorsince'] = 'In {$a} role since';
 $string['keepactive'] = 'Keep active';
-$string['lastlesson'] = 'Last lesson completed';
+$string['lastlessonmod'] = 'Last module completed';
+$string['nolessonrecord'] = 'No lesson modules completed';
 $string['lastgraded'] = 'Last session graded';
 $string['mentorreport']='Mentored sessions report';
 $string['modulescompleted'] = 'Exercises completed';
@@ -720,7 +721,7 @@ $string['weeksaheaddesc'] = 'The number of weeks into the future that a student 
 
 // install
 $string['exercisetitles'] = 'Course exercise titles';
-$string['exercisetitlesdesc'] = 'Use to improve the display of long exercise titles on the instructor dashboard page (one title per line, use &lt;br/&gt; tag to insert a line-break in a title)';
+$string['exercisetitlesdesc'] = 'Use to improve the display of long exercise titles on the instructor dashboard page (one title per line, use &lt;br /&gt; tag to insert a line-break in a title)';
 $string['homeicao'] = 'Home airport ICAO';
 $string['postingwait'] = 'Posting wait restriction';
 $string['postingwaitdesc'] = 'A restriction period in days between the last conducted session and the next time a student can post availability (0 = disable restriction)';

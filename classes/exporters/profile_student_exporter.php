@@ -173,11 +173,11 @@ class profile_student_exporter extends exporter {
                 'type' => PARAM_RAW,
                 'optional' => true
             ],
-            'lastlesson' => [
+            'lastlessonmod' => [
                 'type' => PARAM_RAW,
                 'optional' => true
             ],
-            'lastlessoncompleted' => [
+            'lastlessonmodcompleted' => [
                 'type' => PARAM_RAW,
                 'optional' => true
             ],
@@ -317,8 +317,7 @@ class profile_student_exporter extends exporter {
         $moodleuser = \core_user::get_user($studentid, 'timezone');
 
         // student current lesson and consider new joiners that have no current exercise, their next exercise is the first
-        $exerciseid = $this->student->get_current_exercise()->id;
-        $currentlesson = $exerciseid ? array_values($this->subscriber->get_lesson_by_exercise_id($exerciseid))[1] : get_string('none');
+        $lastlessonmodcomplete = $this->student->get_last_lesson_mod_complete();
 
         // exercise (module) completion information
         $usermods = $this->student->get_statistics()->get_completed_exercise_count();
@@ -479,8 +478,8 @@ class profile_student_exporter extends exporter {
             'enroldate'                => $this->student->get_enrol_date()->format('M j\, Y'),
             'lastlogin'                => $lastlogindate,
             'lastgraded'               => $lastgradeddate,
-            'lastlesson'               => $currentlesson,
-            'lastlessoncompleted'      => $this->student->has_completed_lessons() ? get_string('yes') : get_string('no'),
+            'lastlessonmod'            => $lastlessonmodcomplete,
+            'lastlessonmodcompleted'   => $this->student->has_completed_lessons() ? get_string('yes') : get_string('no'),
             'graduationstatus'         => $graduationstatus,
             'qualified'                => $qualified,
             'requiresevaluation'       => $requiresevaluation,

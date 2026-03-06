@@ -232,14 +232,14 @@ class participant_vault implements participant_vault_interface {
      * Returns the list of completed lesson ids
      * for a student in a course.
      *
-     * @param   int     The student user id
      * @param   int     The course id
+     * @param   int     The student user id
      * @return  array   List of completed lesson ids
      */
-    public function get_student_completed_lesson_ids(int $userid, int $courseid) {
+    public function get_student_completed_lesson_ids(int $courseid, int $userid) {
         global $DB;
 
-        $sql = "SELECT GROUP_CONCAT(cm.id ORDER BY cs.section, LOCATE(cm.id, cs.sequence))
+        $sql = "SELECT GROUP_CONCAT(cm.id ORDER BY cs.section, LOCATE(cm.id, cs.sequence)) AS lessonmods
                 FROM {" . self::DB_COURSE_MODS_COMP . "} cmc
                 INNER JOIN {" . self::DB_COURSE_MODS . "} cm ON cm.id = cmc.coursemoduleid
                 INNER JOIN {" . self::DB_MODULES . "} m ON m.id = cm.module

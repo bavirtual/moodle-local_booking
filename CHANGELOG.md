@@ -1,5 +1,11 @@
 # Change log
 
+## [2026031600] - RELEASED 2026-03-16
+
+### Fixed
+
+- exception on null when student has no completed lessons
+
 ## [2026030701] - RELEASED 2026-03-07
 
 ### Fixed

@@ -2,6 +2,12 @@
 
 ## [2026030701] - RELEASED 2026-03-07
 
+### Added
+
+- pilot stats interim page after booking a student session
+
+## [2026030701] - RELEASED 2026-03-07
+
 ### Fixed
 
 - 'no posts' flag in session booking dashboard is offset by one table cell for newly joined pilots

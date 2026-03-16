@@ -30,4 +30,4 @@ $plugin->requires  = 2022041912; // Requires this Moodle version - at least 4.0 
 
 $plugin->component = 'local_booking';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '2.5';
+$plugin->release = '3.0';

@@ -486,7 +486,7 @@ class student extends participant {
      */
     public function get_last_lesson_mod_complete() {
         $lessonmodscompleted = $this->vault->get_student_completed_lesson_ids($this->courseid, $this->userid);
-        if (empty($lessonmodscompleted)) {
+        if (empty($lessonmodscompleted) || empty($lessonmodscompleted->lessonmods)) {
             return get_string('nolessonrecord', 'local_booking');
         }
         $completedlessonmods = explode(',', $lessonmodscompleted->lessonmods);

@@ -228,6 +228,23 @@ interface subscriber_interface {
     public function get_grading_item(int $modid);
 
     /**
+     * Get subscribing course checklists
+     *
+     * @param bool $getitems Whether to get the checklist items as well (takes longer)
+     * @param bool $raw Whether to return raw checklist records or checklist objects
+     * @return array
+     */
+    public function get_checklists(bool $getitems = false, bool $raw = false);
+
+    /**
+     * Get subscribing course checklist items
+     *
+     * @param int $checklistid The checklist id to get its items
+     * @return array
+     */
+    public function get_checklist_items($checklistid);
+
+    /**
      * Retrieves an array with the moodle file path and file name of a course file resource.
      *
      * @param  string The resource module name
@@ -331,6 +348,14 @@ interface subscriber_interface {
      * @return bool
      */
     public function requires_lesson_completion();
+
+    /**
+     * Check if the subscribing course has checklists
+     *
+     * @param int $courseid The subscribing course id
+     * @return bool
+     */
+    public static function has_checklists($courseid);
 
     /**
      * Checks if there is a database integration

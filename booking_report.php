@@ -29,9 +29,11 @@ require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/local/booking/lib.php');
 
 use local_booking\exporters\dashboard_student_stats_exporter;
+use local_booking\local\session\entities\booking;
 
 // Get parameters
 $bookingid = required_param('bookingid', PARAM_INT);
+$studentid = required_param('studentid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
 
 // Security checks
@@ -39,14 +41,17 @@ require_login($courseid);
 $context = context_course::instance($courseid);
 require_capability('local/booking:view', $context);
 
+// define session booking plugin subscriber globally
+$subscriber = get_course_subscriber_context($url->out(false), $courseid);
+
 // Set up the page
 $PAGE->set_url(new moodle_url('/local/booking/booking_report.php', [
     'bookingid' => $bookingid,
     'courseid' => $courseid
-]));
+    ]));
 $PAGE->set_context($context);
-$PAGE->set_title(get_string('bookingreport', 'local_booking'));
-$PAGE->set_heading(get_string('bookingreport', 'local_booking'));
+$PAGE->set_title(get_string('checklistgradingreport', 'local_booking'));
+$PAGE->set_heading(get_string('checklistgradingreport', 'local_booking'));
 $PAGE->set_pagelayout('standard');
 
 // Add custom body class for scoped styling
@@ -56,9 +61,9 @@ $PAGE->add_body_class('local-booking-report');
 $PAGE->requires->css('/local/booking/styles/stats_report.css');
 
 // Get booking data - implement these functions in your lib.php
-$booking = get_booking_details($bookingid);
-$student = get_student_details($booking->studentid);
-$sessions = get_student_sessions($booking->studentid, $courseid);
+$booking = new booking($bookingid);
+$student = $subscriber->get_student($studentid);
+$sessions = $student->get_exercise_grades();
 $competencies = get_student_competencies($booking->studentid);
 $signoffs = get_student_signoffs($booking->studentid);
 

@@ -57,6 +57,47 @@
     {{#calendarview}}
         {{>local_booking/availability_week_nav}}
     {{/calendarview}}
+    {{#profileview}}
+        <div class="navitem order-1">
+            {{{userpicture}}}
+            <div>
+                <h2>{{userfullname}}</h2>
+                <p class="text-muted">{{#str}}courseprofile, local_booking{{/str}}</p>
+            </div>
+        </div>
+        <div class="navitem-divider d-none d-sm-flex order-1"></div>
+        <div class="d-flex row ms-0 ms-sm-auto order-6 px-0">
+            <div class="text-end">
+                <div class="singlebutton">
+                    <button onclick="history.back()" class="btn btn-primary">{{#str}} back {{/str}}</button>
+                </div>
+            </div>
+        </div>
+    {{/profileview}}
+    {{#checklistview}}
+        <div class="navitem order-1">
+            {{{studentpicture}}}
+            <div>
+                <h2>{{studentname}}</h2>
+                <p class="text-muted">{{#str}}checklistitems, local_booking{{/str}}</p>
+            </div>
+        </div>
+        <div class="navitem-divider d-none d-sm-flex order-1"></div>
+        <div class="d-flex row ms-0 ms-sm-auto order-6 px-0">
+            <div class="text-end">
+                <div class="singlebutton">
+                    <button onclick="history.back()" class="btn btn-secondary">{{#str}} back {{/str}}</button>
+                </div>
+                <div class="singlebutton">
+                    <form method="get" action="/local/booking/view.php">
+                            <input type="hidden" name="courseid" value="{{courseid}}">
+                        <button type="submit" class="btn btn-primary" title={{#str}} bookings, local_booking {{/str}}>{{#str}} continue {{/str}}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        </div>
+    {{/checklistview}}
     {{#renderedcontent}}
         <div class="navitem order-5">
             {{{navitem}}}

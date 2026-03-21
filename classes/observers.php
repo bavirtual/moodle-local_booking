@@ -171,6 +171,28 @@ class observers {
             } else {
                 throw new exception(get_string('errorgradeitemnotfound', 'local_booking'));
             }
+
+            // Since you can't directly redirect from the observer (it runs in the background)
+            Global $SESSION;
+
+            // set the from page to 'mod-assign-view'
+            $SESSION->frompage = 'mod-assign-view';
+
+            // redirect to the checklist grading page for the student if the course has checklists otherwise redirect to the booking view page for the student
+            $haschecklists = subscriber::has_checklists($courseid);
+            if ($haschecklists) {
+                $redirecturl = new \moodle_url('/local/booking/checklist_grading.php', [
+                    'courseid' => $courseid,
+                    'studentid' => $studentid,
+                    'bookingid' => $booking->get_id(),
+                ]);
+            } else {
+                $redirecturl = new \moodle_url('/local/booking/view.php', [
+                    'courseid' => $courseid,
+                ]);
+            }
+            // Set a flag in session to trigger redirect
+            $SESSION->booking_redirect = $redirecturl->out(false);
         }
     }
 }

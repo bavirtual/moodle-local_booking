@@ -1,10 +1,11 @@
 # Change log
 
-## [2026030701] - RELEASED 2026-03-07
+## [2026032000] - RELEASED 2026-03-20
 
 ### Added
 
-- pilot stats interim page after booking a student session
+- checklist items sign-off page after grading
+- profile page modifications to show checklists where applicable
 
 ## [2026030701] - RELEASED 2026-03-07
 

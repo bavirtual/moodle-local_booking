@@ -32,6 +32,7 @@ use local_booking\local\session\data_access\grading_vault;
 use local_booking\local\session\entities\booking;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
+use stdClass;
 
 require_once($CFG->dirroot . '/user/profile/lib.php');
 require_once($CFG->dirroot . "/lib/enrollib.php");
@@ -72,6 +73,11 @@ class participant implements participant_interface {
      * @var string $name The participant user first and last name.
      */
     protected $name;
+
+    /**
+     * @var stdClass $rawdata The participant raw data object containing all properties.
+     */
+    protected $rawdata;
 
     /**
      * @var array $roles The participant assigned roles.
@@ -210,6 +216,18 @@ class participant implements participant_interface {
     }
 
     /**
+     * Get participant's raw data object containing all properties.
+     *
+     * @return stdClass The participant's raw data object containing all properties.
+     */
+    public function get_user() {
+        if (!isset($this->user)) {
+            $this->user = \core_user::get_user($this->userid);
+        }
+        return $this->user;
+    }
+
+    /**
      * Get participant's subscribed course.
      *
      * @return subscriber $course
@@ -291,6 +309,16 @@ class participant implements participant_interface {
         }
 
         return $alternate ? $this->fullname : $name;
+    }
+
+    /**
+     * Get participant picture.
+     *
+     * @return string $picture The participant user picture url.;
+     */
+    public function get_picture()
+    {
+        return $this->course->get_user_picture($this->userid);
     }
 
     /**

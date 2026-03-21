@@ -14,28 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_booking\output\views;
+
+use local_booking\exporters\checklist_grading_exporter;
+
 /**
- * Hook callbacks for local_booking
+ * Class to output checklist view.
  *
  * @package    local_booking
- * @copyright  2024 Mustafa Hajjar <mustafa.hajjar>
+ * @author     Mustafa Hajjar (mustafa.hajjar)
+ * @copyright  BAVirtual.co.uk © 2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class checklist_view extends base_view {
 
-defined('MOODLE_INTERNAL') || die();
+    /**
+     * checklist view constructor.
+     *
+     * @param array    $data      The data required for output
+     * @param array    $related   The related objects to pass
+     */
+    public function __construct(array $data, array $related) {
+        parent::__construct($data, $related, 'local_booking/checklist_grading');
 
-$callbacks = [
-    [
-        'hook' => core_enrol\hook\after_user_enrolled::class,
-        'callback' => 'local_booking\user_enrolment_callbacks::user_enrolment_created',
-    ],
-    [
-        'hook' => core_enrol\hook\before_user_enrolment_removed::class,
-        'callback' => 'local_booking\user_enrolment_callbacks::user_enrolment_deleted',
-    ],
-    [
-        'hook' => \core\hook\output\before_standard_top_of_body_html_generation::class,
-        'callback' => [\local_booking\assign_grading_callbacks::class, 'before_standard_top_of_body_html'],
-        'priority' => 500, // Adjust priority as needed (lower = earlier)
-    ],
-];
+        // export the checklist
+        $checklistexporter = new checklist_grading_exporter($data, $related);
+        $this->exporteddata = $checklistexporter->export($this->renderer);
+    }
+}

@@ -29,6 +29,7 @@ use local_booking\local\logbook\form\create as create_logentry_form;
 use local_booking\local\logbook\form\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
+use local_booking\output\redirect_handler;
 
 // LOCAL_BOOKING_USERPERFPREFIX - constant value for plugin user preferences prefix
 define('LOCAL_BOOKING_USERPERFPREFIX', 'local_booking-course-');

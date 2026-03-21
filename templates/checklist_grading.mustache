@@ -1,0 +1,99 @@
+{{!
+    @template local_booking/checklist_grading
+
+    Checklist grading interface for teachers
+}}
+
+<div class="checklist-grading-container">
+
+  {{#showstudentselector}}
+  <div class="card student-selector">
+    <h3>{{#str}}selectstudent, local_booking{{/str}}</h3>
+    <div class="student-grid">
+      {{#students}}
+      <a href="{{config.wwwroot}}/local/booking/checklist_grading.php?courseid={{courseid}}&studentid={{id}}&bookingid={{bookingid}}"
+         class="student-card">
+        <div class="student-avatar">{{{picture}}}</div>
+        <div class="student-name">{{fullname}}</div>
+      </a>
+      {{/students}}
+    </div>
+  </div>
+  {{/showstudentselector}}
+
+  {{#hasstudent}}
+  <div class="checklists-container">
+    {{#checklists}}
+    <div class="card checklist-card" data-checklistid="{{id}}">
+      <div class="checklist-header">
+        <div>
+          <h3>
+            <a href="{{viewurl}}" target="_blank">{{name}}</a>
+          </h3>
+          {{#intro}}
+          <div class="checklist-intro">{{{intro}}}</div>
+          {{/intro}}
+        </div>
+        <div class="checklist-progress">
+          <div class="progress-info">
+            <span class="progress-text">{{checkedcount}} / {{itemcount}}</span>
+            <span class="progress-percent">{{progress}}%</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar bg-success" role="progressbar"
+                 style="width: {{progress}}%"
+                 aria-valuenow="{{progress}}"
+                 aria-valuemin="0"
+                 aria-valuemax="100"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="checklist-items">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 50%;">{{#str}}item, local_booking{{/str}}</th>
+              <th style="width: 200px;" class="text-center">{{#str}}teachermark, local_booking{{/str}}</th>
+              <th>{{#str}}date{{/str}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#items}}
+            {{#isheading}}
+            <tr class="checklist-heading">
+              <td colspan="4">
+                <strong style="padding-left: {{indent}}0px;">{{{displaytext}}}</strong>
+              </td>
+            </tr>
+            {{/isheading}}
+            {{^isheading}}
+            <tr class="checklist-item" data-itemid="{{id}}">
+              <td>
+                <div style="padding-left: {{indent}}0px;">
+                  {{{displaytext}}}
+                  {{#optional}}
+                  <span class="badge badge-info">{{#str}}optional, local_booking{{/str}}</span>
+                  {{/optional}}
+                </div>
+              </td>
+              <td class="text-center">
+                <div id="callout" class="callout"></div>
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" data-itemid="{{id}}" class="toggle-input" id="item-{{id}}" {{#teacherchecked}}checked{{/teacherchecked}} {{^isinstructor}}disabled{{/isinstructor}}>
+                  <label id="teacher-checked-label" class="toggle-label" for="item-{{id}}"></label>
+                </div>
+              </td>
+              <td>{{teachertimestamp}}</td>
+            </tr>
+            {{/isheading}}
+            {{/items}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {{/checklists}}
+  </div>
+  {{/hasstudent}}
+
+</div>

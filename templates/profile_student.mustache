@@ -42,11 +42,10 @@
             <section class="node_category card d-inline-block w-100 mb-3">
                 <div class="card-body">
                     <h3 class="lead">{{#str}} profile {{/str}}</h3>
-                    <dl><dt>{{#str}} name {{/str}}</dt><dd>{{fullname}}</dd></dl>
-                    <dl><dt>{{#str}} timezone {{/str}}</dt><dd>{{timezone}}</dd></dl>
                     <dl><dt>{{#str}} fleet , local_booking {{/str}}</dt><dd>{{fleet}}</dd></dl>
                     <dl><dt>{{#str}} sim1 , local_booking {{/str}}</dt><dd>{{sim1}}</dd></dl>
                     <dl><dt>{{#str}} sim2 , local_booking {{/str}}</dt><dd>{{sim2}}</dd></dl>
+                    <dl><dt>{{#str}} timezone {{/str}}</dt><dd>{{timezone}}</dd></dl>
                     <span><a href="{{moodleprofileurl}}">{{#str}} moodleprofile , local_booking {{/str}}</a></span>
                 </div>
             </section>
@@ -71,6 +70,42 @@
                     <dl><dt>{{#str}} noshows , local_booking {{/str}}</dt><dd>{{{noshows}}}</dd></dl>
                 </div>
             </section>
+            {{! COURSE CHECKLISTS SECTION }}
+            {{#haschecklists}}
+            <section class="node_category card d-inline-block w-100 mb-3">
+                <div class="card-body">
+                    <h3 class="lead">{{#str}} coursechecklists, local_booking {{/str}}</h3>
+                    <dl>
+                        {{#checklists}}
+                        <dt>{{name}}</dt>
+                        <dd>
+                        <div class="checklist-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">{{checkedcount}} / {{itemcount}}</span>
+                            <span class="progress-percent">({{progress}}%)</span>
+                            <span class="progress">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                    style="width: {{progress}}%"
+                                    aria-valuenow="{{progress}}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100">
+                                </div>
+                            </span>
+                        </div>
+                        <dd>
+                        {{/checklists}}
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>
+                            <dd>
+                                <span class="mb-3"><a href="{{checklistprogressurl}}">{{#str}} viewprogress , local_booking {{/str}}</a></span>
+                            </dd>
+                        </dt>
+                    </dl>
+                </div>
+            </section>
+            {{/haschecklists}}
             {{! COURSE COMPLETION SECTION }}
             <section class="node_category card d-inline-block w-100 mb-3">
                 <div class="card-body">

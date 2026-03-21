@@ -231,7 +231,6 @@ class dashboard_student_exporter extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
-        global $CFG;
 
         $sessions = $this->get_sessions($output, $this->course, $this->student, $this->related);
         $return = ['sessions'=>$sessions];

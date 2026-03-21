@@ -51,7 +51,7 @@ class action implements action_interface {
     protected $enabled = true;
 
     /**
-     * @var url $url The name of this action.
+     * @var moodle_url $url The name of this action.
      */
     protected $url;
 

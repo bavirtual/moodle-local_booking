@@ -79,6 +79,7 @@ class profile_student_exporter extends exporter {
         $data['url'] = $url->out(false);
         $data['contextid'] = $related['context']->id;
         $data['courseid'] = $this->courseid;
+        $data['haschecklists'] = $this->subscriber->has_checklists($this->courseid);
         $this->student = $this->subscriber->get_student($data['userid']);
 
         parent::__construct($data, $related);
@@ -110,6 +111,10 @@ class profile_student_exporter extends exporter {
             ],
             'userid' => [
                 'type' => PARAM_INT,
+            ],
+            'haschecklists' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
             ],
         ];
     }
@@ -210,6 +215,19 @@ class profile_student_exporter extends exporter {
             ],
             'recommendationletterlink' => [
                 'type' => PARAM_URL,
+            ],
+            'checklistprogressurl' => [
+                'type' => PARAM_URL,
+            ],
+            'checklists' => [
+                'type' => [
+                    'name' => ['type' => PARAM_TEXT],
+                    'itemcount' => ['type' => PARAM_INT],
+                    'checkedcount' => ['type' => PARAM_INT],
+                    'progress' => ['type' => PARAM_INT],
+                ],
+                'multiple' => true,
+                'optional' => true,
             ],
             'suspended' => [
                 'type'  => PARAM_BOOL,
@@ -410,6 +428,12 @@ class profile_student_exporter extends exporter {
             'report' => 'recommendation',
         ]);
 
+        // student course checklist progress url
+        $checklistprogressurl = new moodle_url('/local/booking/checklist_grading.php', [
+            'courseid' => $this->courseid,
+            'studentid' => $studentid,
+        ]);
+
         // student outline report
         $outlinereporturl = new moodle_url('/report/outline/user.php', [
             'id' => $studentid,
@@ -463,7 +487,37 @@ class profile_student_exporter extends exporter {
             'filter'        => 'active'
         ];
 
-        $return = [
+        $return = [];
+        // Checklist progress data
+        if ($this->data['haschecklists']) {
+            $checklists = $this->subscriber->get_checklists(true, false, $studentid);
+            foreach ($checklists as $checklist) {
+                $checkedcount = 0;
+                $itemcount = 0;
+                $items = $checklist->items;
+
+                // Calculate progress based on non-hidden items
+                foreach ($items as $item) {
+                    if (!$item->hidden) {
+                        $itemcount++;
+                        if ($item->teachercheck == CHECKLIST_TEACHERMARK_YES) {
+                            $checkedcount++;
+                        }
+                    }
+                }
+                $progress = $itemcount > 0 ? round(($checkedcount / $itemcount) * 100) : 0;
+
+
+                $return['checklists'][] = [
+                    'name' => format_string($checklist->name),
+                    'itemcount' => $itemcount,
+                    'checkedcount' => $checkedcount,
+                    'progress' => $progress,
+                ];
+            }
+        }
+
+        $return += [
             'fullname'                 => $this->student->get_name(),
             'timezone'                 => $moodleuser->timezone == '99' ? $CFG->timezone : $moodleuser->timezone,
             'fleet'                    => $this->student->get_fleet() ?: get_string('none'),
@@ -489,6 +543,7 @@ class profile_student_exporter extends exporter {
             'endorsementlocked'        => !empty($endorsed) && $endorserid != $USER->id,
             'endorsementmsg'           => $endorsementmsg,
             'recommendationletterlink' => $recommendationletterlink->out(false),
+            'checklistprogressurl'     => $checklistprogressurl->out(false),
             'suspended'                => !$this->student->is_active(),
             'onholdrestrictionenabled' => $this->subscriber->get_on_hold_days_restriction() != 0,
             'onhold'                   => $this->student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP),

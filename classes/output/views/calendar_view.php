@@ -47,7 +47,7 @@ class calendar_view extends base_view {
     }
 
     /**
-     * Get instructor participation export
+     * Get calendar export
      *
      * @return  \stdClass
      */

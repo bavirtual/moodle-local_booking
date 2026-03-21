@@ -326,6 +326,8 @@ $string['commentsaved'] = '- Comment saved';
 $string['commentnotsaved'] = '- Unable to save comment';
 $string['conductedsessions'] = 'Sessions Conducted';
 $string['courseactivity'] = 'Course activity';
+$string['coursechecklists'] = 'Course checklists';
+$string['courseprofile'] = 'Course profile';
 $string['dangerarea'] = 'Danger Area';
 $string['daysback'] = 'days back';
 $string['graduated'] = 'Graduated';
@@ -385,8 +387,22 @@ $string['totalexamsessions']='Total exam sessions';
 $string['totalsessionhours']='Total training hours';
 $string['totalsessionsbooked']='Total booked sessions';
 $string['totalsessionsgraded']='Total graded sessions';
+$string['viewprogress']='View progress';
 $string['xcoursebookings']='Show bookings from all courses in the \'My active bookings\' section';
 $string['xcoursebookings_help']='Show bookings from all course';
+
+// checklist grading
+$string['checklist'] = 'Checklist';
+$string['checklistitem'] = 'Checklist item';
+$string['checklistitems'] = 'Checklist items';
+$string['checklistgrading'] = 'Checklist Grading';
+$string['checklistgradingreport'] = 'Checklist grading report';
+$string['item'] = 'Item';
+$string['gradesaved'] = 'Grade Saved Successfully!';
+$string['optional'] = 'Optional';
+$string['redirectingtostudentreport'] = 'Redirecting to checklists sign-off...';
+$string['studentchecked'] = 'Student Checked';
+$string['teachermark'] = 'Sign-off';
 
 // reports
 $string['ac'] = 'A/C';

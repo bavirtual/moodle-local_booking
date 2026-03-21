@@ -19,11 +19,11 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2026030701;
+$plugin->version = 2026032000;
 
 // Required Moodle version.
 $plugin->requires  = 2022041912; // Requires this Moodle version - at least 4.0 (action bar & new message system).

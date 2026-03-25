@@ -57,6 +57,52 @@
     {{#calendarview}}
         {{>local_booking/availability_week_nav}}
     {{/calendarview}}
+    {{#profileview}}
+        <div class="navitem order-1">
+            {{{userpicture}}}
+            <div>
+                <h2>{{userfullname}}</h2>
+                <p class="text-muted">{{#str}}courseprofile, local_booking{{/str}}</p>
+            </div>
+        </div>
+        <div class="navitem-divider d-none d-sm-flex order-1"></div>
+        <div class="d-flex row ms-0 ms-sm-auto order-6 px-0">
+            <div class="text-end">
+                <div class="singlebutton">
+                    <button onclick="history.back()" class="btn btn-primary">{{#str}} back {{/str}}</button>
+                </div>
+            </div>
+        </div>
+    {{/profileview}}
+    {{#checklistview}}
+        <div class="navitem order-1">
+            {{{studentpicture}}}
+            <div>
+                <h2>{{studentname}}</h2>
+                <p class="text-muted">{{#str}}checklistitems, local_booking{{/str}}</p>
+            </div>
+        </div>
+        <div class="navitem-divider d-none d-sm-flex order-1"></div>
+        <div class="d-flex row ms-0 ms-sm-auto order-6 px-0">
+            <div class="text-end">
+                <div class="singlebutton">
+                    <button onclick="history.back()" class="btn btn-{{#grading}}secondary{{/grading}}{{^grading}}primary{{/grading}}">{{#str}} back {{/str}}</button>
+                </div>
+                {{#grading}}
+                <div class="singlebutton">
+                    <form method="get" action="{{assignurl}}">
+                        <input type="hidden" name="courseid" value="{{courseid}}">
+                        <input type="hidden" name="userid" value="{{studentid}}">
+                        <input type="hidden" name="exeid" value="{{exeid}}">
+                        <input type="hidden" name="passed" value="{{passed}}">
+                        <button type="submit" class="btn btn-primary" title={{#str}} bookings, local_booking {{/str}}>{{#str}} continue {{/str}}</button>
+                    </form>
+                </div>
+                {{/grading}}
+            </div>
+        </div>
+        </div>
+    {{/checklistview}}
     {{#renderedcontent}}
         <div class="navitem order-5">
             {{{navitem}}}

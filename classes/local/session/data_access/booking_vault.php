@@ -166,7 +166,7 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
-     * Get booking based on passed object.
+     * Get the active booking based on passed object
      *
      * @param booking $booking
      * @return \stdClass

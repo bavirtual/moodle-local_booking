@@ -49,6 +49,7 @@ use local_booking\local\participant\entities\student;
 use local_booking\local\session\entities\booking;
 use core\event\course_module_completion_updated;
 use core\event\course_updated;
+use core\event\user_graded;
 use core\session\exception;
 use mod_assign\event\submission_graded;
 use mod_lesson\event\lesson_ended;

@@ -1,10 +1,11 @@
 # Change log
 
-## [2026031600] - RELEASED 2026-03-16
+## [2026032500] - RELEASED 2026-03-25
 
-### Fixed
+### Added
 
-- exception on null when student has no completed lessons
+- checklist items sign-off page after grading for courses with checklists
+- student profile page checklist progress for courses with checklists
 
 ## [2026030701] - RELEASED 2026-03-07
 

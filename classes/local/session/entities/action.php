@@ -51,7 +51,7 @@ class action implements action_interface {
     protected $enabled = true;
 
     /**
-     * @var url $url The name of this action.
+     * @var moodle_url $url The name of this action.
      */
     protected $url;
 
@@ -134,17 +134,32 @@ class action implements action_interface {
 
             case 'grade':
 
-                // get exercise to be graded
+                // get exercise to be graded and whether the student passed
                 if ($grade = $student->get_current_grade()) {
                     $exerciseid = $grade->is_passed() ? $exerciseid : $student->get_current_exercise()->id;
                 } else {
                     $exerciseid = $student->get_current_exercise()->id;
                 }
-
-                // set grading url
-                $actionurl = '/local/booking/assign.php';
                 $params = ['exeid' => $exerciseid];
-                if (!empty($grade) && !$grade->is_passed()) $params['passed'] = 0;
+                // get Moodle assignment grading urls
+                if (!empty($grade) && !$grade->is_passed()) {
+                    $params['passed'] = 0;
+                }
+
+                if ($course->has_checklists($course->get_id())) {
+                    // if the course has a checklist, the grading action will take the instructor to the checklist grading page
+                    $actionurl = '/local/booking/checklist_grading.php';
+
+                    // Get checklist grading url and params
+                    $actionurl = '/local/booking/checklist_grading.php';
+                    $booking = new booking(0, $course->get_id(), $student->get_id(), $exerciseid);
+                    $booking->load();
+                    $params['bookingid'] = $booking->get_id();
+                } else {
+                    // if not, the grading action will take the instructor to the Moodle assignment grading page
+                    $actionurl = '/local/booking/assign.php';
+                }
+
                 $name = get_string('grade', 'local_booking');
                 $tooltip = get_string('actiongradesession', 'local_booking');
 

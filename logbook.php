@@ -125,6 +125,7 @@ $data    = [
     'stdformaturl'  => $PAGE->url . '&format=std',
     'shortdate'     => $format == 'easa'
 ];
+
 // get logbook view
 $logbookview = new logbook_view($data + $totals, ['subscriber'=>$subscriber, 'context'=>$context]);
 $actionbar = new action_bar($PAGE, 'logbook', ['course'=>$subscriber]);

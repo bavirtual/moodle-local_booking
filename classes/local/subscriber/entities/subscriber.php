@@ -756,7 +756,7 @@ class subscriber implements subscriber_interface {
             }
 
             foreach ($checklists as $checklist) {
-                $chklist = new checklist();
+                $chklist = new checklist($this->courseid, $studentid);
                 $chklist->populate($checklist);
                 $this->checklists[$checklist->id] = $chklist;
             }

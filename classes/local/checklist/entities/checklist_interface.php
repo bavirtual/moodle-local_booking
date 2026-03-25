@@ -76,5 +76,5 @@ interface checklist_interface {
      * @param int $state The new state of the checklist item
      * @return bool True if the update was successful, false otherwise
      */
-    public static function update_checklist_item($itemid, $studentid, $teacherid, $state);
+    public function update_checklist_item(int $itemid, int $studentid, int $teacherid, int $state, int $bookingid = 0);
 }

@@ -29,7 +29,6 @@ use local_booking\local\logbook\form\create as create_logentry_form;
 use local_booking\local\logbook\form\create as update_logentry_form;
 use local_booking\local\logbook\entities\logbook;
 use local_booking\local\subscriber\entities\subscriber;
-use local_booking\output\redirect_handler;
 
 // LOCAL_BOOKING_USERPERFPREFIX - constant value for plugin user preferences prefix
 define('LOCAL_BOOKING_USERPERFPREFIX', 'local_booking-course-');
@@ -50,7 +49,8 @@ define('LOCAL_BOOKING_PROGFLAGS', [
     'ENDORSE'=>'endorsement',
     'ENDORSED'=>'endorsement.endorsed',
     'ENDORSER'=>'endorsement.endorseid',
-    'ENDORSEDATE'=>'endorsement.endorsedate'
+    'ENDORSEDATE'=>'endorsement.endorsedate',
+    'SESSIONS'=>'sessions'
 ]);
 
 // LOCAL_BOOKING_DASHBOARDPAGESIZE - constant value for the instructor dashboard page size
@@ -155,7 +155,29 @@ define('LOCAL_BOOKING_SLOTCOLORS', [
  * @param global_navigation $navigation The global navigation node to extend
  */
 function local_booking_extend_navigation_course(navigation_node $navigation) {
-    global $COURSE, $USER;
+    global $COURSE, $USER, $SESSION, $PAGE;
+
+    // Only proceed if we have a redirect set
+    if (!empty($SESSION->checklist_grading_redirect)) {
+
+        // Check page type
+        $pagetype = !empty($SESSION->frompage) ? $SESSION->frompage : $PAGE->pagetype;
+
+        if ($pagetype == 'mod-assign-view') {
+            // Get the redirect URL
+            $redirecturl = $SESSION->checklist_grading_redirect;
+
+            // Clear session variables
+            unset($SESSION->checklist_grading_redirect);
+            unset($SESSION->frompage);
+
+            // Force the PARENT window to redirect, solving the AJAX '#' issue
+            echo "<script type='text/javascript'>
+                window.top.location.href = '$redirecturl';
+            </script>";
+            exit;
+        }
+    }
 
     if (subscriber::is_subscribed($COURSE->id)) {
 

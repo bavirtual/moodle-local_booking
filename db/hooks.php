@@ -33,9 +33,4 @@ $callbacks = [
         'hook' => core_enrol\hook\before_user_enrolment_removed::class,
         'callback' => 'local_booking\user_enrolment_callbacks::user_enrolment_deleted',
     ],
-    [
-        'hook' => \core\hook\output\before_standard_top_of_body_html_generation::class,
-        'callback' => [\local_booking\assign_grading_callbacks::class, 'before_standard_top_of_body_html'],
-        'priority' => 500, // Adjust priority as needed (lower = earlier)
-    ],
 ];

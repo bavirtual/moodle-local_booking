@@ -1,11 +1,11 @@
 # Change log
 
-## [2026032000] - RELEASED 2026-03-20
+## [2026032500] - RELEASED 2026-03-25
 
 ### Added
 
-- checklist items sign-off page after grading
-- profile page modifications to show checklists where applicable
+- checklist items sign-off page after grading for courses with checklists
+- student profile page checklist progress for courses with checklists
 
 ## [2026030701] - RELEASED 2026-03-07
 

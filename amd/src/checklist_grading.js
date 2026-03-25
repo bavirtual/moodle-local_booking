@@ -63,11 +63,13 @@ define([
             var self = this;
             var toggle = $(e.currentTarget);
             var courseid = new URLSearchParams(window.location.search).get('courseid');
-            var studentid = new URLSearchParams(window.location.search).get('studentid');
+            var studentid = new URLSearchParams(window.location.search).get('userid');
+            var bookingid = new URLSearchParams(window.location.search).get('bookingid');
 
-            return Repository.saveChecklistItem(courseid, studentid, itemid, state)
+            return Repository.saveChecklistItem(courseid, studentid, bookingid, itemid, state)
             .then(function(response) {
                 if (response.success) {
+                    $('#teacher-timestamp-' + itemid).text(response.timestamp);
                     self.showCallout(toggle, response.message);
                 }
                 return;

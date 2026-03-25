@@ -166,7 +166,7 @@ class booking_vault implements booking_vault_interface {
     }
 
     /**
-     * Get booking based on passed object.
+     * Get the active booking based on passed object
      *
      * @param booking $booking
      * @return \stdClass
@@ -187,9 +187,9 @@ class booking_vault implements booking_vault_interface {
         if (!empty($booking->get_exercise_id())) {
             $conditions['exerciseid'] = $booking->get_exercise_id();
         }
-        // if (!empty($booking->active())) {
-        //     $conditions['active'] = '1';
-        // }
+        if (!empty($booking->active())) {
+            $conditions['active'] = '1';
+        }
 
         return $DB->get_record(static::DB_BOOKINGS, $conditions);
     }

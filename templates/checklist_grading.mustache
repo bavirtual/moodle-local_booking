@@ -80,11 +80,11 @@
               <td class="text-center">
                 <div id="callout" class="callout"></div>
                 <div class="custom-control custom-switch">
-                  <input type="checkbox" data-itemid="{{id}}" class="toggle-input" id="item-{{id}}" {{#teacherchecked}}checked{{/teacherchecked}} {{^isinstructor}}disabled{{/isinstructor}}>
+                  <input type="checkbox" data-itemid="{{id}}" data-bookingid={{bookingid}} class="toggle-input" id="item-{{id}}" {{#teacherchecked}}checked{{/teacherchecked}} {{^grading}}disabled{{/grading}}>
                   <label id="teacher-checked-label" class="toggle-label" for="item-{{id}}"></label>
                 </div>
               </td>
-              <td>{{teachertimestamp}}</td>
+              <td id="teacher-timestamp-{{id}}">{{teachertimestamp}}</td>
             </tr>
             {{/isheading}}
             {{/items}}

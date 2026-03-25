@@ -86,14 +86,19 @@
         <div class="d-flex row ms-0 ms-sm-auto order-6 px-0">
             <div class="text-end">
                 <div class="singlebutton">
-                    <button onclick="history.back()" class="btn btn-secondary">{{#str}} back {{/str}}</button>
+                    <button onclick="history.back()" class="btn btn-{{#grading}}secondary{{/grading}}{{^grading}}primary{{/grading}}">{{#str}} back {{/str}}</button>
                 </div>
+                {{#grading}}
                 <div class="singlebutton">
-                    <form method="get" action="/local/booking/view.php">
-                            <input type="hidden" name="courseid" value="{{courseid}}">
+                    <form method="get" action="{{assignurl}}">
+                        <input type="hidden" name="courseid" value="{{courseid}}">
+                        <input type="hidden" name="userid" value="{{studentid}}">
+                        <input type="hidden" name="exeid" value="{{exeid}}">
+                        <input type="hidden" name="passed" value="{{passed}}">
                         <button type="submit" class="btn btn-primary" title={{#str}} bookings, local_booking {{/str}}>{{#str}} continue {{/str}}</button>
                     </form>
                 </div>
+                {{/grading}}
             </div>
         </div>
         </div>

@@ -32,8 +32,10 @@ use local_booking\output\views\checklist_view;
 
 // Get parameters
 $courseid = required_param('courseid', PARAM_INT);
-$studentid = optional_param('studentid', 0, PARAM_INT);
+$studentid = optional_param('userid', 0, PARAM_INT);
 $bookingid = optional_param('bookingid', 0, PARAM_INT);
+$exerciseid   = optional_param('exeid', 0, PARAM_INT);
+$sessionpassed= optional_param('passed', 1, PARAM_INT);
 
 // Security checks
 require_login($courseid);
@@ -66,14 +68,18 @@ $PAGE->requires->js_call_amd('local_booking/checklist_grading', 'init');
 
 // Get checklists with items for the student
 $checklists = $subscriber->get_checklists(true, false, $studentid);
+// $assignurl = new moodle_url(, ['courseid' => $courseid, 'userid' => $studentid, 'exeid' => $exerciseid, 'passed' => $sessionpassed]);
 
 // Create exporter
 $data = [
     'courseid' => $courseid,
     'studentid' => $studentid,
     'bookingid' => $bookingid,
+    'exeid' => $exerciseid,
+    'passed' => $sessionpassed,
+    'grading' => $bookingid !== 0, // Used to conditionally show action bar buttons
+    'assignurl' => '/local/booking/assign.php',//$assignurl->out(false),
     'hasstudent' => !empty($studentid),
-    'isinstructor' => has_capability('mod/checklist:updateother', $context),
     'studentname' => $student->get_name(),
     'studentpicture' => $OUTPUT->user_picture($student->get_user(), [
         'size' => 50,

@@ -42,7 +42,7 @@ class checklist_grading_exporter extends exporter {
             'studentid' => ['type' => PARAM_INT],
             'bookingid' => ['type' => PARAM_INT],
             'hasstudent' => ['type' => PARAM_BOOL],
-            'isinstructor' => ['type' => PARAM_BOOL],
+            'grading' => ['type' => PARAM_BOOL],
         ];
     }
 

@@ -273,8 +273,8 @@ class student extends participant {
     /**
      * Updates the student progress info with a specific value
      *
-     * @param string $stat      The stat field being update
-     * @param string $value     The field value being update
+     * @param string $stat      The stat field being updated
+     * @param string $value     The field value being updated
      * @return bool             The result
      */
     public function update_progress(string $stat = null, $value = null) {
@@ -798,9 +798,10 @@ class student extends participant {
      * Get a specific progress flag
      *
      * @param string $path The flag to retrieve
+     * @param bool $associative whether to return an array or an object
      * @return mixed|null $value
      */
-    public function get_progress_flag(string $path) {
+    public function get_progress_flag(string $path, bool $associative = false) {
 
         // get JSON string
         $flagsjson = $this->get_progress_info("progressflags");
@@ -825,7 +826,7 @@ class student extends participant {
                 $current = $current[$part];
             }
 
-            return is_array($current) ? (object) $current : $current;
+            return is_array($current) && !$associative ? (object) $current : $current;
         }
         return null;
     }

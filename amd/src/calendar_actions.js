@@ -174,8 +174,9 @@ define([
                         clean();
                         // Redirect to the report page instead of view.php
                         window.location.href = M.cfg.wwwroot +
-                            '/local/booking/booking_report.php?bookingid=' + response.bookingid +
-                            '&courseid=' + course + '&studentid=' + studentid;
+                            // '/local/booking/booking_report.php?bookingid=' + response.bookingid +
+                            // '&courseid=' + course + '&studentid=' + studentid;
+                            '/local/booking/view.php?courseid=' + course;
                     }
                     return;
                 })

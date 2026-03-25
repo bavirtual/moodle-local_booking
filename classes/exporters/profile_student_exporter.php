@@ -115,6 +115,7 @@ class profile_student_exporter extends exporter {
             'haschecklists' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
+                'optional' => true,
             ],
         ];
     }
@@ -218,6 +219,7 @@ class profile_student_exporter extends exporter {
             ],
             'checklistprogressurl' => [
                 'type' => PARAM_URL,
+                'optional' => true
             ],
             'checklists' => [
                 'type' => [
@@ -428,12 +430,6 @@ class profile_student_exporter extends exporter {
             'report' => 'recommendation',
         ]);
 
-        // student course checklist progress url
-        $checklistprogressurl = new moodle_url('/local/booking/checklist_grading.php', [
-            'courseid' => $this->courseid,
-            'studentid' => $studentid,
-        ]);
-
         // student outline report
         $outlinereporturl = new moodle_url('/report/outline/user.php', [
             'id' => $studentid,
@@ -488,8 +484,18 @@ class profile_student_exporter extends exporter {
         ];
 
         $return = [];
+
         // Checklist progress data
         if ($this->data['haschecklists']) {
+
+            // student course checklist progress url
+            $checklistprogressurl = new moodle_url('/local/booking/checklist_grading.php', [
+                'courseid' => $this->courseid,
+                'userid' => $studentid,
+            ]);
+            $return['checklistprogressurl'] = $checklistprogressurl->out(false);
+
+            // Get checklists with items for the student
             $checklists = $this->subscriber->get_checklists(true, false, $studentid);
             foreach ($checklists as $checklist) {
                 $checkedcount = 0;
@@ -543,7 +549,6 @@ class profile_student_exporter extends exporter {
             'endorsementlocked'        => !empty($endorsed) && $endorserid != $USER->id,
             'endorsementmsg'           => $endorsementmsg,
             'recommendationletterlink' => $recommendationletterlink->out(false),
-            'checklistprogressurl'     => $checklistprogressurl->out(false),
             'suspended'                => !$this->student->is_active(),
             'onholdrestrictionenabled' => $this->subscriber->get_on_hold_days_restriction() != 0,
             'onhold'                   => $this->student->is_member_of(LOCAL_BOOKING_ONHOLDGROUP),

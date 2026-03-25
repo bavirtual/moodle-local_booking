@@ -41,17 +41,19 @@ class update_checklist_item extends external_api {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
             'studentid' => new external_value(PARAM_INT, 'Student user ID'),
+            'bookingid' => new external_value(PARAM_INT, 'Booking ID'),
             'itemid' => new external_value(PARAM_INT, 'Checklist item ID'),
             'state' => new external_value(PARAM_INT, 'Check state (0=undecided, 1=no, 2=yes)'),
         ]);
     }
 
-    public static function execute($courseid, $studentid, $itemid, $state) {
+    public static function execute($courseid, $studentid, $bookingid, $itemid, $state) {
         global $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'studentid' => $studentid,
+            'bookingid' => $bookingid,
             'itemid' => $itemid,
             'state' => $state,
         ]);
@@ -62,15 +64,18 @@ class update_checklist_item extends external_api {
 
         require_once(__DIR__ . '/../../lib.php');
 
-        $success = checklist::update_checklist_item(
+        $checklist = new checklist($courseid, $studentid);
+        $success = $checklist->update_checklist_item(
             $params['itemid'],
             $params['studentid'],
             $USER->id,
-            $params['state']
+            $params['state'],
+            $params['bookingid']
         );
 
         return [
             'success' => $success,
+            'timestamp' => date('d M Y, H:i'),
             'message' => $success ? 'Updated successfully' : 'Update failed',
         ];
     }
@@ -78,6 +83,7 @@ class update_checklist_item extends external_api {
     public static function execute_returns() {
         return new external_single_structure([
             'success' => new external_value(PARAM_BOOL, 'Success status'),
+            'timestamp' => new external_value(PARAM_TEXT, 'Timestamp of the update'),
             'message' => new external_value(PARAM_TEXT, 'Response message'),
         ]);
     }

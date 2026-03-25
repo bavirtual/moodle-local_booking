@@ -394,7 +394,7 @@ $string['xcoursebookings_help']='Show bookings from all course';
 // checklist grading
 $string['checklist'] = 'Checklist';
 $string['checklistitem'] = 'Checklist item';
-$string['checklistitems'] = 'Checklist items';
+$string['checklistitems'] = 'Checklist items grading';
 $string['checklistgrading'] = 'Checklist Grading';
 $string['checklistgradingreport'] = 'Checklist grading report';
 $string['item'] = 'Item';

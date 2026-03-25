@@ -1,0 +1,265 @@
+{{!
+    @template local_booking/dashboard_booking_student_stats
+
+    Student booking report dashboard template.
+
+    Context variables required for this template:
+    * student - object with student details
+    * booking - object with booking details
+    * sessions - array of session objects
+    * kpis - object with key performance indicators
+    * competencies - array of competency objects
+    * signoffs - object with discussion items and route training
+}}
+
+<div class="page">
+  {{! TOP BAR }}
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>{{ato}} — {{coursename}}</h1>
+        <div class="subtitle">{{#str}} student_report_summary, local_booking{{/str}}</div>
+      </div>
+    </div>
+
+    <div class="topmeta">
+      <div class="meta">{{#str}} lastupdated, local_booking {{/str}}: <b>{{lastupdated}}</b></div>
+      <button class="btn primary" type="button" onclick="window.print()">{{#str}} printpdf, local_booking {{/str}}</button>
+    </div>
+  </header>
+
+  {{! TITLE BAND }}
+  <section class="titleband" aria-label="Page title">
+    <h2>{{coursename}} — {{#str}} student_summary, local_booking{{/str}}</h2>
+    <span style="opacity:.95;font-size:12px;">{{#str}} instructor_pre_brief_view, local_booking{{/str}}</span>
+  </section>
+
+  {{! IDENTITY }}
+  <section class="identity" aria-label="Student identity">
+    <div class="identitygrid">
+      <div>
+        <h3 class="studentname">{{student.fullname}}</h3>
+        <div class="kv" aria-label="Student key details">
+          <div>{{#str}} vatsimid, local_booking {{/str}}</div><div><b>{{student.vatsimcid}}</b></div>
+          <div>{{#str}} stage, local_booking {{/str}}</div><div><b>{{student.stage}}</b> — {{#str}} sectors, local_booking {{/str}} <b>{{student.sectors}}</b></div>
+          <div>{{#str}} primaryinstructor, local_booking {{/str}}</div><div><b>{{student.instructorname}}</b> ({{student.instructorcallsign}})</div>
+          <div>{{#str}} status {{/str}}</div><div><b>{{student.status}}</b></div>
+        </div>
+      </div>
+
+      <div class="chips" aria-label="Status flags">
+        {{#student.uptodate}}
+        <span class="chip ok">{{#str}} uptodate, local_booking {{/str}}</span>
+        {{/student.uptodate}}
+        {{#student.haspending}}
+        <span class="chip warn">{{#str}} routeitemspending, local_booking {{/str}}</span>
+        {{/student.haspending}}
+        <span class="chip">{{#str}} lastsessiondate, local_booking {{/str}}: {{student.lastsessiondate}}</span>
+      </div>
+    </div>
+  </section>
+
+  {{! KPIs }}
+  <section class="kpis" aria-label="Quick stats">
+    <div class="kpi"><p class="num">{{kpis.sessions}}</p><p class="lbl">{{#str}} sessions, local_booking {{/str}}</p></div>
+    <div class="kpi"><p class="num">{{kpis.sectors}}</p><p class="lbl">{{#str}} sectors, local_booking {{/str}}</p></div>
+    <div class="kpi"><p class="num">{{kpis.totalflight}}</p><p class="lbl">{{#str}} logbooktotaltimestd, local_booking {{/str}}</p></div>
+    <div class="kpi"><p class="num">PF {{kpis.pftime}}</p><p class="lbl">{{#str}} pftime, local_booking {{/str}}</p></div>
+    <div class="kpi"><p class="num">PM {{kpis.pmtime}}</p><p class="lbl">{{#str}} pmtime, local_booking {{/str}}</p></div>
+    <div class="kpi"><p class="num">S {{kpis.studentlandings}} / I {{kpis.instructorlandings}}</p><p class="lbl">{{#str}} logbooklandings, local_booking {{/str}}</p></div>
+  </section>
+
+  {{! MAIN GRID }}
+  <section class="grid2" aria-label="Performance and sign-offs">
+
+    {{! COMPETENCIES }}
+    <div class="card" aria-label="Competency performance">
+      <h3>{{#str}} competencyperf, local_booking {{/str}} <span style="color:var(--muted);font-weight:600;">({{#str}} avg+trend, local_booking {{/str}})</span></h3>
+      <div class="smallnote">
+        <b>{{#str}} gradingscalelbl, local_booking {{/str}}:</b> {{#str}} gradingscale, local_booking {{/str}}.
+      </div>
+
+      <table aria-label="Competency table">
+        <thead>
+          <tr>
+            <th>{{#str}} skill, local_booking {{/str}}</th>
+            <th class="avgcell">{{#str}} average, local_booking {{/str}}</th>
+            <th class="lastcell">{{#str}} last {{/str}}</th>
+            <th class="trendcell">{{#str}} trend, local_booking {{/str}}</th>
+            <th>{{#str}} notes, local_booking {{/str}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#competencies}}
+          <tr>
+            <td><b>{{name}}</b></td>
+            <td class="avgcell"><span class="badge g{{avggrade}}" title="Average grade">{{avggrade}}</span></td>
+            <td class="lastcell"><span class="badge g{{lastgrade}}" title="Last session grade">{{lastgrade}}</span></td>
+            <td class="trendcell">
+              <span class="trend" title="{{trendtext}}">
+                {{#isimproving}}<span class="up">↗︎</span>{{/isimproving}}
+                {{#isflat}}<span class="flat">→</span>{{/isflat}}
+                {{#isworsening}}<span class="down">↘︎</span>{{/isworsening}}
+              </span>
+            </td>
+            <td>{{notes}}</td>
+          </tr>
+          {{/competencies}}
+        </tbody>
+      </table>
+
+      <div class="legend" aria-label="Grade legend">
+        <span><span class="dot" style="background:var(--g1)"></span>1 {{#str}} excellent, local_booking {{/str}}</span>
+        <span><span class="dot" style="background:var(--g2)"></span>2 {{#str}} good, local_booking {{/str}}</span>
+        <span><span class="dot" style="background:var(--g3)"></span>3 {{#str}} standard, local_booking {{/str}}</span>
+        <span><span class="dot" style="background:var(--g4)"></span>4 {{#str}} belowstandard, local_booking {{/str}}</span>
+        <span><span class="dot" style="background:var(--g5)"></span>5 {{#str}} unsatisfactory, local_booking {{/str}}</span>
+      </div>
+    </div>
+
+    {{! SIGN-OFFS }}
+    <aside class="card" aria-label="Sign-offs">
+      <h3>{{#str}} signoffs, local_booking {{/str}}</h3>
+
+      <div class="panel" aria-label="Discussion items">
+        <div class="panelhead">
+          <b>{{#str}} discussionitems, local_booking {{/str}}</b>
+          <span class="count">{{signoffs.discussionoutstanding}} {{#str}} outstanding, local_booking {{/str}}</span>
+        </div>
+
+        {{#signoffs.discussionitems}}
+        <div class="item">
+          <div>
+            <div class="itemtitle">{{title}}</div>
+            <div class="itemmeta">
+              <b>{{statuslabel}}:</b> {{dateformatted}}<br />
+              {{#str}} comment, local_booking {{/str}}: {{comment}}
+            </div>
+          </div>
+          <span class="pill {{statusclass}}">{{statustext}}</span>
+        </div>
+        {{/signoffs.discussionitems}}
+      </div>
+
+      <div class="panel" aria-label="Route training items">
+        <div class="panelhead">
+          <b>{{#str}} route, local_booking {{/str}}</b>
+          <span class="count">{{signoffs.routeoutstanding}} {{#str}} outstanding, local_booking {{/str}}</span>
+        </div>
+
+        {{#signoffs.routeitems}}
+        <div class="item">
+          <div>
+            <div class="itemtitle">{{title}}</div>
+            <div class="itemmeta">
+              <b>{{statuslabel}}:</b> {{dateformatted}}<br />
+              {{#str}} comment, local_booking {{/str}}: {{comment}}
+            </div>
+          </div>
+          <span class="pill {{statusclass}}">{{statustext}}</span>
+        </div>
+        {{/signoffs.routeitems}}
+      </div>
+    </aside>
+  </section>
+
+  {{! SESSIONS }}
+  <section class="sessions" aria-label="Session timeline">
+    <h3>{{#str}} sessionsnewsttofirst, local_booking {{/str}}</h3>
+
+    {{#sessions}}
+    <details class="session" {{#islatest}}open{{/islatest}}>
+      <summary aria-label="Session {{number}} summary">
+        <div class="sumleft">
+          <div class="sumtitle">
+            <b>{{#str}} session, local_booking {{/str}} {{number}}</b>
+            <span>• {{date}}</span>
+            <span>• {{#str}} instructor, local_booking {{/str}} : <b>{{instructorcallsign}}</b></span>
+            <span>• {{route}}</span>
+          </div>
+          <div class="sumnote">Key notes: "{{keynotes}}"</div>
+        </div>
+        <div class="sumright">
+          <span class="timechip">Total time: <b>{{totaltime}}</b></span>
+          <span class="badge g{{overallgrade}}" title="Overall session grade (1 best, 5 worst)">{{overallgrade}}</span>
+        </div>
+      </summary>
+
+      <div class="sessionbody">
+        <div class="sessionhdr">
+          <div>
+            <h4>{{#str}} sectors, local_booking {{/str}}  {{sectornumbers}}</h4>
+            <div class="meta">{{#str}} instructor, local_booking {{/str}}: {{instructorname}} ({{instructorcallsign}}) • {{#str}} date {{/str}}: {{date}}</div>
+          </div>
+          <div class="meta"><b>{{#str}} overallgrade, local_booking {{/str}}:</b> {{overallgrade}} — {{gradetext}}</div>
+        </div>
+
+        <div class="sectortable" aria-label="Sector log">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:70px;">{{#str}} sector, local_booking {{/str}}</th>
+                <th>{{#str}} depdest, local_booking {{/str}}</th>
+                <th style="width:90px;">{{#str}} ac, local_booking {{/str}}</th>
+                <th style="width:110px;">{{#str}} flighttime, local_booking {{/str}}</th>
+                <th style="width:80px;">{{#str}} role, local_booking {{/str}}</th>
+                <th style="width:180px;">{{#str}} landings, local_booking {{/str}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#sectors}}
+              <tr>
+                <td><b>{{number}}</b></td>
+                <td>{{departure}} → {{destination}}</td>
+                <td>{{aircraft}}</td>
+                <td>{{flighttime}}</td>
+                <td>{{role}}</td>
+                <td>{{#str}} student, local_booking {{/str}}: {{studentlandings}} • {{#str}} instructor, local_booking {{/str}}: {{}}</td>
+              </tr>
+              {{/sectors}}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="totals" aria-label="Session totals">
+          <span><b>{{#str}} flighttime, local_booking {{/str}}:</b> {{totaltime}}</span>
+          <span><b>PF/PM split:</b> PF {{pftime}} • PM {{pmtime}}</span>
+          <span><b>{{#str}} landings, local_booking {{/str}}:</b> {{#str}} student, local_booking {{/str}} {{totalstudentlandings}} • {{#str}} instructor, local_booking {{/str}} {{totalinstructorlandings}}</span>
+        </div>
+
+        {{#hassignoffs}}
+        <div class="twocol" aria-label="Session sign-offs">
+          <div class="panel">
+            <div class="panelhead"><b>{{#str}} discussionitemstouched, local_booking {{/str}}</b><span class="count">{{discussioncount}}</span></div>
+            {{#discussionitems}}
+            <div class="item">
+              <div>
+                <div class="itemtitle">{{title}}</div>
+                <div class="itemmeta">{{status}} • {{#str}} comment, local_booking {{/str}}: {{comment}}</div>
+              </div>
+              <span class="pill {{statusclass}}">{{statustext}}</span>
+            </div>
+            {{/discussionitems}}
+          </div>
+
+          <div class="panel">
+            <div class="panelhead"><b>Route training touched</b><span class="count">{{routecount}}</span></div>
+            {{#routeitems}}
+            <div class="item">
+              <div>
+                <div class="itemtitle">{{title}}</div>
+                <div class="itemmeta">{{status}} • {{#str}} comment, local_booking {{/str}}: {{comment}}</div>
+              </div>
+              <span class="pill {{statusclass}}">{{statustext}}</span>
+            </div>
+            {{/routeitems}}
+          </div>
+        </div>
+        {{/hassignoffs}}
+      </div>
+    </details>
+    {{/sessions}}
+  </section>
+
+</div>

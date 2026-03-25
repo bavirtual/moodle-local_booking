@@ -14,20 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_booking\output\views;
+
+use local_booking\exporters\checklist_grading_exporter;
+
 /**
- * Session Booking Plugin
+ * Class to output checklist view.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
  * @copyright  BAVirtual.co.uk © 2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class checklist_view extends base_view {
 
-$plugin->version = 2026032500;
+    /**
+     * checklist view constructor.
+     *
+     * @param array    $data      The data required for output
+     * @param array    $related   The related objects to pass
+     */
+    public function __construct(array $data, array $related) {
+        parent::__construct($data, $related, 'local_booking/checklist_grading');
 
-// Required Moodle version.
-$plugin->requires  = 2022041912; // Requires this Moodle version - at least 4.0 (action bar & new message system).
-
-$plugin->component = 'local_booking';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.0';
+        // export the checklist
+        $checklistexporter = new checklist_grading_exporter($data, $related);
+        $this->exporteddata = $checklistexporter->export($this->renderer);
+    }
+}

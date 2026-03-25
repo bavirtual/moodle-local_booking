@@ -245,4 +245,11 @@ $functions = array(
         'loginrequired' => true,
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
+    'local_booking_update_checklist_item' => [
+        'classname' => 'local_booking\external\update_checklist_item',
+        'methodname' => 'execute',
+        'description' => 'Update checklist item for student',
+        'type' => 'write',
+        'ajax' => true,
+    ],
 );

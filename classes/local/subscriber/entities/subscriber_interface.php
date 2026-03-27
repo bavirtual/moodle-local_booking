@@ -300,6 +300,22 @@ interface subscriber_interface {
     public function get_student_posting_wait_days_restriction();
 
     /**
+     * Returns the date timestamp on which the student is scheduled to go on-hold based on their activity
+     *
+     * @param student $student
+     * @return int
+     */
+    public function get_student_onhold_date(student $student);
+
+    /**
+     * Returns the date timestamp on which the student is scheduled to be suspended based on their activity
+     *
+     * @param student $student
+     * @return int
+     */
+    public function get_student_suspend_date(student $student);
+
+    /**
      * Checks if the subscribing course require
      * skills evaluation.
      *

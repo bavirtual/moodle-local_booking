@@ -49,12 +49,13 @@
                     <span><a href="{{moodleprofileurl}}">{{#str}} moodleprofile , local_booking {{/str}}</a></span>
                 </div>
             </section>
-            {{! SCORE SECTION }}
+            {{! COURSE STATS SECTION }}
             <section class="node_category card d-inline-block w-100 mb-3">
                 <div class="card-body">
-                    <h3 class="lead">{{#str}} score , local_booking {{/str}}</h3>
+                    <h3 class="lead">{{#str}} coursestats , local_booking {{/str}}</h3>
                     <dl><dt>{{#str}} recency , local_booking {{/str}}</dt><dd>{{recency}} {{#str}} daysback , local_booking {{/str}}</dd></dl>
                     <dl><dt>{{#str}} courseactivity , local_booking {{/str}}</dt><dd>{{courseactivity}} {{#str}} pageviews , local_booking {{/str}}</dd></dl>
+                    <dl><dt>{{#str}} lastlessonmod , local_booking {{/str}}</dt><dd>{{lastlessonmod}}</dd></dl>
                     <dl><dt>{{#str}} slotsactive , local_booking {{/str}}</dt><dd>{{slots}}</dd></dl>
                     <dl><dt>{{#str}} modulescompleted , local_booking {{/str}}</dt><dd>{{modulescompleted}}</dd></dl>
                 </div>
@@ -66,7 +67,9 @@
                     <dl><dt>{{#str}} enroldate , local_booking {{/str}}</dt><dd>{{enroldate}}</dd></dl>
                     <dl><dt>{{#str}} lastlogin {{/str}}</dt><dd>{{lastlogin}}</dd></dl>
                     <dl><dt>{{#str}} lastgraded , local_booking{{/str}}</dt><dd>{{lastgraded}}</dd></dl>
-                    <dl><dt>{{#str}} lastlessonmod , local_booking {{/str}}</dt><dd>{{lastlessonmod}}</dd></dl>
+                    <dl><dt>{{#str}} lastslotdate , local_booking {{/str}}</dt><dd>{{lastslotdate}}</dd></dl>
+                    <dl><dt>{{#str}} onholddate , local_booking {{/str}}</dt><dd>{{onholddate}}</dd></dl>
+                    <dl><dt>{{#str}} suspenddate , local_booking {{/str}}</dt><dd>{{suspenddate}}</dd></dl>
                     <dl><dt>{{#str}} noshows , local_booking {{/str}}</dt><dd>{{{noshows}}}</dd></dl>
                 </div>
             </section>

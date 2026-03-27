@@ -1,5 +1,24 @@
 # Change log
 
+## [2026032700] - RELEASED 2026-03-27
+
+### Fixed
+
+- checklist progress % to update when check items are toggled. click response to include total clicked to display updated progress (update js & server-side service)
+- on-hold period cron task to consider all slot posted not just active ones
+
+### Added
+
+- rename Score to Activity score in the student profile
+- Add last posted, on-hold, and suspend expected dates to student profile
+- Checklist inline uo progress update
+
+## [2026031600] - RELEASED 2026-03-16
+
+### Fixed
+
+- exception on null when student has no completed lessons
+
 ## [2026032500] - RELEASED 2026-03-25
 
 ### Added

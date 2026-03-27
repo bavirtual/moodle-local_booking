@@ -73,9 +73,34 @@ class update_checklist_item extends external_api {
             $params['bookingid']
         );
 
+        // Get checked items count out of the total and progress percentage
+        $items = $checklist->get_items($studentid);
+        $checkedcount = 0;
+        $itemcount = 0;
+        foreach ($items as $item) {
+            // Skip hidden items for students
+            if ($item->hidden) {
+                continue;
+            }
+
+            $isheading = ($item->itemoptional == CHECKLIST_OPTIONAL_HEADING);
+
+            if (!$isheading) {
+                $itemcount++;
+                if ($item->teachercheck == CHECKLIST_TEACHERMARK_YES) {
+                    $checkedcount++;
+                }
+            }
+        }
+
+        $progress = $itemcount > 0 ? round(($checkedcount / $itemcount) * 100) : 0;
+
         return [
             'success' => $success,
             'timestamp' => date('d M Y, H:i'),
+            'checklistid' => $checklist->id,
+            'count' => "$checkedcount / $itemcount",
+            'progress' => "$progress%",
             'message' => $success ? 'Updated successfully' : 'Update failed',
         ];
     }
@@ -84,6 +109,9 @@ class update_checklist_item extends external_api {
         return new external_single_structure([
             'success' => new external_value(PARAM_BOOL, 'Success status'),
             'timestamp' => new external_value(PARAM_TEXT, 'Timestamp of the update'),
+            'checklistid' => new external_value(PARAM_INT, 'Checklist ID'),
+            'count' => new external_value(PARAM_TEXT, 'Checked count out of total items'),
+            'progress' => new external_value(PARAM_TEXT, 'Progress of items check'),
             'message' => new external_value(PARAM_TEXT, 'Response message'),
         ]);
     }

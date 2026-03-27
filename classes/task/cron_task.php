@@ -151,7 +151,7 @@ class cron_task extends \core\task\scheduled_task {
                     $booked = !empty($student->get_active_booking());
 
                     // get last activity date, otherwise use last slot date instead
-                    $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date());
+                    $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date(false));
                     $lastsessiondate = $student->get_last_session_date();
                     $postingoverduedate = empty($lastsessiondate) ? clone $lastactivitydate : clone $lastsessiondate;
                     $onholddate = clone $lastactivitydate;
@@ -197,7 +197,7 @@ class cron_task extends \core\task\scheduled_task {
                     $this->trace(str_repeat(" ", 8) . $studentname);
 
                     // get last activity date, otherwise use last slot date instead
-                    $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date());
+                    $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date(false));
 
                     // get status of already being on-hold, kept active, or student is in active standings
                     $keptactive =  $student->is_kept_active();
@@ -268,7 +268,7 @@ class cron_task extends \core\task\scheduled_task {
                     $studentname = participant::get_fullname($student->get_id());
 
                     // Suspension (unenrolment) date as per the last activity date and days of inactivity to suspension.
-                    $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date());
+                    $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date(false));
                     $suspenddate = clone $lastactivitydate;
 
                     date_add($suspenddate, date_interval_create_from_date_string($suspensiondays . ' days'));

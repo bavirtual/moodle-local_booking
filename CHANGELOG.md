@@ -1,5 +1,11 @@
 # Change log
 
+## [2026032701] - RELEASED 2026-03-27
+
+### Fixed
+
+- increased mdl_local_booking_progress field size to 1000 to accommodate longer JSON strings
+
 ## [2026032700] - RELEASED 2026-03-27
 
 ### Fixed

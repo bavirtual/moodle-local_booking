@@ -19,7 +19,7 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -60,7 +60,7 @@ interface slot_vault_interface {
     /**
      * Saves the passed slot
      *
-     * @param slot_interface $slot
+     * @param slot $slot
      */
     public static function save_slot(slot $slot);
 
@@ -91,11 +91,13 @@ interface slot_vault_interface {
     /**
      * Get the date of the first or last unbooked posted availability slot
      *
+     * @param int $courseid
      * @param int $studentid
      * @param bool $firstslot
+     * @param bool $active
      * @return mixed the requested slot record
      */
-    public static function get_posted_slot(int $studentid, bool $firstslot=true);
+    public static function get_posted_slot(int $courseid, int $studentid, bool $firstslot=true, bool $active=true);
 
     /**
      * Get the date of the last booked availability slot

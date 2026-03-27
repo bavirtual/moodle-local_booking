@@ -106,29 +106,11 @@ class checklist implements checklist_interface {
      * @return array The list of checklist items
      */
     public function get_items($studentid = null) {
-        if (!isset($this->id)) {
-            return [];
-        }
 
         // Check if items are already loaded in the checklist data
         $items = $this->_data['items'];
-        if (!$items) {
-
-            // If not, load items from the vault and student id is not provided to get checked items, get items without progress info
-            if (!$studentid) {
-                $items = checklist_vault::get_checklist_items($this->id);
-            }
-
-            // If student ID is provided, get checked items and mark them
-            if ($studentid) {
-                $checkeditems = checklist_vault::get_checked_items($this->id, $studentid);
-                foreach ($items as $item) {
-                    $item->studentcheck = $checkeditems ? $checkeditems->usertimestamp : 0;
-                    $item->teachercheck = $checkeditems ? $checkeditems->teachermark : CHECKLIST_TEACHERMARK_UNDECIDED;
-                    $item->teachertimestamp = $checkeditems ? $checkeditems->teachertimestamp : 0;
-                    $item->checkid = $checkeditems ? $checkeditems->id : 0;
-                }
-            }
+        if (empty($items)) {
+            $items = checklist_vault::get_checklist_items($this->id, $studentid);
         }
         return $items;
     }
@@ -147,6 +129,7 @@ class checklist implements checklist_interface {
         require_once($CFG->dirroot . '/mod/checklist/lib.php');
 
         $checklist = checklist_vault::update_course_checklist_item($itemid, $studentid, $teacherid, $state);
+        $this->populate((array)$checklist);
         $success = !empty($checklist);
 
         // Update completion if needed

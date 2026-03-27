@@ -923,6 +923,32 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Returns the date timestamp on which the student is scheduled to go on-hold based on their activity
+     *
+     * @param student $student
+     * @return \Datetime
+     */
+    public function get_student_onhold_date(student $student) {
+        $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date(false));
+        $onholddate = clone $lastactivitydate;
+        date_add($onholddate, date_interval_create_from_date_string($this->get_on_hold_days_restriction() . ' days'));
+        return $onholddate;
+    }
+
+    /**
+     * Returns the date timestamp on which the student is scheduled to be suspended based on their activity
+     *
+     * @param student $student
+     * @return \Datetime
+     */
+    public function get_student_suspend_date(student $student) {
+        $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date());
+        $suspenddate = clone $lastactivitydate;
+        date_add($suspenddate, date_interval_create_from_date_string($this->get_suspend_days_restriction() . ' days'));
+        return $suspenddate;
+    }
+
+    /**
      * Check if the subscribing course has checklists
      *
      * @return bool

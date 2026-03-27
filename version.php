@@ -23,11 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2026032500;
+$plugin->version = 2026032700;
 
 // Required Moodle version.
 $plugin->requires  = 2022041912; // Requires this Moodle version - at least 4.0 (action bar & new message system).
 
 $plugin->component = 'local_booking';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.0';
+$plugin->release = '2.6';

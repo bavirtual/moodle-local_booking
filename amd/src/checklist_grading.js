@@ -70,6 +70,8 @@ define([
             .then(function(response) {
                 if (response.success) {
                     $('#teacher-timestamp-' + itemid).text(response.timestamp);
+                    $('#progress-text-' + response.checklistid).text(response.count);
+                    $('#progress-percent-' + response.checklistid).text(response.progress);
                     self.showCallout(toggle, response.message);
                 }
                 return;

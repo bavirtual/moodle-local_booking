@@ -654,7 +654,6 @@ class participant implements participant_interface {
     /**
      * verifies whether the participant is part of a course group
      *
-     * @param int    $studentid The associated user id.
      * @param string $groupname The group name to verify membership.
      * @return bool             The result of the being a member of the passed group.
      */

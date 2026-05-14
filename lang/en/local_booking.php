@@ -388,6 +388,32 @@ $string['totalsessionsgraded']='Total graded sessions';
 $string['xcoursebookings']='Show bookings from all courses in the \'My active bookings\' section';
 $string['xcoursebookings_help']='Show bookings from all course';
 
+// student stats page
+$string['studentstatspage'] = 'Student Summary';
+$string['lastupdated'] = 'Last updated';
+$string['printpdf'] = 'Print PDF';
+$string['instructorview'] = 'Instructor pre-brief view';
+$string['sessions'] = 'Sessions';
+$string['sectors'] = 'Sectors';
+$string['totalflight'] = 'Total Flight Time';
+$string['landings'] = 'Landings';
+$string['pftime'] = 'PF Time';
+$string['pmtime'] = 'PM Time';
+$string['competencyp_performance'] = 'Competency Performance';
+$string['avg'] = 'Avg';
+$string['average'] = 'Average';
+$string['last'] = 'Last';
+$string['trend'] = 'Trend';
+$string['gradingscale'] = 'Grading scale';
+$string['trendsdesc'] = '1 = best, 5 = worst. Trend arrows reflect improvement toward 1';
+$string['excellent'] = '1 Excellent';
+$string['good'] = '2 Good';
+$string['satisfactory'] = '3 Satisfactory';
+$string['belowstandard'] = '4 Below standard';
+$string['unsatisfactory'] = '5 Unsatisfactory';
+$string['newestfirst'] = 'newest first';
+$string['noprimaryinstructor'] = 'No primary instructor assigned';
+
 // reports
 $string['aircrafttypelabel'] = 'Aircraft type/class course conducted in';
 $string['candidatedetails'] = 'Candidate Details';

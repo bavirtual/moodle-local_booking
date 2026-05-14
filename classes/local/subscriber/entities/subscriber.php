@@ -709,7 +709,7 @@ class subscriber implements subscriber_interface {
      * Get subscribing course grading item for a module
      *
      * @param int  $modid The exercise id requiring the grade item
-     * @return array
+     * @return \grade_item
      */
     public function get_grading_item(int $modid) {
         // get grading items for all modules

@@ -509,7 +509,7 @@ class profile_student_exporter extends exporter {
             'theoryexamreporturl'      => $theoryexamreporturl->out(false),
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
             'tested'                   => $this->student->tested(),
-            'coursemodules'            => base_view::get_modules($output, $this->subscriber, $options),
+            'coursemodules'            => base_view::get_modules($this->subscriber, $options),
             'sessions'                 => dashboard_student_exporter::get_sessions($output, $this->subscriber, $this->student, $this->related),
             'comment'                  => $this->student->get_comment(),
         ];

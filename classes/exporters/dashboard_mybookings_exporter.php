@@ -121,6 +121,9 @@ class dashboard_mybookings_exporter extends exporter {
 
         foreach ($this->mybookings as $booking) {
             $student = $course->get_student($booking->get_studentid(), $booking->get_courseid());
+            if (!$student) {
+                continue;
+            }
             $profileurlparams = ['courseid' => $course->get_id(), 'userid' => $student->get_id()];
             $profileurl = new moodle_url('/local/booking/profile.php', $profileurlparams);
             $action = new action($course, $student, 'cancel', $booking->get_exercise_id());

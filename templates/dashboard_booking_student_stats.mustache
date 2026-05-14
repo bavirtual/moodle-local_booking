@@ -1,0 +1,237 @@
+{{!
+	@template local_booking/dashboard_booking_student_stats
+
+	Student booking report dashboard template.
+
+	Context variables required for this template:
+	* student - object with student details
+	* booking - object with booking details
+	* sessions - array of session objects
+	* kpis - object with key performance indicators
+	* competencies - array of competency objects (rubric criteria with grading data)
+	* signoffs - object with discussion items and route training
+}}
+
+<div class="page">
+	{{! TOP BAR }}
+	<header class="topbar" role="banner">
+		<div class="brand">
+			<div class="logo" aria-hidden="true"></div>
+			<div>
+				<h1>{{ato}} — {{coursename}}</h1>
+				<div class="subtitle">{{#str}} studentstatspage, local_booking {{/str}}</div>
+			</div>
+		</div>
+
+		<div class="topmeta">
+			<div class="meta">{{#str}} lastupdated, local_booking {{/str}}: <b>{{lastupdated}}</b></div>
+			<button class="btn primary" type="button" onclick="window.print()">{{#str}} printpdf, local_booking {{/str}}</button>
+		</div>
+	</header>
+
+	{{! TITLE BAND }}
+	<section class="titleband" aria-label="Page title">
+		<h2>{{coursename}} — {{#str}} studentstatspage, local_booking {{/str}}</h2>
+		<span style="opacity:.95;font-size:12px;">{{#str}} instructorview, local_booking {{/str}}</span>
+	</section>
+
+	{{! IDENTITY }}
+	<section class="identity" aria-label="Student identity">
+		<div class="identitygrid">
+			<div>
+				<h3 class="studentname">{{student.fullname}}</h3>
+				<div class="kv" aria-label="Student key details">
+					<div>{{#str}} vatsimid, local_booking {{/str}}</div><div><b>{{student.vatsimcid}}</b></div>
+					<div>{{#str}} stage, local_booking {{/str}}</div><div><b>{{student.stage}}</b> — {{#str}} sectors, local_booking {{/str}} <b>{{student.sectors}}</b></div>
+					<div>{{#str}} primaryinstructor, local_booking {{/str}}</div><div><b>{{student.instructorname}}</b> ({{student.instructorcallsign}})</div>
+					<div>{{#str}} status, local_booking {{/str}}</div><div><b>{{student.status}}</b></div>
+				</div>
+			</div>
+
+			<div class="chips" aria-label="Status flags">
+				<span class="chip">{{#str}} lastsessiondate, local_booking {{/str}}: {{student.lastsessiondate}}</span>
+			</div>
+		</div>
+	</section>
+
+	{{! KPIs }}
+	<section class="kpis" aria-label="Quick stats">
+		<div class="kpi"><p class="num">{{kpis.sessions}}</p><p class="lbl">{{#str}} sessions, local_booking {{/str}}</p></div>
+		<div class="kpi"><p class="num">{{kpis.sectors}}</p><p class="lbl">{{#str}} sectors, local_booking {{/str}}</p></div>
+		<div class="kpi"><p class="num">{{kpis.totalflight}}</p><p class="lbl">{{#str}} totalflight, local_booking {{/str}}</p></div>
+		<div class="kpi"><p class="num">PF {{kpis.pftime}}</p><p class="lbl">{{#str}} pftime, local_booking {{/str}}</p></div>
+		<div class="kpi"><p class="num">PM {{kpis.pmtime}}</p><p class="lbl">{{#str}} pftime, local_booking {{/str}}</p></div>
+		<div class="kpi"><p class="num">S {{kpis.studentlandings}} / I {{kpis.instructorlandings}}</p><p class="lbl">{{#str}} landings, local_booking {{/str}}</p></div>
+	</section>
+
+	{{! MAIN GRID }}
+	<section class="grid2" aria-label="Performance and sign-offs">
+
+		{{! COMPETENCIES }}
+		<div class="card" aria-label="Competency performance">
+			<h3>{{#str}} competencyp_performance, local_booking {{/str}} <span style="color:var(--muted);font-weight:600;">({{#str}} avg, local_booking {{/str}} + {{#str}} trend, local_booking {{/str}})</span></h3>
+			<div class="smallnote">
+				<b>{{#str}} gradingscale, local_booking {{/str}}:</b> {{#str}} trendsdesc, local_booking {{/str}}.
+			</div>
+
+			<table aria-label="Competency table">
+				<thead>
+					<tr>
+						<th>{{#str}} skill, local_booking {{/str}}</th>
+						<th class="avgcell">{{#str}} average, local_booking {{/str}}</th>
+						<th class="lastcell">{{#str}} last, local_booking {{/str}}</th>
+						<th class="trendcell">{{#str}} trend, local_booking {{/str}}</th>
+						<th>{{#str}} comments, local_booking {{/str}}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{{#competencies}}
+					<tr>
+						<td><b>{{name}}</b></td>
+						<td class="avgcell"><span class="badge g{{avggrade}}" title="Average grade">{{avggrade}}</span></td>
+						<td class="lastcell"><span class="badge g{{lastgrade}}" title="Last session grade">{{lastgrade}}</span></td>
+						<td class="trendcell">
+							<span class="trend" title="{{trendtext}}">
+								{{#isimproving}}<span class="up">↗︎</span>{{/isimproving}}
+								{{#isflat}}<span class="flat">→</span>{{/isflat}}
+								{{#isworsening}}<span class="down">↘︎</span>{{/isworsening}}
+							</span>
+						</td>
+						<td>{{notes}}</td>
+					</tr>
+					{{/competencies}}
+				</tbody>
+			</table>
+
+			<div class="legend" aria-label="Grade legend">
+				<span><span class="dot" style="background:var(--g1)"></span>{{#str}} excellent, local_booking {{/str}}</span>
+				<span><span class="dot" style="background:var(--g2)"></span>{{#str}} good, local_booking {{/str}}</span>
+				<span><span class="dot" style="background:var(--g3)"></span>{{#str}} satisfactory, local_booking {{/str}}</span>
+				<span><span class="dot" style="background:var(--g4)"></span>{{#str}} belowstandard, local_booking {{/str}}</span>
+				<span><span class="dot" style="background:var(--g5)"></span>{{#str}} unsatisfactory, local_booking {{/str}}</span>
+			</div>
+		</div>
+		{{! SIGN-OFFS - Now dynamic checklists }}
+		<aside class="card" aria-label="Sign-offs">
+		{{#checklists}}
+		<div class="panel" aria-label="{{name}}">
+			<div class="panelhead">
+			<b>{{name}}</b>
+			<span class="count">{{outstandingitems}} outstanding ({{percentcomplete}}% complete)</span>
+			</div>
+
+			{{#items}}
+			<div class="item">
+			<div>
+				<div class="itemtitle">{{{displaytext}}}</div>
+				<div class="itemmeta">
+				<b>{{statuslabel}}:</b> {{dateformatted}}
+				{{#comment}}
+				<br />Comment: {{comment}}
+				{{/comment}}
+				{{#checkedbyname}}
+				<br />By: {{checkedbyname}}
+				{{/checkedbyname}}
+				</div>
+			</div>
+			<span class="pill {{statusclass}}">{{statustext}}</span>
+			</div>
+			{{/items}}
+		</div>
+		{{/checklists}}
+		</aside>
+	</section>
+
+	{{! SESSIONS }}
+	<section class="sessions" aria-label="Session timeline">
+		<h3>{{#str}} sessions, local_booking {{/str}} ({{#str}} newestfirst, local_booking {{/str}})</h3>
+
+		{{#sessions}}
+		<details class="session" {{#islatest}}open{{/islatest}}>
+			<summary aria-label="Session {{number}} summary">
+				<div class="sumleft">
+					<div class="sumtitle">
+						<b>Session {{number}}</b>
+						<span>• {{date}}</span>
+						<span>• Instructor: <b>{{instructorcallsign}}</b></span>
+						<span>• {{route}}</span>
+					</div>
+					<div class="sumnote">Key notes: "{{keynotes}}"</div>
+				</div>
+				<div class="sumright">
+					<span class="timechip">Total time: <b>{{totaltime}}</b></span>
+					<span class="badge g{{overallgrade}}" title="Overall session grade (1 best, 5 worst)">{{overallgrade}}</span>
+				</div>
+			</summary>
+
+			<div class="sessionbody">
+				<div class="sessionhdr">
+					<div>
+						<h4>Sectors {{sectornumbers}}</h4>
+						<div class="meta">Instructor: {{instructorname}} ({{instructorcallsign}}) • Date: {{date}}</div>
+					</div>
+					<div class="meta"><b>Overall grade:</b> {{overallgrade}} — {{gradetext}}</div>
+				</div>
+
+				<div class="sectortable" aria-label="Sector log">
+					<table>
+						<thead>
+							<tr>
+								<th style="width:70px;">Sector</th>
+								<th>Dep/Dest</th>
+								<th style="width:90px;">A/C</th>
+								<th style="width:110px;">Flight time</th>
+								<th style="width:80px;">Role</th>
+								<th style="width:180px;">Landings</th>
+							</tr>
+						</thead>
+						<tbody>
+							{{#sectors}}
+							<tr>
+								<td><b>{{number}}</b></td>
+								<td>{{departure}} → {{destination}}</td>
+								<td>{{aircraft}}</td>
+								<td>{{flighttime}}</td>
+								<td>{{role}}</td>
+								<td>Student: {{studentlandings}} • Instructor: {{instructorlandings}}</td>
+							</tr>
+							{{/sectors}}
+						</tbody>
+					</table>
+				</div>
+
+				<div class="totals" aria-label="Session totals">
+					<span><b>Flight time:</b> {{totaltime}}</span>
+					<span><b>PF/PM split:</b> PF {{pftime}} • PM {{pmtime}}</span>
+					<span><b>Landings:</b> Student {{totalstudentlandings}} • Instructor {{totalinstructorlandings}}</span>
+				</div>
+				{{#hassignoffs}}
+				<div class="sessionchecklists" aria-label="Checklist updates during session">
+				<h4 style="margin-top:14px;margin-bottom:10px;font-size:14px;">Checklist Updates</h4>
+
+				{{#checklistsupdated}}
+				<div class="panel">
+					<div class="panelhead">
+					<b>{{checklistname}}</b>
+					<span class="count">{{items.length}} items</span>
+					</div>
+
+					{{#items}}
+					<div class="item">
+					<div>
+						<div class="itemtitle">{{title}}</div>
+						<div class="itemmeta">{{status}}{{#comment}} • Comment: {{comment}}{{/comment}}</div>
+					</div>
+					<span class="pill {{statusclass}}">{{statustext}}</span>
+					</div>
+					{{/items}}
+				</div>
+				{{/checklistsupdated}}
+				</div>
+				{{/hassignoffs}}
+			</div>
+		</details>
+		{{/sessions}}
+	</section>
+
+</div>

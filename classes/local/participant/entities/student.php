@@ -300,6 +300,30 @@ class student extends participant {
     }
 
     /**
+     * Checks if the student is a member of the primary instructor group and returns the instructor object if so.
+     *
+     * @return instructor The instructor object if the participant is a member of the primary instructor group, null otherwise.
+     */
+    public function get_primary_instructor() {
+        $primaryinstructor = null;
+
+        // Get all group IDs that the specific user belongs to within this course
+        $usergroupids = groups_get_user_groups($this->courseid, $this->userid);
+        $instructors = $this->course->get_instructors(false,true);
+
+        if (!empty($usergroupids[0])) { // index [0] holds standard group IDs inside the core function return array
+
+            foreach ($instructors as $instructor) {
+                if (array_search($usergroupids[0], $instructor->user_id)) {
+                    $primaryinstructor = $this->course->get_instructor($instructor->user_id);
+                }
+            }
+        }
+
+        return $primaryinstructor;
+    }
+
+    /**
      * Get a list of the student exercise grades objects.
      *
      * @return {object}[]   An array of the student exercise grade objects.
@@ -786,6 +810,335 @@ class student extends participant {
     }
 
     /**
+     * Get student rubric criteria grading for a specific assignment
+     *
+     * @param int $exerciseid The assignment ID (optional, if null gets from course config)
+     * @return array Array of competency objects with rubric data
+     */
+    public function get_competencies(int $exerciseid = 0) {
+
+        // Calculate statistics and format competencies
+        $grade = new grade($this->course->get_grading_item($exerciseid), $this->userid, $exerciseid);
+        return $grade->get_rubric_data();
+
+    }
+
+    /**
+     * Get student sign-offs (discussion items and route training) from checklists
+     *
+     * @param int $bookingid The booking ID
+     * @return \stdClass Object containing discussion items and route training items
+     */
+    public function get_signedoff_checklists(int $bookingid) {
+        global $DB;
+
+        $signoffs = new \stdClass();
+        $signoffs->discussionoutstanding = 0;
+        $signoffs->routeoutstanding = 0;
+        $signoffs->discussionitems = [];
+        $signoffs->routeitems = [];
+
+        try {
+            // Get the progress record for this student/course
+            $progress = $DB->get_record('local_booking_progress', [
+                'userid' => $this->userid,
+                'courseid' => $this->course->get_id()
+            ]);
+
+            if (!$progress || empty($progress->progressflags)) {
+                return $signoffs;
+            }
+
+            // Decode the progress flags JSON
+            $progressdata = json_decode($progress->progressflags, true);
+            if (json_last_error() !== JSON_ERROR_NONE || !isset($progressdata['sessions'])) {
+                return $signoffs;
+            }
+
+            // Find the session matching this booking ID
+            $sessiondata = null;
+            foreach ($progressdata['sessions'] as $session) {
+                if (isset($session['bookingid']) && $session['bookingid'] == $bookingid) {
+                    $sessiondata = $session;
+                    break;
+                }
+            }
+
+            if (!$sessiondata || empty($sessiondata['checkeditems'])) {
+                return $signoffs;
+            }
+
+            // Get the checklist items
+            list($insql, $params) = $DB->get_in_or_equal($sessiondata['checkeditems'], SQL_PARAMS_NAMED);
+            $sql = "SELECT ci.*, c.name as checklistname, c.course as courseid
+                    FROM {checklist_item} ci
+                    JOIN {checklist} c ON ci.checklist = c.id
+                    WHERE ci.id $insql
+                    ORDER BY ci.position ASC";
+
+            $checklistitems = $DB->get_records_sql($sql, $params);
+
+            if (empty($checklistitems)) {
+                return $signoffs;
+            }
+
+            // Get completion status for these items for the student
+            list($iteminsql, $itemparams) = $DB->get_in_or_equal($sessiondata['checkeditems'], SQL_PARAMS_NAMED);
+            $itemparams['userid'] = $this->userid;
+
+            $checksql = "SELECT itemid, usertimestamp, teachermark, teachertimestamp
+                        FROM {checklist_check}
+                        WHERE itemid $iteminsql
+                        AND userid = :userid";
+
+            $checks = $DB->get_records_sql($checksql, $itemparams);
+
+            // Process each checklist item
+            foreach ($checklistitems as $item) {
+                $checkdata = isset($checks[$item->id]) ? $checks[$item->id] : null;
+
+                // Determine item status
+                $status = 'pending';
+                $statuslabel = 'Pending';
+                $statusclass = 'pending';
+                $statustext = 'Pending';
+                $dateformatted = 'Not started';
+
+                if ($checkdata) {
+                    if (!empty($checkdata->teachermark)) {
+                        // Teacher signed off
+                        $status = 'done';
+                        $statuslabel = 'Signed off';
+                        $statusclass = 'done';
+                        $statustext = 'Signed off';
+                        $dateformatted = userdate($checkdata->teachertimestamp, '%d %b %Y');
+                    } else if (!empty($checkdata->usertimestamp)) {
+                        // Student checked but teacher hasn't signed off
+                        $status = 'review';
+                        $statuslabel = 'Needs review';
+                        $statusclass = 'pending';
+                        $statustext = 'Needs review';
+                        $dateformatted = userdate($checkdata->usertimestamp, '%d %b %Y');
+                    }
+                }
+
+                // Get teacher comments if available
+                $comment = '';
+                if ($checkdata && !empty($checkdata->teachermark)) {
+                    // Try to get comment from checklist_comment table if it exists
+                    $commentrecord = $DB->get_record('checklist_comment', [
+                        'itemid' => $item->id,
+                        'userid' => $this->userid
+                    ], 'text', IGNORE_MISSING);
+
+                    if ($commentrecord) {
+                        $comment = $commentrecord->text;
+                    } else {
+                        $comment = 'Completed';
+                    }
+                } else {
+                    $comment = $item->displaytext ?? format_string($item->displaytext);
+                }
+
+                // Categorize items (you can customize this logic based on your needs)
+                // For example, check item text or checklist name to determine type
+                $itemobj = [
+                    'title' => format_string($item->displaytext),
+                    'statuslabel' => $statuslabel,
+                    'dateformatted' => $dateformatted,
+                    'comment' => $comment,
+                    'statusclass' => $statusclass,
+                    'statustext' => $statustext,
+                    'itemid' => $item->id,
+                    'checklistid' => $item->checklist,
+                    'checklistname' => format_string($item->checklistname),
+                ];
+
+                // Determine if this is a discussion item or route training item
+                // You can customize this logic based on your checklist structure
+                if (is_discussion_item($item)) {
+                    $signoffs->discussionitems[] = $itemobj;
+                    if ($status !== 'done') {
+                        $signoffs->discussionoutstanding++;
+                    }
+                } else if (is_route_training_item($item)) {
+                    $signoffs->routeitems[] = $itemobj;
+                    if ($status !== 'done') {
+                        $signoffs->routeoutstanding++;
+                    }
+                } else {
+                    // Default to discussion items
+                    $signoffs->discussionitems[] = $itemobj;
+                    if ($status !== 'done') {
+                        $signoffs->discussionoutstanding++;
+                    }
+                }
+            }
+
+        } catch (Exception $e) {
+            debugging('Error retrieving student signoffs: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+
+        return $signoffs;
+    }
+
+    /**
+     * Get all checklists for a course with student progress
+     *
+     * @return array Array of checklist objects with items and progress
+     */
+    function get_checklists() {
+        global $DB;
+
+        $checklists = [];
+
+        // Get all checklist instances in the course
+        $sql = "SELECT cm.id as cmid, c.id, c.name, c.course
+                FROM {course_modules} cm
+                JOIN {modules} m ON m.id = cm.module
+                JOIN {checklist} c ON c.id = cm.instance
+                WHERE c.course = :courseid
+                AND m.name = 'checklist'
+                AND cm.deletioninprogress = 0
+                ORDER BY c.name ASC";
+
+        $checklistinstances = $DB->get_records_sql($sql, ['courseid' => $this->courseid]);
+
+        foreach ($checklistinstances as $checklistinstance) {
+            $checklist = new \stdClass();
+            $checklist->id = $checklistinstance->id;
+            $checklist->cmid = $checklistinstance->cmid;
+            $checklist->name = $checklistinstance->name;
+            $checklist->items = [];
+
+            // Get all items for this checklist with user progress
+            $sql = "SELECT ci.id, ci.displaytext, ci.userid as itemuserid, ci.itemoptional,
+                        ci.hidden, ci.grouping, ci.position,
+                        cc.usertimestamp, cc.teachermark, cc.teachertimestamp,
+                        u.firstname, u.lastname
+                    FROM {checklist_item} ci
+                    LEFT JOIN {checklist_check} cc ON cc.item = ci.id AND cc.userid = :studentid
+                    LEFT JOIN {user} u ON u.id = cc.teacherid
+                    WHERE ci.checklist = :checklistid
+                    AND ci.hidden = 0
+                    ORDER BY ci.position ASC";
+
+            $items = $DB->get_records_sql($sql, [
+                'checklistid' => $checklistinstance->id,
+                'studentid' => $this->userid
+            ]);
+
+            foreach ($items as $item) {
+                $itemobj = new \stdClass();
+                $itemobj->id = $item->id;
+                $itemobj->displaytext = $item->displaytext;
+                $itemobj->usertimestamp = $item->usertimestamp;
+                $itemobj->teachermark = $item->teachermark;
+                $itemobj->teachertimestamp = $item->teachertimestamp;
+                $itemobj->itemoptional = $item->itemoptional;
+
+                // Get teacher name if checked by teacher
+                if (!empty($item->firstname)) {
+                    $itemobj->teachername = fullname($item);
+                }
+
+                // Get comments if any
+                $comment = $DB->get_field('checklist_comment', 'text', [
+                    'itemid' => $item->id,
+                    'userid' => $this->userid
+                ]);
+                $itemobj->teachermark_comment = $comment ?: '';
+
+                $checklist->items[] = $itemobj;
+            }
+
+            $checklists[] = $checklist;
+        }
+
+        return $checklists;
+    }
+
+    /**
+     * Get checklist updates made during a specific session
+     *
+     * @param int $sessionid
+     * @param int $studentid
+     * @param int $courseid
+     * @return array Array of checklist updates with items
+     */
+    function get_session_checklist_updates($sessionid, $studentid, $courseid) {
+        global $DB;
+
+        // Get session time range (you'll need to adapt this to your session table structure)
+        $session = $DB->get_record('local_booking_sessions', ['id' => $sessionid], '*', MUST_EXIST);
+        $sessionstart = $session->timestart;
+        $sessionend = $session->timeend;
+
+        $updates = [];
+
+        // Get all checklists in the course
+        $checklists = $this->get_checklists();
+
+        foreach ($checklists as $checklist) {
+            $updateditems = [];
+
+            foreach ($checklist->items as $item) {
+                // Check if this item was updated during the session
+                $wasupdated = false;
+                $status = '';
+                $statusclass = '';
+                $statustext = '';
+                $comment = $item->teachermark_comment ?? '';
+
+                // Check user timestamp
+                if (!empty($item->usertimestamp) &&
+                    $item->usertimestamp >= $sessionstart &&
+                    $item->usertimestamp <= $sessionend) {
+                    $wasupdated = true;
+                    $status = 'Signed off';
+                    $statusclass = 'done';
+                    $statustext = 'Signed off';
+                }
+
+                // Check teacher timestamp
+                if (!empty($item->teachertimestamp) &&
+                    $item->teachertimestamp >= $sessionstart &&
+                    $item->teachertimestamp <= $sessionend) {
+                    $wasupdated = true;
+                    if ($item->teachermark == 2) {
+                        $status = 'Reviewed';
+                        $statusclass = 'pending';
+                        $statustext = 'Reviewed';
+                    } else {
+                        $status = 'Updated';
+                        $statusclass = 'pending';
+                        $statustext = 'Updated';
+                    }
+                }
+
+                if ($wasupdated) {
+                    $updateditems[] = [
+                        'title' => $item->displaytext,
+                        'status' => $status,
+                        'comment' => $comment,
+                        'statusclass' => $statusclass,
+                        'statustext' => $statustext,
+                    ];
+                }
+            }
+
+            if (!empty($updateditems)) {
+                $checklistupdate = new stdClass();
+                $checklistupdate->name = $checklist->name;
+                $checklistupdate->items = $updateditems;
+                $updates[] = $checklistupdate;
+            }
+        }
+
+        return $updates;
+    }
+
+    /**
      * Get data from student progress information
      *
      * @param string $field
@@ -1058,6 +1411,17 @@ class student extends participant {
      */
     public function passed() {
         return $this->passed;
+    }
+
+    /**
+     * Returns whether the student has been passed
+     * the last graded session.
+     *
+     * @return bool
+     */
+    public function passedlastgrade() {
+        $lastgrade = $this->get_last_grade();
+        return  !empty($lastgrade) ? $lastgrade->is_passed() : false;
     }
 
     /**

@@ -1,0 +1,200 @@
+body.local-booking-checklist-grading .checklist-grading-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+body.local-booking-checklist-grading .student-selector {
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+body.local-booking-checklist-grading .student-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+body.local-booking-checklist-grading .student-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+}
+
+body.local-booking-checklist-grading .student-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+body.local-booking-checklist-grading .student-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+body.local-booking-checklist-grading .student-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+body.local-booking-checklist-grading .checklist-card {
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+body.local-booking-checklist-grading .checklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 15px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+body.local-booking-checklist-grading .header-actions {
+    min-width: max-content;
+}
+
+/* custom switch checkbox */
+body.local-booking-checklist-grading .custom-switch {
+    padding-left: 2.6875rem;
+}
+body.local-booking-checklist-grading .custom-switch .toggle-label::before {
+    left: -2.6875rem;
+    width: 2.1875rem;
+    pointer-events: all;
+    border-radius: 0.625rem;
+}
+body.local-booking-checklist-grading .custom-switch .toggle-label::after {
+    top: calc(0.078125rem + 2px);
+    left: calc(-2.6875rem + 2px);
+    width: calc(1.25rem - 4px);
+    height: calc(1.25rem - 4px);
+    background-color: #8f959e;
+    border-radius: 0.625rem;
+    transition: transform 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+body.local-booking-checklist-grading .custom-switch .toggle-label::after {
+    transition: none;
+}
+body.local-booking-checklist-grading .custom-switch .toggle-input:checked ~ .toggle-label::after {
+    background-color: #fff;
+    transform: translateX(0.9375rem);
+}
+body.local-booking-checklist-grading .custom-switch .toggle-input:disabled:checked ~ .toggle-label::before {
+    background-color: rgba(15, 111, 197, 0.5);
+}
+
+body.local-booking-checklist-grading .toggle-switch {
+    position: absolute;
+    left: 0;
+    z-index: -1;
+    width: 1.25rem;
+    height: 1.328125rem;
+    opacity: 0;
+}
+body.local-booking-checklist-grading .toggle-switch:checked ~ .toggle-label::before {
+    color: #fff;
+    border-color: #0f6fc5;
+    background-color: #0f6fc5;
+}
+body.local-booking-checklist-grading .toggle-switch:focus ~ .toggle-label::before {
+    outline: none;
+}
+body.local-booking-checklist-grading .toggle-switch:focus:not(:checked) ~ .toggle-label::before {
+    border-color: #6a737b;
+}
+body.local-booking-checklist-grading .toggle-switch:not(:disabled):active ~ .toggle-label::before {
+    color: #fff;
+    background-color: #90c6f7;
+    border-color: #90c6f7;
+}
+body.local-booking-checklist-grading .toggle-switch[disabled] ~ .toggle-label,
+body.local-booking-checklist-grading .toggle-switch:disabled ~ .toggle-label {
+    color: #6a737b;
+}
+body.local-booking-checklist-grading .toggle-switch[disabled] ~ .toggle-label::before,
+body.local-booking-checklist-grading .toggle-switch:disabled ~ .toggle-label::before {
+    background-color: #e9ecef;
+}
+body.local-booking-checklist-grading .toggle-label {
+    position: relative;
+    margin-bottom: 0;
+    vertical-align: top;
+}
+body.local-booking-checklist-grading .toggle-label::before {
+    position: absolute;
+    top: 0.078125rem;
+    left: -1.75rem;
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    pointer-events: none;
+    content: "";
+    background-color: #fff;
+    border: #8f959e solid 1px;
+}
+body.local-booking-checklist-grading .toggle-label::after {
+    position: absolute;
+    top: 0.078125rem;
+    left: -1.75rem;
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    content: "";
+    background: 50% / 50% 50% no-repeat;
+}
+body.local-booking-checklist-grading .custom-switch {
+    padding-left: 2.6875rem;
+}
+body.local-booking-checklist-grading .custom-switch .toggle-label::before {
+    left: -2.6875rem;
+    width: 2.1875rem;
+    pointer-events: all;
+    border-radius: 0.625rem;
+}
+body.local-booking-checklist-grading .custom-switch .toggle-label::after {
+    top: calc(0.078125rem + 2px);
+    left: calc(-2.6875rem + 2px);
+    width: calc(1.25rem - 4px);
+    height: calc(1.25rem - 4px);
+    background-color: #8f959e;
+    border-radius: 0.625rem;
+    transition: transform 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+body.local-booking-checklist-grading .custom-switch .toggle-label::after {
+    transition: none;
+}
+body.local-booking-checklist-grading .custom-switch .toggle-switch:checked ~ .toggle-label::after {
+    background-color: #fff;
+    transform: translateX(0.9375rem);
+}
+body.local-booking-checklist-grading .custom-switch .toggle-switch:disabled:checked ~ .toggle-label::before {
+    background-color: rgba(15, 111, 197, 0.5);
+}
+.callout {
+    position: fixed;
+    z-index: 99999;
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border-radius: 5px;
+    display: none; /* Hidden by default */
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

@@ -1,5 +1,16 @@
 # Change log
 
+## [2026042700] - RELEASED 2026-04-27
+
+### Fixed
+
+- exception handling for unenrolled student in the instructor dashboard ‘My bookings’ section
+- when booking a session out of sequence, the grade action links to next assignment grading versus whichever assignment was booked
+
+### Added
+
+- student stats page
+
 ## [2026030701] - RELEASED 2026-03-07
 
 ### Fixed

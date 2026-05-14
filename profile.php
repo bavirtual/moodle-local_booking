@@ -27,6 +27,7 @@
 
 use local_booking\local\participant\entities\participant;
 use local_booking\output\views\profile_view;
+use local_booking\output\action_bar;
 
 // Standard GPL and phpdocs
 require_once(__DIR__ . '/../../config.php');
@@ -69,12 +70,25 @@ $PAGE->set_heading($COURSE->fullname);
 $PAGE->add_body_class('path-local-booking');
 
 // get student profile view
-$profileview = new profile_view(['userid'=>$userid, 'role'=>($role ? LOCAL_BOOKING_INSTRUCTORROLE : 'student')], ['subscriber'=>$subscriber, 'context'=>$context]);
+$data = [
+    'userid'=>$userid,
+    'userfullname'=>participant::get_fullname($userid),
+    'userpicture'=> $OUTPUT->user_picture($subscriber->get_participant($userid)->get_user(), ['size' => 50]),
+    'role'=>($role ? LOCAL_BOOKING_INSTRUCTORROLE : 'student'),
+    ];
+$related = [
+    'context' => $context,
+    'subscriber' => $subscriber,
+    'user' => $subscriber->get_participant($userid),
+    ];
+$profileview = new profile_view($data, $related);
+$actionbar = new action_bar($PAGE, 'profile', ['course' => $subscriber, 'profileparams' => $data]);
 
 // output profile page
 echo $OUTPUT->header();
 echo $profileview->get_renderer()->start_layout();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
+echo $profileview->get_renderer()->render_tertiary_navigation($actionbar);
 echo $profileview->output();
 echo html_writer::end_tag('div');
 echo $profileview->get_renderer()->complete_layout();

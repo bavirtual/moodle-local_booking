@@ -74,7 +74,7 @@ interface booking_vault_interface {
     public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true, bool $allcourses = false);
 
     /**
-     * Get booking based on passed object.
+     * Get active booking based on passed object.
      *
      * @param booking $booking
      * @return Object

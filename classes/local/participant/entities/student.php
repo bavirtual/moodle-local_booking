@@ -19,7 +19,7 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2024
+ * @copyright  BAVirtual.co.uk © 2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -273,8 +273,8 @@ class student extends participant {
     /**
      * Updates the student progress info with a specific value
      *
-     * @param string $stat      The stat field being update
-     * @param string $value     The field value being update
+     * @param string $stat      The stat field being updated
+     * @param string $value     The field value being updated
      * @return bool             The result
      */
     public function update_progress(string $stat = null, $value = null) {
@@ -502,7 +502,6 @@ class student extends participant {
         return $this->nextlesson;
     }
 
-
     /**
      * Return student's last lesson module completed.
      *
@@ -510,7 +509,7 @@ class student extends participant {
      */
     public function get_last_lesson_mod_complete() {
         $lessonmodscompleted = $this->vault->get_student_completed_lesson_ids($this->courseid, $this->userid);
-        if (empty($lessonmodscompleted)) {
+        if (empty($lessonmodscompleted) || empty($lessonmodscompleted->lessonmods)) {
             return get_string('nolessonrecord', 'local_booking');
         }
         $completedlessonmods = explode(',', $lessonmodscompleted->lessonmods);
@@ -526,7 +525,7 @@ class student extends participant {
      * @return  DateTime
      */
     public function get_first_slot_date() {
-        $firstslot = slot_vault::get_posted_slot($this->userid);
+        $firstslot = slot_vault::get_posted_slot($this->course->get_id(), $this->userid);
         $firstslotdatets = !empty($firstslot) ? $firstslot->starttime : 0;
         $firstslotdate = $firstslotdatets != 0 ? new DateTime("@$firstslotdatets") : null;
 
@@ -536,12 +535,13 @@ class student extends participant {
     /**
      * Returns the timestamp of the last
      * unbooked availability slot for
-     * the student.
+     * the student (active or not)
      *
+     * @param bool $active
      * @return  DateTime
      */
-    public function get_last_slot_date() {
-        $lastslot = slot_vault::get_posted_slot($this->userid, false);
+    public function get_last_slot_date(bool $active = true) {
+        $lastslot = slot_vault::get_posted_slot($this->course->get_id(), $this->userid, false, $active);
         $lastslotdatets = !empty($lastslot) ? $lastslot->starttime : 0;
         $lastslotdate = $lastslotdatets != 0 ? new DateTime("@$lastslotdatets") : null;
 
@@ -711,12 +711,9 @@ class student extends participant {
 
         if (!isset($this->lastactivitydate) || empty($this->lastactivitydate)) {
             // get the wait date from the last session date
-            $this->lastactivitydate = $this->get_last_session_date();
-
-            // if no last session date, fallback to the last graded date
-            if (empty($this->lastactivitydate)) {
-                $this->lastactivitydate = $this->get_last_graded_date();
-            }
+            $lastsessiondate = $this->get_last_session_date();
+            $lastgradeddate = $this->get_last_graded_date();
+            $this->lastactivitydate = max($lastsessiondate, $lastgradeddate);
 
             // if no last graded date, fallback to the enrollment date
             if (empty($this->lastactivitydate)) {
@@ -1152,9 +1149,10 @@ class student extends participant {
      * Get a specific progress flag
      *
      * @param string $path The flag to retrieve
+     * @param bool $associative whether to return an array or an object
      * @return mixed|null $value
      */
-    public function get_progress_flag(string $path) {
+    public function get_progress_flag(string $path, bool $associative = false) {
 
         // get JSON string
         $flagsjson = $this->get_progress_info("progressflags");
@@ -1179,7 +1177,7 @@ class student extends participant {
                 $current = $current[$part];
             }
 
-            return is_array($current) ? (object) $current : $current;
+            return is_array($current) && !$associative ? (object) $current : $current;
         }
         return null;
     }

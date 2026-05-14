@@ -474,3 +474,28 @@ export const userFetch = (courseId) => {
 
     return Ajax.call([request])[0];
 };
+
+/**
+ * Update checklist item.
+ *
+ * @param {Number} courseid The course id
+ * @param {Number} studentid The student id whose checklist item is being updated
+ * @param {Number} bookingid The booking id associated with the checklist item being updated
+ * @param {Number} itemid The checklist item id
+ * @param {Number} state The new state of the checklist item
+ * @return {Promise}
+ */
+export const saveChecklistItem = (courseid, studentid, bookingid, itemid, state) => {
+    const request = {
+        methodname: 'local_booking_update_checklist_item',
+        args: {
+            courseid: courseid,
+            studentid: studentid,
+            bookingid: bookingid,
+            itemid: itemid,
+            state: state
+        }
+    };
+
+    return Ajax.call([request])[0];
+};

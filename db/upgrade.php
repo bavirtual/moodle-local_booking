@@ -38,6 +38,14 @@ function xmldb_local_booking_upgrade($oldversion) {
 
     // Automatically generated release upgrade.
     // Add minium slot period course setting
+    if ($oldversion < 2026032701) {
+
+        // Extend the size of the progressflags field in student progress table to allow for bigger JSON strings
+        $DB->execute("ALTER TABLE mdl_local_booking_progress MODIFY COLUMN progressflags VARCHAR(1000)");
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2026032701, 'local', 'booking');
+    }
     if ($oldversion < 2024092000) {
 
         // Get Session booking category

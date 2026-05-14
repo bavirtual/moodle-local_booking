@@ -19,6 +19,7 @@ namespace local_booking\output;
 use moodle_url;
 use renderer_base;
 use single_button;
+use html_writer;
 use moodle_page;
 
 /**
@@ -85,6 +86,14 @@ class action_bar extends base_action_bar {
 
             case 'report':
                 $elements = $this->generate_report_navigation();
+                break;
+
+            case 'profile':
+                $elements = $this->generate_profile_navigation();
+                break;
+
+            case 'checklist':
+                $elements = $this->generate_checklist_navigation();
                 break;
         }
 
@@ -173,26 +182,92 @@ class action_bar extends base_action_bar {
     }
 
     /**
+     * Get actions for the student and instructor profile page page navigation
+     * to be displayed in the tertiary navigation.
+     *
+     * @return array
+     */
+    protected function generate_profile_navigation(): array {
+
+        // Get checklist params from additional criteria
+        $elements = (array) $this->additional['profileparams'];
+        $elements['profileview'] = true;
+
+        return $elements;
+    }
+
+    /**
+     * Get actions for the checklist grading page navigation
+     * to be displayed in the tertiary navigation.
+     *
+     * @return array
+     */
+    protected function generate_checklist_navigation(): array {
+
+        // Get checklist params from additional criteria
+        $elements = (array) $this->additional['checklistparams'];
+        $elements['checklistview'] = true;
+
+        return $elements;
+    }
+
+    /**
      * Get actions for the profile page navigation elements
      * to be displayed in the tertiary navigation.
      *
      * @param string $pagetag The tag for the page to go back to
      * @return single_button
      */
-    protected function get_back_button(string $pagetag): single_button {
+    protected function get_back_button(string $pagetag, bool $primary = true): single_button {
         global $COURSE;
 
         $params = ['courseid'=>$COURSE->id];
         $pagefile = '';
 
         $pagefile = "/local/booking/$pagetag.php";
-        $params += ['userid'=>$this->additional['userid']];
+        if (isset($this->additional['userid'])) {
+            $params += ['userid'=>$this->additional['userid']];
+        }
 
         $attributes = ['data-region'=>'back-button', 'id'=>'back_button'];
 
-        $backbutton = new single_button(new moodle_url($pagefile, $params), get_string('back'), 'get', single_button::BUTTON_PRIMARY, $attributes);
+        $backbutton = new single_button(new moodle_url($pagefile, $params), get_string('back'), 'get', $primary ? single_button::BUTTON_PRIMARY : single_button::BUTTON_SECONDARY, $attributes);
 
         return $backbutton;
+    }
+
+    /**
+     * Get actions for the profile page navigation elements
+     * to be displayed in the tertiary navigation.
+     *
+     * @param string $pagetag The tag for the page to go back to
+     * @return single_button
+     */
+    protected function get_Ok_button(string $pagetag): single_button {
+        global $COURSE;
+
+        $params = ['courseid'=>$COURSE->id];
+        $pagefile = "/local/booking/$pagetag.php";
+        $attributes = ['data-region'=>'ok-button', 'id'=>'ok_button'];
+
+        $backbutton = new single_button(new moodle_url($pagefile, $params), get_string('ok'), 'get', single_button::BUTTON_PRIMARY, $attributes);
+
+        return $backbutton;
+    }
+
+    /**
+     * Get actions for the profile page navigation elements
+     * to be displayed in the tertiary navigation.
+     *
+     * @return single_button
+     */
+    protected function get_print_button(): single_button {
+
+        $attributes = ['data-region'=>'print-button', 'id'=>'print_button'];
+        $printbutton = new single_button(new moodle_url('#'), get_string('print'), 'get', single_button::BUTTON_PRIMARY, $attributes);
+        $printbutton->set_attribute('onclick', 'window.print()');
+
+        return $printbutton;
     }
 
     /**

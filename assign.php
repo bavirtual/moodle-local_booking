@@ -31,8 +31,8 @@ require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
 // Get URL parameters.
 $courseid     = optional_param('courseid', 0, PARAM_INT);
-$exerciseid   = optional_param('exeid', 0, PARAM_INT);
 $studentid    = optional_param('userid', 0, PARAM_INT);
+$exerciseid   = optional_param('exeid', 0, PARAM_INT);
 $sessionpassed= optional_param('passed', 1, PARAM_INT);
 $addattmept   = !$sessionpassed;
 

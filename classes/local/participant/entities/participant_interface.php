@@ -40,6 +40,13 @@ interface participant_interface {
     public function get_id();
 
     /**
+     * Get participant's raw data object containing all properties.
+     *
+     * @return \stdClass The participant's raw data object containing all properties.
+     */
+    public function get_user();
+
+    /**
      * Get participant's subscribed course.
      *
      * @return subscriber $course

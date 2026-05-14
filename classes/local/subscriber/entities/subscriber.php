@@ -36,9 +36,11 @@ use ArrayObject;
 use completion_info;
 use local_booking\local\participant\data_access\participant_vault;
 use local_booking\local\subscriber\data_access\subscriber_vault;
+use local_booking\local\checklist\data_access\checklist_vault;
 use local_booking\local\participant\entities\instructor;
 use local_booking\local\participant\entities\participant;
 use local_booking\local\participant\entities\student;
+use local_booking\local\checklist\entities\checklist;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -120,6 +122,11 @@ class subscriber implements subscriber_interface {
      * @var array $modules The subscribing course's modules (exercises & quizes).
      */
     protected $modules;
+
+    /**
+     * @var array $checklists The subscribing course's checklists.
+     */
+    protected $checklists = [];
 
     /**
      * @var array $lessonmods The subscribing course's lesson modules.
@@ -732,6 +739,42 @@ class subscriber implements subscriber_interface {
     }
 
     /**
+     * Get subscribing course checklists
+     *
+     * @param bool $getitems Whether to get the checklist items as well (takes longer)
+     * @param bool $raw Whether to return raw checklist records or checklist objects
+     * @param int $studentid The student ID for whom to retrieve checked items
+
+     * @return array
+     */
+    public function get_checklists(bool $getitems = false, bool $raw = false, int $studentid = 0) {
+        if (count($this->checklists) == 0) {
+            $checklists = checklist_vault::get_course_checklists($this->courseid, $getitems, $studentid);
+
+            if ($raw) {
+                return $checklists;
+            }
+
+            foreach ($checklists as $checklist) {
+                $chklist = new checklist($this->courseid, $studentid);
+                $chklist->populate($checklist);
+                $this->checklists[$checklist->id] = $chklist;
+            }
+        }
+        return $this->checklists;
+    }
+
+    /**
+     * Get subscribing course checklist items
+     *
+     * @param int $checklistid The checklist id to get its items
+     * @return array
+     */
+    public function get_checklist_items($checklistid) {
+        return checklist_vault::get_checklist_items($checklistid);
+    }
+
+    /**
      * Retrieves an array with the moodle file path and file name of a course file resource.
      *
      * @param  string The resource module name
@@ -877,6 +920,45 @@ class subscriber implements subscriber_interface {
      */
     public function get_student_posting_wait_days_restriction() {
         return intval($this->postingwait);
+    }
+
+    /**
+     * Returns the date timestamp on which the student is scheduled to go on-hold based on their activity
+     *
+     * @param student $student
+     * @return \Datetime
+     */
+    public function get_student_onhold_date(student $student) {
+        $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date(false));
+        $onholddate = clone $lastactivitydate;
+        date_add($onholddate, date_interval_create_from_date_string($this->get_on_hold_days_restriction() . ' days'));
+        return $onholddate;
+    }
+
+    /**
+     * Returns the date timestamp on which the student is scheduled to be suspended based on their activity
+     *
+     * @param student $student
+     * @return \Datetime
+     */
+    public function get_student_suspend_date(student $student) {
+        $lastactivitydate = max($student->get_last_activity_date(), $student->get_last_slot_date());
+        $suspenddate = clone $lastactivitydate;
+        date_add($suspenddate, date_interval_create_from_date_string($this->get_suspend_days_restriction() . ' days'));
+        return $suspenddate;
+    }
+
+    /**
+     * Check if the subscribing course has checklists
+     *
+     * @return bool
+     */
+    public static function has_checklists($courseid) {
+        // check if the Checklist plugin is enabled and there are checklists for the course
+        if (!\core_plugin_manager::instance()->get_plugin_info('mod_checklist')) {
+            return false;
+        }
+        return count(checklist_vault::get_course_checklists($courseid)) > 0;
     }
 
     /**

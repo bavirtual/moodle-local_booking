@@ -1,15 +1,36 @@
 # Change log
 
-## [2026042700] - RELEASED 2026-04-27
+## [2026032701] - RELEASED 2026-03-27
 
 ### Fixed
 
-- exception handling for unenrolled student in the instructor dashboard ‘My bookings’ section
-- when booking a session out of sequence, the grade action links to next assignment grading versus whichever assignment was booked
+- increased mdl_local_booking_progress field size to 1000 to accommodate longer JSON strings
+
+## [2026032700] - RELEASED 2026-03-27
+
+### Fixed
+
+- checklist progress % to update when check items are toggled. click response to include total clicked to display updated progress (update js & server-side service)
+- on-hold period cron task to consider all slot posted not just active ones
 
 ### Added
 
-- student stats page
+- rename Score to Activity score in the student profile
+- Add last posted, on-hold, and suspend expected dates to student profile
+- Checklist inline uo progress update
+
+## [2026031600] - RELEASED 2026-03-16
+
+### Fixed
+
+- exception on null when student has no completed lessons
+
+## [2026032500] - RELEASED 2026-03-25
+
+### Added
+
+- checklist items sign-off page after grading for courses with checklists
+- student profile page checklist progress for courses with checklists
 
 ## [2026030701] - RELEASED 2026-03-07
 

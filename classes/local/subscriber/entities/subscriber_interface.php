@@ -228,6 +228,23 @@ interface subscriber_interface {
     public function get_grading_item(int $modid);
 
     /**
+     * Get subscribing course checklists
+     *
+     * @param bool $getitems Whether to get the checklist items as well (takes longer)
+     * @param bool $raw Whether to return raw checklist records or checklist objects
+     * @return array
+     */
+    public function get_checklists(bool $getitems = false, bool $raw = false);
+
+    /**
+     * Get subscribing course checklist items
+     *
+     * @param int $checklistid The checklist id to get its items
+     * @return array
+     */
+    public function get_checklist_items($checklistid);
+
+    /**
      * Retrieves an array with the moodle file path and file name of a course file resource.
      *
      * @param  string The resource module name
@@ -283,6 +300,22 @@ interface subscriber_interface {
     public function get_student_posting_wait_days_restriction();
 
     /**
+     * Returns the date timestamp on which the student is scheduled to go on-hold based on their activity
+     *
+     * @param student $student
+     * @return int
+     */
+    public function get_student_onhold_date(student $student);
+
+    /**
+     * Returns the date timestamp on which the student is scheduled to be suspended based on their activity
+     *
+     * @param student $student
+     * @return int
+     */
+    public function get_student_suspend_date(student $student);
+
+    /**
      * Checks if the subscribing course require
      * skills evaluation.
      *
@@ -331,6 +364,14 @@ interface subscriber_interface {
      * @return bool
      */
     public function requires_lesson_completion();
+
+    /**
+     * Check if the subscribing course has checklists
+     *
+     * @param int $courseid The subscribing course id
+     * @return bool
+     */
+    public static function has_checklists($courseid);
 
     /**
      * Checks if there is a database integration

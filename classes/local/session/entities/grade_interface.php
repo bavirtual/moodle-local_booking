@@ -124,7 +124,7 @@ interface grade_interface {
      *
      * @return array of rubric criteria data with grades, remarks, and trends.
      */
-    public function get_rubric_data();
+    public function get_rubric_criteriondata();
 
     /**
      * Whether the grade has rubric grading.

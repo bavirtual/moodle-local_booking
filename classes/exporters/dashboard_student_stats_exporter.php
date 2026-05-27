@@ -5,10 +5,12 @@ namespace local_booking\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
-use core\external\exporter;
 use renderer_base;
+use core\external\exporter;
+use moodle_url;
 use local_booking\local\subscriber\entities\subscriber;
 use local_booking\local\participant\entities\student;
+use local_booking\local\logbook\entities\logbook;
 
 /**
  * Exporter for booking student statistics dashboard
@@ -30,6 +32,11 @@ class dashboard_student_stats_exporter extends exporter {
     protected $student;
 
     /**
+     * @var logbook $logbook The student's logbook.
+     */
+    protected $logbook;
+
+    /**
      * @var array $sectors The sectors.
      */
     protected $sectors;
@@ -44,7 +51,11 @@ class dashboard_student_stats_exporter extends exporter {
     {
         $this->course = $related['subscriber'];
         $this->student = $this->course->get_student($data['studentid']);
-        $this->sectors = $this->student->get_logbook()->get_logentries();
+        $this->logbook = $this->student->get_logbook();
+        $this->sectors = $this->logbook->get_logentries();
+        $data['ato'] = get_config('local_booking', 'atoname');
+        $data['coursename'] = $this->course->get_fullname();
+        $data['continueurl'] = new moodle_url('/local/booking/view.php', ['courseid' => $this->course->get_id()]);
 
         parent::__construct($data, $related);
     }
@@ -56,6 +67,12 @@ class dashboard_student_stats_exporter extends exporter {
      */
     protected static function define_properties() {
         return [
+            'ato' => [
+                'type' => PARAM_TEXT,
+            ],
+            'coursename' => [
+                'type' => PARAM_TEXT,
+            ],
             'studentid' => [
                 'type' => PARAM_INT,
             ],
@@ -84,14 +101,17 @@ class dashboard_student_stats_exporter extends exporter {
      */
     protected static function define_other_properties() {
         return [
+            'continueurl' => ['type' => PARAM_TEXT],
             'student' => [
                 'type' => [
                     'fullname' => ['type' => PARAM_TEXT],
                     'vatsimcid' => ['type' => PARAM_TEXT],
                     'stage' => ['type' => PARAM_TEXT],
+                    'newlyenrolled' => ['type' => PARAM_BOOL],
                     'sectors' => ['type' => PARAM_TEXT],
                     'status' => ['type' => PARAM_TEXT],
                     'lastsessiondate' => ['type' => PARAM_TEXT],
+                    'hassessions' => ['type' => PARAM_BOOL],
                 ],
             ],
             'kpis' => [
@@ -149,7 +169,8 @@ class dashboard_student_stats_exporter extends exporter {
                 'type' => [
                     'number' => ['type' => PARAM_INT],
                     'date' => ['type' => PARAM_TEXT],
-                    'instructorcallsign' => ['type' => PARAM_TEXT],
+                    'instructorassigned' => ['type' => PARAM_BOOL],
+                    'instructorusername' => ['type' => PARAM_TEXT],
                     'instructorname' => ['type' => PARAM_TEXT],
                     'route' => ['type' => PARAM_TEXT],
                     'keynotes' => ['type' => PARAM_TEXT],
@@ -163,6 +184,7 @@ class dashboard_student_stats_exporter extends exporter {
                     'totalstudentlandings' => ['type' => PARAM_INT],
                     'totalinstructorlandings' => ['type' => PARAM_INT],
                     'hassignoffs' => ['type' => PARAM_BOOL],
+                    'hassectors' => ['type' => PARAM_BOOL],
                     'sectors' => [
                         'type' => [
                             'number' => ['type' => PARAM_INT],
@@ -205,27 +227,43 @@ class dashboard_student_stats_exporter extends exporter {
      * @return array
      */
     protected function get_other_values(renderer_base $output) {
+
         $student = $this->student;
-        $sessions = $this->student->get_bookings();
+        $bookings = $this->student->get_bookings();
+        // Pop the last booking if it is active
+        if (!empty($bookings) && end($bookings)->active()) {
+            $bookings = array_slice($bookings, 0, -1);
+        }
+        $grades = $student->get_exercise_grades(true, true);
         $competencies = $this->student->get_competencies();
-        $checklists = $this->student->get_checklists();
-        $currentsector = count($this->sectors) . "–" . (count($this->sectors) + 1);
+        $checklists = $this->course->get_checklists(true, true, $this->data['studentid']);
+
+        // Get student summary data
+        // Get stage
+        $lastbooking = $this->student->get_last_booking();
+        $newlyenrolled = empty($lastbooking);
+        $stage = $newlyenrolled ? get_string('newlyenrolled', 'local_booking') : $this->course->get_exercise($lastbooking->get_exercise_id())->name;
+        // Get primary instructor information
         $primaryinstructor = $this->student->get_primary_instructor();
+        // Get pending checklists status
+        $checkliststatus = $this->course->get_pending_checklists($this->data['studentid']);
 
         // Format student data
         $studentdata = [
-            'fullname' => $this->student->get_name(),
-            'vatsimcid' => $this->student->get_profile_field('vatsimid') ?? get_string('statusna'),
-            'stage' => $this->course->get_exercise($this->student->get_last_booking()->get_exercise_id())->name,
-            'sectors' => $currentsector,
-            'status' => $this->student->status ?? 'Active',
+            'fullname' => $this->student->get_name(false),
+            'vatsimcid' => !empty($this->student->get_profile_field('vatsimid')) ? $this->student->get_profile_field('vatsimid') : get_string('vatsimidmissing', 'local_booking'),
+            'stage' => $stage,
+            'newlyenrolled' => $newlyenrolled,
+            'status' => $checkliststatus ? $checkliststatus : get_string('allitemscomplete', 'local_booking'),
+            'instructorassigned' => !empty($primaryinstructor),
             'instructorname' => $primaryinstructor ? $primaryinstructor->get_name() : get_string('noprimaryinstructor', 'local_booking'),
-            'instructorcallsign' => $primaryinstructor ? $primaryinstructor->get_callsign() : '',
-            'lastsessiondate' => userdate($student->get_last_session_date(), '%d %b %Y'),
+            'instructorusername' => $primaryinstructor ? $primaryinstructor->get_name(false, 'alternate') : '',
+            'lastsessiondate' => userdate($student->get_last_session_date(true), '%d %b %Y'),
+            'hassessions' => !empty($grades) && count($grades) > 0,
         ];
 
         // Calculate KPIs
-        $kpis = $this->calculate_kpis($sessions);
+        $kpis = $this->calculate_kpis($grades);
 
         // Format competencies
         $competenciesdata = $this->format_competencies($competencies);
@@ -234,7 +272,11 @@ class dashboard_student_stats_exporter extends exporter {
         $checklistsdata = $this->format_checklists($checklists);
 
         // Format sessions
-        $sessionsdata = $this->format_sessions($sessions);
+        $sessionsdata = $this->format_sessions($bookings, $grades, $checklists);
+
+        // Get current sector based on the formatted sessions
+        $lastsession = reset($sessionsdata);
+        $studentdata['sectors'] = isset($lastsession['sectornumbers']) ? $lastsession['sectornumbers'] : get_string('sectormissing', 'local_booking');
 
         return [
             'student' => $studentdata,
@@ -246,20 +288,28 @@ class dashboard_student_stats_exporter extends exporter {
     }
 
     /**
-     * Calculate KPIs from sessions
+     * Calculate KPIs from booking sessions
      *
-     * @param array $sessions
+     * @param array $grades
      * @return array
      */
-    private function calculate_kpis($sessions) {
+    private function calculate_kpis(array $grades) {
         // KPI calculation
-        $summary = (object) $this->student->get_logbook()->get_summary();
-        $studentlandings = $summary->totallandingsday + $summary->totallandingsnight;
+        $summary = (object) $this->student->get_logbook()->get_summary(true);
+        $studentlandings = $summary->totalpftime;
         $instructorlandings = count($this->sectors) - $studentlandings;
+        $sessionscount = 0;
+        foreach ($grades as $grade) {
+            if (!empty($grade->attempts)) {
+                $sessionscount+= count($grade->attempts);
+            } else {
+                $sessionscount++;
+            }
+        }
         return [
-            'sessions' => count($sessions),
+            'sessions' => $sessionscount,
             'sectors' => count($this->sectors),
-            'totalflight' => $summary->totalflighttime,
+            'totalflight' => empty($summary->totalflighttime) ? 0 : $summary->totalflighttime,
             'pftime' => $summary->totalpftime,
             'pmtime' => $summary->totalpmtime,
             'studentlandings' => $studentlandings,
@@ -279,8 +329,8 @@ class dashboard_student_stats_exporter extends exporter {
             $trend = $this->calculate_trend($comp->avggrade, $comp->lastgrade);
             $formatted[] = [
                 'name' => $comp->name,
-                'avggrade' => $comp->avggrade,
-                'lastgrade' => $comp->lastgrade,
+                'avggrade' => $comp->avggradename,
+                'lastgrade' => $comp->lastgradename,
                 'trendtext' => $trend['text'],
                 'isimproving' => $trend['improving'],
                 'isflat' => $trend['flat'],
@@ -299,9 +349,9 @@ class dashboard_student_stats_exporter extends exporter {
      * @return array
      */
     private function calculate_trend($avg, $last) {
-        if ($last < $avg) {
+        if ($last > $avg) {
             return ['text' => 'Improving', 'improving' => true, 'flat' => false, 'worsening' => false];
-        } else if ($last > $avg) {
+        } else if ($last < $avg) {
             return ['text' => 'Worsening', 'improving' => false, 'flat' => false, 'worsening' => true];
         } else {
             return ['text' => 'Stable', 'improving' => false, 'flat' => true, 'worsening' => false];
@@ -323,29 +373,21 @@ class dashboard_student_stats_exporter extends exporter {
             $completedcount = 0;
 
             foreach ($checklist->items as $item) {
-                $ischecked = !empty($item->usertimestamp);
+                $ischecked = $item->teachercheck==1;
 
                 if ($ischecked) {
                     $completedcount++;
-                    $statuslabel = 'Signed off';
-                    $statustext = 'Signed off';
+                    $statuslabel = get_string('signedoff', 'local_booking');
+                    $statustext = get_string('signedoff', 'local_booking');
                     $statusclass = 'done';
-                    $dateformatted = userdate($item->usertimestamp, '%d %b %Y');
+                    $dateformatted = userdate($item->teachertimestamp, '%d %b %Y');
                 } else {
                     $outstandingcount++;
                     // Determine status based on item data
-                    if (!empty($item->teachermark) && $item->teachermark == 2) {
-                        $statuslabel = 'Needs review';
-                        $statustext = 'Needs review';
-                        $statusclass = 'pending';
-                        $dateformatted = !empty($item->teachertimestamp) ?
-                            userdate($item->teachertimestamp, '%d %b %Y') : 'Not yet reviewed';
-                    } else {
-                        $statuslabel = 'Pending';
-                        $statustext = 'Pending';
-                        $statusclass = 'pending';
-                        $dateformatted = 'Planned';
-                    }
+                    $statuslabel = get_string('pending', 'local_booking');
+                    $statustext = get_string('pending', 'local_booking');
+                    $statusclass = 'pending';
+                    $dateformatted = get_string('planned', 'local_booking');
                 }
 
                 $items[] = [
@@ -381,60 +423,180 @@ class dashboard_student_stats_exporter extends exporter {
     }
 
     /**
-     * Format sessions data
+     * Format sessions data by booked sessions
      *
-     * @param array $sessions
+     * @param array $bookings
+     * @param array $grades
+     * @param array $checklists
      * @return array
      */
-    private function format_sessions($sessions) {
-        $formatted = [];
+    private function format_sessions($bookings, $grades, $checklists) {
+        $sessions = [];
+        // Get checklist updates for this student
+        $sessionprogress = $this->student->get_progress_flag('sessions', true) ?? [];
 
-        foreach ($sessions as $index => $session) {
-            // Get checklist updates for this session
-            $checklistsupdated = [];
-            if (!empty($session->checklistupdates)) {
-                foreach ($session->checklistupdates as $checklistupdate) {
-                    $checklistitems = [];
-                    foreach ($checklistupdate->items as $item) {
-                        $checklistitems[] = [
-                            'title' => $item->title,
-                            'status' => $item->status,
-                            'comment' => $item->comment,
-                            'statusclass' => $item->statusclass,
-                            'statustext' => $item->statustext,
-                        ];
+        foreach ($bookings as $index => $booking) {
+
+            // Initialize session object
+            $session = new \stdClass();
+            $session->id = $booking->get_id();
+            $session->exerciseid = $booking->get_exercise_id();
+            $session->itemid = $booking->get_itemid();
+            $session->keynote = '';
+            $session->totaltime = '';
+            $session->pftime = '';
+            $session->pmtime = '';
+            $session->studentlandings = 0;
+            $session->instructorlandings = 0;
+            $session->overallgrade = 0;
+            $session->gradetext = '';
+            $session->sectornumbers = '';
+            $session->route= '';
+            $session->sectors = [];
+            $session->islatest = false;
+            $session->checklistsupdated = [];
+
+            // Get session instructor information
+            $instructor = $this->course->get_instructor($booking->get_instructorid(), true);
+
+            // Get sectors from logbook
+            $i = 0;
+            $sessionsectors = array_filter($this->sectors, fn($sector) => $sector->get_sessionid() == $session->id);
+            // Get sectors from all logbook entries to determine total sectors for display
+            foreach ($sessionsectors as $idx => $sector) {
+                // Get first sector number and session route
+                $firstsectornumber = !empty(array_keys($sessionsectors)) ? array_keys($sessionsectors)[0] + 1 : 0;
+                if ($idx === $firstsectornumber - 1) {
+                    $session->route = $sector->get_depicao() . "→" . $sector->get_arricao();
+                } else {
+                    $session->route .= "→" . $sector->get_arricao();
+                }
+
+                $i++;
+                $role = $sector->get_pilotrole();
+                $session->sectors[] = [
+                    'number' => $i,
+                    'departure' => $sector->get_depicao(),
+                    'destination' => $sector->get_arricao(),
+                    'aircraft' => $sector->get_aircraft(),
+                    'flighttime' => $sector->get_flighttime(false),
+                    'role' => $role,
+                    'studentlandings' => ($role === 'PF') ? 1 : 0,
+                    'instructorlandings' => ($role === 'PM') ? 1 : 0,
+                ];
+            }
+
+            // Get grade
+            $gradeattempt = null;
+            if (key_exists($session->exerciseid, $grades) && $grade = $grades[$session->exerciseid]) {
+                // Check if the item id is related to an attempt and if so get the latest attempt grade for display
+                if ($grade && !empty($grade->attempts) && $session->itemid) {
+                    $attempt_index = array_search($session->itemid, array_column($grade->attempts, 'itemid'));
+                    $attempt_key = $attempt_index !== false ? array_keys($grade->attempts)[$attempt_index] : null;
+                    if ($attempt_key !== false && $attempt_key !== null && key_exists($attempt_key, $grade->attempts)) {
+                        $gradeattempt = $grade->attempts[$attempt_key];
+                        $session->overallgrade = $gradeattempt->grade;
+                    }
+                }
+
+                // Get keynote from grade feedback, limit to 100 characters for display
+                if ($grade) {
+                    $feedback = $gradeattempt ? $gradeattempt->commenttext : $grade->get_feedback_comments();
+                    $session->keynote = $feedback ? explode("\n\n", $feedback, 2)[0] : '';
+                    $session->keynote = strlen($session->keynote) > 100 ? substr($session->keynote, 0, 100) : $session->keynote;
+                    $session->keynote = strip_tags(format_text($session->keynote, FORMAT_HTML));
+                } else {
+                    $session->keynote = '';
+                }
+
+                // Get session total time, PF time, PM time, and landings from logbook summary for display
+                $logbooksummary = $this->logbook->get_summary(true, false, 0, $session->id);
+                $session->totaltime = empty($logbooksummary->totalflighttime) ? 0 : $logbooksummary->totalflighttime;
+                $session->pftime = empty($logbooksummary->totalpftime) ? 0 : $logbooksummary->totalpftime;
+                $session->pmtime = empty($logbooksummary->totalpmtime) ? 0 : $logbooksummary->totalpmtime;
+                $session->studentlandings = empty($logbooksummary->totalpftime) ? 0 : $logbooksummary->totalpftime;
+                $session->instructorlandings = empty($logbooksummary->totalpmtime) ? 0 : $logbooksummary->totalpmtime;
+
+                // Get overall grade
+                $session->overallgrade = $gradeattempt ? intval($gradeattempt->grade) : intval($grade->finalgrade);
+            }
+
+            $checkeditems = $sessionprogress[$session->id]['checkeditems'] ?? [];
+            // Flip array for O(1) lookup instead of O(n) with in_array()
+            $checkeditemsmap = array_flip($checkeditems);
+
+            foreach ($checklists as $checklist) {
+                $checklistitems = [];
+
+                // Process each item in the checklist
+                foreach ($checklist->items as $item) {
+                    // Check if this item is in the student's checked items (O(1) lookup)
+                    $ischecked = isset($checkeditemsmap[$item->id]);
+
+                    if (!$ischecked) {
+                        continue; // Only include checked items in checklist updates
                     }
 
-                    $checklistsupdated[] = [
-                        'checklistname' => $checklistupdate->name,
+                    $checklistitems[] = [
+                        'title' => $item->displaytext,
+                        'status' => $ischecked ?
+                            get_string('signedoff', 'local_booking') :
+                            get_string('pending', 'local_booking'),
+                        'statusclass' => $ischecked ? 'done' : 'pending',
+                        'statustext' => $ischecked ?
+                            get_string('signedoff', 'local_booking') :
+                            get_string('pending', 'local_booking'),
+                    ];
+                }
+
+                // Only add checklist if it has items
+                if (!empty($checklistitems)) {
+                    $session->checklistsupdated[] = [
+                        'checklistname' => $checklist->name,
                         'items' => $checklistitems,
                     ];
                 }
             }
 
-            $formatted[] = [
-                'number' => $session->number,
-                'date' => userdate($session->timestart, '%d %b %Y'),
-                'instructorcallsign' => $session->instructorcallsign,
-                'instructorname' => $session->instructorname,
+            $sessions[] = [
+                'id' => $session->id,
+                'itemid' => $session->itemid,
+                'number' => $index+1,
+                'date' => userdate($booking->get_bookingdate(), '%d %b %Y'),
+                'instructorusername' => $instructor->get_name(false, 'alternate'),
                 'route' => $session->route,
-                'keynotes' => $session->notes,
+                'keynotes' => $session->keynote,
                 'totaltime' => $session->totaltime,
                 'overallgrade' => $session->overallgrade,
                 'gradetext' => $this->get_grade_text($session->overallgrade),
-                'sectornumbers' => $session->sectornumbers,
-                'islatest' => ($index === 0),
+                'islatest' => ($index === count($bookings) - 1),
                 'pftime' => $session->pftime,
                 'pmtime' => $session->pmtime,
                 'totalstudentlandings' => $session->studentlandings,
                 'totalinstructorlandings' => $session->instructorlandings,
-                'hassignoffs' => !empty($checklistsupdated),
-                'sectors' => $session->sectors ?? [],
-                'checklistsupdated' => $checklistsupdated,
+                'hassignoffs' => !empty($session->checklistsupdated),
+                'hassectors' => !empty($session->sectors),
+                'sectors' => $session->sectors,
+                'checklistsupdated' => $session->checklistsupdated,
             ];
+
         }
 
-        return $formatted;
+        // Get sector numbers for display (e.g. "1-3" or "1-2, 4-5" if non-consecutive)
+        $lastsectornumber = 0;
+        foreach ($sessions as &$session) {
+            $sessionsectors = $session['sectors'];
+            if (!empty($sessionsectors)) {
+                $firstsectornumber =  $lastsectornumber + 1;
+                $lastsectornumber = $firstsectornumber + count($sessionsectors);
+                $session['sectornumbers'] = count($sessionsectors)>0 ? $firstsectornumber . "–" . $lastsectornumber : '';
+            }
+        }
+
+        // Sort by sortorder
+        array_multisort(array_column($sessions, 'number'), SORT_DESC, $sessions);
+
+        return $sessions;
     }
 
     /**

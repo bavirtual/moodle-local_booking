@@ -93,6 +93,13 @@
         {{/checkflight}}
     </div>
 </div>
+{{^dualops}}
+<div class="row mt-1">
+    <div class="col-1"></div>
+    <div class="col-5">{{#str}} pilotrole, local_booking {{/str}}</div>
+    <div class="col-6">{{pilotrole}}</div>
+</div>
+{{/dualops}}
 <div class="row mt-1">
     <div class="col-1"></div>
     <div class="col-5">{{#str}} pirep, local_booking {{/str}}</div>

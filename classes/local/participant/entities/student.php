@@ -30,6 +30,7 @@ require_once($CFG->dirroot . '/mod/assign/externallib.php');
 use ArrayObject;
 use DateTime;
 use Exception;
+use local_booking\local\session\entities\booking;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\session\entities\grade;
@@ -326,12 +327,14 @@ class student extends participant {
     /**
      * Get a list of the student exercise grades objects.
      *
+     * @param bool $getattempts Whether to retrieve all attempts or not.
+     * @param bool $refresh Whether to refresh the grades cache or not.
      * @return {object}[]   An array of the student exercise grade objects.
      */
-    public function get_exercise_grades() {
+    public function get_exercise_grades(bool $getattempts = false, bool $refresh = false) {
 
-        if (empty($this->exercisesgrades)) {
-            $this->exercisesgrades = $this->get_mod_grades('assign');
+        if (empty($this->exercisesgrades) || $refresh) {
+            $this->exercisesgrades = $this->get_mod_grades('assign', $getattempts);
         }
 
         return $this->exercisesgrades;
@@ -340,12 +343,13 @@ class student extends participant {
     /**
      * Get records of a specific quiz for a student.
      *
+     * @param bool $getattempts Whether to retrieve all attempts or not.
      * @return {object}[]   The exam grade objects.
      */
-    public function get_quizzes_grades() {
+    public function get_quizzes_grades(bool $getattempts = false) {
 
         if (empty($this->quizesgrades)) {
-            $this->quizesgrades = $this->get_mod_grades('quiz');
+            $this->quizesgrades = $this->get_mod_grades('quiz', $getattempts);
         }
 
         return $this->quizesgrades;
@@ -355,13 +359,16 @@ class student extends participant {
      * Get grades for a specific student from
      * assignments and quizes.
      *
+     * @param bool $assignments Whether to include assignment grades.
+     * @param bool $quizzes Whether to include quiz grades.
      * @return {object}[] The student grades.
      */
-    public function get_grades() {
+    public function get_grades($assignments = true, $quizzes = true) {
 
         if (!$this->gradesloaded) {
             // join both graded assignments and attempted quizes into one grades array
-            $this->grades = $this->get_exercise_grades() + $this->get_quizzes_grades();
+            $this->grades = ($assignments ? $this->get_exercise_grades() : []) + ($quizzes ? $this->get_quizzes_grades() : []);
+            $this->gradesloaded = true;
         }
 
         return $this->grades;
@@ -404,6 +411,36 @@ class student extends participant {
     }
 
     /**
+     * Get student grade for a specific exercise.
+     *
+     * @param int  $coursemodid  The quiz/exercise id associated with the grade
+     * @param int  $bookingid  The booking id to retrieve the grade for (optional, only needed if different from coursemodid).
+     * @return grade The student exercise grade.
+     */
+    public function get_grade_by_bookingid(int $coursemodid, int $bookingid) {
+
+        $grade = null;
+
+        // get the grade if already exists otherwise create a new one making sure it's not empty
+        if (!empty($coursemodid)) {
+
+            // fetch grade_grade then ensure it is graded!
+            $booking = new booking($bookingid);
+            $booking->load();
+            $gradeitemid = $booking->get_itemid();
+            $gradeitem = $this->course->get_grading_item($coursemodid, $gradeitemid);
+            $grade = new grade($gradeitem, $this->userid, $coursemodid, false);
+
+            // discard the grade if the final grade is missing or it's over before cutoff period for processing past data
+            if (empty($grade->finalgrade) || (strtotime(LOCAL_BOOKING_PASTDATACUTOFF . ' day', $grade->timemodified) < time())) {
+                $grade = null;
+            }
+        }
+
+        return $grade;
+    }
+
+    /**
      * Get student grade for the current exercise.
      *
      * @return grade The student exercise grade.
@@ -415,10 +452,11 @@ class student extends participant {
     /**
      * Get a list of the module grades.
      *
-     * @param string $modetype The module type for the course modules.
+     * @param string $modtype The module type for the course modules.
+     * @param bool $getattempts Whether to retrieve all attempts or not.
      * @return array An array of the student exercise grade objects.
      */
-    protected function get_mod_grades(string $modtype) {
+    protected function get_mod_grades(string $modtype, bool $getattempts = false) {
 
         $grades = [];
         // get all exercise grades (assignments)
@@ -426,12 +464,211 @@ class student extends participant {
         foreach ($coursemods as $coursemod) {
             if ($coursemod->modname == $modtype) {
                 // add scored grade (has finalgrade)
-                if ($grade = $this->get_grade($coursemod->id))
+                if ($grade = $this->get_grade($coursemod->id, $getattempts))
                     $grades[$coursemod->id] = $grade;
             }
         }
 
         return $grades;
+    }
+
+    /**
+     * Get student rubric criteria grading for a specific assignment
+     *
+     * @param int $exerciseid The assignment ID (optional, if null gets from course config)
+     * @return array Array of competency objects with rubric data
+     */
+    public function get_competencies(int $exerciseid = 0) {
+
+        $competencies = [];
+
+        // Get rubric competencies for all grades if exerciseid is not provided, otherwise get for the specific exercise
+        if (empty($exerciseid)) {
+             $grades = $this->get_grades(true, false);
+        } else {
+             $grades = [$this->get_grade($exerciseid)];
+        }
+
+        // Loop through the grades and extract rubric data for each competency
+        foreach ($grades as $grade) {
+            if ($grade->itemid == $exerciseid || $exerciseid == 0) {
+
+                // Calculate statistics and format competencies
+                list($criterion[], $rubriccriteria) = $grade->get_rubric_criteriondata();
+
+                if (empty($criterion)) {
+                    // No submissions yet, return empty criteria with no grades
+                    return $this->format_empty_competencies($rubriccriteria);
+                }
+
+                $criteriondata = $criterion[0];
+                foreach ($criteriondata as $criterionid => $data) {
+                    if (empty($data)) {
+                        continue;
+                    }
+
+                    $grades = $data['grades'];
+                    $lastgrade = end($grades);
+                    $lastgradename = end($data['gradenames']);
+                    $avggrade = round(array_sum($grades) / count($grades));
+                    $avggradename = $grade->get_rubric_level_name($criterionid, $avggrade);
+                    $lastremark = end($data['remarks']);
+
+                    // Calculate trend
+                    $trend = $this->calculate_competency_trend($avggrade, $lastgrade, $grades);
+
+                    $competencies[] = (object) [
+                        'criterionid' => $criterionid,
+                        'name' => $data['name'],
+                        'sortorder' => $data['sortorder'],
+                        'lastgrade' => $lastgrade,
+                        'lastgradename' => $lastgradename,
+                        'avggrade' => $avggrade,
+                        'avggradename' => $avggradename,
+                        'allgrades' => $grades,
+                        'attemptcount' => count($grades),
+                        'trend' => $trend['direction'], // 'improving', 'stable', 'worsening'
+                        'trendvalue' => $trend['value'], // Numeric change
+                        'notes' => $lastremark,
+                        'lastremark' => strip_tags(format_text($lastremark, FORMAT_HTML)),
+                        'firstgrade' => reset($grades),
+                    ];
+                }
+
+                // Sort by sortorder
+                usort($competencies, function($a, $b) {
+                    return $a->sortorder <=> $b->sortorder;
+                });
+            }
+        }
+
+        return $competencies;
+    }
+
+    /**
+     * Format empty competencies when student has no submissions
+     *
+     * @param array $criteria Rubric criteria definitions
+     * @return array Array of competency objects with no grades
+     */
+    private function format_empty_competencies($criteria) {
+        $competencies = [];
+
+        foreach ($criteria as $criterionid => $criterion) {
+            $competencies[] = (object)[
+                'criterionid' => $criterionid,
+                'name' => strip_tags(format_text($criterion['description'], FORMAT_HTML)),
+                'sortorder' => $criterion['sortorder'],
+                'lastgrade' => 0,
+                'avggrade' => 0,
+                'allgrades' => [],
+                'attemptcount' => 0,
+                'trend' => 'stable',
+                'trendvalue' => 0,
+                'notes' => 'No attempts yet',
+                'lastremark' => '',
+                'firstgrade' => 0,
+            ];
+        }
+
+        usort($competencies, function($a, $b) {
+            return $a->sortorder <=> $b->sortorder;
+        });
+
+        return $competencies;
+    }
+
+    /**
+     * Calculate trend between average and last grade
+     *
+     * @param int $avggrade Average grade
+     * @param int $lastgrade Last grade
+     * @param array $allgrades All grades for trend analysis
+     * @return array Trend information
+     */
+    private function calculate_competency_trend($avggrade, $lastgrade, $allgrades) {
+        // Remember: 1 is best, 5 is worst
+        // So if last grade < avg grade, that's improvement
+
+        $difference = $avggrade - $lastgrade;
+
+        // Also check recent trend (last 3 attempts if available)
+        $recentgrades = array_slice($allgrades, -3);
+        $recenttrend = 'stable';
+
+        if (count($recentgrades) >= 2) {
+            $firstrecent = reset($recentgrades);
+            $lastrecent = end($recentgrades);
+
+            if ($lastrecent < $firstrecent) {
+                $recenttrend = 'improving';
+            } else if ($lastrecent > $firstrecent) {
+                $recenttrend = 'worsening';
+            }
+        }
+
+        // Determine overall trend
+        if ($difference > 0.5) {
+            // Last grade is significantly better than average
+            $direction = 'improving';
+        } else if ($difference < -0.5) {
+            // Last grade is significantly worse than average
+            $direction = 'worsening';
+        } else {
+            // Within 0.5 of average - consider stable
+            $direction = 'stable';
+        }
+
+        // Override if recent trend is very clear
+        if (count($allgrades) >= 3) {
+            if ($recenttrend === 'improving' && $direction !== 'worsening') {
+                $direction = 'improving';
+            } else if ($recenttrend === 'worsening' && $direction !== 'improving') {
+                $direction = 'worsening';
+            }
+        }
+
+        return [
+            'direction' => $direction,
+            'value' => $difference,
+            'recenttrend' => $recenttrend,
+            'changetext' => $this->format_trend_text($difference, $direction)
+        ];
+    }
+
+    /**
+     * Format trend as human-readable text
+     *
+     * @param float $difference Numeric difference
+     * @param string $direction Trend direction
+     * @return string Human-readable trend description
+     */
+    private function format_trend_text($difference, $direction) {
+        $absdiff = abs($difference);
+
+        switch ($direction) {
+            case 'improving':
+                if ($absdiff >= 1.5) {
+                    return 'Significant improvement';
+                } else if ($absdiff >= 0.75) {
+                    return 'Notable improvement';
+                } else {
+                    return 'Slight improvement';
+                }
+
+            case 'worsening':
+                if ($absdiff >= 1.5) {
+                    return 'Significant decline';
+                } else if ($absdiff >= 0.75) {
+                    return 'Notable decline';
+                } else {
+                    return 'Slight decline';
+                }
+
+            case 'stable':
+            default:
+                return 'Consistent performance';
+        }
     }
 
     /**
@@ -807,335 +1044,6 @@ class student extends participant {
     }
 
     /**
-     * Get student rubric criteria grading for a specific assignment
-     *
-     * @param int $exerciseid The assignment ID (optional, if null gets from course config)
-     * @return array Array of competency objects with rubric data
-     */
-    public function get_competencies(int $exerciseid = 0) {
-
-        // Calculate statistics and format competencies
-        $grade = new grade($this->course->get_grading_item($exerciseid), $this->userid, $exerciseid);
-        return $grade->get_rubric_data();
-
-    }
-
-    /**
-     * Get student sign-offs (discussion items and route training) from checklists
-     *
-     * @param int $bookingid The booking ID
-     * @return \stdClass Object containing discussion items and route training items
-     */
-    public function get_signedoff_checklists(int $bookingid) {
-        global $DB;
-
-        $signoffs = new \stdClass();
-        $signoffs->discussionoutstanding = 0;
-        $signoffs->routeoutstanding = 0;
-        $signoffs->discussionitems = [];
-        $signoffs->routeitems = [];
-
-        try {
-            // Get the progress record for this student/course
-            $progress = $DB->get_record('local_booking_progress', [
-                'userid' => $this->userid,
-                'courseid' => $this->course->get_id()
-            ]);
-
-            if (!$progress || empty($progress->progressflags)) {
-                return $signoffs;
-            }
-
-            // Decode the progress flags JSON
-            $progressdata = json_decode($progress->progressflags, true);
-            if (json_last_error() !== JSON_ERROR_NONE || !isset($progressdata['sessions'])) {
-                return $signoffs;
-            }
-
-            // Find the session matching this booking ID
-            $sessiondata = null;
-            foreach ($progressdata['sessions'] as $session) {
-                if (isset($session['bookingid']) && $session['bookingid'] == $bookingid) {
-                    $sessiondata = $session;
-                    break;
-                }
-            }
-
-            if (!$sessiondata || empty($sessiondata['checkeditems'])) {
-                return $signoffs;
-            }
-
-            // Get the checklist items
-            list($insql, $params) = $DB->get_in_or_equal($sessiondata['checkeditems'], SQL_PARAMS_NAMED);
-            $sql = "SELECT ci.*, c.name as checklistname, c.course as courseid
-                    FROM {checklist_item} ci
-                    JOIN {checklist} c ON ci.checklist = c.id
-                    WHERE ci.id $insql
-                    ORDER BY ci.position ASC";
-
-            $checklistitems = $DB->get_records_sql($sql, $params);
-
-            if (empty($checklistitems)) {
-                return $signoffs;
-            }
-
-            // Get completion status for these items for the student
-            list($iteminsql, $itemparams) = $DB->get_in_or_equal($sessiondata['checkeditems'], SQL_PARAMS_NAMED);
-            $itemparams['userid'] = $this->userid;
-
-            $checksql = "SELECT itemid, usertimestamp, teachermark, teachertimestamp
-                        FROM {checklist_check}
-                        WHERE itemid $iteminsql
-                        AND userid = :userid";
-
-            $checks = $DB->get_records_sql($checksql, $itemparams);
-
-            // Process each checklist item
-            foreach ($checklistitems as $item) {
-                $checkdata = isset($checks[$item->id]) ? $checks[$item->id] : null;
-
-                // Determine item status
-                $status = 'pending';
-                $statuslabel = 'Pending';
-                $statusclass = 'pending';
-                $statustext = 'Pending';
-                $dateformatted = 'Not started';
-
-                if ($checkdata) {
-                    if (!empty($checkdata->teachermark)) {
-                        // Teacher signed off
-                        $status = 'done';
-                        $statuslabel = 'Signed off';
-                        $statusclass = 'done';
-                        $statustext = 'Signed off';
-                        $dateformatted = userdate($checkdata->teachertimestamp, '%d %b %Y');
-                    } else if (!empty($checkdata->usertimestamp)) {
-                        // Student checked but teacher hasn't signed off
-                        $status = 'review';
-                        $statuslabel = 'Needs review';
-                        $statusclass = 'pending';
-                        $statustext = 'Needs review';
-                        $dateformatted = userdate($checkdata->usertimestamp, '%d %b %Y');
-                    }
-                }
-
-                // Get teacher comments if available
-                $comment = '';
-                if ($checkdata && !empty($checkdata->teachermark)) {
-                    // Try to get comment from checklist_comment table if it exists
-                    $commentrecord = $DB->get_record('checklist_comment', [
-                        'itemid' => $item->id,
-                        'userid' => $this->userid
-                    ], 'text', IGNORE_MISSING);
-
-                    if ($commentrecord) {
-                        $comment = $commentrecord->text;
-                    } else {
-                        $comment = 'Completed';
-                    }
-                } else {
-                    $comment = $item->displaytext ?? format_string($item->displaytext);
-                }
-
-                // Categorize items (you can customize this logic based on your needs)
-                // For example, check item text or checklist name to determine type
-                $itemobj = [
-                    'title' => format_string($item->displaytext),
-                    'statuslabel' => $statuslabel,
-                    'dateformatted' => $dateformatted,
-                    'comment' => $comment,
-                    'statusclass' => $statusclass,
-                    'statustext' => $statustext,
-                    'itemid' => $item->id,
-                    'checklistid' => $item->checklist,
-                    'checklistname' => format_string($item->checklistname),
-                ];
-
-                // Determine if this is a discussion item or route training item
-                // You can customize this logic based on your checklist structure
-                if (is_discussion_item($item)) {
-                    $signoffs->discussionitems[] = $itemobj;
-                    if ($status !== 'done') {
-                        $signoffs->discussionoutstanding++;
-                    }
-                } else if (is_route_training_item($item)) {
-                    $signoffs->routeitems[] = $itemobj;
-                    if ($status !== 'done') {
-                        $signoffs->routeoutstanding++;
-                    }
-                } else {
-                    // Default to discussion items
-                    $signoffs->discussionitems[] = $itemobj;
-                    if ($status !== 'done') {
-                        $signoffs->discussionoutstanding++;
-                    }
-                }
-            }
-
-        } catch (Exception $e) {
-            debugging('Error retrieving student signoffs: ' . $e->getMessage(), DEBUG_DEVELOPER);
-        }
-
-        return $signoffs;
-    }
-
-    /**
-     * Get all checklists for a course with student progress
-     *
-     * @return array Array of checklist objects with items and progress
-     */
-    function get_checklists() {
-        global $DB;
-
-        $checklists = [];
-
-        // Get all checklist instances in the course
-        $sql = "SELECT cm.id as cmid, c.id, c.name, c.course
-                FROM {course_modules} cm
-                JOIN {modules} m ON m.id = cm.module
-                JOIN {checklist} c ON c.id = cm.instance
-                WHERE c.course = :courseid
-                AND m.name = 'checklist'
-                AND cm.deletioninprogress = 0
-                ORDER BY c.name ASC";
-
-        $checklistinstances = $DB->get_records_sql($sql, ['courseid' => $this->courseid]);
-
-        foreach ($checklistinstances as $checklistinstance) {
-            $checklist = new \stdClass();
-            $checklist->id = $checklistinstance->id;
-            $checklist->cmid = $checklistinstance->cmid;
-            $checklist->name = $checklistinstance->name;
-            $checklist->items = [];
-
-            // Get all items for this checklist with user progress
-            $sql = "SELECT ci.id, ci.displaytext, ci.userid as itemuserid, ci.itemoptional,
-                        ci.hidden, ci.grouping, ci.position,
-                        cc.usertimestamp, cc.teachermark, cc.teachertimestamp,
-                        u.firstname, u.lastname
-                    FROM {checklist_item} ci
-                    LEFT JOIN {checklist_check} cc ON cc.item = ci.id AND cc.userid = :studentid
-                    LEFT JOIN {user} u ON u.id = cc.teacherid
-                    WHERE ci.checklist = :checklistid
-                    AND ci.hidden = 0
-                    ORDER BY ci.position ASC";
-
-            $items = $DB->get_records_sql($sql, [
-                'checklistid' => $checklistinstance->id,
-                'studentid' => $this->userid
-            ]);
-
-            foreach ($items as $item) {
-                $itemobj = new \stdClass();
-                $itemobj->id = $item->id;
-                $itemobj->displaytext = $item->displaytext;
-                $itemobj->usertimestamp = $item->usertimestamp;
-                $itemobj->teachermark = $item->teachermark;
-                $itemobj->teachertimestamp = $item->teachertimestamp;
-                $itemobj->itemoptional = $item->itemoptional;
-
-                // Get teacher name if checked by teacher
-                if (!empty($item->firstname)) {
-                    $itemobj->teachername = fullname($item);
-                }
-
-                // Get comments if any
-                $comment = $DB->get_field('checklist_comment', 'text', [
-                    'itemid' => $item->id,
-                    'userid' => $this->userid
-                ]);
-                $itemobj->teachermark_comment = $comment ?: '';
-
-                $checklist->items[] = $itemobj;
-            }
-
-            $checklists[] = $checklist;
-        }
-
-        return $checklists;
-    }
-
-    /**
-     * Get checklist updates made during a specific session
-     *
-     * @param int $sessionid
-     * @param int $studentid
-     * @param int $courseid
-     * @return array Array of checklist updates with items
-     */
-    function get_session_checklist_updates($sessionid, $studentid, $courseid) {
-        global $DB;
-
-        // Get session time range (you'll need to adapt this to your session table structure)
-        $session = $DB->get_record('local_booking_sessions', ['id' => $sessionid], '*', MUST_EXIST);
-        $sessionstart = $session->timestart;
-        $sessionend = $session->timeend;
-
-        $updates = [];
-
-        // Get all checklists in the course
-        $checklists = $this->get_checklists();
-
-        foreach ($checklists as $checklist) {
-            $updateditems = [];
-
-            foreach ($checklist->items as $item) {
-                // Check if this item was updated during the session
-                $wasupdated = false;
-                $status = '';
-                $statusclass = '';
-                $statustext = '';
-                $comment = $item->teachermark_comment ?? '';
-
-                // Check user timestamp
-                if (!empty($item->usertimestamp) &&
-                    $item->usertimestamp >= $sessionstart &&
-                    $item->usertimestamp <= $sessionend) {
-                    $wasupdated = true;
-                    $status = 'Signed off';
-                    $statusclass = 'done';
-                    $statustext = 'Signed off';
-                }
-
-                // Check teacher timestamp
-                if (!empty($item->teachertimestamp) &&
-                    $item->teachertimestamp >= $sessionstart &&
-                    $item->teachertimestamp <= $sessionend) {
-                    $wasupdated = true;
-                    if ($item->teachermark == 2) {
-                        $status = 'Reviewed';
-                        $statusclass = 'pending';
-                        $statustext = 'Reviewed';
-                    } else {
-                        $status = 'Updated';
-                        $statusclass = 'pending';
-                        $statustext = 'Updated';
-                    }
-                }
-
-                if ($wasupdated) {
-                    $updateditems[] = [
-                        'title' => $item->displaytext,
-                        'status' => $status,
-                        'comment' => $comment,
-                        'statusclass' => $statusclass,
-                        'statustext' => $statustext,
-                    ];
-                }
-            }
-
-            if (!empty($updateditems)) {
-                $checklistupdate = new stdClass();
-                $checklistupdate->name = $checklist->name;
-                $checklistupdate->items = $updateditems;
-                $updates[] = $checklistupdate;
-            }
-        }
-
-        return $updates;
-    }
-
-    /**
      * Get data from student progress information
      *
      * @param string $field
@@ -1150,9 +1058,11 @@ class student extends participant {
      *
      * @param string $path The flag to retrieve
      * @param bool $associative whether to return an array or an object
+     * @param string|null $searchkey optional key to search for in the path leaf if the leaf is an array of objects
+     * @param string|null $searchvalue optional value to search for in the path leaf if the leaf is an array of objects
      * @return mixed|null $value
      */
-    public function get_progress_flag(string $path, bool $associative = false) {
+    public function get_progress_flag(string $path, bool $associative = false, $searchkey = null, $searchvalue = null) {
 
         // get JSON string
         $flagsjson = $this->get_progress_info("progressflags");
@@ -1177,6 +1087,14 @@ class student extends participant {
                 $current = $current[$part];
             }
 
+            if ($searchkey !== null && $searchvalue !== null && is_array($current)) {
+                foreach ($current as $item) {
+                    if (isset($item[$searchkey]) && $item[$searchkey] == $searchvalue) {
+                        return $associative ? $item : (object) $item;
+                    }
+                }
+                return null; // not found
+            }
             return is_array($current) && !$associative ? (object) $current : $current;
         }
         return null;
@@ -1194,7 +1112,8 @@ class student extends participant {
     }
 
     /**
-     * Set student progress flag.
+     * Set student progress flag based on the path and key/value pairs,
+     * also allows for a path leaf key to lookup.
      *
      * @param string $path
      * @param mixed  $value

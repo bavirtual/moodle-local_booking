@@ -286,7 +286,7 @@ class grade extends \grade_grade {
      *
      * @return array of rubric criteria data with grades, remarks, and trends.
      */
-    public function get_rubric_data() {
+    public function get_rubric_criteriondata() {
 
         // Get the grading manager
         $gradingmanager = get_grading_manager($this->get_context(), 'mod_assign', 'submissions');
@@ -312,7 +312,7 @@ class grade extends \grade_grade {
 
         if (empty($instances)) {
             // No submissions yet, return empty criteria with no grades
-            return $this->format_empty_competencies($definition->rubric_criteria);
+            return [];
         }
 
         // Get all fillings (criterion scores) for these instances
@@ -320,15 +320,15 @@ class grade extends \grade_grade {
 
         // Organize fillings by criterion
         $criteriondata = [];
-
         foreach ($fillings as $filling) {
             $criterionid = $filling->criterionid;
 
             if (!isset($criteriondata[$criterionid])) {
                 $criteriondata[$criterionid] = [
-                    'name' => clean_text($filling->criterion_name),
+                    'name' => strip_tags(format_text($filling->criterion_name, FORMAT_HTML)),
                     'sortorder' => $filling->sortorder,
                     'grades' => [],
+                    'gradenames' => [],
                     'remarks' => [],
                     'instances' => []
                 ];
@@ -336,26 +336,27 @@ class grade extends \grade_grade {
 
             // Convert score to 1-5 scale (assuming rubric levels are 0-4 or similar)
             // You may need to adjust this based on your rubric configuration
-            $grade = $this->score_to_grade_scale($filling->score, $definition->rubric_criteria[$criterionid]);
+//            $grade = $this->score_to_grade_scale($filling->score, $definition->rubric_criteria[$criterionid]);
 
-            $criteriondata[$criterionid]['grades'][] = $grade;
+            $criteriondata[$criterionid]['grades'][] = intval($filling->score); //$grade;
+            $criteriondata[$criterionid]['gradenames'][] = $filling->level_definition;
             $criteriondata[$criterionid]['remarks'][] = $filling->remark ?? '';
             $criteriondata[$criterionid]['instances'][] = $filling->instanceid;
         }
 
-        return $criteriondata;
+        return [$criteriondata, $definition->rubric_criteria];
     }
 
     /**
      * Convert rubric score to 1-5 grade scale
      *
      * @param float $score The rubric level score
-     * @param object $criterion The rubric criterion definition
+     * @param array $criterion The rubric criterion definition
      * @return int Grade on 1-5 scale
      */
-    protected function score_to_grade_scale(float $score, object $criterion) {
+    private function score_to_grade_scale(float $score, array $criterion) {
 
-        $levels = grading_vault::get_rubric_levels($criterion->id);
+        $levels = grading_vault::get_rubric_levels($criterion['id']);
 
         if (empty($levels)) {
             return 3; // Default to "standard"
@@ -382,47 +383,10 @@ class grade extends \grade_grade {
         return max(1, min(5, $grade));
     }
 
-    /**
-     * Format empty competencies when student has no submissions
-     *
-     * @param array $criteria Rubric criteria definitions
-     * @return array Array of competency objects with no grades
-     */
-    protected function format_empty_competencies($criteria) {
-        $competencies = [];
-
-        foreach ($criteria as $criterionid => $criterion) {
-            $competencies[] = (object)[
-                'criterionid' => $criterionid,
-                'name' => $this->clean_text($criterion['description']),
-                'sortorder' => $criterion['sortorder'],
-                'lastgrade' => 0,
-                'avggrade' => 0,
-                'allgrades' => [],
-                'attemptcount' => 0,
-                'trend' => 'stable',
-                'trendvalue' => 0,
-                'notes' => 'No attempts yet',
-                'lastremark' => '',
-                'firstgrade' => 0,
-            ];
-        }
-
-        usort($competencies, function($a, $b) {
-            return $a->sortorder <=> $b->sortorder;
-        });
-
-        return $competencies;
-    }
-
-    /**
-     * Clean text for output
-     *
-     * @param string $text Text to clean
-     * @return string Cleaned text
-     */
-    private function clean_text($text) {
-        return strip_tags(format_text($text, FORMAT_HTML));
+    public static function get_rubric_level_name($criterionid, $score) {
+        global $DB;
+        $levelrec = $DB->get_record('gradingform_rubric_levels', ['criterionid' => $criterionid, 'score' => $score]);
+        return $levelrec ? $levelrec->definition : '';
     }
 
     /**

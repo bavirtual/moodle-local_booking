@@ -84,6 +84,10 @@ class action_bar extends base_action_bar {
                 $elements = $this->generate_logbook_navigation($output);
                 break;
 
+            case 'stats':
+                $elements = $this->generate_stats_navigation($output);
+                break;
+
             case 'report':
                 $elements = $this->generate_report_navigation();
                 break;
@@ -167,6 +171,25 @@ class action_bar extends base_action_bar {
 
         $elements = $this->export_elements($output, $buttons);
         $elements['justify'] = 'justify-content-center';
+
+        return $elements;
+    }
+
+    /**
+     * Get actions for the student summary page (student statistics)
+     * formats to be displayed in the tertiary navigation.
+     *
+     * @param renderer_base $output
+     * @return array
+     */
+    protected function generate_stats_navigation(renderer_base $output): array {
+        global $COURSE;
+
+        $sessionbookingbutton= new single_button(new moodle_url('/local/booking/view.php', ['courseid'=>$COURSE->id]), get_string('continue'), 'post', single_button::BUTTON_PRIMARY);
+        $sessionbookingbutton->tooltip = get_string('bookingdashboard', 'local_booking');
+        $buttons[] = $sessionbookingbutton;
+        $elements = $this->export_elements($output, $buttons);
+        $elements['justify'] = 'justify-content-end';
 
         return $elements;
     }
@@ -259,12 +282,13 @@ class action_bar extends base_action_bar {
      * Get actions for the profile page navigation elements
      * to be displayed in the tertiary navigation.
      *
+     * @param string $tag The tag for the print page button
      * @return single_button
      */
-    protected function get_print_button(): single_button {
+    protected function get_print_button(string $tag = ''): single_button {
 
         $attributes = ['data-region'=>'print-button', 'id'=>'print_button'];
-        $printbutton = new single_button(new moodle_url('#'), get_string('print'), 'get', single_button::BUTTON_PRIMARY, $attributes);
+        $printbutton = new single_button(new moodle_url('#'), get_string($tag ?: 'print', 'local_booking'), 'get', single_button::BUTTON_PRIMARY, $attributes);
         $printbutton->set_attribute('onclick', 'window.print()');
 
         return $printbutton;

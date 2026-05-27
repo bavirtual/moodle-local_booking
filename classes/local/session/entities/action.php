@@ -91,12 +91,9 @@ class action implements action_interface {
             // book action
             case 'book':
 
+                // get action enabled status and tooltip
                 $tooltip = get_string('actionbooksession', 'local_booking');
 
-                // get action enabled status by checking if there are more exercises to book and
-                // if the user is an examiner in the case of graduation skill tests
-
-                // get action enabled status and tooltip
                 // TODO: update student progress in case the session requires lesson completion and the student did in fact complete required lessons.
                 // updating lessons complete should be debugged in the event observer for lesson module completion and there should not be the need to update lessons completed here.
                 if ($course->requires_lesson_completion() && !$student->has_completed_lessons() && !$student->is_newly_joined()) {
@@ -129,7 +126,7 @@ class action implements action_interface {
 
             case 'grade':
 
-                // set grading url
+                // set grading url and params - default to Moodle assignment grading page with exerciseid as the assignment id
                 $actionurl = '/local/booking/assign.php';
                 $params = ['exeid' => $exerciseid];
                 // get Moodle assignment grading urls

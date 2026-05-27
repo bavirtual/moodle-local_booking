@@ -35,11 +35,11 @@ interface logbook_vault_interface {
     /**
      * Get a user's logbook.
      *
-     * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $userid     The user id associated with the logbook.
-     * @param logbook   $logbook    The logbook_interface of for all entries.
-     * @param bool      $allentries Whether to get entries for all courses
-     * @return logentries[]     Array of logentry_interfaces.
+     * @param int $courseid The course id associated with the logbook.
+     * @param int $userid The user id associated with the logbook.
+     * @param logbook $logbook The logbook_interface of for all entries.
+     * @param bool $allentries Whether to get entries for all courses
+     * @return array Array of logentry_interfaces.
      */
     public static function get_logbook(int $courseid, int $userid, logbook $logbook, $allentries);
 
@@ -57,15 +57,25 @@ interface logbook_vault_interface {
     public static function get_logentry(int $userid, int $courseid, $logbook, int $logentryid = 0, int $exerciseid = 0, int $sessionid = 0);
 
     /**
+     * Get the total time log for both flight and ground times for a user in a course
+     *
+     * @param int $courseid The course id associated with the logbook.
+     * @param int $userid The user id associated with the logbook.
+     * @return int The total time logged in minutes
+     */
+    public static function get_user_session_time(int $courseid, int $userid, int $sessionid = 0);
+
+    /**
      * Get summary of logentries of the entire logbook.
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
      * @param int       $examid     The exam id associated with the course.
      * @param  bool     $allcourses The totals of all courses
+     * @param  int      $sessionid  The session id to get the totals for
      * @return object   $totaldualtime, $totalgroundtime, $totalpictime
      */
-    public static function get_logbook_summary(int $courseid, int $userid, int $examid, bool $allcourses = false);
+    public static function get_logbook_summary(int $courseid, int $userid, int $examid, bool $allcourses = false, int $sessionid = 0);
 
     /**
      * Get summary of logentries up to a specific exercise.

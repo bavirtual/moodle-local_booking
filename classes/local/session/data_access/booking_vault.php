@@ -48,7 +48,7 @@ class booking_vault implements booking_vault_interface {
     /**
      * remove all bookings for a user for a
      *
-     * @param string $username The username.
+     * @param booking $booking The booking to delete.
      * @return bool
      */
     public static function delete_booking(booking $booking) {
@@ -92,10 +92,28 @@ class booking_vault implements booking_vault_interface {
         $sessionrecord->courseid     = $booking->get_courseid();
         $sessionrecord->studentid    = $booking->get_studentid();
         $sessionrecord->exerciseid   = $booking->get_exercise_id();
+        $sessionrecord->itemid       = $booking->get_itemid();
         $sessionrecord->slotid       = ($booking->get_slot())->get_id();
         $sessionrecord->timemodified = time();
 
         return $DB->insert_record(static::DB_BOOKINGS, $sessionrecord);
+    }
+
+    /**
+     * Update the booking record with the grade item id for the graded session.
+     *
+     * @param int $bookingid The booking id to update the item id for.
+     * @param int $itemid The grade item id to set for the booking.
+     * @return bool
+     */
+    public static function update_booking_itemid(int $bookingid, int $itemid) {
+        global $DB;
+
+        $sql = 'UPDATE {' . static::DB_BOOKINGS . '}
+                SET itemid = :itemid
+                WHERE id = :bookingid';
+
+        return $DB->execute($sql, ['itemid'=>$itemid, 'bookingid'=>$bookingid]);
     }
 
     /**
@@ -153,10 +171,10 @@ class booking_vault implements booking_vault_interface {
     public static function get_bookings(int $courseid, int $userid, bool $isstudent, bool $oldestfirst = false, bool $activeonly = true, bool $allcourses = false) {
         global $DB;
 
-        $sql = 'SELECT b.id, b.userid, b.courseid, b.studentid, b.exerciseid,
+        $sql = 'SELECT b.id, b.userid, b.courseid, b.studentid, b.exerciseid, b.itemid,
                        b.slotid, b.confirmed, b.noshow, b.active, b.timemodified
                 FROM {' . static::DB_BOOKINGS . '} b
-                INNER JOIN {' . static::DB_SLOTS . '} s on s.id = b.slotid
+                LEFT JOIN {' . static::DB_SLOTS . '} s on s.id = b.slotid
                 WHERE ' . ($allcourses ? '' : 'b.courseid = :courseid AND ' ) .
                     ($isstudent ? 'b.studentid' : 'b.userid') . ' = :userid' .
                     ($activeonly ? ' AND b.active = 1' : '') .
@@ -187,11 +205,12 @@ class booking_vault implements booking_vault_interface {
         if (!empty($booking->get_exercise_id())) {
             $conditions['exerciseid'] = $booking->get_exercise_id();
         }
-        if (!empty($booking->active())) {
-            $conditions['active'] = '1';
+        if (!empty($booking->get_itemid())) {
+            $conditions['itemid'] = $booking->get_itemid();
         }
 
-        return $DB->get_record(static::DB_BOOKINGS, $conditions);
+        $bookings = $DB->get_records(static::DB_BOOKINGS, $conditions, 'id DESC', '*', 0, 1);
+        return reset($bookings);
     }
 
     /**
@@ -199,8 +218,8 @@ class booking_vault implements booking_vault_interface {
      * If there is no active session,
      * only the current session is returned
      *
-     * @param int $courseid      The associated course
-     * @param int $studentid     The student id conducted the session
+     * @param int $courseid The associated course
+     * @param int $userid The student id conducted the session
      * @param bool $isinstructor Whether the user is an instructor or not
      * @param array
      */
@@ -261,7 +280,7 @@ class booking_vault implements booking_vault_interface {
      * For students it would be the date of the session (slot.starttime)
      *
      * @param int $courseid      The associated course
-     * @param int $studentid     The student id conducted the session
+     * @param int $userid     The student id conducted the session
      * @param bool $isinstructor Whether the user is an instructor or not
      * @param object
      */
@@ -282,7 +301,7 @@ class booking_vault implements booking_vault_interface {
      * Retrieve the date timestamp of the last booked session that had passed.
      *
      * @param int $courseid      The associated course
-     * @param int $studentid     The student id conducted the session
+     * @param int $userid     The student id conducted the session
      * @param bool $isinstructor Whether the user is an instructor or not
      * @param object
      */
@@ -327,8 +346,8 @@ class booking_vault implements booking_vault_interface {
     /**
      * Get an array of graded session count for each exercise for the user.
      *
-     * @param int $isinstructor
-     * @param int $userid
+     * @param int $courseid The associated course
+     * @param int $userid  The user id conducting the session
      * @return array
      */
     public static function get_user_total_graded_sessions(int $courseid, int $userid) {
@@ -351,8 +370,9 @@ class booking_vault implements booking_vault_interface {
     /**
      * Get the date of the last session date
      *
-     * @param int $isinstructor
-     * @param int $userid
+     * @param int $courseid The associated course
+     * @param int $userid  The user id conducting the session
+     * @param bool $isinstructor Whether the user is an instructor or not
      * @return int totalsessions
      */
     public static function get_user_total_sessions(int $courseid, int $userid, bool $isinstructor = false) {

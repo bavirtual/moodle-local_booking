@@ -53,6 +53,14 @@ interface booking_interface {
     public function save();
 
     /**
+     * Updates this booking in the database.
+     *
+     * @param int $itemid The grade item id to set for this booking.
+    * @return bool
+    */
+    public function update_itemid(int $itemid);
+
+    /**
      * Deletes this booking from database.
      *
      * @return bool
@@ -138,6 +146,13 @@ interface booking_interface {
     public function get_exercise_id();
 
     /**
+     * Get the grade item id for the booking.
+     *
+     * @return int
+     */
+    public function get_itemid();
+
+    /**
      * Get the instructor user id of the booking.
      *
      * @return int
@@ -217,8 +232,8 @@ interface booking_interface {
      * If there is no active session,
      * only the current session is returned
      *
-     * @param int $courseid      The associated course
-     * @param int $studentid     The student id conducted the session
+     * @param int $courseid The associated course
+     * @param int $userid The student id conducted the session
      * @param bool $isinstructor Whether the user is an instructor or not
      * @param array
     */
@@ -227,10 +242,17 @@ interface booking_interface {
     /**
      * Get the total sessions for a user.
      *
-     * @param int $courseid     The associated course id
-     * @param int $userid       The user id
+     * @param int $courseid The associated course id
+     * @param int $userid The user id
      * @param int $isinstructor Whether the user is an instructor
-     * @return int              The total amount of sessions conducted for the student
+     * @return int The total amount of sessions conducted for the student
      */
     public static function get_total_sessions(int $courseid, int $userid, bool $isinstructor = false);
+
+    /**
+     * Get the total session time including flight and ground session time.
+     *
+     * @return mixed The total amount of time in minutes
+     */
+    public function get_total_session_time(bool $formatted = false);
 }

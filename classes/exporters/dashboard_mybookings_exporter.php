@@ -64,7 +64,7 @@ class dashboard_mybookings_exporter extends exporter {
         $data['contextid'] = $subscriber->get_context()->id;
         $data['courseid'] = $subscriber->get_id();
 
-        // get intructor bookings
+        // get instructor bookings
         $instructor = $subscriber->get_instructor($USER->id);
         $this->mybookings = $instructor->get_bookings(false, true, true);
 

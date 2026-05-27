@@ -304,6 +304,9 @@ class participant implements participant_interface {
             case 'last':
                 $name = $this->user->lastname;
                 break;
+            case 'alternate':
+                $name = $this->user->alternatename;
+                break;
             default:
                 $name = $this->name;
         }

@@ -105,11 +105,22 @@ class logentry_exporter extends exporter {
             'exerciseid' => [
                 'type' => PARAM_INT
             ],
+            'sessionid' => [
+                'type' => PARAM_INT
+            ],
             'userid' => [
                 'type' => PARAM_INT
             ],
             'flightdate' => [
                 'type' => PARAM_RAW
+            ],
+            'flighttype' => [
+                'type' => PARAM_RAW,
+                'optional' => true,
+            ],
+            'pilotrole' => [
+                'type' => PARAM_TEXT,
+                'optional' => true,
             ],
             'groundtime' => [
                 'type' => PARAM_TEXT,
@@ -217,10 +228,6 @@ class logentry_exporter extends exporter {
                 'optional' => true,
             ],
             'remarks' => [
-                'type' => PARAM_RAW,
-                'optional' => true,
-            ],
-            'flighttype' => [
                 'type' => PARAM_RAW,
                 'optional' => true,
             ],

@@ -397,7 +397,6 @@ class subscriber implements subscriber_interface {
      * @param string $filter        The filter to show students, inactive (including graduates), suspended, and default to active.
      * @param bool $includeonhold   Whether to include on-hold students as well
      * @param string $roles         The roles of the participants
-     * @param string $wildcard      Wildcard value for autocomplete
      * @return array                Array of student ids & names
      */
     public function get_student_names(string $filter = 'active', bool $includeonhold = true, string $roles = null) {
@@ -498,13 +497,14 @@ class subscriber implements subscriber_interface {
      * Get an active instructor.
      *
      * @param int $instructorid An instructor user id.
+     * @param bool $rawdata     Whether to return the instructor raw data or object
      * @return instructor       The instructor object
      */
-    public function get_instructor(int $instructorid) {
+    public function get_instructor(int $instructorid, bool $rawdata = false) {
         $instructor = (!empty($this->activeinstructors) && !empty($instructorid) && isset($this->activeinstructors[$instructorid])) ?
             $this->activeinstructors[$instructorid] : null;
 
-        if (empty($instructor)) {
+        if (empty($instructor) || $rawdata) {
             $instructorrec = participant_vault::get_participant($this->courseid, $instructorid);
             // instantiate the instructor object and add to the list of activeinstructors
             $instructor = new instructor($this, $instructorid);
@@ -716,14 +716,20 @@ class subscriber implements subscriber_interface {
      * Get subscribing course grading item for a module
      *
      * @param int  $modid The exercise id requiring the grade item
+     * @param int  $gradeitemid The grade item id to retrieve the grade for (optional, only needed if different from coursemodid)
      * @return \grade_item
      */
-    public function get_grading_item(int $modid) {
+    public function get_grading_item(int $modid, int $gradeitemid = 0) {
         // get grading items for all modules
         if (!empty($modid)) {
             $mod = $this->get_modules()[$modid];
             $idx = array_search($mod->instance, array_column($this->gradeitems, 'iteminstance'));
             if (empty($idx)) {
+                if ($gradeitemid) {
+                    $gradeitem = \grade_item::fetch(array('id' => $gradeitemid));
+                    $this->gradeitems[] = $gradeitem;
+                    return $gradeitem;
+                }
                 $params = array('itemtype' => 'mod',
                     'itemmodule' => $mod->modname,
                     'iteminstance' => $mod->instance,
@@ -768,10 +774,22 @@ class subscriber implements subscriber_interface {
      * Get subscribing course checklist items
      *
      * @param int $checklistid The checklist id to get its items
+     * @param int $studentid The student id to get their checklist items
      * @return array
      */
-    public function get_checklist_items($checklistid) {
-        return checklist_vault::get_checklist_items($checklistid);
+    public function get_checklist_items($checklistid, $studentid = 0) {
+        return checklist_vault::get_checklist_items($checklistid, $studentid);
+    }
+
+    /**
+     * Get pending checklists for the student and format status
+     *
+     * @param int $studentid The student id to get their pending checklists
+     * @return string
+     */
+    public function get_pending_checklists(int $studentid) {
+        $checklistnames = checklist_vault::get_pending_checklists_for_student($this->courseid, $studentid);
+        return implode(', ', $checklistnames);
     }
 
     /**

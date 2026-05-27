@@ -38,24 +38,24 @@ require_login($courseid);
 $context = context_course::instance($courseid);
 require_capability('local/booking:view', $context);
 
+// define page url for use in links and redirects
+$url = new moodle_url('/local/booking/studentstats.php', ['studentid' => $studentid, 'courseid' => $courseid]);
+
 // define session booking plugin subscriber globally
 $subscriber = get_course_subscriber_context($url->out(false), $courseid);
 
 // Set up the page
-$PAGE->set_url(new moodle_url('/local/booking/studentstats.php', [
-    'studentid' => $studentid,
-    'courseid' => $courseid
-    ]));
+$PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_title(get_string('studentstatspage', 'local_booking'));
 $PAGE->set_heading(get_string('studentstatspage', 'local_booking'));
-$PAGE->set_pagelayout('standard');
+$PAGE->set_pagelayout('report');
 
 // Add custom body class for scoped styling
 $PAGE->add_body_class('local-booking-report');
 
 // Add the custom CSS for this page only
-$PAGE->requires->css('/local/booking/styles/stats_report.css');
+$PAGE->requires->css(new moodle_url($CFG->wwwroot . '/local/booking/styles/stats_report.css'));
 
 // Create exporter
 $data = [
@@ -69,13 +69,13 @@ $related = [
 
 // get student stats view for a student
 $statsview = new stats_view($data, $related);
-$actionbar = new action_bar($PAGE, 'stats', ['statsparams'=>$statsview->get_exportdata()]);
+$actionbar = new action_bar($PAGE, 'stats', ['course'=>$subscriber]);
 
 // output student stats view
 echo $OUTPUT->header();
 
 echo $statsview->get_renderer()->start_layout();
-echo $statsview->get_renderer()->render_tertiary_navigation($actionbar);
+// echo $statsview->get_renderer()->render_tertiary_navigation($actionbar);
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
 echo $statsview->output();
 echo html_writer::end_tag('div');

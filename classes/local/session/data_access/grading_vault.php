@@ -176,6 +176,7 @@ class grading_vault implements grading_vault_interface {
                 WHERE ag.assignment = :assignmentid
                 AND ag.userid = :userid
                 AND gi.definitionid = :definitionid
+                AND ag.grade > 0
             ORDER BY gi.timemodified ASC";
 
         $params = [

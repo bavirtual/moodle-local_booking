@@ -43,10 +43,19 @@ interface booking_vault_interface {
     /**
      * Saves the passed booked session
      *
-     * @param   booking_interface   $session
-     * @return  bool                $result
+     * @param   booking $booking  The booking to save.
+     * @return  bool $result
      */
     public static function save_booking(booking $booking);
+
+    /**
+    * Update the item id for a specific booking.
+    *
+    * @param int $bookingid The booking id to update the item id for.
+    * @param int $itemid The grade item id to set for this booking.
+    * @return bool $result
+    */
+    public static function update_booking_itemid(int $bookingid, int $itemid);
 
     /**
      * Confirm the passed book
@@ -86,8 +95,8 @@ interface booking_vault_interface {
      * If there is no active session,
      * only the current session is returned
      *
-     * @param int $courseid      The associated course
-     * @param int $studentid     The student id conducted the session
+     * @param int $courseid The associated course
+     * @param int $userid The student id conducted the session
      * @param bool $isinstructor Whether the user is an instructor or not
      * @param array
      */
@@ -109,7 +118,7 @@ interface booking_vault_interface {
      * For students it would be the date of the session (slot.starttime)
      *
      * @param int $courseid      The associated course
-     * @param int $studentid     The student id conducted the session
+     * @param int $userid     The student id conducted the session
      * @param bool $isinstructor Whether the user is an instructor or not
      * @param object
      */
@@ -119,7 +128,7 @@ interface booking_vault_interface {
      * Retrieve the date timestamp of the last booked session that had passed.
      *
      * @param int $courseid      The associated course
-     * @param int $studentid     The student id conducted the session
+     * @param int $userid     The student id conducted the session
      * @param bool $isinstructor Whether the user is an instructor or not
      * @param object
      */

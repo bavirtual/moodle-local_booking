@@ -139,6 +139,7 @@ class observers {
             // update progress info based on passing the exercise
             $assign = $event->get_assign();
             $gradeitem = $assign->get_grade_item();
+            $gradedata = $event->get_data();
             if ($gradeitem) {
                 $gradegrade = grade_grade::fetch(array('userid' => $studentid, 'itemid' => $gradeitem->id));
 
@@ -153,6 +154,9 @@ class observers {
                     $lastsessiondate = $booking->get_last_session_date($courseid, $studentid);
                     $lastsessiondatets = !empty($lastsessiondate) ? $lastsessiondate->getTimestamp() : 0;
                     $student->update_progress('lastsessiondate', $lastsessiondatets);
+                    // update the booking record with the grade item id for reference
+                    $itemid = empty($gradedata['objectid']) ? $gradeitem->id : $gradedata['objectid'];
+                    $booking->update_itemid($itemid);
 
                     // update current & next exercise info based on grade
                     if ($gradegrade->is_passed()) {

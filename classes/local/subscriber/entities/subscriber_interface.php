@@ -129,9 +129,10 @@ interface subscriber_interface {
      * Get an active instructor.
      *
      * @param int $instructorid An instructor user id.
+     * @param bool $rawdata     Whether to return the instructor raw data or object
      * @return instructor       The instructor object
      */
-    public function get_instructor(int $instructorid);
+    public function get_instructor(int $instructorid, bool $rawdata = false);
 
     /**
      * Get all active instructors for the course.

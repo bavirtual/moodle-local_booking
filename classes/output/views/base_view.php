@@ -58,10 +58,9 @@ abstract class base_view {
     /**
      * base view constructor.
      *
-     * @param \context  $context   The course context.
-     * @param int       $courseid  The course id for context.
-     * @param \stdClass $data      The data class.
-     * @param string    $template  The template used for output.
+     * @param array $data The data class.
+     * @param array $related The related objects to pass.
+     * @param string $template  The template used for output.
      */
     public function __construct(array $data, array $related, string $template) {
         global $PAGE;
@@ -115,12 +114,11 @@ abstract class base_view {
     /**
      * Retrieves modules (exercises & quizes) for the course
      *
-     * @param renderer_base $output     The renderer for output
      * @param subscriber    $subscriber The subscribing course
      * @param array         $options    The options for selecting returned modules
      * @return array
      */
-    public static function get_modules(renderer_base $output, subscriber $subscriber, array $options) {
+    public static function get_modules(subscriber $subscriber, array $options) {
         // get titles from the course custom fields exercise titles array
         $modsexport = [];
 

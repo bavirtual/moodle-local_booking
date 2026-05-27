@@ -1,5 +1,25 @@
 # Change log
 
+## [2026052700] - RELEASED 2026-05-27
+
+### Fixed
+
+- exception handling for unenrolled student in the instructor dashboard ‘My bookings’ section
+- when booking a session out of sequence, the grade action links to next assignment grading versus whichever assignment was booked
+- sessionid in logentry edit/new popup form not being passed from calling page
+- grade action pointing to the next air-exercise/assignment and not the exercise that was booked
+
+### Added
+
+- student summary statistics page for multi-crew courses
+- itemid field in the sessions table and updated with grade or grade attempt itemid when a grade is submitted through the event observer
+- pilotrole field to logbooks table to record multi-crew pilot role (pilot flying PF vs pilot monitoring PM)
+- pilot role option in edit/new logentry popup for multi-crew log entries only
+
+### Changed
+
+- student profile to include student's Summary Report for multi-crew courses
+
 ## [2026032701] - RELEASED 2026-03-27
 
 ### Fixed

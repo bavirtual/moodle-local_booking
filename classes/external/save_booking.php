@@ -77,10 +77,10 @@ class save_booking extends external_api {
      * Save booked slots. Delete existing ones for the user then update
      * any existing slots if applicable with slot values
      *
-     * @param {object} $bookedslot array containing booked slots.
+     * @param array $slottobook array containing booked slots.
+     * @param int $courseid The course id.
      * @param int $exerciseid The exercise the session is for.
      * @param int $studentid The student id associated with the slot.
-     * @param int $refslotid The session slot associated.
      * @return array array of slots created.
      */
     public static function execute($slottobook, $courseid, $exerciseid, $studentid) {

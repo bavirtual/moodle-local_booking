@@ -66,4 +66,30 @@ interface grading_vault_interface {
      * @return array
      */
     public static function get_exercise_gradeitem_scale(int $scaleid);
+
+    /**
+     * Get an array of grade rubric instances
+     *
+     * @param  int $assignmentid The assignment id for the exercise
+     * @param  int $studentid    The student id
+     * @param  int $definitionid The rubric definition id
+     * @return array
+     */
+    public static function get_rubric_instances(int $assignmentid, int $studentid, int $definitionid);
+
+    /**
+     * Get an array of grade rubric fillings by instance ids
+     *
+     * @param  array $instanceids The grading instance ids
+     * @return array
+     */
+    public static function get_rubric_fillings_by_instanceids(array $instanceids);
+
+    /**
+     * Get an array of grade rubric levels for a criterion
+     *
+     * @param  int $criterionid The criterion id
+     * @return array
+     */
+    public static function get_rubric_levels(int $criterionid);
 }

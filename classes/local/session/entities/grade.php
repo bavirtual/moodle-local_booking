@@ -19,7 +19,7 @@
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
- * @copyright  BAVirtual.co.uk © 2021
+ * @copyright  BAVirtual.co.uk © 2026
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -86,7 +86,7 @@ class grade extends \grade_grade {
     /**
      * Constructor.
      *
-     * @param grade_item $gradeitem    The grader user id of the grade.
+     * @param \grade_item $gradeitem    The grader user id of the grade.
      * @param int        $userid        The user id of the student of the grade.
      * @param int        $exerciseid    The exercise id of the grade.
      * @param bool       $force         Whether to force loading the grade object even before a final grade is assigned.
@@ -114,7 +114,7 @@ class grade extends \grade_grade {
             // get attempts if requested
             if ($getattempts) {
                 $this->attempts = grading_vault::get_student_exercise_attempts($this->grade_item->courseid, $userid, $exerciseid);
-                // get the grade nmae for each attempt
+                // get the grade name for each attempt
                 foreach ($this->attempts as $attempt) {
                     $attempt->gradename = $this->get_grade_name($attempt->grade);
                 }
@@ -160,7 +160,7 @@ class grade extends \grade_grade {
      * Get the user grade item for the grade.
      *
      * @param int $attempt The assignment grade attempt to be evaluate.
-     * @return stdClass
+     * @return \stdClass
      */
     public function get_user_grade_attempt(int $attempt = 0) {
         if (!isset($this->usergrade)) {
@@ -175,7 +175,7 @@ class grade extends \grade_grade {
      * Get grade name
      *
      * @param int $finalgrade The final grade
-     * @return array
+     * @return string
      */
     public function get_grade_name(int $finalgrade) {
         // get grading items for all modules
@@ -239,7 +239,7 @@ class grade extends \grade_grade {
     /**
      * Get the student's rubric grade info.
      *
-     * @param int    $attempt The assignment grade attempt to be evaluate.
+     * @param int $attempt The assignment grade attempt to be evaluate.
      * @return string[]
      */
     public function get_graderubric(int $attempt = 0) {
@@ -278,6 +278,115 @@ class grade extends \grade_grade {
         }
 
         return $rubric;
+    }
+
+    /**
+     * Retrieves a specific exercise's rubric criteria data
+     * for a student.
+     *
+     * @return array of rubric criteria data with grades, remarks, and trends.
+     */
+    public function get_rubric_criteriondata() {
+
+        // Get the grading manager
+        $gradingmanager = get_grading_manager($this->get_context(), 'mod_assign', 'submissions');
+
+        // Get the active grading method
+        $gradingmethod = $gradingmanager->get_active_method();
+        if ($gradingmethod !== 'rubric') {
+            debugging('Assignment does not use rubric grading');
+            return [];
+        }
+
+        // Get the rubric controller
+        $controller = $gradingmanager->get_controller($gradingmethod);
+        $definition = $controller->get_definition();
+
+        if (empty($definition->rubric_criteria)) {
+            debugging('No rubric criteria found');
+            return [];
+        }
+
+        // Get all rubric grading instances for this student and exercise
+        $instances = grading_vault::get_rubric_instances($this->get_assignment()->get_instance()->id, $this->userid, $definition->id);
+
+        if (empty($instances)) {
+            // No submissions yet, return empty criteria with no grades
+            return [];
+        }
+
+        // Get all fillings (criterion scores) for these instances
+        $fillings = grading_vault::get_rubric_fillings_by_instanceids(array_keys($instances));
+
+        // Organize fillings by criterion
+        $criteriondata = [];
+        foreach ($fillings as $filling) {
+            $criterionid = $filling->criterionid;
+
+            if (!isset($criteriondata[$criterionid])) {
+                $criteriondata[$criterionid] = [
+                    'name' => strip_tags(format_text($filling->criterion_name, FORMAT_HTML)),
+                    'sortorder' => $filling->sortorder,
+                    'grades' => [],
+                    'gradenames' => [],
+                    'remarks' => [],
+                    'instances' => []
+                ];
+            }
+
+            // Convert score to 1-5 scale (assuming rubric levels are 0-4 or similar)
+            // You may need to adjust this based on your rubric configuration
+//            $grade = $this->score_to_grade_scale($filling->score, $definition->rubric_criteria[$criterionid]);
+
+            $criteriondata[$criterionid]['grades'][] = intval($filling->score); //$grade;
+            $criteriondata[$criterionid]['gradenames'][] = $filling->level_definition;
+            $criteriondata[$criterionid]['remarks'][] = $filling->remark ?? '';
+            $criteriondata[$criterionid]['instances'][] = $filling->instanceid;
+        }
+
+        return [$criteriondata, $definition->rubric_criteria];
+    }
+
+    /**
+     * Convert rubric score to 1-5 grade scale
+     *
+     * @param float $score The rubric level score
+     * @param array $criterion The rubric criterion definition
+     * @return int Grade on 1-5 scale
+     */
+    private function score_to_grade_scale(float $score, array $criterion) {
+
+        $levels = grading_vault::get_rubric_levels($criterion['id']);
+
+        if (empty($levels)) {
+            return 3; // Default to "standard"
+        }
+
+        // Get min and max scores
+        $scores = array_column($levels, 'score');
+        $minscore = min($scores);
+        $maxscore = max($scores);
+
+        // Map to 1-5 scale (1 = best, 5 = worst)
+        // Invert if higher scores are better in your rubric
+        if ($maxscore == $minscore) {
+            return 3;
+        }
+
+        // Normalize to 0-1 range
+        $normalized = ($score - $minscore) / ($maxscore - $minscore);
+
+        // Convert to 1-5 scale (inverted: higher rubric score = lower grade number)
+        // Adjust this if your rubric works differently
+        $grade = 5 - round($normalized * 4);
+
+        return max(1, min(5, $grade));
+    }
+
+    public static function get_rubric_level_name($criterionid, $score) {
+        global $DB;
+        $levelrec = $DB->get_record('gradingform_rubric_levels', ['criterionid' => $criterionid, 'score' => $score]);
+        return $levelrec ? $levelrec->definition : '';
     }
 
     /**

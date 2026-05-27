@@ -31,6 +31,7 @@ use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
 use \local_booking\local\slot\entities\slot;
 use \local_booking\local\calendar\moodle_calendar;
+use local_booking\local\logbook\entities\logbook;
 use moodle_exception;
 use DateTime;
 
@@ -58,6 +59,11 @@ class booking implements booking_interface {
      * @var int $exerciseid The course exercise id of this booking.
      */
     protected $exerciseid;
+
+    /**
+     * @var int $itemid The exercise grade item id of this booking.
+     */
+    protected $itemid = 0;
 
     /**
      * @var int $instructorid The instructor user id of this booking.
@@ -153,6 +159,7 @@ class booking implements booking_interface {
             $this->id = $bookingrec->id;
             $this->courseid = $bookingrec->courseid;
             $this->exerciseid = $bookingrec->exerciseid;
+            $this->itemid = $bookingrec->itemid;
             $this->instructorid = $bookingrec->userid;
             $this->studentid = $bookingrec->studentid;
             $this->slot = new slot($bookingrec->slotid);
@@ -200,6 +207,17 @@ class booking implements booking_interface {
         }
 
         return $this->id != 0;
+    }
+
+    /**
+     * Set the item id for the booking and persist it to the database.
+     *
+     * @param int $itemid The grade item id to set for this booking.
+     * @return bool
+     */
+    public function update_itemid(int $itemid) {
+        $this->itemid = $itemid;
+        return booking_vault::update_booking_itemid($this->id, $itemid);
     }
 
     /**
@@ -323,12 +341,21 @@ class booking implements booking_interface {
     }
 
     /**
-     * Get the exercis id for the booking.
+     * Get the exercise id for the booking.
      *
      * @return int
      */
     public function get_exercise_id() {
         return $this->exerciseid;
+    }
+
+    /**
+     * Get the item id for the booking.
+     *
+     * @return int
+     */
+    public function get_itemid() {
+        return $this->itemid;
     }
 
     /**
@@ -435,7 +462,7 @@ class booking implements booking_interface {
      * only the current session is returned
      *
      * @param int $courseid      The associated course
-     * @param int $studentid     The student id conducted the session
+     * @param int $userid     The student id conducted the session
      * @param bool $isinstructor Whether the user is an instructor or not
      * @param array
     */
@@ -467,5 +494,15 @@ class booking implements booking_interface {
      */
     public static function get_total_sessions(int $courseid, int $userid, bool $isinstructor = false) {
         return booking_vault::get_user_total_sessions($courseid, $userid, $isinstructor);
+    }
+
+    /**
+     * Get the total session time including flight and ground session time.
+     *
+     * @return mixed The total amount of time in minutes
+     */
+    public function get_total_session_time(bool $formatted = false) {
+        $logbook = new logbook($this->courseid, $this->studentid);
+        return $logbook->get_user_session_time($this->id, $formatted);
     }
 }

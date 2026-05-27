@@ -304,6 +304,9 @@ class participant implements participant_interface {
             case 'last':
                 $name = $this->user->lastname;
                 break;
+            case 'alternate':
+                $name = $this->user->alternatename;
+                break;
             default:
                 $name = $this->name;
         }
@@ -682,7 +685,6 @@ class participant implements participant_interface {
     /**
      * verifies whether the participant is part of a course group
      *
-     * @param int    $studentid The associated user id.
      * @param string $groupname The group name to verify membership.
      * @return bool             The result of the being a member of the passed group.
      */

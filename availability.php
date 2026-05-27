@@ -109,7 +109,7 @@ $data = [
     'confirm'     => $confirm,
 ];
 
-    // get calendar view for Session booking
+// get calendar view for Session booking
 $calendarview = new calendar_view($data, ['subscriber'=>$subscriber, 'context'=>$context]);
 $actionbar = new action_bar($PAGE, 'calendar', ['calendarparams'=>$calendarview->get_exportdata()]);
 

@@ -113,14 +113,24 @@ interface logbook_interface {
     public function get_logentry_by_sessionid(int $sessionid);
 
     /**
+     * Get the total time log for both flight and ground times
+     *
+     * @param  int $sessionid  The session id to get the total log time for
+     * @param  bool $tostring   The totals in string time format
+     * @return mixed The logbook time table totals
+     */
+    public function get_user_session_time(int $sessionid, bool $tostring = false);
+
+    /**
      * Get the logbook entries time totals
      *
      * @param  bool $tostring   The totals in string time format
      * @param  bool $allcourses The totals of all courses
-     * @param  int  $examid     The graduation exam exericse id
+     * @param  int  $examid     The graduation exam exercise id
+     * @param  int  $sessionid  The session id to get the totals for
      * @return object           The logbook time table totals
      */
-    public function get_summary(bool $tostring = false, bool $allcourses = false, int $examid = 0);
+    public function get_summary(bool $tostring = false, bool $allcourses = false, int $examid = 0, int $sessionid = 0);
 
     /**
      * Get the logbook entries time totals until a specific exercise

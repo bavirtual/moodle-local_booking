@@ -118,7 +118,6 @@ class availability_week_exporter extends exporter {
      * Constructor.
      *
      * @param array $actiondata associated with the booking action.
-     * @param string $view the type of view (single student or all)
      * @param array $related Related objects.
      */
     public function __construct($actiondata, $related) {
@@ -183,6 +182,7 @@ class availability_week_exporter extends exporter {
             'studentid'   => $studentid,
             'exerciseid'  => $exerciseid,
             'exercisename'=> $this->course->get_exercise($exerciseid)->name,
+            'trainingtype'=> $this->course->trainingtype,
             'confirm'     => $actiondata['confirm'],
             'editing'     => $this->view == 'user' && $this->actiondata['action'] != 'book',    // Editing is not allowed if user id is passed for booking
             'alreadybooked' => !empty($this->activebooking),
@@ -231,6 +231,10 @@ class availability_week_exporter extends exporter {
                 'type' => PARAM_INT,
             ],
             'exercisename' => [
+                'type' => PARAM_RAW,
+                'default' => '',
+            ],
+            'trainingtype' => [
                 'type' => PARAM_RAW,
                 'default' => '',
             ],

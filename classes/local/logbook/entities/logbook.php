@@ -133,9 +133,22 @@ class logbook implements logbook_interface {
     /**
      * Get the logbook of a user.
      *
+     * @param int $sessionid The session id to get the logbook entries for.
      * @return logentry[]
      */
-    public function get_logentries() {
+    public function get_logentries(int $sessionid = 0) {
+        if (empty($this->entries)) {
+            $this->load();
+        }
+        if ($sessionid != 0) {
+            $entries = [];
+            foreach ($this->entries as $entry) {
+                if ($entry->get_sessionid() == $sessionid) {
+                    $entries[] = $entry;
+                }
+            }
+            return $entries;
+        }
         return $this->entries;
     }
 
@@ -206,18 +219,35 @@ class logbook implements logbook_interface {
     }
 
     /**
+     * Get the total time log for both flight and ground times
+     *
+     * @param  int $sessionid  The session id to get the total log time for
+     * @param  bool $tostring   The totals in string time format
+     * @return mixed The logbook time table totals
+     */
+    public function get_user_session_time(int $sessionid, bool $tostring = false) {
+        $totaltime = logbook_vault::get_user_session_time($this->courseid, $this->userid, $sessionid);
+        if ($tostring) {
+            $totaltime = self::convert_time($totaltime, 'MINS_TO_TEXT') ?: '';
+        }
+        return $totaltime;
+    }
+
+    /**
      * Get the logbook entries time totals
      *
      * @param  bool $tostring   The totals in string time format
      * @param  bool $allcourses The totals of all courses
-     * @param  int  $examid     The graduation exam exericse id
+     * @param  int  $examid     The graduation exam exercise id
+     * @param  int  $sessionid  The session id to get the totals for
      * @return object           The logbook time table totals
      */
-    public function get_summary(bool $tostring = false, bool $allcourses = false, int $examid = 0) {
-        $totals = logbook_vault::get_logbook_summary($this->courseid, $this->userid, $examid, $allcourses);
+    public function get_summary(bool $tostring = false, bool $allcourses = false, int $examid = 0, int $sessionid = 0) {
+        $totals = logbook_vault::get_logbook_summary($this->courseid, $this->userid, $examid, $allcourses, $sessionid);
         if ($tostring) {
+            $exceptionkeys = ['totallandingsday', 'totallandingsnight', 'totalpftime', 'totalpmtime'];
             foreach ($totals as $key => $total) {
-                if ($key != 'totallandingsday' && $key != 'totallandingsnight') {
+                if (!in_array($key, $exceptionkeys)) {
                     // TODO: PHP9 deprecates dynamic properties
                     $totals->$key = self::convert_time($total, 'MINS_TO_TEXT') ?: '';
                 }
@@ -236,8 +266,9 @@ class logbook implements logbook_interface {
     public function get_summary_upto_exercise(int $exerciseid, bool $tostring = false) {
         $totals = logbook_vault::get_logbook_summary_to_exercise($this->courseid, $this->userid, $exerciseid);
         if ($tostring) {
+            $exceptionkeys = ['totallandingsday', 'totallandingsnight', 'totalpftime', 'totalpmtime'];
             foreach ($totals as $key => $total) {
-                if ($key != 'totallandingsday' && $key != 'totallandingsnight') {
+                if (!in_array($key, $exceptionkeys)) {
                     // TODO: PHP9 deprecates dynamic properties
                     $totals->$key = self::convert_time($total, 'MINS_TO_TEXT') ?: '';
                 }

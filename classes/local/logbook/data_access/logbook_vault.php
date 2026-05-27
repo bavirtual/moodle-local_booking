@@ -45,11 +45,11 @@ class logbook_vault implements logbook_vault_interface {
     /**
      * Get a user's logbook.
      *
-     * @param int       $courseid   The course id associated with the logbook.
-     * @param int       $userid     The user id associated with the logbook.
-     * @param logbook   $logbook    The logbook_interface of for all entries.
-     * @param bool      $allentries Whether to get entries for all courses
-     * @return logentries[]     Array of logentry_interfaces.
+     * @param int $courseid The course id associated with the logbook.
+     * @param int $userid The user id associated with the logbook.
+     * @param logbook $logbook The logbook_interface of for all entries.
+     * @param bool $allentries Whether to get entries for all courses
+     * @return array Array of logentry_interfaces.
      */
     public static function get_logbook(int $courseid, int $userid, $logbook, $allentries = false) {
         global $DB;
@@ -57,7 +57,7 @@ class logbook_vault implements logbook_vault_interface {
         $coursestatement = !$allentries ? 'courseid = :courseid AND' : '';
         $logbookentries = [];
         $sql = 'SELECT lb.id, lb.courseid, lb.exerciseid, lb.sessionid, lb.userid, lb.pirep, lb.callsign,
-                    lb.flighttype, lb.flightdate, lb.depicao, lb.deptime, lb.arricao, lb.arrtime,
+                    lb.flighttype, lb.pilotrole, lb.flightdate, lb.depicao, lb.deptime, lb.arricao, lb.arrtime,
                     lb.aircraft, lb.aircraftreg, lb.enginetype, lb.route, lb.multipilottime, lb.p1id, lb.p2id,
                     lb.landingsday, lb.landingsnight, lb.groundtime, lb.flighttime, lb.nighttime, lb.ifrtime,
                     lb.pictime, lb.copilottime, lb.dualtime, lb.instructortime, lb.picustime, lb.checkpilottime,
@@ -224,15 +224,44 @@ class logbook_vault implements logbook_vault_interface {
     }
 
     /**
+     * Get the total time log for both flight and ground times for a user in a course
+     *
+     * @param int $courseid The course id associated with the logbook.
+     * @param int $userid The user id associated with the logbook.
+     * @return int The total time logged in minutes
+     */
+    public static function get_user_session_time(int $courseid, int $userid, int $sessionid = 0) {
+        global $DB;
+
+        $sql = 'SELECT SUM(groundtime) + SUM(flighttime) as totalsessiontime
+                FROM {' . self::DB_LOGBOOKS . '}
+                WHERE courseid = :courseid
+                AND userid = :userid';
+
+        if ($sessionid) {
+            $sql .= ' AND sessionid = :sessionid';
+        }
+
+        $params = [
+            'courseid' => $courseid,
+            'userid' => $userid,
+            'sessionid' => $sessionid
+        ];
+
+        return $DB->get_record_sql($sql, $params)->totalsessiontime;
+    }
+
+    /**
      * Get summary of logentries of the entire logbook.
      *
      * @param int       $courseid   The course id associated with the logbook.
      * @param int       $userid     The user id associated with the logbook.
      * @param int       $examid     The exam id associated with the course.
      * @param  bool     $allcourses The totals of all courses
+     * @param  int      $sessionid  The session id to get the totals for
      * @return object   $totaldualtime, $totalgroundtime, $totalpictime
      */
-    public static function get_logbook_summary(int $courseid, int $userid, int $examid, bool $allcourses = false) {
+    public static function get_logbook_summary(int $courseid, int $userid, int $examid, bool $allcourses = false, int $sessionid = 0) {
         global $DB;
 
         $sql = 'SELECT SUM(groundtime) + SUM(flighttime) as totalsessiontime,
@@ -240,6 +269,8 @@ class logbook_vault implements logbook_vault_interface {
                     SUM(flighttime) as totalflighttime,
                     SUM(pictime) as totalpictime,
                     SUM(dualtime) as totaldualtime,
+                    (SELECT SUM(flighttime) FROM {' . self::DB_LOGBOOKS .'} WHERE courseid = ' . $courseid . ' AND userid = ' . $userid . ($sessionid ? ' AND sessionid = ' . $sessionid : '') . ' AND pilotrole = "PF") as totalpftime,
+                    (SELECT SUM(flighttime) FROM {' . self::DB_LOGBOOKS .'} WHERE courseid = ' . $courseid . ' AND userid = ' . $userid . ($sessionid ? ' AND sessionid = ' . $sessionid : '') . ' AND pilotrole = "PM") as totalpmtime,
                     SUM(instructortime) as totalinstructortime,
                     SUM(CASE
                         WHEN exerciseid = :examexerciseid AND p1id = :examinerid
@@ -249,6 +280,8 @@ class logbook_vault implements logbook_vault_interface {
                     SUM(picustime) as totalpicustime,
                     SUM(multipilottime) as totalmultipilottime,
                     SUM(copilottime) as totalcopilottime,
+                    COUNT(CASE WHEN pilotrole = "PF" THEN 1 END) as totalpftime,
+                    COUNT(CASE WHEN pilotrole = "PM" THEN 1 END) as totalpmtime,
                     SUM(nighttime) as totalnighttime,
                     SUM(ifrtime) as totalifrtime,
                     SUM(checkpilottime) as totalcheckpilottime,
@@ -256,11 +289,13 @@ class logbook_vault implements logbook_vault_interface {
                     SUM(landingsnight) as totallandingsnight
                 FROM {' . self::DB_LOGBOOKS .'}
                 WHERE ' . ($allcourses ? '' : 'courseid = :courseid AND ') .
-                    'userid = :userid';
+                    'userid = :userid' .
+                    ($sessionid ? ' AND sessionid = :sessionid' : '');
 
         $params = [
             'courseid'       => $courseid,
             'userid'         => $userid,
+            'sessionid'      => $sessionid,
             'examinerid'     => $userid,
             'examexerciseid' => $examid
         ];
@@ -299,10 +334,14 @@ class logbook_vault implements logbook_vault_interface {
                     SUM(l.flighttime) as totalflighttime,
                     SUM(l.pictime) as totalpictime,
                     SUM(l.dualtime) as totaldualtime,
+                    (SELECT SUM(flighttime) FROM {' . self::DB_LOGBOOKS .'} WHERE courseid = ' . $courseid . ' AND userid = ' . $userid . '  AND pilotrole = "PF") as totalpftime,
+                    (SELECT SUM(flighttime) FROM {' . self::DB_LOGBOOKS .'} WHERE courseid = ' . $courseid . ' AND userid = ' . $userid . '  AND pilotrole = "PM") as totalpmtime,
                     SUM(l.instructortime) as totalinstructortime,
                     SUM(l.picustime) as totalpicustime,
                     SUM(l.multipilottime) as totalmultipilottime,
                     SUM(l.copilottime) as totalcopilottime,
+                    COUNT(CASE WHEN pilotrole = "PF" THEN 1 END) as totalpftime,
+                    COUNT(CASE WHEN pilotrole = "PM" THEN 1 END) as totalpmtime,
                     SUM(l.nighttime) as totalnighttime,
                     SUM(l.ifrtime) as totalifrtime,
                     SUM(l.checkpilottime) as totalcheckpilottime,
@@ -341,6 +380,7 @@ class logbook_vault implements logbook_vault_interface {
         $logentryobj->sessionid = $logentry->get_sessionid();
         $logentryobj->userid = $userid;
         $logentryobj->flightdate = $logentry->get_flightdate();
+        $logentryobj->pilotrole = $logentry->get_pilotrole();
         $logentryobj->groundtime = $logentry->get_groundtime();
         $logentryobj->flighttime = $logentry->get_flighttime();
         $logentryobj->p1id = $logentry->get_p1id();
@@ -381,10 +421,10 @@ class logbook_vault implements logbook_vault_interface {
     }
 
     /**
-     * Create an logentry instance from a database recordobject to be persisted
+     * Create an logentry instance from a database record object to be persisted
      *
-     * @param object    $dataob      A data record representing a logbook entry.
-     * @param logbook   $logbook     The logbook_interface of for all entries.
+     * @param object $dataobj A data record representing a logbook entry.
+     * @param logentry $logentry The logbook_interface of for all entries.
      * @return logentry $logentryobj The log entry instance.
      */
     protected static function get_logentry_instance($dataobj, $logentry) {
@@ -396,6 +436,7 @@ class logbook_vault implements logbook_vault_interface {
             $logentry->set_flightdate($dataobj->flightdate);
             $logentry->set_groundtime($dataobj->groundtime);
             $logentry->set_flighttime($dataobj->flighttime);
+            $logentry->set_pilotrole($dataobj->pilotrole);
             $logentry->set_p1id($dataobj->p1id);
             $logentry->set_p2id($dataobj->p2id);
             $logentry->set_pictime($dataobj->pictime);

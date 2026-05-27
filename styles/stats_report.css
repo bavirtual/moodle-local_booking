@@ -1,5 +1,23 @@
-/* Scope ALL styles to prevent conflicts with Moodle */
-body.local-booking-report :root {
+/* Reset and override Moodle styles within #page-content */
+html {
+    scroll-behavior: smooth;
+}
+
+body.local-booking-report #page-content {
+    background: #f6f8fb;
+    padding: 0;
+    margin: 0;
+}
+
+/* Remove Moodle's default region styles */
+body.local-booking-report #region-main {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+/* CSS Variables scoped to page-content */
+body.local-booking-report #page-content {
     --bg: #f6f8fb;
     --card: #ffffff;
     --text: #0f172a;
@@ -7,44 +25,30 @@ body.local-booking-report :root {
     --border: #e2e8f0;
     --blue: #3b82f6;
     --blue-700: #1d4ed8;
-
-    /* Grade colors (NOTE: 1 is best, 5 is worst) */
-    --g1: #16a34a; /* excellent */
-    --g2: #22c55e; /* good */
-    --g3: #f59e0b; /* standard */
-    --g4: #f97316; /* below standard */
-    --g5: #ef4444; /* unsat */
+    --g1: #16a34a;
+    --g2: #22c55e;
+    --g3: #f59e0b;
+    --g4: #f97316;
+    --g5: #ef4444;
 }
 
-body.local-booking-report * {
+/* Apply box-sizing to all elements within page-content */
+body.local-booking-report #page-content * {
     box-sizing: border-box;
 }
 
-/* Override Moodle's default page styles */
-body.local-booking-report #region-main {
-    background: var(--bg);
-    padding: 0;
-}
-
-body.local-booking-report #page-content {
-    background: var(--bg);
-}
-
-body.local-booking-report {
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.35;
-}
-
-body.local-booking-report .page {
+/* Main container */
+body.local-booking-report #page-content .page {
     max-width: 1080px;
     margin: 24px auto 48px;
     padding: 0 16px;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    line-height: 1.35;
+    color: var(--text);
 }
 
 /* Top header (logo + meta) */
-body.local-booking-report .topbar {
+body.local-booking-report #page-content .topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -56,14 +60,14 @@ body.local-booking-report .topbar {
     box-shadow: 0 1px 0 rgba(15, 23, 42, .04);
 }
 
-body.local-booking-report .brand {
+body.local-booking-report #page-content .brand {
     display: flex;
     align-items: center;
     gap: 12px;
     min-width: 0;
 }
 
-body.local-booking-report .logo {
+body.local-booking-report #page-content .logo {
     width: 40px;
     height: 40px;
     border-radius: 10px;
@@ -72,16 +76,17 @@ body.local-booking-report .logo {
     flex-shrink: 0;
 }
 
-body.local-booking-report .brand h1 {
+body.local-booking-report #page-content .brand h1 {
     font-size: 16px;
     margin: 0;
     font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text);
 }
 
-body.local-booking-report .brand .subtitle {
+body.local-booking-report #page-content .brand .subtitle {
     font-size: 12px;
     color: var(--muted);
     margin-top: 2px;
@@ -90,7 +95,7 @@ body.local-booking-report .brand .subtitle {
     text-overflow: ellipsis;
 }
 
-body.local-booking-report .topmeta {
+body.local-booking-report #page-content .topmeta {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -98,12 +103,12 @@ body.local-booking-report .topmeta {
     justify-content: flex-end;
 }
 
-body.local-booking-report .meta {
+body.local-booking-report #page-content .meta {
     font-size: 12px;
     color: var(--muted);
 }
 
-body.local-booking-report .btn {
+body.local-booking-report #page-content .btn {
     appearance: none;
     border: 1px solid var(--border);
     background: var(--card);
@@ -112,23 +117,19 @@ body.local-booking-report .btn {
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px;
 }
 
-body.local-booking-report .btn.primary {
+body.local-booking-report #page-content .btn.primary {
     border-color: rgba(59, 130, 246, .35);
     background: rgba(59, 130, 246, .10);
     color: var(--blue-700);
 }
 
-body.local-booking-report .btn:hover {
-    opacity: 0.9;
-}
-
 /* Big title band */
-body.local-booking-report .titleband {
+body.local-booking-report #page-content .titleband {
     margin-top: 14px;
-    padding: 16px 16px;
+    padding: 16px;
     border-radius: 14px;
     background: linear-gradient(90deg, var(--blue) 0%, #60a5fa 100%);
     color: #fff;
@@ -139,14 +140,15 @@ body.local-booking-report .titleband {
     gap: 12px;
 }
 
-body.local-booking-report .titleband h2 {
+body.local-booking-report #page-content .titleband h2 {
     margin: 0;
     font-size: 20px;
     letter-spacing: .2px;
+    color: #fff;
 }
 
 /* Student identity */
-body.local-booking-report .identity {
+body.local-booking-report #page-content .identity {
     margin-top: 14px;
     background: var(--card);
     border: 1px solid var(--border);
@@ -154,19 +156,20 @@ body.local-booking-report .identity {
     padding: 16px;
 }
 
-body.local-booking-report .identitygrid {
+body.local-booking-report #page-content .identitygrid {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 14px;
 }
 
-body.local-booking-report .studentname {
+body.local-booking-report #page-content .studentname {
     margin: 0 0 6px;
     font-size: 24px;
     font-weight: 800;
+    color: var(--text);
 }
 
-body.local-booking-report .kv {
+body.local-booking-report #page-content .kv {
     display: grid;
     grid-template-columns: 160px 1fr;
     gap: 6px 10px;
@@ -174,12 +177,12 @@ body.local-booking-report .kv {
     color: var(--muted);
 }
 
-body.local-booking-report .kv b {
+body.local-booking-report #page-content .kv b {
     color: var(--text);
     font-weight: 700;
 }
 
-body.local-booking-report .chips {
+body.local-booking-report #page-content .chips {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
@@ -187,7 +190,7 @@ body.local-booking-report .chips {
     justify-content: flex-end;
 }
 
-body.local-booking-report .chip {
+body.local-booking-report #page-content .chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -200,48 +203,49 @@ body.local-booking-report .chip {
     white-space: nowrap;
 }
 
-body.local-booking-report .chip.warn {
+body.local-booking-report #page-content .chip.warn {
     border-color: rgba(245, 158, 11, .35);
     background: rgba(245, 158, 11, .12);
     color: #92400e;
 }
 
-body.local-booking-report .chip.ok {
+body.local-booking-report #page-content .chip.ok {
     border-color: rgba(34, 197, 94, .35);
     background: rgba(34, 197, 94, .10);
     color: #166534;
 }
 
 /* KPI cards row */
-body.local-booking-report .kpis {
+body.local-booking-report #page-content .kpis {
     margin-top: 14px;
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 10px;
 }
 
-body.local-booking-report .kpi {
+body.local-booking-report #page-content .kpi {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 12px 12px;
+    padding: 12px;
     text-align: center;
 }
 
-body.local-booking-report .kpi .num {
+body.local-booking-report #page-content .kpi .num {
     font-size: 20px;
     font-weight: 800;
     margin: 0 0 2px;
+    color: var(--text);
 }
 
-body.local-booking-report .kpi .lbl {
+body.local-booking-report #page-content .kpi .lbl {
     font-size: 12px;
     color: var(--muted);
     margin: 0;
 }
 
 /* Main two-column area */
-body.local-booking-report .grid2 {
+body.local-booking-report #page-content .grid2 {
     margin-top: 16px;
     display: grid;
     grid-template-columns: 1.15fr .85fr;
@@ -249,20 +253,21 @@ body.local-booking-report .grid2 {
     align-items: start;
 }
 
-body.local-booking-report .card {
+body.local-booking-report #page-content .card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 14px;
 }
 
-body.local-booking-report .card h3 {
+body.local-booking-report #page-content .card h3 {
     margin: 0 0 10px;
     font-size: 14px;
     letter-spacing: .2px;
+    color: var(--text);
 }
 
-body.local-booking-report .smallnote {
+body.local-booking-report #page-content .smallnote {
     font-size: 12px;
     color: var(--muted);
     margin-top: -6px;
@@ -270,48 +275,49 @@ body.local-booking-report .smallnote {
 }
 
 /* Competency table */
-body.local-booking-report table {
+body.local-booking-report #page-content table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
     font-size: 13px;
 }
 
-body.local-booking-report thead th {
+body.local-booking-report #page-content thead th {
     text-align: left;
     font-size: 12px;
     color: var(--muted);
     font-weight: 700;
-    padding: 10px 10px;
+    padding: 10px;
     border-bottom: 1px solid var(--border);
 }
 
-body.local-booking-report tbody td {
-    padding: 10px 10px;
+body.local-booking-report #page-content tbody td {
+    padding: 10px;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
+    color: var(--text);
 }
 
-body.local-booking-report tbody tr:last-child td {
+body.local-booking-report #page-content tbody tr:last-child td {
     border-bottom: none;
 }
 
-body.local-booking-report .avgcell {
+body.local-booking-report #page-content .avgcell {
     width: 110px;
     white-space: nowrap;
 }
 
-body.local-booking-report .lastcell {
+body.local-booking-report #page-content .lastcell {
     width: 80px;
     text-align: center;
 }
 
-body.local-booking-report .trendcell {
+body.local-booking-report #page-content .trendcell {
     width: 90px;
     text-align: center;
 }
 
-body.local-booking-report .badge {
+body.local-booking-report #page-content .badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -323,27 +329,23 @@ body.local-booking-report .badge {
     font-size: 12px;
 }
 
-body.local-booking-report .g1 {
+body.local-booking-report #page-content .g1 {
     background: var(--g1);
 }
-
-body.local-booking-report .g2 {
+body.local-booking-report #page-content .g2 {
     background: var(--g2);
 }
-
-body.local-booking-report .g3 {
+body.local-booking-report #page-content .g3 {
     background: var(--g3);
 }
-
-body.local-booking-report .g4 {
+body.local-booking-report #page-content .g4 {
     background: var(--g4);
 }
-
-body.local-booking-report .g5 {
+body.local-booking-report #page-content .g5 {
     background: var(--g5);
 }
 
-body.local-booking-report .trend {
+body.local-booking-report #page-content .trend {
     display: inline-flex;
     gap: 6px;
     align-items: center;
@@ -352,19 +354,17 @@ body.local-booking-report .trend {
     color: var(--muted);
 }
 
-body.local-booking-report .trend .up {
+body.local-booking-report #page-content .trend .up {
     color: var(--g2);
 }
-
-body.local-booking-report .trend .flat {
+body.local-booking-report #page-content .trend .flat {
     color: var(--muted);
 }
-
-body.local-booking-report .trend .down {
+body.local-booking-report #page-content .trend .down {
     color: var(--g5);
 }
 
-body.local-booking-report .legend {
+body.local-booking-report #page-content .legend {
     margin-top: 10px;
     display: flex;
     gap: 8px;
@@ -374,7 +374,7 @@ body.local-booking-report .legend {
     color: var(--muted);
 }
 
-body.local-booking-report .dot {
+body.local-booking-report #page-content .dot {
     width: 10px;
     height: 10px;
     border-radius: 999px;
@@ -384,14 +384,15 @@ body.local-booking-report .dot {
 }
 
 /* Sign-offs panels */
-body.local-booking-report .panel {
+body.local-booking-report #page-content .panel {
     border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 12px;
+    background: var(--card);
 }
 
-body.local-booking-report .panelhead {
+body.local-booking-report #page-content .panelhead {
     padding: 10px 12px;
     background: #f8fafc;
     border-bottom: 1px solid var(--border);
@@ -401,39 +402,41 @@ body.local-booking-report .panelhead {
     gap: 10px;
 }
 
-body.local-booking-report .panelhead b {
+body.local-booking-report #page-content .panelhead b {
     font-size: 13px;
+    color: var(--text);
 }
 
-body.local-booking-report .count {
+body.local-booking-report #page-content .count {
     font-size: 12px;
     color: var(--muted);
     white-space: nowrap;
 }
 
-body.local-booking-report .item {
+body.local-booking-report #page-content .item {
     padding: 10px 12px;
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 8px 10px;
 }
 
-body.local-booking-report .item + .item {
+body.local-booking-report #page-content .item + .item {
     border-top: 1px solid var(--border);
 }
 
-body.local-booking-report .itemtitle {
+body.local-booking-report #page-content .itemtitle {
     font-weight: 800;
     font-size: 13px;
+    color: var(--text);
 }
 
-body.local-booking-report .itemmeta {
+body.local-booking-report #page-content .itemmeta {
     font-size: 12px;
     color: var(--muted);
     grid-column: 1 / -1;
 }
 
-body.local-booking-report .pill {
+body.local-booking-report #page-content .pill {
     font-size: 12px;
     font-weight: 700;
     border-radius: 999px;
@@ -443,29 +446,36 @@ body.local-booking-report .pill {
     white-space: nowrap;
 }
 
-body.local-booking-report .pill.pending {
+body.local-booking-report #page-content .pill.pending {
     border-color: rgba(245, 158, 11, .35);
     background: rgba(245, 158, 11, .12);
     color: #92400e;
 }
 
-body.local-booking-report .pill.done {
+body.local-booking-report #page-content .pill.done {
     border-color: rgba(34, 197, 94, .35);
     background: rgba(34, 197, 94, .10);
     color: #166534;
 }
 
+body.local-booking-report #page-content .pill.missing {
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.12);
+    color: #7d1d1d;
+}
+
 /* Sessions area */
-body.local-booking-report .sessions {
+body.local-booking-report #page-content .sessions {
     margin-top: 14px;
 }
 
-body.local-booking-report .sessions h3 {
+body.local-booking-report #page-content .sessions h3 {
     margin: 0 0 10px;
     font-size: 14px;
+    color: var(--text);
 }
 
-body.local-booking-report details.session {
+body.local-booking-report #page-content details.session {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -473,7 +483,7 @@ body.local-booking-report details.session {
     overflow: hidden;
 }
 
-body.local-booking-report details.session > summary {
+body.local-booking-report #page-content details.session > summary {
     list-style: none;
     cursor: pointer;
     padding: 12px 14px;
@@ -484,31 +494,32 @@ body.local-booking-report details.session > summary {
     background: #ffffff;
 }
 
-body.local-booking-report details.session > summary::-webkit-details-marker {
+body.local-booking-report #page-content details.session > summary::-webkit-details-marker {
     display: none;
 }
 
-body.local-booking-report .sumleft {
+body.local-booking-report #page-content .sumleft {
     min-width: 0;
 }
 
-body.local-booking-report .sumtitle {
+body.local-booking-report #page-content .sumtitle {
     display: flex;
     gap: 10px;
     align-items: baseline;
     flex-wrap: wrap;
 }
 
-body.local-booking-report .sumtitle b {
+body.local-booking-report #page-content .sumtitle b {
     font-size: 13px;
+    color: var(--text);
 }
 
-body.local-booking-report .sumtitle span {
+body.local-booking-report #page-content .sumtitle span {
     font-size: 12px;
     color: var(--muted);
 }
 
-body.local-booking-report .sumnote {
+body.local-booking-report #page-content .sumnote {
     margin-top: 4px;
     font-size: 12px;
     color: var(--muted);
@@ -518,7 +529,7 @@ body.local-booking-report .sumnote {
     text-overflow: ellipsis;
 }
 
-body.local-booking-report .sumright {
+body.local-booking-report #page-content .sumright {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -527,7 +538,7 @@ body.local-booking-report .sumright {
     white-space: nowrap;
 }
 
-body.local-booking-report .timechip {
+body.local-booking-report #page-content .timechip {
     font-size: 12px;
     color: var(--muted);
     border: 1px solid var(--border);
@@ -536,13 +547,13 @@ body.local-booking-report .timechip {
     background: #fff;
 }
 
-body.local-booking-report .sessionbody {
+body.local-booking-report #page-content .sessionbody {
     border-top: 1px solid var(--border);
     padding: 14px;
     background: #fbfdff;
 }
 
-body.local-booking-report .sessionhdr {
+body.local-booking-report #page-content .sessionhdr {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -550,17 +561,18 @@ body.local-booking-report .sessionhdr {
     margin-bottom: 10px;
 }
 
-body.local-booking-report .sessionhdr h4 {
+body.local-booking-report #page-content .sessionhdr h4 {
     margin: 0;
     font-size: 14px;
+    color: var(--text);
 }
 
-body.local-booking-report .sessionhdr .meta {
+body.local-booking-report #page-content .sessionhdr .meta {
     font-size: 12px;
     color: var(--muted);
 }
 
-body.local-booking-report .sectortable {
+body.local-booking-report #page-content .sectortable {
     margin-top: 10px;
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -568,15 +580,15 @@ body.local-booking-report .sectortable {
     background: #fff;
 }
 
-body.local-booking-report .sectortable table {
+body.local-booking-report #page-content .sectortable table {
     font-size: 13px;
 }
 
-body.local-booking-report .sectortable thead th {
+body.local-booking-report #page-content .sectortable thead th {
     background: #f8fafc;
 }
 
-body.local-booking-report .totals {
+body.local-booking-report #page-content .totals {
     margin-top: 10px;
     display: flex;
     gap: 10px;
@@ -585,63 +597,44 @@ body.local-booking-report .totals {
     color: var(--muted);
 }
 
-body.local-booking-report .totals b {
+body.local-booking-report #page-content .totals b {
     color: var(--text);
 }
 
-body.local-booking-report .twocol {
+body.local-booking-report #page-content .twocol {
     margin-top: 12px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
 
-/* Print styles */
-@media print {
-    body.local-booking-report .btn {
-        display: none;
-    }
-
-    body.local-booking-report #page-header,
-    body.local-booking-report #page-footer,
-    body.local-booking-report .breadcrumb {
-        display: none;
-    }
-}
-
 /* Responsive */
 @media (max-width: 980px) {
-    body.local-booking-report .kpis {
+    body.local-booking-report #page-content .kpis {
         grid-template-columns: repeat(3, 1fr);
     }
-
-    body.local-booking-report .grid2 {
+    body.local-booking-report #page-content .grid2 {
         grid-template-columns: 1fr;
     }
-
-    body.local-booking-report .identitygrid {
+    body.local-booking-report #page-content .identitygrid {
         grid-template-columns: 1fr;
     }
-
-    body.local-booking-report .chips {
+    body.local-booking-report #page-content .chips {
         justify-content: flex-start;
     }
 }
 
 @media (max-width: 560px) {
-    body.local-booking-report .kpis {
+    body.local-booking-report #page-content .kpis {
         grid-template-columns: repeat(2, 1fr);
     }
-
-    body.local-booking-report .kv {
+    body.local-booking-report #page-content .kv {
         grid-template-columns: 130px 1fr;
     }
-
-    body.local-booking-report .twocol {
+    body.local-booking-report #page-content .twocol {
         grid-template-columns: 1fr;
     }
-
-    body.local-booking-report .sumright {
+    body.local-booking-report #page-content .sumright {
         display: none;
     }
 }

@@ -121,14 +121,14 @@ class checklist implements checklist_interface {
      * @param int $itemid The ID of the checklist item to update
      * @param int $studentid The student ID for whom to update the item
      * @param int $teacherid The teacher ID updating the item
-     * @param int $state The new state of the checklist item
+     * @param int $checked The new state of the checklist item
      * @return bool True if update was successful, false otherwise
      */
-    public function update_checklist_item(int $itemid, int $studentid, int $teacherid, int $state, int $bookingid = 0) {
+    public function update_checklist_item(int $itemid, int $studentid, int $teacherid, int $checked, int $bookingid = 0) {
         global $CFG;
         require_once($CFG->dirroot . '/mod/checklist/lib.php');
 
-        $checklist = checklist_vault::update_course_checklist_item($itemid, $studentid, $teacherid, $state);
+        $checklist = checklist_vault::update_course_checklist_item($itemid, $studentid, $teacherid, $checked);
         $this->populate((array)$checklist);
         $success = !empty($checklist);
 
@@ -143,14 +143,19 @@ class checklist implements checklist_interface {
 
             $found = false;
             // Use a reference (&) to update the array element directly
-            foreach ($sessions as &$session) {
-                if (isset($session['bookingid']) && $session['bookingid'] == $bookingid) {
+            foreach ($sessions as $key => &$session) {
+                if (isset($session['checkeditems']) && $key == $bookingid) {
                     // Use in_array to prevent duplicates in checkeditems
                     if (!isset($session['checkeditems'])) {
                         $session['checkeditems'] = [];
                     }
-                    if (!in_array($itemid, $session['checkeditems'])) {
+                    // Add itemid to checkeditems if checked and not already present
+                    if (!in_array($itemid, $session['checkeditems']) && $checked) {
                         $session['checkeditems'][] = $itemid;
+                    }
+                    // Remove itemid from checkeditems if unchecked
+                    if (in_array($itemid, $session['checkeditems']) && !$checked) {
+                        $session['checkeditems'] = array_values(array_diff($session['checkeditems'], [$itemid]));
                     }
                     $found = true;
                     break;
@@ -160,8 +165,7 @@ class checklist implements checklist_interface {
 
             // If booking wasn't found, append a new one
             if (!$found) {
-                $sessions[] = [
-                    'bookingid' => $bookingid,
+                $sessions[$bookingid] = [
                     'checkeditems' => [$itemid]
                 ];
             }
@@ -173,5 +177,4 @@ class checklist implements checklist_interface {
         return (bool)$success;
 
     }
-
 }

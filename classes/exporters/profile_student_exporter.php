@@ -80,6 +80,7 @@ class profile_student_exporter extends exporter {
         $data['contextid'] = $related['context']->id;
         $data['courseid'] = $this->courseid;
         $data['haschecklists'] = $this->subscriber->has_checklists($this->courseid);
+        $data['ismulticrew'] = $this->subscriber->trainingtype == 'Multicrew';
         $this->student = $this->subscriber->get_student($data['userid']);
 
         parent::__construct($data, $related);
@@ -113,6 +114,11 @@ class profile_student_exporter extends exporter {
                 'type' => PARAM_INT,
             ],
             'haschecklists' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+                'optional' => true,
+            ],
+            'ismulticrew' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
                 'optional' => true,
@@ -294,6 +300,10 @@ class profile_student_exporter extends exporter {
             'logbookurl' => [
                 'type' => PARAM_URL,
             ],
+            'summaryurl' => [
+                'type' => PARAM_URL,
+                'default' => null,
+            ],
             'mentorreporturl' => [
                 'type' => PARAM_URL,
             ],
@@ -464,6 +474,12 @@ class profile_student_exporter extends exporter {
             'userid' => $studentid
         ]);
 
+        // student summary report
+        $summaryurl = new moodle_url('/local/booking/studentstats.php', [
+            'courseid' => $this->courseid,
+            'studentid' => $studentid
+        ]);
+
         // student mentor report
         $mentorreporturl = new moodle_url('/local/booking/report.php', [
             'courseid' => $this->courseid,
@@ -582,11 +598,12 @@ class profile_student_exporter extends exporter {
             'outlinereporturl'         => $outlinereporturl->out(false),
             'completereporturl'        => $completereporturl->out(false),
             'logbookurl'               => $logbookurl->out(false),
+            'summaryurl'               => $summaryurl->out(false),
             'mentorreporturl'          => $mentorreporturl->out(false),
             'theoryexamreporturl'      => $theoryexamreporturl->out(false),
             'practicalexamreporturl'   => $practicalexamreporturl->out(false),
             'tested'                   => $this->student->tested(),
-            'coursemodules'            => base_view::get_modules($output, $this->subscriber, $options),
+            'coursemodules'            => base_view::get_modules($this->subscriber, $options),
             'sessions'                 => dashboard_student_exporter::get_sessions($output, $this->subscriber, $this->student, $this->related),
             'comment'                  => $this->student->get_comment(),
         ];

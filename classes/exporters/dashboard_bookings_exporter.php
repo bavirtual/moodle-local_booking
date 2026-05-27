@@ -256,7 +256,7 @@ class dashboard_bookings_exporter extends exporter {
         }
 
         $return = [
-            'coursemodules' => base_view::get_modules($output, $this->course, $options),
+            'coursemodules' => base_view::get_modules($this->course, $options),
             'activestudents'=> $this->get_students($output),
             'totalstudents' => $this->course->get_students_count(),
             'avgwait'       => $this->averagewait,

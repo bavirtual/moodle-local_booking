@@ -55,7 +55,7 @@ class checklist_vault implements checklist_vault_interface
      * @param int $studentid The student ID for whom to retrieve checked items
      * @return array of checklist records
      */
-    public static function get_course_checklists($courseid, $getitems = false, $studentid = 0)
+    public static function get_course_checklists(int $courseid, bool $getitems = false, int $studentid = 0)
     {
         global $DB;
 
@@ -184,5 +184,44 @@ class checklist_vault implements checklist_vault_interface
         }
 
         return $checklist;
+    }
+
+    /**
+     * Get pending checklists for a student in a course
+     *
+     * @param int $courseid
+     * @param int $studentid
+     * @return array Array of pending checklist names or empty array if none pending
+     */
+    public static function get_pending_checklists_for_student(int $courseid, int $studentid)
+    {
+        global $DB;
+        $checklistnames = [];
+
+        // Query to get checklists with pending (unchecked) items for this student
+        $sql = 'SELECT DISTINCT c.id, c.name
+                  FROM {' . self::DB_CHECKLIST . '} c
+            INNER JOIN {' . self::DB_CHECKLIST_ITEMS . '} ci ON ci.checklist = c.id
+             LEFT JOIN {' . self::DB_CHECKLIST_CHECK . '} sc ON sc.item = ci.id
+                   AND sc.userid = :studentid
+                 WHERE c.course = :courseid
+                   AND (sc.id IS NULL OR sc.teachermark = 0)
+              ORDER BY c.name';
+
+        $params = [
+            'studentid' => $studentid,
+            'courseid' => $courseid,
+        ];
+
+        $pendingchecklists = $DB->get_records_sql($sql, $params);
+
+        if (!empty($pendingchecklists)) {
+            // Build array of checklist names
+            $checklistnames = array_map(function ($checklist) {
+                return $checklist->name;
+            }, $pendingchecklists);
+        }
+
+        return $checklistnames;
     }
 }

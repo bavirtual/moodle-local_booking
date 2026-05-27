@@ -129,43 +129,27 @@ export const refreshMyBookingsContent = (root, courseId, contextId, template = n
         // in the 'Instructor dashboard' page to add or edit a logentry
         // eslint-disable-next-line promise/no-nesting
         LogentryFormPromise.then(function(modal) {
-            var logegntrySession, flightDate, exerciseId, sessionId, flightType, findpirepenabled;
+            var logentrySession, flightDate, exerciseId, sessionId, flightType, findpirepenabled;
+            let logbookview = template == 'local_booking/logbook_std';
 
             // Sel elements not meant for new or additional logentries
             if (isNew) {
-                if (template == 'local_booking/logbook_std') {
-                    // From logbook
-                    flightDate = 0;
-                    exerciseId = 0;
-                    sessionId = 0;
-                    flightType = '';
-                    findpirepenabled = false;
-                } else {
-                    // From dashboard_session_exporter (Instructor dashboard)
-                    logegntrySession = target.closest(Selectors.actions.viewLogEntry);
-                    flightDate = logegntrySession.dataset.flightDate;
-                    exerciseId = logegntrySession.dataset.exerciseId;
-                    sessionId = logegntrySession.dataset.sessionId;
-                    flightType = logegntrySession.dataset.flightType;
-                    findpirepenabled = $(Selectors.wrappers.bookingwrapper).data('findpirep');
-                }
+                // From dashboard_session_exporter (Instructor dashboard)
+                logentrySession = logbookview ? 0 : target.closest(Selectors.actions.viewLogEntry);
+                flightDate = logbookview ? 0 : logentrySession.dataset.flightDate;
+                exerciseId = logbookview ? 0 : logentrySession.dataset.exerciseId;
+                sessionId = logbookview ? 0 : logentrySession.dataset.sessionId;
+                flightType = logbookview ? '' : logentrySession.dataset.flightType;
+                findpirepenabled = logbookview ? false : $(Selectors.wrappers.bookingwrapper).data('findpirep');
             } else {
-                if (template == 'local_booking/logbook_std') {
-                    // From logbook
-                    let logegntrySession = target.closest(Selectors.containers.summaryForm);
-                    flightDate = logegntrySession.dataset.flightDate;
-                    exerciseId = logegntrySession.dataset.exerciseId;
-                    sessionId = logegntrySession.dataset.sessionId;
-                    flightType = logegntrySession.dataset.flightType;
-                } else {
-                    // From logentry_view
-                    logegntrySession = root.find(Selectors.containers.summaryForm);
-                    flightDate = logegntrySession.data('flight-date');
-                    exerciseId = logegntrySession.data('exercise-id');
-                    sessionId = logegntrySession.data('session-id');
-                    flightType = logegntrySession.data('flight-type');
-                    findpirepenabled = logegntrySession.data('find-pirep');
-                }
+                // From logentry_view
+                logentrySession = logbookview ? target.closest(Selectors.containers.summaryForm) :
+                    root.find(Selectors.containers.summaryForm);
+                flightDate = logbookview ? logentrySession.dataset.flightDate : logentrySession.data('flight-date');
+                exerciseId = logbookview ? logentrySession.dataset.exerciseId : logentrySession.data('exercise-id');
+                sessionId = logbookview ? logentrySession.dataset.sessionId : logentrySession.data('session-id');
+                flightType = logbookview ? logentrySession.dataset.flightType : logentrySession.data('flight-type');
+                findpirepenabled = logbookview ? false : logentrySession.data('find-pirep');
             }
 
             // Set form properties

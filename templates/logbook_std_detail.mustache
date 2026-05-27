@@ -48,6 +48,7 @@
         {{p1label}}&#09;&#09;&#09;{{p1name}}
         {{^soloflight}}
         {{p2label}}&#09;&#09;&#09;&#09;{{p2name}}
+        {{^dualops}}{{#str}} pilotrole, local_booking {{/str}}&#09;&#09;&#09;{{pilotrole}}{{/dualops}}
         {{/soloflight}}
 
         {{^soloflight}}
@@ -73,7 +74,7 @@
         {{/dualops}}
         {{^dualops}}
         {{#str}} multipilottime, local_booking {{/str}}&#09;&#09;{{multipilottime}}
-        {{#str}} nighttime, local_booking {{/str}}&#09;&#09;&#09;{{nighttime}}
+        {{#str}} nighttime, local_booking {{/str}}&#09;&#09;{{nighttime}}
         {{#isstudent}}
         {{#str}} copilottime, local_booking {{/str}}&#09;&#09;&#09;{{copilottime}}
         {{/isstudent}}

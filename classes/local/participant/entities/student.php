@@ -30,6 +30,7 @@ require_once($CFG->dirroot . '/mod/assign/externallib.php');
 use ArrayObject;
 use DateTime;
 use Exception;
+use local_booking\local\session\entities\booking;
 use local_booking\local\session\data_access\booking_vault;
 use local_booking\local\slot\data_access\slot_vault;
 use local_booking\local\session\entities\grade;
@@ -300,14 +301,40 @@ class student extends participant {
     }
 
     /**
+     * Checks if the student is a member of the primary instructor group and returns the instructor object if so.
+     *
+     * @return instructor The instructor object if the participant is a member of the primary instructor group, null otherwise.
+     */
+    public function get_primary_instructor() {
+        $primaryinstructor = null;
+
+        // Get all group IDs that the specific user belongs to within this course
+        $usergroupids = groups_get_user_groups($this->courseid, $this->userid);
+        $instructors = $this->course->get_instructors(false,true);
+
+        if (!empty($usergroupids[0])) { // index [0] holds standard group IDs inside the core function return array
+
+            foreach ($instructors as $instructor) {
+                if (array_search($usergroupids[0], $instructor->user_id)) {
+                    $primaryinstructor = $this->course->get_instructor($instructor->user_id);
+                }
+            }
+        }
+
+        return $primaryinstructor;
+    }
+
+    /**
      * Get a list of the student exercise grades objects.
      *
+     * @param bool $getattempts Whether to retrieve all attempts or not.
+     * @param bool $refresh Whether to refresh the grades cache or not.
      * @return {object}[]   An array of the student exercise grade objects.
      */
-    public function get_exercise_grades() {
+    public function get_exercise_grades(bool $getattempts = false, bool $refresh = false) {
 
-        if (empty($this->exercisesgrades)) {
-            $this->exercisesgrades = $this->get_mod_grades('assign');
+        if (empty($this->exercisesgrades) || $refresh) {
+            $this->exercisesgrades = $this->get_mod_grades('assign', $getattempts);
         }
 
         return $this->exercisesgrades;
@@ -316,12 +343,13 @@ class student extends participant {
     /**
      * Get records of a specific quiz for a student.
      *
+     * @param bool $getattempts Whether to retrieve all attempts or not.
      * @return {object}[]   The exam grade objects.
      */
-    public function get_quizzes_grades() {
+    public function get_quizzes_grades(bool $getattempts = false) {
 
         if (empty($this->quizesgrades)) {
-            $this->quizesgrades = $this->get_mod_grades('quiz');
+            $this->quizesgrades = $this->get_mod_grades('quiz', $getattempts);
         }
 
         return $this->quizesgrades;
@@ -331,13 +359,16 @@ class student extends participant {
      * Get grades for a specific student from
      * assignments and quizes.
      *
+     * @param bool $assignments Whether to include assignment grades.
+     * @param bool $quizzes Whether to include quiz grades.
      * @return {object}[] The student grades.
      */
-    public function get_grades() {
+    public function get_grades($assignments = true, $quizzes = true) {
 
         if (!$this->gradesloaded) {
             // join both graded assignments and attempted quizes into one grades array
-            $this->grades = $this->get_exercise_grades() + $this->get_quizzes_grades();
+            $this->grades = ($assignments ? $this->get_exercise_grades() : []) + ($quizzes ? $this->get_quizzes_grades() : []);
+            $this->gradesloaded = true;
         }
 
         return $this->grades;
@@ -380,6 +411,36 @@ class student extends participant {
     }
 
     /**
+     * Get student grade for a specific exercise.
+     *
+     * @param int  $coursemodid  The quiz/exercise id associated with the grade
+     * @param int  $bookingid  The booking id to retrieve the grade for (optional, only needed if different from coursemodid).
+     * @return grade The student exercise grade.
+     */
+    public function get_grade_by_bookingid(int $coursemodid, int $bookingid) {
+
+        $grade = null;
+
+        // get the grade if already exists otherwise create a new one making sure it's not empty
+        if (!empty($coursemodid)) {
+
+            // fetch grade_grade then ensure it is graded!
+            $booking = new booking($bookingid);
+            $booking->load();
+            $gradeitemid = $booking->get_itemid();
+            $gradeitem = $this->course->get_grading_item($coursemodid, $gradeitemid);
+            $grade = new grade($gradeitem, $this->userid, $coursemodid, false);
+
+            // discard the grade if the final grade is missing or it's over before cutoff period for processing past data
+            if (empty($grade->finalgrade) || (strtotime(LOCAL_BOOKING_PASTDATACUTOFF . ' day', $grade->timemodified) < time())) {
+                $grade = null;
+            }
+        }
+
+        return $grade;
+    }
+
+    /**
      * Get student grade for the current exercise.
      *
      * @return grade The student exercise grade.
@@ -391,10 +452,11 @@ class student extends participant {
     /**
      * Get a list of the module grades.
      *
-     * @param string $modetype The module type for the course modules.
+     * @param string $modtype The module type for the course modules.
+     * @param bool $getattempts Whether to retrieve all attempts or not.
      * @return array An array of the student exercise grade objects.
      */
-    protected function get_mod_grades(string $modtype) {
+    protected function get_mod_grades(string $modtype, bool $getattempts = false) {
 
         $grades = [];
         // get all exercise grades (assignments)
@@ -402,12 +464,211 @@ class student extends participant {
         foreach ($coursemods as $coursemod) {
             if ($coursemod->modname == $modtype) {
                 // add scored grade (has finalgrade)
-                if ($grade = $this->get_grade($coursemod->id))
+                if ($grade = $this->get_grade($coursemod->id, $getattempts))
                     $grades[$coursemod->id] = $grade;
             }
         }
 
         return $grades;
+    }
+
+    /**
+     * Get student rubric criteria grading for a specific assignment
+     *
+     * @param int $exerciseid The assignment ID (optional, if null gets from course config)
+     * @return array Array of competency objects with rubric data
+     */
+    public function get_competencies(int $exerciseid = 0) {
+
+        $competencies = [];
+
+        // Get rubric competencies for all grades if exerciseid is not provided, otherwise get for the specific exercise
+        if (empty($exerciseid)) {
+             $grades = $this->get_grades(true, false);
+        } else {
+             $grades = [$this->get_grade($exerciseid)];
+        }
+
+        // Loop through the grades and extract rubric data for each competency
+        foreach ($grades as $grade) {
+            if ($grade->itemid == $exerciseid || $exerciseid == 0) {
+
+                // Calculate statistics and format competencies
+                list($criterion[], $rubriccriteria) = $grade->get_rubric_criteriondata();
+
+                if (empty($criterion)) {
+                    // No submissions yet, return empty criteria with no grades
+                    return $this->format_empty_competencies($rubriccriteria);
+                }
+
+                $criteriondata = $criterion[0];
+                foreach ($criteriondata as $criterionid => $data) {
+                    if (empty($data)) {
+                        continue;
+                    }
+
+                    $grades = $data['grades'];
+                    $lastgrade = end($grades);
+                    $lastgradename = end($data['gradenames']);
+                    $avggrade = round(array_sum($grades) / count($grades));
+                    $avggradename = $grade->get_rubric_level_name($criterionid, $avggrade);
+                    $lastremark = end($data['remarks']);
+
+                    // Calculate trend
+                    $trend = $this->calculate_competency_trend($avggrade, $lastgrade, $grades);
+
+                    $competencies[] = (object) [
+                        'criterionid' => $criterionid,
+                        'name' => $data['name'],
+                        'sortorder' => $data['sortorder'],
+                        'lastgrade' => $lastgrade,
+                        'lastgradename' => $lastgradename,
+                        'avggrade' => $avggrade,
+                        'avggradename' => $avggradename,
+                        'allgrades' => $grades,
+                        'attemptcount' => count($grades),
+                        'trend' => $trend['direction'], // 'improving', 'stable', 'worsening'
+                        'trendvalue' => $trend['value'], // Numeric change
+                        'notes' => $lastremark,
+                        'lastremark' => strip_tags(format_text($lastremark, FORMAT_HTML)),
+                        'firstgrade' => reset($grades),
+                    ];
+                }
+
+                // Sort by sortorder
+                usort($competencies, function($a, $b) {
+                    return $a->sortorder <=> $b->sortorder;
+                });
+            }
+        }
+
+        return $competencies;
+    }
+
+    /**
+     * Format empty competencies when student has no submissions
+     *
+     * @param array $criteria Rubric criteria definitions
+     * @return array Array of competency objects with no grades
+     */
+    private function format_empty_competencies($criteria) {
+        $competencies = [];
+
+        foreach ($criteria as $criterionid => $criterion) {
+            $competencies[] = (object)[
+                'criterionid' => $criterionid,
+                'name' => strip_tags(format_text($criterion['description'], FORMAT_HTML)),
+                'sortorder' => $criterion['sortorder'],
+                'lastgrade' => 0,
+                'avggrade' => 0,
+                'allgrades' => [],
+                'attemptcount' => 0,
+                'trend' => 'stable',
+                'trendvalue' => 0,
+                'notes' => 'No attempts yet',
+                'lastremark' => '',
+                'firstgrade' => 0,
+            ];
+        }
+
+        usort($competencies, function($a, $b) {
+            return $a->sortorder <=> $b->sortorder;
+        });
+
+        return $competencies;
+    }
+
+    /**
+     * Calculate trend between average and last grade
+     *
+     * @param int $avggrade Average grade
+     * @param int $lastgrade Last grade
+     * @param array $allgrades All grades for trend analysis
+     * @return array Trend information
+     */
+    private function calculate_competency_trend($avggrade, $lastgrade, $allgrades) {
+        // Remember: 1 is best, 5 is worst
+        // So if last grade < avg grade, that's improvement
+
+        $difference = $avggrade - $lastgrade;
+
+        // Also check recent trend (last 3 attempts if available)
+        $recentgrades = array_slice($allgrades, -3);
+        $recenttrend = 'stable';
+
+        if (count($recentgrades) >= 2) {
+            $firstrecent = reset($recentgrades);
+            $lastrecent = end($recentgrades);
+
+            if ($lastrecent < $firstrecent) {
+                $recenttrend = 'improving';
+            } else if ($lastrecent > $firstrecent) {
+                $recenttrend = 'worsening';
+            }
+        }
+
+        // Determine overall trend
+        if ($difference > 0.5) {
+            // Last grade is significantly better than average
+            $direction = 'improving';
+        } else if ($difference < -0.5) {
+            // Last grade is significantly worse than average
+            $direction = 'worsening';
+        } else {
+            // Within 0.5 of average - consider stable
+            $direction = 'stable';
+        }
+
+        // Override if recent trend is very clear
+        if (count($allgrades) >= 3) {
+            if ($recenttrend === 'improving' && $direction !== 'worsening') {
+                $direction = 'improving';
+            } else if ($recenttrend === 'worsening' && $direction !== 'improving') {
+                $direction = 'worsening';
+            }
+        }
+
+        return [
+            'direction' => $direction,
+            'value' => $difference,
+            'recenttrend' => $recenttrend,
+            'changetext' => $this->format_trend_text($difference, $direction)
+        ];
+    }
+
+    /**
+     * Format trend as human-readable text
+     *
+     * @param float $difference Numeric difference
+     * @param string $direction Trend direction
+     * @return string Human-readable trend description
+     */
+    private function format_trend_text($difference, $direction) {
+        $absdiff = abs($difference);
+
+        switch ($direction) {
+            case 'improving':
+                if ($absdiff >= 1.5) {
+                    return 'Significant improvement';
+                } else if ($absdiff >= 0.75) {
+                    return 'Notable improvement';
+                } else {
+                    return 'Slight improvement';
+                }
+
+            case 'worsening':
+                if ($absdiff >= 1.5) {
+                    return 'Significant decline';
+                } else if ($absdiff >= 0.75) {
+                    return 'Notable decline';
+                } else {
+                    return 'Slight decline';
+                }
+
+            case 'stable':
+            default:
+                return 'Consistent performance';
+        }
     }
 
     /**
@@ -797,9 +1058,11 @@ class student extends participant {
      *
      * @param string $path The flag to retrieve
      * @param bool $associative whether to return an array or an object
+     * @param string|null $searchkey optional key to search for in the path leaf if the leaf is an array of objects
+     * @param string|null $searchvalue optional value to search for in the path leaf if the leaf is an array of objects
      * @return mixed|null $value
      */
-    public function get_progress_flag(string $path, bool $associative = false) {
+    public function get_progress_flag(string $path, bool $associative = false, $searchkey = null, $searchvalue = null) {
 
         // get JSON string
         $flagsjson = $this->get_progress_info("progressflags");
@@ -824,6 +1087,14 @@ class student extends participant {
                 $current = $current[$part];
             }
 
+            if ($searchkey !== null && $searchvalue !== null && is_array($current)) {
+                foreach ($current as $item) {
+                    if (isset($item[$searchkey]) && $item[$searchkey] == $searchvalue) {
+                        return $associative ? $item : (object) $item;
+                    }
+                }
+                return null; // not found
+            }
             return is_array($current) && !$associative ? (object) $current : $current;
         }
         return null;
@@ -841,7 +1112,8 @@ class student extends participant {
     }
 
     /**
-     * Set student progress flag.
+     * Set student progress flag based on the path and key/value pairs,
+     * also allows for a path leaf key to lookup.
      *
      * @param string $path
      * @param mixed  $value
@@ -1056,6 +1328,17 @@ class student extends participant {
      */
     public function passed() {
         return $this->passed;
+    }
+
+    /**
+     * Returns whether the student has been passed
+     * the last graded session.
+     *
+     * @return bool
+     */
+    public function passedlastgrade() {
+        $lastgrade = $this->get_last_grade();
+        return  !empty($lastgrade) ? $lastgrade->is_passed() : false;
     }
 
     /**

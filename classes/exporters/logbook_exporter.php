@@ -128,6 +128,14 @@ class logbook_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],
+            'totalpftime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
+            'totalpmtime' => [
+                'type' => PARAM_TEXT,
+                'optional' => true
+            ],
             'totalinstructortime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true
@@ -145,10 +153,6 @@ class logbook_exporter extends exporter {
                 'optional' => true
             ],
             'totalcopilottime' => [
-                'type' => PARAM_TEXT,
-                'optional' => true
-            ],
-            'totalflighttime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],

@@ -218,6 +218,11 @@ class logentry implements logentry_interface {
     protected $flighttype = 'training';
 
     /**
+     * @var bool $pilotrole the type of flight: training, solo, or check (line check / check ride).
+     */
+    protected $pilotrole = 'PM';
+
+    /**
      * @var int $linkedlogentryid Other logentries associated with the flight.
      */
     protected $linkedlogentryid = 0;
@@ -623,9 +628,19 @@ class logentry implements logentry_interface {
     /**
      * Get the flight type.
      *
+     * @return string
      */
     public function get_flighttype() {
         return $this->flighttype;
+    }
+
+    /**
+     * Get the pilot role.
+     *
+     * @return string
+     */
+    public function get_pilotrole() {
+        return $this->pilotrole;
     }
 
     /**
@@ -703,6 +718,15 @@ class logentry implements logentry_interface {
     }
 
     /**
+     * Set the pilot role.
+     *
+     * @param $pilotrole
+     */
+    public function set_pilotrole($pilotrole) {
+        $this->pilotrole = $pilotrole ?? '';
+    }
+
+    /**
      * Set the flight date timestamp.
      *
      * @param int $flightdate
@@ -732,7 +756,7 @@ class logentry implements logentry_interface {
     /**
      * Set the flight arrival airport ICAO.
      *
-     * @return string
+     * @param string $arricao arrival airport ICAO
      */
     public function set_arricao(string $arricao) {
         $this->arricao = $arricao;
@@ -1044,11 +1068,13 @@ class logentry implements logentry_interface {
         $this->instructortime = $instructortimerule ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
         $this->picustime    = $picustimerule ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
         $this->checkpilottime = $checkpilottimerule ? $this->parent->convert_time($formdata->checkpilottime, 'MINS_TO_NUM') : 0;
+        $this->pilotrole    = $formdata->pilotrole;
 
         // additional logentry data
         $this->callsign     = strtoupper($formdata->callsign);
         $this->depicao      = strtoupper($formdata->depicao);
         $this->arricao      = strtoupper($formdata->arricao);
+
         // convert from 24hr time format to a timestamp given the flightdate date start
         $this->deptime      = $this->parent->convert_time($formdata->deptime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
         $this->arrtime      = $this->parent->convert_time($formdata->arrtime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
@@ -1116,6 +1142,7 @@ class logentry implements logentry_interface {
         $logentryarray['se'] = $this->enginetype == 'SE' ? 'X' : ($nullable ? null : '');
         $logentryarray['me'] = $this->enginetype == 'ME' ? 'X' : ($nullable ? null : '');
         $logentryarray['flighttype'] = $this->flighttype;
+        $logentryarray['pilotrole'] = $this->pilotrole;
 
         return $logentryarray;
     }
@@ -1125,7 +1152,6 @@ class logentry implements logentry_interface {
      * with array's key=>value pairs.
      *
      * @param array $record
-     * @return logentry
      */
     public function read(array $record) {
         // assign record's values according to keys' requivalent logentry property

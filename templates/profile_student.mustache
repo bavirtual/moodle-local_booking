@@ -199,6 +199,9 @@
                     </dt></dl>
                     <dl><dt>{{#str}} course {{/str}}
                         <dd><span><a href="{{logbookurl}}">{{#str}} logbooklabel , local_booking {{/str}}</a></span></dd>
+                        {{#ismulticrew}}
+                        <dd><span><a href="{{summaryurl}}">{{#str}} summaryrptlabel , local_booking {{/str}}</a></span></dd>
+                        {{/ismulticrew}}
                     </dt></dl>
                     <dl><dt>{{#str}} auditreports , local_booking {{/str}}
                         <dd><span><a href="{{mentorreporturl}}">{{#str}} mentorreport , local_booking {{/str}}</a></span></dd>

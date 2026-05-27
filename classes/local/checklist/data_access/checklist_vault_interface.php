@@ -38,7 +38,7 @@ interface checklist_vault_interface
      * @param int $studentid The student ID for whom to retrieve checked items
      * @return array of checklist records
      */
-    public static function get_course_checklists($courseid, $getitems = false, $studentid = 0);
+    public static function get_course_checklists(int $courseid, bool $getitems = false, int $studentid = 0);
 
     /**
      * Get checklist items with student progress

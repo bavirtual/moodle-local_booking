@@ -239,15 +239,20 @@ class dashboard_student_exporter extends exporter {
 
             // action is grading if the student has any active booking, completed coursework
             // awaiting certification, or graduated already; otherwise it is a booking action
-            if (!empty($this->student->get_active_booking()))
+            $activebooking = $this->student->get_active_booking();
+            if (!empty($activebooking)) {
                 $actiontype = 'grade';
-            else if ($this->student->has_completed_coursework() && !$this->student->graduated())
+                $exerciseid = $activebooking->get_exercise_id();
+            } else if ($this->student->has_completed_coursework() && !$this->student->graduated()) {
                 $actiontype = 'graduate';
-            else
+                $graduationsessionidx = array_search($this->course->get_graduation_exercise_id(), array_column($sessions, 'exerciseid'));
+                $exerciseid = $sessions[$graduationsessionidx]->sessionid;
+            } else {
                 $actiontype = 'book';
+                $exerciseid = $this->student->passedlastgrade() || $this->student->is_newly_joined() ?  $this->student->get_next_exercise()->id : $this->student->get_current_exercise()->id;
+            }
 
-            $graduationsessionidx = array_search($this->course->get_graduation_exercise_id(), array_column($sessions, 'exerciseid'));
-            $action = new action($this->course, $this->student, $actiontype, $sessions[$graduationsessionidx]->sessionid);
+            $action = new action($this->course, $this->student, $actiontype, $exerciseid);
             $posts = $this->data['view'] == 'confirm' ? $this->student->get_statistics()->get_active_posts_count() : 0;
 
             $return = array_merge(array(
@@ -282,9 +287,7 @@ class dashboard_student_exporter extends exporter {
         $logbook = $student->get_logbook();
         $hasposts = $student->get_statistics()->get_active_posts_count()>0;
         $nextexerciseid = $student->get_next_exercise()->id;
-        $lastgrade = $student->get_last_grade();
-        $passedlastgrade =  !empty($lastgrade) ? $lastgrade->is_passed() : false;
-        $nopoststagposition = $passedlastgrade || $student->is_newly_joined() ? $nextexerciseid : $course->get_exercise($nextexerciseid, $course->get_id(),1)->id;
+        $nopoststagposition = $student->passedlastgrade() || $student->is_newly_joined() ? $nextexerciseid : $course->get_exercise($nextexerciseid, $course->get_id(),1)->id;
 
         $studentname = $student->get_name();
         $gradexercise = $related['subscriber']->get_graduation_exercise_id();

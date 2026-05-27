@@ -138,6 +138,7 @@ define([
             const course = $(Selectors.wrappers.calendarwrapper).data('courseid');
             const exercise = $(Selectors.wrappers.calendarwrapper).data('exercise-id');
             const studentid = $(Selectors.wrappers.calendarwrapper).data('student-id');
+            const trainingtype = $(Selectors.wrappers.calendarwrapper).data('training-type');
 
             // Get marked availability slots
             getSlots(root, 'book');
@@ -172,11 +173,12 @@ define([
                         CalendarViewManager.stopLoading(root);
                     } else {
                         clean();
+                        let redirectPage = 'view.php?courseid=' + course;
+                        if (trainingtype === 'Multicrew') {
+                            redirectPage = 'studentstats.php?courseid=' + course + '&studentid=' + studentid;
+                        }
                         // Redirect to the report page instead of view.php
-                        window.location.href = M.cfg.wwwroot +
-                            // '/local/booking/booking_report.php?bookingid=' + response.bookingid +
-                            // '&courseid=' + course + '&studentid=' + studentid;
-                            '/local/booking/view.php?courseid=' + course;
+                        window.location.href = M.cfg.wwwroot + '/local/booking/' + redirectPage;
                     }
                     return;
                 })

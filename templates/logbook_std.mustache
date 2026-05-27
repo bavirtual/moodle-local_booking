@@ -78,6 +78,10 @@
         {{/isstudent}}
         {{/checkflight}}
 
+        {{^dualops}}
+        {{#str}} totalpfflights, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpftime}}</span>
+        {{#str}} totalpmflights, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpmtime}}</span>
+        {{/dualops}}
         {{#str}} totallandingsday, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsday}}</span>
         {{#str}} totallandingsnight, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsnight}}</span>
         </pre>

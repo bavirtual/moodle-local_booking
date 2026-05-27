@@ -192,6 +192,11 @@ class create extends \moodleform {
         $flightrule = $subscriber->trainingtype == "Dual" ? 'vfr' : 'ifr';
         $this->add_element($mform, 'flightrule', null, true, true, null, $flightrule);
 
+        // add pilot flying vs pilot monitoring
+        if ($subscriber->trainingtype == "Multicrew") {
+            $this->add_element($mform, 'pilotrole', null, true, true, null, 'PM');
+        }
+
         // add secondary form elements (more...)
         // add flight time elements based on training type
         $this->add_element($mform, 'ifrtime', null, false);
@@ -355,6 +360,16 @@ class create extends \moodleform {
                 $radioarray=array();
                 $radioarray[] = $mform->createElement('radio', $element, '', get_string('flightrulevfr', 'local_booking'), 'vfr');
                 $radioarray[] = $mform->createElement('radio', $element, '', get_string('flightruleifr', 'local_booking'), 'ifr');
+                $mform->addGroup($radioarray, $element, get_string($element, 'local_booking'), array(' '), false);
+                $mform->setType($element, PARAM_TEXT);
+                $mform->setDefault($element, $default);
+                break;
+
+            case 'pilotrole':
+                // Pilot flying vs pilot monitoring for multicrew training
+                $radioarray=array();
+                $radioarray[] = $mform->createElement('radio', $element, '', get_string('pilotflying', 'local_booking'), 'PF');
+                $radioarray[] = $mform->createElement('radio', $element, '', get_string('pilotmonitoring', 'local_booking'), 'PM');
                 $mform->addGroup($radioarray, $element, get_string($element, 'local_booking'), array(' '), false);
                 $mform->setType($element, PARAM_TEXT);
                 $mform->setDefault($element, $default);

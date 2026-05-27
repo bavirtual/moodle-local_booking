@@ -38,14 +38,6 @@ function xmldb_local_booking_upgrade($oldversion) {
 
     // Automatically generated release upgrade.
     // Add minium slot period course setting
-    if ($oldversion < 2026032701) {
-
-        // Extend the size of the progressflags field in student progress table to allow for bigger JSON strings
-        $DB->execute("ALTER TABLE mdl_local_booking_progress MODIFY COLUMN progressflags VARCHAR(1000)");
-
-        // Assignment savepoint reached.
-        upgrade_plugin_savepoint(true, 2026032701, 'local', 'booking');
-    }
     if ($oldversion < 2024092000) {
 
         // Get Session booking category
@@ -136,6 +128,44 @@ function xmldb_local_booking_upgrade($oldversion) {
 
         // Assignment savepoint reached.
         upgrade_plugin_savepoint(true, 2025010400, 'local', 'booking');
+    }
+
+    // Automatically generated release upgrade.
+    // Increase progress flag field size
+    if ($oldversion < 2026032701) {
+
+        // Extend the size of the progressflags field in student progress table to allow for bigger JSON strings
+        $DB->execute("ALTER TABLE mdl_local_booking_progress MODIFY COLUMN progressflags VARCHAR(1000)");
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2026032701, 'local', 'booking');
+    }
+
+    // Automatically generated release upgrade.
+    // Add field pilotrole to the logbook entries table to allow for better tracking of instructor vs student logbook entries
+    // Add field itemid to the sessions table to map the session to the grade
+    if ($oldversion < 2026051700) {
+
+        // Define logbook table to be altered.
+        $table = new xmldb_table('local_booking_logbooks');
+
+        // Conditionally add field pilotrole.
+        $field = new xmldb_field('pilotrole', XMLDB_TYPE_CHAR, '10', null, null, null, null, 'p2id');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define sessions table to be altered.
+        $table = new xmldb_table('local_booking_sessions');
+
+        // Conditionally add field pilotrole.
+        $field = new xmldb_field('itemid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, 'exerciseid');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Assignment savepoint reached.
+        upgrade_plugin_savepoint(true, 2026051700, 'local', 'booking');
     }
 
     return true;

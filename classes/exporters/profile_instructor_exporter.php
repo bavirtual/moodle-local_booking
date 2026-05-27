@@ -309,7 +309,7 @@ class profile_instructor_exporter extends exporter {
             'excludeexams' => !$this->instructor->is_examiner(),
             'excludequizes'=> true
         ];
-        $exercisenames = base_view::get_modules($output, $this->subscriber, $options);
+        $exercisenames = base_view::get_modules($this->subscriber, $options);
         $sessions = array_map(function($exercise) { return (object) $exercise;}, $exercisenames);
 
         // add graded sessions count

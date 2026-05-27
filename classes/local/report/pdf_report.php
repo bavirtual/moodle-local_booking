@@ -191,7 +191,6 @@ class pdf_report extends \pdf {
      *
      * @param  int  $exerciseid  The assignment id.
      * @param  bool $examentry   Whether the entry is associated with an exam.
-     * @return string
      */
     protected function write_logentry_info(int $exerciseid, bool $examentry = false) {
 

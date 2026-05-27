@@ -119,6 +119,14 @@ interface grade_interface {
     public function get_graderubric(int $attempt = 0);
 
     /**
+     * Retrieves a specific exercise's rubric criteria data
+     * for a student.
+     *
+     * @return array of rubric criteria data with grades, remarks, and trends.
+     */
+    public function get_rubric_criteriondata();
+
+    /**
      * Whether the grade has rubric grading.
      *
      * @return bool

@@ -62,7 +62,7 @@ class grading_vault implements grading_vault_interface {
      * @param   int The course id
      * @return  stdClass The record containing timestamp of the last grading
      */
-    public static function get_last_graded_date(int $userid, int $courseid, bool $is_student) {
+    public static function get_last_graded_date(int $studentid, int $courseid, bool $is_student) {
         global $DB;
 
         // parameter for the grades being retrieved: the student graded by instructor or grader grades
@@ -80,7 +80,7 @@ class grading_vault implements grading_vault_interface {
 
         $params = [
             'courseid' => $courseid,
-            'userid'  => $userid
+            'userid'  => $studentid
         ];
 
         return $DB->get_record_sql($sql, $params);
@@ -93,7 +93,7 @@ class grading_vault implements grading_vault_interface {
      * @param  int The course id
      * @return array
      */
-    public static function get_user_total_graded_sessions(int $courseid, int $userid) {
+    public static function get_user_total_graded_sessions(int $courseid, int $studentid) {
         global $DB;
 
         $sql = 'SELECT cm.id AS exerciseid, count(cm.id) AS sessions FROM {' . static::DB_COURSE_MODS . '} cm
@@ -104,7 +104,7 @@ class grading_vault implements grading_vault_interface {
 
         $params = [
             'courseid'  => $courseid,
-            'userid'    => $userid
+            'userid'    => $studentid
         ];
 
         return $DB->get_records_sql($sql, $params);
@@ -114,11 +114,11 @@ class grading_vault implements grading_vault_interface {
      * Get list of student grades for an exercise attempts.
      *
      * @param  int $courseid   The course id
-     * @param  int $userid     The user id
+     * @param  int $studentid     The user id
      * @param  int $exerciseid The exercise id that was attempted
      * @return array
      */
-    public static function get_student_exercise_attempts(int $courseid, int $userid, int $exerciseid) {
+    public static function get_student_exercise_attempts(int $courseid, int $studentid, int $exerciseid) {
         global $DB;
 
         $sql = 'SELECT ag.attemptnumber, ag.grader, ag.timemodified, ag.grade, ac.grade AS itemid, ac.commenttext
@@ -131,7 +131,7 @@ class grading_vault implements grading_vault_interface {
 
         $params = [
             'courseid'  => $courseid,
-            'userid'    => $userid,
+            'userid'    => $studentid,
             'exerciseid'=> $exerciseid
         ];
 
@@ -156,5 +156,71 @@ class grading_vault implements grading_vault_interface {
         if (!empty($scalerec))
             $scale = explode(',', $scalerec);
         return $scale;
+    }
+
+    /**
+     * Get an array of grade rubric instances
+     *
+     * @param  int $assignmentid The assignment id for the exercise
+     * @param  int $studentid    The student id
+     * @param  int $definitionid The rubric definition id
+     * @return array
+     */
+    public static function get_rubric_instances(int $assignmentid, int $studentid, int $definitionid) {
+        global $DB;
+
+        // Get all grading instances for this student
+        $sql = "SELECT gi.id, gi.rawgrade, gi.feedback, gi.timemodified, gi.itemid
+                FROM {grading_instances} gi
+                JOIN {assign_grades} ag ON ag.id = gi.itemid
+                WHERE ag.assignment = :assignmentid
+                AND ag.userid = :userid
+                AND gi.definitionid = :definitionid
+                AND ag.grade > 0
+            ORDER BY gi.timemodified ASC";
+
+        $params = [
+            'assignmentid' => $assignmentid,
+            'userid' => $studentid,
+            'definitionid' => $definitionid
+        ];
+
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
+     * Get an array of grade rubric fillings by instance ids
+     *
+     * @param  array $instanceids The grading instance ids
+     * @return array
+     */
+    public static function get_rubric_fillings_by_instanceids(array $instanceids) {
+        global $DB;
+        list($insql, $inparams) = $DB->get_in_or_equal($instanceids, SQL_PARAMS_NAMED);
+
+        $fillingsql = "SELECT gf.*, gc.description as criterion_name,
+                            gc.sortorder, gl.definition as level_definition,
+                            gl.score
+                        FROM {gradingform_rubric_fillings} gf
+                        JOIN {gradingform_rubric_criteria} gc ON gf.criterionid = gc.id
+                        JOIN {gradingform_rubric_levels} gl ON gf.levelid = gl.id
+                        WHERE gf.instanceid $insql
+                    ORDER BY gf.instanceid ASC, gc.sortorder ASC";
+
+        return $DB->get_records_sql($fillingsql, $inparams);
+    }
+
+    /**
+     * Get an array of grade rubric levels for a criterion
+     *
+     * @param  int $criterionid The criterion id
+     * @return array
+     */
+    public static function get_rubric_levels(int $criterionid) {
+        global $DB;
+        return $DB->get_records('gradingform_rubric_levels',
+            ['criterionid' => $criterionid],
+            'score ASC'
+        );
     }
 }

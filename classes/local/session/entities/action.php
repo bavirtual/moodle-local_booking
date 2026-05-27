@@ -76,12 +76,11 @@ class action implements action_interface {
      * @param subscriber $course     The subscribing course.
      * @param student    $student    The student behind the action.
      * @param string     $actiontype The type of action requested.
-     * @param int        $refid      The reference exercise id if available.
+     * @param int        $exerciseid The reference exercise id if available.
      */
-    public function __construct(subscriber $course, student $student, string $actiontype, int $refid = 0) {
+    public function __construct(subscriber $course, student $student, string $actiontype, int $exerciseid = 0) {
 
         $gradexerciseid = $course->get_graduation_exercise_id();
-        $exerciseid = $student->get_next_exercise()->id;
         $enabled =  $student->is_active();
         $tooltip = '';
         $params = [];
@@ -92,16 +91,9 @@ class action implements action_interface {
             // book action
             case 'book':
 
-                // check if the session to book is the next exercise after passing the current session or the same
-                $lastgrade = $student->get_last_grade();
-                $passedlastexercise = (!empty($lastgrade) ? $lastgrade->is_passed() : true);
-                $exerciseid = $passedlastexercise ? $exerciseid : $student->get_current_exercise()->id;
+                // get action enabled status and tooltip
                 $tooltip = get_string('actionbooksession', 'local_booking');
 
-                // get action enabled status by checking if there are more exercises to book and
-                // if the user is an examiner in the case of graduation skill tests
-
-                // get action enabled status and tooltip
                 // TODO: update student progress in case the session requires lesson completion and the student did in fact complete required lessons.
                 // updating lessons complete should be debugged in the event observer for lesson module completion and there should not be the need to update lessons completed here.
                 if ($course->requires_lesson_completion() && !$student->has_completed_lessons() && !$student->is_newly_joined()) {
@@ -134,12 +126,8 @@ class action implements action_interface {
 
             case 'grade':
 
-                // get exercise to be graded and whether the student passed
-                if ($grade = $student->get_current_grade()) {
-                    $exerciseid = $grade->is_passed() ? $exerciseid : $student->get_current_exercise()->id;
-                } else {
-                    $exerciseid = $student->get_current_exercise()->id;
-                }
+                // set grading url and params - default to Moodle assignment grading page with exerciseid as the assignment id
+                $actionurl = '/local/booking/assign.php';
                 $params = ['exeid' => $exerciseid];
                 // get Moodle assignment grading urls
                 if (!empty($grade) && !$grade->is_passed()) {
@@ -179,7 +167,7 @@ class action implements action_interface {
                 $actionurl = '/local/booking/certify.php';
                 $name = get_string($actiontype, 'local_booking');
 
-                // check if the certifer is the examiner
+                // check if the certifier is the examiner
                 if ($student->has_completed_coursework() || $student->get_current_exercise()->id == $gradexerciseid) {
                     global $USER;
 
@@ -188,7 +176,7 @@ class action implements action_interface {
                     $isadmin = has_capability('moodle/site:config', $context);
                     $examinerid = $student->get_grade($gradexerciseid)->usermodified;
                     $logbook = $student->get_logbook(true);
-                    $hasexamlogentry = !empty($logbook->get_logentry_by_sessionid($refid));
+                    $hasexamlogentry = !empty($logbook->get_logentry_by_sessionid($exerciseid));
                     $enabled = has_capability('mod/assign:grade', \context_module::instance($gradexerciseid)) && ($examinerid == $USER->id || $isadmin) && $hasexamlogentry && !$student->graduated(true);
 
                     // evaluate tooltip based on ability to graduate the student
@@ -208,7 +196,6 @@ class action implements action_interface {
             case 'cancel':
 
                 // cancel action
-                $exerciseid = $refid;
                 $actiontype = 'cancel';
                 $actionurl = '/local/booking/view.php';
                 $name = get_string('bookingcancel', 'local_booking');

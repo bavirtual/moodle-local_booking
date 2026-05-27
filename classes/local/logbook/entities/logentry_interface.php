@@ -325,8 +325,15 @@ interface logentry_interface {
     /**
      * Get the flight type.
      *
+     * @return string
      */
     public function get_flighttype();
+
+    /**
+     * Get the pilot role.
+     *
+     */
+    public function get_pilotrole();
 
     /**
      * Set the parent logbook.
@@ -392,6 +399,13 @@ interface logentry_interface {
     public function set_flighttype(string $flighttype);
 
     /**
+    * Set the pilot role.
+    *
+    * @param string $pilotrole
+    */
+    public function set_pilotrole(string $pilotrole);
+
+    /**
      * Set the flight date timestamp.
      *
      * @param int $flightdate
@@ -415,7 +429,7 @@ interface logentry_interface {
     /**
      * Set the flight arrival airport ICAO.
      *
-     * @return string
+     * @param string $arricao arrival airport ICAO
      */
     public function set_arricao(string $arricao);
 
@@ -607,7 +621,6 @@ interface logentry_interface {
      * with array's key=>value pairs.
      *
      * @param array $record
-     * @return logentry
      */
     public function read(array $record);
 }

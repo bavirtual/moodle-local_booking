@@ -1,5 +1,11 @@
 # Change log
 
+## [2026070900] - RELEASED 2026-07-09
+
+### Fixed
+
+- exception handling for newly enrolled students with a quiz vs assignment grade as the first grade, negating their new enrollee designation
+
 ## [2026052700] - RELEASED 2026-05-27
 
 ### Fixed

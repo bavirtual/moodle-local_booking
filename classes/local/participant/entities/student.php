@@ -365,7 +365,7 @@ class student extends participant {
      */
     public function get_grades($assignments = true, $quizzes = true) {
 
-        if (!$this->gradesloaded) {
+        if (!$this->gradesloaded || !$assignments || !$quizzes) {
             // join both graded assignments and attempted quizes into one grades array
             $this->grades = ($assignments ? $this->get_exercise_grades() : []) + ($quizzes ? $this->get_quizzes_grades() : []);
             $this->gradesloaded = true;
@@ -1245,7 +1245,7 @@ class student extends participant {
      * @return  bool    Whether the student is newly joined.
      */
     public function is_newly_joined() {
-        return empty($this->get_grades());
+        return empty($this->get_grades(true, false));   // get graded assignments only, in case a newly joined student attempts an quiz before any assignment!
     }
 
     /**

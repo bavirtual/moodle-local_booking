@@ -93,7 +93,7 @@ $functions = array(
     ),
     'local_booking_get_instructor_bookings_view' => array(
         'classname' => '\local_booking\external\get_instructor_bookings_view',
-        'classpath' => 'local/booking/external/get_instructor_bookings.php',
+        'classpath' => 'local/booking/classes/external/get_instructor_bookings_view.php',
         'methodname' => 'execute',
         'description' => 'Retrieve instructor active bookings views',
         'type' => 'read',
@@ -246,10 +246,13 @@ $functions = array(
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ),
     'local_booking_update_checklist_item' => [
-        'classname' => 'local_booking\external\update_checklist_item',
+        'classname' => '\local_booking\external\update_checklist_item',
         'methodname' => 'execute',
         'description' => 'Update checklist item for student',
         'type' => 'write',
         'ajax' => true,
+        'capabilities' => 'mod/checklist:updateother',
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
 );

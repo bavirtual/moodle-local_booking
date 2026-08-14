@@ -172,12 +172,7 @@ class create extends \moodleform {
         $this->add_element($mform, 'passfail', [$exerciseempty, $graduationexerciseid]);
 
         // show pireps only if they there is lookup integration or a PIREP for editing
-        if ($integratedpireps || !$newlogentry) {
-            $this->add_element($mform, 'pireps', array($integratedpireps, $newlogentry));
-        } elseif (!$integratedpireps) {
-            // add PIREP group if there's no integration here
-            $this->add_element($mform, 'pireps');
-        }
+        $this->add_element($mform, 'pireps', array($integratedpireps, $newlogentry));
 
         // add primary elements
         $this->add_element($mform, 'flightdate', [$flightdate]);

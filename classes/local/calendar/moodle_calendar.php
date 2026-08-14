@@ -73,7 +73,8 @@ class moodle_calendar implements calendar_interface {
         $moodleevent->description = array('format'=>FORMAT_HTML, 'text'=>$event->body);
         $moodleevent->format = FORMAT_HTML;
         $moodleevent->timestart = $event->start;
-        $moodleevent->visible = instance_is_visible('scorm', $event->exercise);
+        $cm = get_coursemodule_from_id('', $event->exerciseid);
+        $moodleevent->visible = empty($cm) ? 1 : (int) $cm->visible;
         $moodleevent->timeduration = $event->end - $event->start;
 
         $result = \calendar_event::create($moodleevent, false);

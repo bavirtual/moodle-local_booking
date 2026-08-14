@@ -45,6 +45,7 @@ use core_external\external_function_parameters;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class set_student_group extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -58,7 +59,7 @@ class set_student_group extends external_api {
             array(
                 'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
                 'studentid' => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
-                'groupname' => new external_value(PARAM_RAW, 'The group name to add to', VALUE_DEFAULT),
+                'groupname' => new external_value(PARAM_TEXT, 'The group name to add to', VALUE_DEFAULT),
                 'add' => new external_value(PARAM_BOOL, 'Whether to add or remove student from the group', VALUE_DEFAULT),
             )
         );
@@ -83,6 +84,18 @@ class set_student_group extends external_api {
                 'add' => $add
             )
         );
+
+        self::validate_course_access($params['courseid'], 'local/booking:view');
+
+        $allowedgroups = [
+            LOCAL_BOOKING_ONHOLDGROUP,
+            LOCAL_BOOKING_KEEPACTIVEGROUP,
+            LOCAL_BOOKING_INACTIVEGROUP,
+            LOCAL_BOOKING_GRADUATESGROUP,
+        ];
+        if (!in_array($params['groupname'], $allowedgroups, true)) {
+            throw new \invalid_parameter_exception(get_string('errorinvalidgroup', 'local_booking'));
+        }
 
         // get group id from group name
         $groupid = groups_get_group_by_name($params['courseid'], $params['groupname']);

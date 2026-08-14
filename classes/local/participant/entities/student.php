@@ -881,7 +881,11 @@ class student extends participant {
             // check first for newly enrolled students (boundary condition) based on graded exercises
             // if so the next exercise is the first
             if (empty($this->get_exercise_grades())) {
-                return $this->nextexercise = array_values($this->course->get_modules())[0];
+                $modules = array_values($this->course->get_modules());
+                if (!empty($modules)) {
+                    return $this->nextexercise = $modules[0];
+                }
+                return $this->nextexercise;
             }
 
             // check if there is an active booking, the next exercise is the booking's exercise
@@ -1122,6 +1126,9 @@ class student extends participant {
 
         // get the progress flags as a JSON array
         $flagsjsonarray = json_decode($this->get_progress_info("progressflags"), true);
+        if (!is_array($flagsjsonarray)) {
+            $flagsjsonarray = [];
+        }
 
         $keys = explode('.', $path);
         $last_key = array_pop($keys);

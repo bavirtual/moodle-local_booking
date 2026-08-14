@@ -45,6 +45,8 @@ use core_external\external_function_parameters;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class set_user_preferences extends external_api {
+    use helper;
+
     /**
      * Returns description of method parameters.
      *
@@ -52,8 +54,8 @@ class set_user_preferences extends external_api {
      */
     public static function execute_parameters() {
         return new external_function_parameters(array(
-                'preference' => new external_value(PARAM_RAW, 'The preference key', VALUE_DEFAULT),
-                'value' => new external_value(PARAM_RAW, 'The value of the preference', VALUE_DEFAULT),
+                'preference' => new external_value(PARAM_ALPHANUMEXT, 'The preference key', VALUE_DEFAULT),
+                'value' => new external_value(PARAM_TEXT, 'The value of the preference', VALUE_DEFAULT),
                 'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
                 'userid' => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
             )
@@ -70,6 +72,7 @@ class set_user_preferences extends external_api {
      * @return array  The result of the preference update operation.
      */
     public static function execute(string $preference, string $value, int $courseid, int $userid) {
+        global $USER;
 
         // Parameter validation.
         $params = self::validate_parameters(self::execute_parameters(), array(
@@ -80,9 +83,20 @@ class set_user_preferences extends external_api {
             )
         );
 
+        $context = self::validate_course_access($params['courseid'], 'local/booking:view');
+
+        $allowed = array_values(LOCAL_BOOKING_USERPERFS);
+        if (!in_array($params['preference'], $allowed, true)) {
+            throw new \invalid_parameter_exception(get_string('errorinvalidpreference', 'local_booking'));
+        }
+
+        if ($params['userid'] != $USER->id && !has_capability('moodle/site:config', $context)) {
+            throw new \required_capability_exception($context, 'moodle/site:config', 'nopermissions', '');
+        }
+
         $msgdata = ['preference' => $params['preference'], 'value' => $params['value']];
         $warnings = array();
-        $result = set_user_preference(LOCAL_BOOKING_USERPERFPREFIX. ($courseid!=SITEID ? "$courseid-" : '') . $preference, $value, $params['userid']);
+        $result = set_user_preference(LOCAL_BOOKING_USERPERFPREFIX. ($params['courseid'] != SITEID ? $params['courseid'] . '-' : '') . $params['preference'], $params['value'], $params['userid']);
 
         if (!$result) {
             \core\notification::WARNING(get_string('bookingsetpreferencesunable', 'local_booking', $msgdata));

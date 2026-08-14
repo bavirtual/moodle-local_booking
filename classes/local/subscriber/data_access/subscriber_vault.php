@@ -61,9 +61,17 @@ class subscriber_vault implements subscriber_vault_interface {
     public static function is_course_enabled(int $courseid) {
         global $DB;
 
+        $cache = \cache::make('local_booking', 'subscribed');
+        $cached = $cache->get($courseid);
+        if ($cached !== false) {
+            return $cached === '1';
+        }
+
         $sql = "SELECT value FROM {" . self::DB_COURSE_CUSTOM_DATA . "} cd INNER JOIN {" . self::DB_COURSE_CUSTOM_FIELD . "} cf ON cf.id = cd.fieldid WHERE cf.shortname = :subscribename AND cd.instanceid = :courseid";
         $enabled = $DB->get_record_sql($sql, ['subscribename'=>'subscribed', 'courseid'=>$courseid]);
-        return !empty($enabled) ? $enabled->value : false;
+        $value = !empty($enabled) ? (int) $enabled->value : 0;
+        $cache->set($courseid, $value ? '1' : '0');
+        return (bool) $value;
     }
 
     /**

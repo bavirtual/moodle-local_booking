@@ -27,16 +27,28 @@ namespace local_booking\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/externallib.php');
+require_once($CFG->dirroot . '/local/booking/lib.php');
+require_once($CFG->dirroot . '/mod/checklist/lib.php');
 
-use external_api;
-use external_function_parameters;
-use external_value;
-use external_single_structure;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_value;
+use core_external\external_single_structure;
 use local_booking\local\checklist\entities\checklist;
 
+/**
+ * External function to update a checklist item sign-off or teacher comment.
+ *
+ * @package    local_booking
+ */
 class update_checklist_item extends external_api {
+    use helper;
 
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters
+     */
     public static function execute_parameters() {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
@@ -49,6 +61,18 @@ class update_checklist_item extends external_api {
         ]);
     }
 
+    /**
+     * Update a checklist item sign-off or teacher comment for a student.
+     *
+     * @param int $courseid
+     * @param int $studentid
+     * @param int $bookingid
+     * @param int $itemid
+     * @param int $state
+     * @param string $comment
+     * @param bool $savecomment
+     * @return array
+     */
     public static function execute($courseid, $studentid, $bookingid, $itemid, $state = 0, $comment = '', $savecomment = false) {
         global $USER;
 
@@ -62,13 +86,9 @@ class update_checklist_item extends external_api {
             'savecomment' => $savecomment,
         ]);
 
-        $context = \context_course::instance($params['courseid']);
-        self::validate_context($context);
-        require_capability('mod/checklist:updateother', $context);
+        self::validate_course_access($params['courseid'], 'mod/checklist:updateother');
 
-        require_once(__DIR__ . '/../../lib.php');
-
-        $checklist = new checklist($courseid, $studentid);
+        $checklist = new checklist($params['courseid'], $params['studentid']);
         $success = true;
 
         // Save teacher comment without changing the sign-off when only the comment is submitted.
@@ -89,12 +109,10 @@ class update_checklist_item extends external_api {
             );
         }
 
-        // Get checked items count out of the total and progress percentage
-        $items = $checklist->get_items($studentid);
+        $items = $checklist->get_items($params['studentid']);
         $checkedcount = 0;
         $itemcount = 0;
         foreach ($items as $item) {
-            // Skip hidden items for students
             if ($item->hidden) {
                 continue;
             }
@@ -113,14 +131,19 @@ class update_checklist_item extends external_api {
 
         return [
             'success' => $success,
-            'timestamp' => date('d M Y, H:i'),
+            'timestamp' => userdate(time(), get_string('strftimedatetimeshort', 'langconfig')),
             'checklistid' => $checklist->id,
             'count' => "$checkedcount / $itemcount",
             'progress' => "$progress%",
-            'message' => $success ? 'Updated successfully' : 'Update failed',
+            'message' => $success ? get_string('checklistitemupdated', 'local_booking') : get_string('checklistitemupdatefailed', 'local_booking'),
         ];
     }
 
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_single_structure
+     */
     public static function execute_returns() {
         return new external_single_structure([
             'success' => new external_value(PARAM_BOOL, 'Success status'),

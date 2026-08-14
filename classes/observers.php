@@ -70,6 +70,8 @@ class observers {
             // check if the course update
             subscriber::add_new_enrolments($event->courseid);
         }
+
+        \cache::make('local_booking', 'subscribed')->delete($event->courseid);
     }
 
     /**

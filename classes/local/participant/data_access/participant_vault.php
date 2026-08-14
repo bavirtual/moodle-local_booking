@@ -77,9 +77,9 @@ class participant_vault implements participant_vault_interface {
         $enrolledsql = self::get_sql($courseid, $filter, ($filter == 'any'), 'student', ($filter != 'any'));
 
         $sql = "SELECT * FROM (SELECT u.id AS userid, $enrolledsql->fields $enrolledsql->from $enrolledsql->where $enrolledsql->groupby) AS participants
-                WHERE roles like '%student%' AND userid = $userid $enrolledsql->orderby";
+                WHERE roles like '%student%' AND userid = :userid $enrolledsql->orderby";
 
-        return $DB->get_record_sql($sql);
+        return $DB->get_record_sql($sql, ['userid' => $userid]);
     }
 
     /**
@@ -400,17 +400,22 @@ class participant_vault implements participant_vault_interface {
     public static function update_student_progress(int $courseid, int $studentid, string $field, $value) {
         global $DB;
 
+        $allowedfields = ['lessonscomplete', 'lastsessiondate', 'currentexerciseid', 'nextexerciseid', 'progressflags'];
+        if (!empty($field) && !in_array($field, $allowedfields, true)) {
+            throw new \coding_exception(get_string('errorinvalidprogressfield', 'local_booking'));
+        }
+
         // insert record on enrolment where $value is the first course exercise, otherwise update based on the field to be updated w/ the value
         $sql = "INSERT IGNORE INTO {" . self::DB_PROG . "} (userid, courseid, lessonscomplete, lastsessiondate, currentexerciseid, nextexerciseid, progressflags)
-                VALUES ($studentid, $courseid, 0, 0, 0, 0, '') " . (!empty($field) ? "
-                ON DUPLICATE KEY UPDATE
-                    $field = :value" : "");
-
+                VALUES (:userid, :courseid, 0, 0, 0, 0, '')";
         $params = [
             'courseid' => $courseid,
             'userid'   => $studentid,
-            'value'    => $value
         ];
+        if (!empty($field)) {
+            $sql .= " ON DUPLICATE KEY UPDATE $field = :value";
+            $params['value'] = $value;
+        }
 
         return $DB->execute($sql, $params);
     }
@@ -492,14 +497,15 @@ class participant_vault implements participant_vault_interface {
 
         $sql = 'UPDATE {' . static::DB_USER_ENROL . '} ue
                 INNER JOIN {' . static::DB_ENROL . '} e ON e.id = ue.enrolid
-                SET ue.status = :status, ue.timemodified = UNIX_TIMESTAMP(), ue.modifierid = ' . $USER->id . '
+                SET ue.status = :status, ue.timemodified = UNIX_TIMESTAMP(), ue.modifierid = :modifierid
                 WHERE e.courseid = :courseid
                     AND ue.userid = :userid';
 
         $params = [
             'courseid' => $courseid,
             'userid'  => $userid,
-            'status'  => $status
+            'status'  => $status,
+            'modifierid' => $USER->id,
         ];
 
         return $DB->execute($sql, $params);

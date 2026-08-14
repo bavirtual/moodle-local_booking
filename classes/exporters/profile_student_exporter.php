@@ -438,6 +438,7 @@ class profile_student_exporter extends exporter {
             'courseid' => $this->courseid,
             'userid' => $studentid,
             'forcecompletion' => 1,
+            'sesskey' => sesskey(),
         ]);
 
         // log in as url

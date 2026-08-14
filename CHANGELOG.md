@@ -1,5 +1,64 @@
 # Change log
 
+## [2026081403] - RELEASED 2026-08-14
+
+### Added
+
+- PHPUnit copies of development courses 10 (PPL), 33 (A320 Line Training), and 52 (SEIR), with an instructor and student enrolled on each
+
+### Fixed
+
+- `get_next_exercise()` no longer assumes a subscribed course already has assignment/quiz modules during enrolment
+- cancelling a booking no longer reports failure when the cancellation email cannot be sent
+- Dual logentry form no longer crashes when PIREP lookup is disabled
+- Dual logentry populate reads optional P1/P2 ids that Moodle omits from frozen selects
+- checklist `get_items()` handles a checklist that has not preloaded its items
+
+## [2026081402] - RELEASED 2026-08-14
+
+### Added
+
+- PHPUnit coverage for `save_slots`, `save_booking`, `cancel_booking` (including no-show), `save_logentry`, and `update_checklist_item`
+
+### Fixed
+
+- Moodle calendar events for booked sessions used a SCORM visibility check against the exercise name; they now use the assignment course module
+- Dual logentry populate reading optional form fields that are absent on PHP 8
+
+## [2026081401] - RELEASED 2026-08-14
+
+### Security
+
+- enforce `validate_context()` and `require_capability()` in all AJAX external functions (capabilities in `db/services.php` are not auto-enforced)
+- require login and capability checks on `calendar.php` and `index.php`; stop building calendar events from raw `$_GET`
+- require sesskey for booking confirmation, certification, and force course completion
+- restrict booking confirmation to the booked student
+- whitelist group names, user preferences, and progress-flag keys on write web services
+- prevent users from writing another user's preferences
+- parameterize logbook link updates and external PIREP lookups to block SQL injection
+- whitelist progress-table field names before interpolating them into SQL
+- escape the post-grading JavaScript redirect URL
+
+### Fixed
+
+- linked logentry save calling `get_linkedpirep()` instead of `set_linkedpirep()`, which fatals on PHP 8
+- undefined `$capability` when a student tries to open another pilot's logbook
+- `json_validate()` usage that requires PHP 8.3 while Moodle 4.5 supports PHP 8.1
+- empty/invalid progress-flag JSON throwing when a new student has no flags yet
+- `get_booking_config()` concatenating strings with `+` and echoing exceptions
+- `update_checklist_item` service missing `loginrequired` / `capabilities`
+- missing `exerciseid` in PIREP parameter validation
+
+### Changed
+
+- bulk-load checklist check records instead of querying per item
+- cache course subscription status in Moodle application cache (Redis/MUC)
+- confirm booking from email via an intermediate confirmation page (CSRF)
+
+### Added
+
+- `db/caches.php` definition for subscribed-course lookups
+
 ## [2026081400] - RELEASED 2026-08-14
 
 ### Added

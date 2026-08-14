@@ -46,6 +46,7 @@ use local_booking\output\views\calendar_view;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_weekly_view extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -59,8 +60,8 @@ class get_weekly_view extends external_api {
                 'week' => new external_value(PARAM_INT, 'Week to be viewed', VALUE_REQUIRED),
                 'time' => new external_value(PARAM_INT, 'Timestamp of the first day of the week to be viewed', VALUE_REQUIRED),
                 'courseid' => new external_value(PARAM_INT, 'Course being viewed', VALUE_DEFAULT, SITEID, NULL_ALLOWED),
-                'action' => new external_value(PARAM_RAW, 'The action being performed view or book', VALUE_DEFAULT, 'view', NULL_ALLOWED),
-                'view' => new external_value(PARAM_RAW, 'The action being performed view or book', VALUE_DEFAULT, 'view', NULL_ALLOWED),
+                'action' => new external_value(PARAM_ALPHA, 'The action being performed view or book', VALUE_DEFAULT, 'view', NULL_ALLOWED),
+                'view' => new external_value(PARAM_ALPHA, 'The action being performed view or book', VALUE_DEFAULT, 'view', NULL_ALLOWED),
                 'studentid' => new external_value(PARAM_INT, 'The user id the slots belongs to', VALUE_DEFAULT, 0, NULL_ALLOWED),
                 'exerciseid' => new external_value(PARAM_INT, 'The exercise id the slots belongs to', VALUE_DEFAULT, 0, NULL_ALLOWED),
             ]
@@ -95,6 +96,7 @@ class get_weekly_view extends external_api {
         ]);
 
         require_login($params['courseid'], false);
+        self::validate_course_access($params['courseid'], 'local/booking:availabilityview');
         $subscriber = get_course_subscriber_context('/local/booking/availability.php', $params['courseid']);
 
         $student = $userid ? $subscriber->get_student($userid) : null;

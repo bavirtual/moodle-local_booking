@@ -44,6 +44,7 @@ use core_external\external_function_parameters;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class delete_slots extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -71,9 +72,6 @@ class delete_slots extends external_api {
     public static function execute($courseid, $year, $week) {
         global $USER;
 
-        // set the subscriber object
-        $subscriber = get_course_subscriber_context('/local/booking/', $courseid, true);
-
         // Parameter validation.
         $params = self::validate_parameters(self::execute_parameters(), array(
                 'courseid' => $courseid,
@@ -81,7 +79,15 @@ class delete_slots extends external_api {
                 'week' => $week)
             );
 
+        self::validate_course_access($params['courseid'], 'local/booking:availabilityview');
+
+        // set the subscriber object
+        $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
+
         $student = $subscriber->get_student($USER->id);
+        if (empty($student)) {
+            throw new \moodle_exception('nopermissions', 'error');
+        }
         $warnings = array();
 
         // remove all week's slots for the user to avoid updates

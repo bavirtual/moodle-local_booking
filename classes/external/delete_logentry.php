@@ -28,7 +28,6 @@ namespace local_booking\external;
 defined('MOODLE_INTERNAL') || die;
 
 
-use context_course;
 use core_external\external_api;
 use core_external\external_value;
 use core_external\external_warnings;
@@ -45,6 +44,7 @@ use local_booking\local\logbook\entities\logbook;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class delete_logentry extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -82,6 +82,8 @@ class delete_logentry extends external_api {
                 'cascade' => $cascade,
                 )
             );
+
+        self::validate_course_access($params['courseid'], 'local/booking:view');
 
         $logbook = new logbook($params['courseid'], $params['userid']);
         $result = $logbook->delete($params['logentryid'], $params['cascade']);

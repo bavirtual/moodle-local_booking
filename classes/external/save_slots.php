@@ -46,6 +46,7 @@ use core_external\external_function_parameters;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class save_slots extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -89,11 +90,16 @@ class save_slots extends external_api {
                 'week'      => $week)
             );
 
+        self::validate_course_access($params['courseid'], 'local/booking:availabilityview');
+
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
         $warnings = [];
         $student = $subscriber->get_student($USER->id);
+        if (empty($student)) {
+            throw new \moodle_exception('nopermissions', 'error');
+        }
 
         // add new slots after removing previous ones for the week
         $slots = $student->save_slots($params);

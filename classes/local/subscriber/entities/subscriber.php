@@ -830,13 +830,9 @@ class subscriber implements subscriber_interface {
     public static function get_booking_config(string $key) {
         $config = null;
 
-        try {
-            // read config content
-            $configdata = json_decode(\get_config('local_booking', 'configsjson'));
-            // TODO: PHP9 deprecates dynamic properties
-            $config = \property_exists($configdata, $key) ? $configdata->$key : null;
-        } catch(\Exception $e) {
-            echo get_string('configmissing', 'local_booking') + '\n' + $e;
+        $configdata = json_decode(\get_config('local_booking', 'configsjson'));
+        if (is_object($configdata) && property_exists($configdata, $key)) {
+            $config = $configdata->$key;
         }
 
         return $config;
@@ -856,8 +852,9 @@ class subscriber implements subscriber_interface {
         $record = null;
 
         // get the integration object from settings
-        if (!isset($this->externaldataconfigs))
+        if (!isset($this->externaldataconfigs)) {
             $this->externaldataconfigs = (object) self::get_booking_config('external_data');
+        }
 
         // check if the integration is enabled
         if (!empty($this->externaldataconfigs) && $this->externaldataconfigs->enabled && $this->externaldataconfigs->$key->enabled) {
@@ -880,23 +877,43 @@ class subscriber implements subscriber_interface {
                 $conn = new \mysqli($dbhost, $dbuser, $dbpass, $dbname);
 
                 // check connection
-                if ($conn->connect_errno)
-                    throw new \Exception(get_string('errordbconnection', 'local_booking') . $conn->connect_error);
+                if ($conn->connect_errno) {
+                    throw new \moodle_exception('errordbconnection', 'local_booking', '', null, $conn->connect_error);
+                }
 
-                // get sql query
                 $table = $datasource->table;
-                $fields = implode(',', (array) $datasource->fields);
-                $mappedfields = array_keys((array) $datasource->fields);
+                $fieldlist = (array) $datasource->fields;
+                $mappedfields = array_keys($fieldlist);
                 $primarykey = $datasource->primarykey;
-                $sql = "SELECT $fields FROM $table WHERE $primarykey = '$value'";
 
-                // Return name of current default database
-                if ($result = $conn->query($sql)) {
+                $identifierpattern = '/^[A-Za-z_][A-Za-z0-9_]*$/';
+                if (!preg_match($identifierpattern, $table) || !preg_match($identifierpattern, $primarykey)) {
+                    throw new \coding_exception('Invalid external data table or primary key');
+                }
+                foreach ($fieldlist as $fieldname) {
+                    if (!preg_match($identifierpattern, $fieldname)) {
+                        throw new \coding_exception('Invalid external data field name');
+                    }
+                }
+
+                $fields = implode(',', $fieldlist);
+                $sql = "SELECT {$fields} FROM `{$table}` WHERE `{$primarykey}` = ?";
+                $stmt = $conn->prepare($sql);
+                if (!$stmt) {
+                    $conn->close();
+                    throw new \moodle_exception('errordbconnection', 'local_booking');
+                }
+                $stmt->bind_param('s', $value);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result) {
                     $values = $result->fetch_row();
-                    if (!empty($values))
+                    if (!empty($values)) {
                         $record = array_combine($mappedfields, $values);
+                    }
                     $result->close();
                 }
+                $stmt->close();
                 $conn->close();
             }
         }

@@ -58,6 +58,7 @@ $subscriber = get_course_subscriber_context($url->out(false), $courseid);
 
 // process force course completion given right permissions
 if (has_capability('enrol/apply:manage', $context) && $forcecompletion) {
+    require_sesskey();
     $subscriber->force_student_course_completion($userid);
     redirect($url);
 }

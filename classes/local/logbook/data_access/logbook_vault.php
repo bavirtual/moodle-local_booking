@@ -203,8 +203,8 @@ class logbook_vault implements logbook_vault_interface {
             $result = $logentry1id = self::insert_logentry($courseid, $logentry1->get_p1id(), $logentry1);
             $logentry1->set_id($logentry1id);
             $logentry2->set_linkedlogentryid($logentry1id);
-            $logentry2->set_pirep($logentry1->get_linkedpirep());
-            $logentry2->get_linkedpirep($logentry1->get_pirep());
+            $logentry2->set_pirep((string) $logentry1->get_linkedpirep());
+            $logentry2->set_linkedpirep((string) $logentry1->get_pirep());
             if ($result) {
                 $result = ($logentry2id = self::insert_logentry($courseid, $logentry2->get_userid(), $logentry2));
                 $logentry2->set_id($logentry2id);
@@ -212,13 +212,18 @@ class logbook_vault implements logbook_vault_interface {
         }
 
         // link first logentry
-        if ($result)
-            $result = $DB->execute('UPDATE {' . static::DB_LOGBOOKS . '} SET linkedlogentryid=' . $logentry2id . ' WHERE id=' . $logentry1id);
+        if ($result) {
+            $result = $DB->execute(
+                'UPDATE {' . static::DB_LOGBOOKS . '} SET linkedlogentryid = :linkedid WHERE id = :id',
+                ['linkedid' => $logentry2id, 'id' => $logentry1id]
+            );
+        }
 
-        if ($result)
+        if ($result) {
             $result = $transaction->allow_commit();
-        else
-            $transaction->rollback(new \moodle_exception(get_string('errorlinking', 'local_booking')));
+        } else {
+            $transaction->rollback(new \moodle_exception('errorlinking', 'local_booking'));
+        }
 
         return $result;
     }

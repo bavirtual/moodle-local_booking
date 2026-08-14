@@ -296,7 +296,7 @@ class dashboard_student_stats_exporter extends exporter {
     private function calculate_kpis(array $grades) {
         // KPI calculation
         $summary = (object) $this->student->get_logbook()->get_summary(true);
-        $studentlandings = $summary->totalpftime;
+        $studentlandings = $summary->totalpfflights ?? 0;
         $instructorlandings = count($this->sectors) - $studentlandings;
         $sessionscount = 0;
         foreach ($grades as $grade) {
@@ -514,8 +514,8 @@ class dashboard_student_stats_exporter extends exporter {
                 $session->totaltime = empty($logbooksummary->totalflighttime) ? 0 : $logbooksummary->totalflighttime;
                 $session->pftime = empty($logbooksummary->totalpftime) ? 0 : $logbooksummary->totalpftime;
                 $session->pmtime = empty($logbooksummary->totalpmtime) ? 0 : $logbooksummary->totalpmtime;
-                $session->studentlandings = empty($logbooksummary->totalpftime) ? 0 : $logbooksummary->totalpftime;
-                $session->instructorlandings = empty($logbooksummary->totalpmtime) ? 0 : $logbooksummary->totalpmtime;
+                $session->studentlandings = empty($logbooksummary->totalpfflights) ? 0 : $logbooksummary->totalpfflights;
+                $session->instructorlandings = empty($logbooksummary->totalpmflights) ? 0 : $logbooksummary->totalpmflights;
 
                 // Get overall grade
                 $session->overallgrade = $gradeattempt ? intval($gradeattempt->grade) : intval($grade->finalgrade);

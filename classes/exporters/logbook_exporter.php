@@ -136,6 +136,16 @@ class logbook_exporter extends exporter {
                 'type' => PARAM_TEXT,
                 'optional' => true
             ],
+            'totalpfflights' => [
+                'type' => PARAM_INT,
+                'optional' => true,
+                'default' => 0
+            ],
+            'totalpmflights' => [
+                'type' => PARAM_INT,
+                'optional' => true,
+                'default' => 0
+            ],
             'totalinstructortime' => [
                 'type' => PARAM_TEXT,
                 'optional' => true
@@ -255,6 +265,7 @@ class logbook_exporter extends exporter {
             $data['canedit']         = $this->data['canedit'];
             $data['shortdate']       = $this->data['shortdate'];
             $data['courseshortname'] = $this->data['courseshortname'];
+            $data['hasfindpirep']    = $this->data['hasfindpirep'];
             $entry = new logentry_exporter($data, $this->related);
             $entries[] = $entry->export($output);
         }

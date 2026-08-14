@@ -43,11 +43,13 @@ class update_checklist_item extends external_api {
             'studentid' => new external_value(PARAM_INT, 'Student user ID'),
             'bookingid' => new external_value(PARAM_INT, 'Booking ID'),
             'itemid' => new external_value(PARAM_INT, 'Checklist item ID'),
-            'state' => new external_value(PARAM_INT, 'Check state (0=undecided, 1=no, 2=yes)'),
+            'state' => new external_value(PARAM_INT, 'Check state (0=undecided, 1=no, 2=yes)', VALUE_DEFAULT, 0),
+            'comment' => new external_value(PARAM_TEXT, 'Teacher comment for the checklist item', VALUE_DEFAULT, ''),
+            'savecomment' => new external_value(PARAM_BOOL, 'Whether to save the teacher comment instead of the sign-off', VALUE_DEFAULT, false),
         ]);
     }
 
-    public static function execute($courseid, $studentid, $bookingid, $itemid, $state) {
+    public static function execute($courseid, $studentid, $bookingid, $itemid, $state = 0, $comment = '', $savecomment = false) {
         global $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -56,6 +58,8 @@ class update_checklist_item extends external_api {
             'bookingid' => $bookingid,
             'itemid' => $itemid,
             'state' => $state,
+            'comment' => $comment,
+            'savecomment' => $savecomment,
         ]);
 
         $context = \context_course::instance($params['courseid']);
@@ -65,13 +69,25 @@ class update_checklist_item extends external_api {
         require_once(__DIR__ . '/../../lib.php');
 
         $checklist = new checklist($courseid, $studentid);
-        $success = $checklist->update_checklist_item(
-            $params['itemid'],
-            $params['studentid'],
-            $USER->id,
-            $params['state'],
-            $params['bookingid']
-        );
+        $success = true;
+
+        // Save teacher comment without changing the sign-off when only the comment is submitted.
+        if ($params['savecomment']) {
+            $success = $checklist->update_checklist_comment(
+                $params['itemid'],
+                $params['studentid'],
+                $USER->id,
+                $params['comment']
+            );
+        } else {
+            $success = $checklist->update_checklist_item(
+                $params['itemid'],
+                $params['studentid'],
+                $USER->id,
+                $params['state'],
+                $params['bookingid']
+            );
+        }
 
         // Get checked items count out of the total and progress percentage
         $items = $checklist->get_items($studentid);

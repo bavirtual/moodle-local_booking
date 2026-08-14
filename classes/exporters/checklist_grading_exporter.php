@@ -67,6 +67,7 @@ class checklist_grading_exporter extends exporter {
                     'itemcount' => ['type' => PARAM_INT],
                     'checkedcount' => ['type' => PARAM_INT],
                     'progress' => ['type' => PARAM_INT],
+                    'teachercomments' => ['type' => PARAM_BOOL],
                     'items' => [
                         'type' => [
                             'id' => ['type' => PARAM_INT],
@@ -78,6 +79,8 @@ class checklist_grading_exporter extends exporter {
                             'optional' => ['type' => PARAM_BOOL],
                             'hidden' => ['type' => PARAM_BOOL],
                             'checkid' => ['type' => PARAM_INT],
+                            'teachercomment' => ['type' => PARAM_TEXT, 'optional' => true],
+                            'teachercomments' => ['type' => PARAM_BOOL],
                         ],
                         'multiple' => true,
                     ],
@@ -142,10 +145,20 @@ class checklist_grading_exporter extends exporter {
                     'optional' => ($item->itemoptional == CHECKLIST_OPTIONAL_YES),
                     'hidden' => !empty($item->hidden),
                     'checkid' => $item->checkid ?? 0,
+                    'teachercomment' => $item->teachercomment ?? '',
                 ];
             }
 
             $progress = $itemcount > 0 ? round(($checkedcount / $itemcount) * 100) : 0;
+
+            // Read into a local first: empty() on a magic property does not call __get().
+            $teachercomments = $checklist->teachercomments;
+            $teachercommentsenabled = $teachercomments === null || !empty($teachercomments);
+
+            foreach ($formattedItems as &$formatteditem) {
+                $formatteditem['teachercomments'] = $teachercommentsenabled;
+            }
+            unset($formatteditem);
 
             $data['checklists'][] = [
                 'id' => $checklist->id,
@@ -158,6 +171,7 @@ class checklist_grading_exporter extends exporter {
                 'itemcount' => $itemcount,
                 'checkedcount' => $checkedcount,
                 'progress' => $progress,
+                'teachercomments' => $teachercommentsenabled,
                 'items' => $formattedItems,
             ];
         }

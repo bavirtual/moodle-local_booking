@@ -59,4 +59,15 @@ interface checklist_vault_interface
      * @return object checklist record
      */
     public static function update_course_checklist_item($itemid, $studentid, $teacherid, $state);
+
+    /**
+     * Create, update, or delete a teacher comment on a student's checklist item.
+     *
+     * @param int $itemid The checklist item id
+     * @param int $studentid The student the comment is for
+     * @param int $teacherid The teacher writing the comment
+     * @param string $comment The comment text
+     * @return object The parent checklist record
+     */
+    public static function update_checklist_comment(int $itemid, int $studentid, int $teacherid, string $comment);
 }

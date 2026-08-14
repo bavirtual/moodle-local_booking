@@ -140,7 +140,8 @@ export const refreshMyBookingsContent = (root, courseId, contextId, template = n
                 exerciseId = logbookview ? 0 : logentrySession.dataset.exerciseId;
                 sessionId = logbookview ? 0 : logentrySession.dataset.sessionId;
                 flightType = logbookview ? '' : logentrySession.dataset.flightType;
-                findpirepenabled = logbookview ? false : $(Selectors.wrappers.bookingwrapper).data('findpirep');
+                findpirepenabled = logbookview ? $(target).closest(Selectors.containers.summaryForm).data('find-pirep') :
+                    $(Selectors.wrappers.bookingwrapper).data('findpirep');
             } else {
                 // From logentry_view
                 logentrySession = logbookview ? target.closest(Selectors.containers.summaryForm) :
@@ -149,7 +150,7 @@ export const refreshMyBookingsContent = (root, courseId, contextId, template = n
                 exerciseId = logbookview ? logentrySession.dataset.exerciseId : logentrySession.data('exercise-id');
                 sessionId = logbookview ? logentrySession.dataset.sessionId : logentrySession.data('session-id');
                 flightType = logbookview ? logentrySession.dataset.flightType : logentrySession.data('flight-type');
-                findpirepenabled = logbookview ? false : logentrySession.data('find-pirep');
+                findpirepenabled = logbookview ? $(logentrySession).data('find-pirep') : logentrySession.data('find-pirep');
             }
 
             // Set form properties

@@ -383,10 +383,33 @@ class grade extends \grade_grade {
         return max(1, min(5, $grade));
     }
 
+    /**
+     * Get the rubric level definition closest to a score for a criterion.
+     *
+     * Rubric criteria can contain more than one level with the same score, so this
+     * cannot use get_record() on criterionid+score.
+     *
+     * @param int $criterionid The rubric criterion id
+     * @param float|int $score The score to match
+     * @return string The matching level definition, or empty string if none
+     */
     public static function get_rubric_level_name($criterionid, $score) {
-        global $DB;
-        $levelrec = $DB->get_record('gradingform_rubric_levels', ['criterionid' => $criterionid, 'score' => $score]);
-        return $levelrec ? $levelrec->definition : '';
+        $levels = grading_vault::get_rubric_levels($criterionid);
+        if (empty($levels)) {
+            return '';
+        }
+
+        $match = null;
+        $closestdiff = null;
+        foreach ($levels as $level) {
+            $diff = abs((float) $level->score - (float) $score);
+            if ($closestdiff === null || $diff < $closestdiff) {
+                $closestdiff = $diff;
+                $match = $level;
+            }
+        }
+
+        return $match ? $match->definition : '';
     }
 
     /**

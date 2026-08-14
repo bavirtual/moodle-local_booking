@@ -64,6 +64,8 @@
         {{#str}} totalmultipilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalmultipilottime}}</span>
         {{#isstudent}}
         {{#str}} totalcopilottime, local_booking {{/str}}<span class="logbook-highlight">&#09;{{totalcopilottime}}</span>
+        {{#str}} totalpftime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpftime}}</span>
+        {{#str}} totalpmtime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpmtime}}</span>
         {{/isstudent}}
         {{/dualops}}
         {{#str}} totalifrtime, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalifrtime}}</span>
@@ -79,8 +81,8 @@
         {{/checkflight}}
 
         {{^dualops}}
-        {{#str}} totalpfflights, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpftime}}</span>
-        {{#str}} totalpmflights, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpmtime}}</span>
+        {{#str}} totalpfflights, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpfflights}}</span>
+        {{#str}} totalpmflights, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totalpmflights}}</span>
         {{/dualops}}
         {{#str}} totallandingsday, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsday}}</span>
         {{#str}} totallandingsnight, local_booking {{/str}}<span class="logbook-highlight">&#09;&#09;{{totallandingsnight}}</span>

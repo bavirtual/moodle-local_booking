@@ -483,18 +483,27 @@ export const userFetch = (courseId) => {
  * @param {Number} bookingid The booking id associated with the checklist item being updated
  * @param {Number} itemid The checklist item id
  * @param {Number} state The new state of the checklist item
+ * @param {String} [comment] Teacher comment for the checklist item
+ * @param {Boolean} [savecomment] Whether to save the comment instead of the sign-off
  * @return {Promise}
  */
-export const saveChecklistItem = (courseid, studentid, bookingid, itemid, state) => {
+export const saveChecklistItem = (courseid, studentid, bookingid, itemid, state, comment, savecomment) => {
+    const args = {
+        courseid: courseid,
+        studentid: studentid,
+        bookingid: bookingid,
+        itemid: itemid,
+        state: state
+    };
+    if (typeof comment !== 'undefined') {
+        args.comment = comment;
+    }
+    if (typeof savecomment !== 'undefined') {
+        args.savecomment = savecomment;
+    }
     const request = {
         methodname: 'local_booking_update_checklist_item',
-        args: {
-            courseid: courseid,
-            studentid: studentid,
-            bookingid: bookingid,
-            itemid: itemid,
-            state: state
-        }
+        args: args
     };
 
     return Ajax.call([request])[0];

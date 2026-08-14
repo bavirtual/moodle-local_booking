@@ -1,5 +1,20 @@
 # Change log
 
+## [2026081400] - RELEASED 2026-08-14
+
+### Added
+
+- teacher comment column on the checklist grading page, matching the Checklist plugin comment field
+
+### Changed
+
+- Grade action and post-booking redirect go to checklist grading / student stats only when the course is Multicrew and has at least one Checklist activity
+
+### Fixed
+
+- checklist grading comment column not rendering because empty() on magic checklist properties treated enabled teacher comments as off
+- has_checklists detecting Checklist course modules that the previous join could miss
+
 ## [2026070900] - RELEASED 2026-07-09
 
 ### Fixed

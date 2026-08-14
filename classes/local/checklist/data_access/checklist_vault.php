@@ -89,9 +89,10 @@ class checklist_vault implements checklist_vault_interface
      * @param int $studentid (optional)
      * @return array of items with progress
      */
-    public static function get_checklist_items($checklistid, $studentid = 0)
-    {
-        global $DB;
+    public static function get_checklist_items($checklistid, $studentid = 0) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot . '/mod/checklist/lib.php');
 
         // Get all items for this checklist
         $items = $DB->get_records(
@@ -117,12 +118,22 @@ class checklist_vault implements checklist_vault_interface
             );
         }
 
-        // Get student's check status and teacher comment for each item
+        // Get student's check status and teacher comment for each item.
+        $checks = [];
+        if (!empty($items)) {
+            list($checksql, $checkparams) = $DB->get_in_or_equal(array_keys($items), SQL_PARAMS_NAMED, 'ch');
+            $checkparams['userid'] = $studentid;
+            $checks = $DB->get_records_select(
+                self::DB_CHECKLIST_CHECK,
+                "userid = :userid AND item $checksql",
+                $checkparams,
+                '',
+                'item, usertimestamp, teachermark, teachertimestamp, id'
+            );
+        }
+
         foreach ($items as $item) {
-            $check = $DB->get_record(self::DB_CHECKLIST_CHECK, [
-                'item' => $item->id,
-                'userid' => $studentid
-            ]);
+            $check = $checks[$item->id] ?? null;
 
             $item->studentcheck = $check ? $check->usertimestamp : 0;
             $item->teachercheck = $check ? $check->teachermark : CHECKLIST_TEACHERMARK_UNDECIDED;
@@ -166,14 +177,18 @@ class checklist_vault implements checklist_vault_interface
      * @param int $studentid
      * @param int $teacherid
      * @param int $state (CHECKLIST_TEACHERMARK_YES or CHECKLIST_TEACHERMARK_NO)
+     * @param int $courseid Optional course id to verify the item belongs to this course
      * @return object checklist record
      */
-    public static function update_course_checklist_item($itemid, $studentid, $teacherid, $state)
+    public static function update_course_checklist_item($itemid, $studentid, $teacherid, $state, int $courseid = 0)
     {
         global $DB;
 
         $item = $DB->get_record(self::DB_CHECKLIST_ITEMS, ['id' => $itemid], '*', MUST_EXIST);
         $checklist = $DB->get_record(self::DB_CHECKLIST, ['id' => $item->checklist], '*', MUST_EXIST);
+        if ($courseid && (int) $checklist->course !== $courseid) {
+            throw new \moodle_exception('nopermissions', 'error');
+        }
 
         // Check if record exists
         $check = $DB->get_record(self::DB_CHECKLIST_CHECK, [
@@ -212,14 +227,18 @@ class checklist_vault implements checklist_vault_interface
      * @param int $studentid The student the comment is for
      * @param int $teacherid The teacher writing the comment
      * @param string $comment The comment text
+     * @param int $courseid Optional course id to verify the item belongs to this course
      * @return object The parent checklist record
      */
-    public static function update_checklist_comment(int $itemid, int $studentid, int $teacherid, string $comment)
+    public static function update_checklist_comment(int $itemid, int $studentid, int $teacherid, string $comment, int $courseid = 0)
     {
         global $DB;
 
         $item = $DB->get_record(self::DB_CHECKLIST_ITEMS, ['id' => $itemid], '*', MUST_EXIST);
         $checklist = $DB->get_record(self::DB_CHECKLIST, ['id' => $item->checklist], '*', MUST_EXIST);
+        if ($courseid && (int) $checklist->course !== $courseid) {
+            throw new \moodle_exception('nopermissions', 'error');
+        }
 
         $comment = trim($comment);
         $existing = $DB->get_record(self::DB_CHECKLIST_COMMENT, [

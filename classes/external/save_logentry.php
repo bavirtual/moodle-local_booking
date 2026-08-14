@@ -48,6 +48,7 @@ use local_booking\output\views\logentry_view;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class save_logentry extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -80,16 +81,23 @@ class save_logentry extends external_api {
         parse_str($params['formargs'], $args);
         parse_str($params['formdata'], $data);
 
+        $courseid = clean_param($args['courseid'] ?? 0, PARAM_INT);
+        $exerciseid = clean_param($args['exerciseid'] ?? 0, PARAM_INT);
+        $userid = clean_param($args['userid'] ?? 0, PARAM_INT);
+        $data['id'] = clean_param($data['id'] ?? 0, PARAM_INT);
+        $editing = !empty($data['id']);
+
+        if (empty($courseid) || empty($userid)) {
+            throw new \invalid_parameter_exception(get_string('errorcoursecontextnotset', 'local_booking'));
+        }
+
+        self::validate_course_access($courseid, 'local/booking:view');
+
+
         if (WS_SERVER) {
             // Request via WS, ignore sesskey checks in form library.
             $USER->ignoresesskey = true;
         }
-
-        $courseid = $args['courseid'];
-        $exerciseid = $args['exerciseid'];
-        $userid = $args['userid'];
-        $editing = !empty($data['id']);
-
 
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $courseid, true);
@@ -162,7 +170,7 @@ class save_logentry extends external_api {
      * @return external_single_structure
      *
      */
-    public static function  execute_returns() {
+    public static function execute_returns() {
         $logentrystructure = logentry_exporter::get_read_structure();
         $logentrystructure->required = VALUE_OPTIONAL;
 

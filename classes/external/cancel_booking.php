@@ -47,6 +47,7 @@ use local_booking\local\session\entities\booking;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cancel_booking extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -93,6 +94,8 @@ class cancel_booking extends external_api {
             $booking->load();
             $courseid = $booking->get_courseid();
 
+            self::validate_course_access($courseid, 'local/booking:view');
+
             // set the subscriber object
             $subscriber = get_course_subscriber_context('/local/booking/', $courseid, true);
 
@@ -108,7 +111,7 @@ class cancel_booking extends external_api {
 
                     // send cancellation message
                     $message = new notification($subscriber);
-                    $result = $message->send_noshow_notification( $booking, $subscriber->get_senior_instructors());
+                    $message->send_noshow_notification($booking, $subscriber->get_senior_instructors());
 
                 } else {
                     // enable restriction override if enabled to allow the student to repost slots sooner
@@ -118,7 +121,7 @@ class cancel_booking extends external_api {
 
                     // send cancellation message to both instructor and student
                     $cancellationmessage = new notification($subscriber);
-                    $result = $cancellationmessage->send_session_cancellation( $booking, $comment);
+                    $cancellationmessage->send_session_cancellation($booking, $comment);
 
                 }
 

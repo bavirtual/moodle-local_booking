@@ -46,6 +46,7 @@ use local_booking\local\session\entities\booking;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class has_conflicting_booking extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -93,6 +94,7 @@ class has_conflicting_booking extends external_api {
 
             // set the subscriber object
             $subscriber = get_course_subscriber_context('/local/booking/', $conflictingbooking->courseid, true);
+            self::validate_course_access($conflictingbooking->courseid, 'local/booking:view');
             require_login($conflictingbooking->courseid, false);
 
             $result = true;

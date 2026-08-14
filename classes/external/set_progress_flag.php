@@ -46,6 +46,7 @@ use core_external\external_function_parameters;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class set_progress_flag extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -54,8 +55,8 @@ class set_progress_flag extends external_api {
      */
     public static function execute_parameters() {
         return new external_function_parameters(array(
-            'key' => new external_value(PARAM_RAW, 'The progress key', VALUE_DEFAULT),
-            'value' => new external_value(PARAM_RAW, 'The value of the progress information', VALUE_DEFAULT),
+            'key' => new external_value(PARAM_TEXT, 'The progress key', VALUE_DEFAULT),
+            'value' => new external_value(PARAM_TEXT, 'The value of the progress information', VALUE_DEFAULT),
             'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
             'studentid' => new external_value(PARAM_INT, 'The student id', VALUE_DEFAULT),
         )
@@ -82,15 +83,23 @@ class set_progress_flag extends external_api {
             )
         );
 
+        self::validate_course_access($params['courseid'], 'local/booking:view');
+
+        $allowed = array_values(LOCAL_BOOKING_PROGFLAGS);
+        if (!in_array($params['key'], $allowed, true)) {
+            throw new \invalid_parameter_exception(get_string('errorinvalidprogressflag', 'local_booking'));
+        }
+
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 
         // get the student
         $student = new student($subscriber, $params['studentid']);
 
-        // check if the value is a json string
-        if (json_validate($params['value'])) {
-            $params['value'] = json_decode($params['value'], true);
+        // Decode JSON payloads without relying on PHP 8.3 json_validate().
+        $decoded = json_decode($params['value'], true);
+        if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_object($decoded))) {
+            $params['value'] = $decoded;
         }
 
         // update student's progress

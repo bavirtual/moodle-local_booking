@@ -16,7 +16,7 @@
 
 /**
  * Confirms a student; the confirmation is performed by the student
- * and an notification email is sent to the instructor.
+ * and a notification email is sent to the instructor.
  *
  * @package    local_booking
  * @author     Mustafa Hajjar (mustafa.hajjar)
@@ -31,47 +31,73 @@ use local_booking\local\session\entities\booking;
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 
-// Get URL parameters.
-$courseid     = optional_param('courseid', 0, PARAM_INT);
-$exerciseid   = optional_param('exeid', 0, PARAM_INT);
-$studentid    = optional_param('userid', 0, PARAM_INT);
-$instructorid = optional_param('insid', 0, PARAM_INT);
+$courseid     = required_param('courseid', PARAM_INT);
+$exerciseid   = required_param('exeid', PARAM_INT);
+$studentid    = required_param('userid', PARAM_INT);
+$instructorid = required_param('insid', PARAM_INT);
+$confirm      = optional_param('confirm', 0, PARAM_BOOL);
+
+$course = get_course($courseid);
 $context = context_course::instance($courseid);
 
-require_login($courseid, false);
+require_login($course, false);
 require_capability('local/booking:availabilityview', $context);
 
-// Initialize variables.
+if ($studentid != $USER->id) {
+    throw new moodle_exception('errorconfirmownbooking', 'local_booking');
+}
+
+$urlparams = [
+    'courseid' => $courseid,
+    'exeid' => $exerciseid,
+    'userid' => $studentid,
+    'insid' => $instructorid,
+];
+$PAGE->set_url(new moodle_url('/local/booking/confirm.php', $urlparams));
+$PAGE->set_context($context);
+
+// Email confirmation links land here without a sesskey. Show a confirm step first.
+if (!$confirm) {
+    $confirmurl = new moodle_url('/local/booking/confirm.php', $urlparams + [
+        'confirm' => 1,
+        'sesskey' => sesskey(),
+    ]);
+    $cancelurl = new moodle_url('/local/booking/availability.php', ['courseid' => $courseid]);
+    echo $OUTPUT->header();
+    echo $OUTPUT->confirm(get_string('bookingconfirmask', 'local_booking'), $confirmurl, $cancelurl);
+    echo $OUTPUT->footer();
+    die;
+}
+
+require_sesskey();
+
 $result = -1;
 $time = time();
 $week = (int) date('W', time());
 
-// define session booking plugin subscriber globally
-$url = new moodle_url('/local/booking/availability.php', array(
+$url = new moodle_url('/local/booking/availability.php', [
     'courseid'  => $courseid,
     'userid'    => $studentid,
     'time'      => $time,
     'week'      => $week,
-    'confirm'   => true
-));
+    'confirm'   => true,
+]);
 $subscriber = get_course_subscriber_context($url->out(false), $courseid);
 
-// Get the student slot
 $booking = new booking(0, $courseid, $studentid, $exerciseid);
 $booking->load();
 
+$strdata = [];
 if (!empty($booking->get_id())) {
-    // update the booking by the instructor.
     $sessiondatetime = new DateTime('@' . ($booking->get_slot())->get_starttime());
     $sessiondatetimestr = $sessiondatetime->format('D M j\, H:i');
     $strdata = [
         'exercise'  => $subscriber->get_exercise($exerciseid)->name,
         'instructor'=> student::get_fullname($instructorid),
         'status'    => ucwords(get_string('statusbooked', 'local_booking')),
-        'sessiondate'=> $sessiondatetimestr
+        'sessiondate'=> $sessiondatetimestr,
     ];
     if ($booking->confirm(get_string('bookingconfirmmsg', 'local_booking', $strdata))) {
-        // notify the instructor of the student's confirmation
         $message = new notification($subscriber);
         $result = $message->send_instructor_notification($studentid, $exerciseid, $sessiondatetime, $instructorid);
     }
@@ -81,12 +107,10 @@ if (!empty($booking->get_id())) {
 
 if ($result == 1) {
     \core\notification::SUCCESS(get_string('bookingconfirmsuccess', 'local_booking', $strdata));
-} elseif ($result == 0) {
+} else if ($result == 0) {
     \core\notification::ERROR(get_string('bookingconfirmunable', 'local_booking'));
-} elseif ($result == -1) {
+} else if ($result == -1) {
     \core\notification::SUCCESS(get_string('nobookingtoconfirm', 'local_booking'));
 }
 
-if ($result) {
-    redirect($url);
-}
+redirect($url);

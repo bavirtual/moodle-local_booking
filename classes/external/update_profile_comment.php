@@ -45,6 +45,7 @@ use local_booking\local\participant\entities\participant;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class update_profile_comment extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -77,6 +78,8 @@ class update_profile_comment extends external_api {
             'comment' => $comment,
             )
         );
+
+        self::validate_course_access($params['courseid'], 'local/booking:view');
 
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);

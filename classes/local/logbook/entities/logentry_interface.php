@@ -380,9 +380,9 @@ interface logentry_interface {
     /**
      * Set the associated linked pirep.
      *
-     * @param int $linkedpirep
+     * @param string $linkedpirep
      */
-    public function set_linkedpirep(int $linkedpirep);
+    public function set_linkedpirep(string $linkedpirep);
 
     /**
      * Set the flight callsign.

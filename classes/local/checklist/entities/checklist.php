@@ -120,7 +120,7 @@ class checklist implements checklist_interface {
     public function get_items($studentid = null) {
 
         // Check if items are already loaded in the checklist data
-        $items = $this->_data['items'];
+        $items = $this->_data['items'] ?? [];
         if (empty($items)) {
             $items = checklist_vault::get_checklist_items($this->id, $studentid);
         }
@@ -140,7 +140,7 @@ class checklist implements checklist_interface {
         global $CFG;
         require_once($CFG->dirroot . '/mod/checklist/lib.php');
 
-        $checklist = checklist_vault::update_course_checklist_item($itemid, $studentid, $teacherid, $checked);
+        $checklist = checklist_vault::update_course_checklist_item($itemid, $studentid, $teacherid, $checked, $this->courseid);
         $this->populate((array)$checklist);
         $success = !empty($checklist);
 
@@ -200,7 +200,7 @@ class checklist implements checklist_interface {
      * @return bool True if the update was successful
      */
     public function update_checklist_comment(int $itemid, int $studentid, int $teacherid, string $comment) {
-        $checklist = checklist_vault::update_checklist_comment($itemid, $studentid, $teacherid, $comment);
+        $checklist = checklist_vault::update_checklist_comment($itemid, $studentid, $teacherid, $comment, $this->courseid);
         $this->populate((array)$checklist);
         return !empty($checklist);
     }

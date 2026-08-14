@@ -86,6 +86,8 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
         exit;
     }
 
+    require_sesskey();
+
     // verify credentials, if the certifier is not the same as the examiner throw invalid permissions error
     $exerciseid = $COURSE->subscriber->get_graduation_exercise_id();
     $grade = $student->get_grade($exerciseid, true);
@@ -95,8 +97,9 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
     $data = new stdClass();
     $data->userid = $studentid;
 
-    if ($examinerid != $USER->id)
-        throw new \Error(get_string('errorcertifiernotexaminer', 'local_booking'));
+    if ($examinerid != $USER->id) {
+        throw new \moodle_exception('errorcertifiernotexaminer', 'local_booking');
+    }
 
     // perform student certification actions
     if (!$student->graduated(true)) {
@@ -119,7 +122,7 @@ if ($COURSE->subscriber->requires_skills_evaluation()) {
 
                     // verify the badge is active
                     if (!$badge->is_active()) {
-                        throw new Error(get_string('donotaward', 'badges'));
+                        throw new moodle_exception('donotaward', 'badges');
                     }
 
                     // process manual award of the badge

@@ -23,11 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once("../../config.php");
-require_once("lib.php");
+require_once('../../config.php');
 
-$courseid = optional_param('id', SITEID, PARAM_INT);   // course
+require_login();
 
-$PAGE->set_url('/local/booking/index.php', array('courseid'=>$courseid));
+$courseid = optional_param('id', SITEID, PARAM_INT);
 
-redirect("$CFG->wwwroot/local/booking/view.php?courseid=$courseid");
+redirect(new moodle_url('/local/booking/view.php', ['courseid' => $courseid]));

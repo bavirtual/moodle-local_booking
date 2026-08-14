@@ -992,9 +992,9 @@ class logentry implements logentry_interface {
     /**
      * Set the associated linked pirep.
      *
-     * @param int $linkedpirep
+     * @param string $linkedpirep
      */
-    public function set_linkedpirep(int $linkedpirep) {
+    public function set_linkedpirep(string $linkedpirep) {
         $this->linkedpirep = $linkedpirep;
     }
 
@@ -1040,8 +1040,8 @@ class logentry implements logentry_interface {
         $this->flightdate = $formdata->flightdate;
         $pirep = (property_exists('formdata', 'p2pirep') || $edit || $formdata->flighttypehidden == 'solo') ? $formdata->p1pirep : '';
         $this->pirep = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($pirep ?: 0) : ($pirep ?: $formdata->linkedpirep);
-        $this->p1id = $formdata->flighttypehidden == 'solo' ? $this->parent->get_userid() : $formdata->p1id;
-        $this->p2id = $formdata->flighttypehidden == 'solo' ? 0 : $formdata->p2id;
+        $this->p1id = $formdata->flighttypehidden == 'solo' ? $this->parent->get_userid() : ($formdata->p1id ?? 0);
+        $this->p2id = $formdata->flighttypehidden == 'solo' ? 0 : ($formdata->p2id ?? 0);
 
         // flight rules
         $pictimerule        = $isinstructor || $formdata->flighttypehidden == 'solo';
@@ -1067,29 +1067,29 @@ class logentry implements logentry_interface {
         $this->ifrtime      = $ifrtimerule ? $this->parent->convert_time($formdata->ifrtime, 'MINS_TO_NUM') : 0;
         $this->instructortime = $instructortimerule ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
         $this->picustime    = $picustimerule ? $this->parent->convert_time($formdata->flighttime, 'MINS_TO_NUM') : 0;
-        $this->checkpilottime = $checkpilottimerule ? $this->parent->convert_time($formdata->checkpilottime, 'MINS_TO_NUM') : 0;
-        $this->pilotrole    = $formdata->pilotrole;
+        $this->checkpilottime = $checkpilottimerule ? $this->parent->convert_time($formdata->checkpilottime ?? 0, 'MINS_TO_NUM') : 0;
+        $this->pilotrole    = $formdata->pilotrole ?? '';
 
         // additional logentry data
-        $this->callsign     = strtoupper($formdata->callsign);
-        $this->depicao      = strtoupper($formdata->depicao);
-        $this->arricao      = strtoupper($formdata->arricao);
+        $this->callsign     = strtoupper($formdata->callsign ?? '');
+        $this->depicao      = strtoupper($formdata->depicao ?? '');
+        $this->arricao      = strtoupper($formdata->arricao ?? '');
 
         // convert from 24hr time format to a timestamp given the flightdate date start
-        $this->deptime      = $this->parent->convert_time($formdata->deptime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
-        $this->arrtime      = $this->parent->convert_time($formdata->arrtime, 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
-        $this->aircraft     = $formdata->aircraft;
-        $this->aircraftreg  = $formdata->aircraftreg;
-        $this->enginetype   = $formdata->enginetype;
-        $this->route        = $formdata->route;
+        $this->deptime      = $this->parent->convert_time($formdata->deptime ?? '', 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
+        $this->arrtime      = $this->parent->convert_time($formdata->arrtime ?? '', 'TIME_TO_TS', strtotime("today", $formdata->flightdate));
+        $this->aircraft     = $formdata->aircraft ?? '';
+        $this->aircraftreg  = $formdata->aircraftreg ?? '';
+        $this->enginetype   = $formdata->enginetype ?? '';
+        $this->route        = $formdata->route ?? '';
 
         // assign landings day/night of p1 to instructor, solo, or editing mode case otherwise use p2 for the student
-        $this->landingsday  = $landingsdayrule ? $formdata->landingsp1day : $formdata->landingsp2day;
-        $this->landingsnight = $landingsnightrule ? $formdata->landingsp1night : $formdata->landingsp2night;
+        $this->landingsday  = $landingsdayrule ? ($formdata->landingsp1day ?? 0) : ($formdata->landingsp2day ?? 0);
+        $this->landingsnight = $landingsnightrule ? ($formdata->landingsp1night ?? 0) : ($formdata->landingsp2night ?? 0);
 
-        $this->nighttime    = $formdata->nighttime ? $this->parent->convert_time($formdata->nighttime, 'MINS_TO_NUM') : 0;
-        $this->remarks      = $formdata->remarks;
-        $this->fstd         = $formdata->fstd;
+        $this->nighttime    = !empty($formdata->nighttime) ? $this->parent->convert_time($formdata->nighttime, 'MINS_TO_NUM') : 0;
+        $this->remarks      = $formdata->remarks ?? '';
+        $this->fstd         = $formdata->fstd ?? '';
         $this->flighttype   = $formdata->flighttypehidden;
         $this->linkedlogentryid = $formdata->linkedlogentryid ?: 0;
         $this->linkedpirep  = $isinstructor || $edit || $formdata->flighttypehidden == 'solo' ? ($pirep ?: $formdata->linkedpirep) : $formdata->p1pirep;

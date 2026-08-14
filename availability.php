@@ -46,11 +46,10 @@ $context = context_course::instance($courseid);
 require_login($course, false);
 require_capability('local/booking:availabilityview', $context);
 
-$action =  optional_param('action', null, PARAM_RAW);
-$view =  optional_param('view', 'user', PARAM_RAW);
+$action = optional_param('action', null, PARAM_ALPHA);
+$view = optional_param('view', 'user', PARAM_ALPHA);
 $userid = optional_param('userid', $USER->id, PARAM_INT);
 $exerciseid = optional_param('exid', 0, PARAM_INT);
-$course = get_course($courseid);
 $week = get_string('week', 'local_booking');
 $time = optional_param('time', 0, PARAM_INT);
 $confirm = optional_param('confirm', 0, PARAM_INT);
@@ -74,18 +73,8 @@ if (has_capability('local/booking:view', $context)) {
 $PAGE->set_url($url);
 $PAGE->requires->js_call_amd('local_booking/calendar', 'init', ['#region-main-box']);
 
-// If a day, month and year were passed then convert it to a timestamp. If these were passed
-// then we can assume the day, month and year are passed as Gregorian, as no where in core
-// should we be passing these values rather than the time. This is done for BC.
-if (!empty($day) && !empty($mon) && !empty($year)) {
-    if (checkdate($mon, $day, $year)) {
-        $time = make_timestamp($year, $mon, $day);
-    }
-}
-
-// go to next week if we're on the last day of the week and no booking can be made
 if (empty($time)) {
-    $time =  time();
+    $time = time();
 }
 
 $calendar = \calendar_information::create($time, $courseid);

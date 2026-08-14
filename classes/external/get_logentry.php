@@ -47,6 +47,7 @@ use local_booking\output\views\logentry_view;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_logentry extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -82,6 +83,8 @@ class get_logentry extends external_api {
                 'userid' => $userid,
                 )
             );
+
+        self::validate_course_access($params['courseid'], 'local/booking:logbookview');
 
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
 

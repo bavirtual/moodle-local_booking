@@ -49,6 +49,7 @@ use core_external\external_function_parameters;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_student_names extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -77,6 +78,8 @@ class get_student_names extends external_api {
                 'courseid' => $courseid,
                 )
             );
+
+        self::validate_course_access($params['courseid'], 'local/booking:view');
 
         $warnings = [];
 

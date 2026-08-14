@@ -50,6 +50,7 @@ use local_booking\local\slot\entities\slot;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class save_booking extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -94,6 +95,8 @@ class save_booking extends external_api {
                 'studentid'  => $studentid
                 )
             );
+
+        self::validate_course_access($params['courseid'], 'local/booking:view');
 
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);

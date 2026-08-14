@@ -57,7 +57,7 @@ require_capability('local/booking:logbookview', $context);
 
 // deny access if not an instructor and not view own logbook
 if (!has_capability('local/booking:view', $context) && $USER->id != $userid) {
-    throw new required_capability_exception($context, $capability, 'nopermissions', '');
+    throw new required_capability_exception($context, 'local/booking:view', 'nopermissions', '');
 }
 
 // define session booking plugin subscriber globally
@@ -98,8 +98,9 @@ if (empty($format)) {
     $format = get_user_preferences(LOCAL_BOOKING_USERPERFPREFIX . "$courseid-" . LOCAL_BOOKING_USERPERFS['LOGFRMT'], DEFAULT_LOGBOOK_FORMAT);
 } else {
     $setformat = get_user_preferences(LOCAL_BOOKING_USERPERFPREFIX . "$courseid-" . LOCAL_BOOKING_USERPERFS['LOGFRMT'], DEFAULT_LOGBOOK_FORMAT);
-    if ($format != $setformat)
-        set_user_preferences(array(LOCAL_BOOKING_USERPERFPREFIX . "$courseid-" . LOCAL_BOOKING_USERPERFS['LOGFRMT']=>$format));
+    if ($format != $setformat) {
+        set_user_preferences([LOCAL_BOOKING_USERPERFPREFIX . "$courseid-" . LOCAL_BOOKING_USERPERFS['LOGFRMT'] => $format]);
+    }
 }
 
 // get logbook view data

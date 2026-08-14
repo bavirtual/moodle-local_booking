@@ -51,6 +51,7 @@ use local_booking\output\views\logentry_view;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_pirep extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -79,14 +80,18 @@ class get_pirep extends external_api {
      * @return array array of slots created.
      */
     public static function execute($pirep, $courseid, $userid, $exerciseid) {
+        global $USER;
 
         // Parameter validation.
         $params = self::validate_parameters(self::execute_parameters(), array(
                 'pirep' => $pirep,
                 'courseid' => $courseid,
                 'userid' => $userid,
+                'exerciseid' => $exerciseid,
                 )
             );
+
+        self::validate_course_access($params['courseid'], 'local/booking:view');
 
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);
@@ -107,22 +112,23 @@ class get_pirep extends external_api {
             // get pilot integrated info
             if (subscriber::has_integration('external_data', 'pilots')) {
                 $pilotrec = $subscriber->get_external_data('pilots', 'pilotinfo', $logentry->get_pilotid());
-                $alternatename = $pilotrec['alternatename'];
+                $alternatename = $pilotrec['alternatename'] ?? '';
 
-                if (core_user::get_user($userid, 'alternatename')->alternatename == $alternatename) {
+                if (core_user::get_user($params['userid'], 'alternatename')->alternatename == $alternatename) {
 
                     // get engine type integrated data
                     if ($subscriber->has_integration('external_data', 'aircraft')) {
                         $enginetyperec = $subscriber->get_external_data('aircraft', 'aircraftinfo', $logentry->get_aircraft());
-                        if (!empty($enginetyperec))
+                        if (!empty($enginetyperec)) {
                             $logentry->set_enginetype($enginetyperec['engine_type'] == 'single' ? 'SE' : 'ME');
+                        }
                     }
 
                     // export logentry data
                     $data = [
                         'subscriber'=> $subscriber,
                         'logentry'  => $logentry,
-                        'exerciseid'=> $exerciseid,
+                        'exerciseid'=> $params['exerciseid'],
                         'view'      => 'summary',
                         'nullable'  => false
                     ];
@@ -151,7 +157,7 @@ class get_pirep extends external_api {
         if (!$result) {
             // get empty logentry for returns structure
             $data = $logentry->__toArray(false, false) + $params;
-            $data['canedit'] = $subscriber->get_instructor($userid)->is_instructor();
+            $data['canedit'] = $subscriber->get_instructor($USER->id)->is_instructor();
             $data['visible'] = 1;
             // set the warring message
             $warnings[] = [

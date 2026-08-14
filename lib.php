@@ -171,11 +171,12 @@ function local_booking_extend_navigation_course(navigation_node $navigation) {
             unset($SESSION->checklist_grading_redirect);
             unset($SESSION->frompage);
 
-            // Force the PARENT window to redirect, solving the AJAX '#' issue
+            // Force the parent window to redirect, solving the AJAX '#' issue.
+            $jsurl = json_encode($redirecturl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
             echo "<script type='text/javascript'>
-                window.top.location.href = '$redirecturl';
+                window.top.location.href = $jsurl;
             </script>";
-            exit;
+            die;
         }
     }
 
@@ -284,8 +285,9 @@ function get_course_subscriber_context(string $url, int $courseid, bool $setcont
     global $PAGE, $COURSE;
 
     // ensure we have the right course context
-    if ($courseid == SITEID)
+    if ($courseid == SITEID) {
         throw new coding_exception(get_string('errorcoursecontextnotset', 'local_booking'));
+    }
 
     // define subscriber globally
     if (empty($COURSE->subscriber)) {
@@ -357,8 +359,9 @@ function local_booking_output_fragment_logentry_form($args) {
         $data['p1pirep'] = $logentry->get_pirep() ?: '';
         $data['landingsp1day'] = $logentry->get_landingsday();
         $data['landingsp1night'] = $logentry->get_landingsnight();
-        if ($logentry->get_flighttype() == 'check')
+        if ($logentry->get_flighttype() == 'check') {
             $data['passfail'] = !empty($logentry->get_checkpilottime()) || !empty($logentry->get_picustime()) ? 'pass' : 'fail';
+        }
         $mform = new update_logentry_form(null, $formoptions, 'post', '', null, true, $formdata);
     } else {
         $logentry = $logbook->create_logentry();

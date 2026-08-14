@@ -45,6 +45,7 @@ use local_booking\output\views\booking_view;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_bookings_view extends external_api {
+    use helper;
 
     /**
      * Returns description of method parameters.
@@ -57,7 +58,7 @@ class get_bookings_view extends external_api {
             array(
                 'courseid'  => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT),
                 'userid'  => new external_value(PARAM_INT, 'The user id', VALUE_DEFAULT),
-                'filter'  => new external_value(PARAM_RAW, 'The results filter', VALUE_DEFAULT),
+                'filter'  => new external_value(PARAM_ALPHA, 'The results filter', VALUE_DEFAULT),
             )
         );
     }
@@ -80,6 +81,8 @@ class get_bookings_view extends external_api {
                 'filter' => $filter,
                 )
             );
+
+        self::validate_course_access($params['courseid'], 'local/booking:view');
 
         // set the subscriber object
         $subscriber = get_course_subscriber_context('/local/booking/', $params['courseid'], true);

@@ -81,10 +81,22 @@ class checklist implements checklist_interface {
      * @return mixed The property value if set, or null if not set
      */
     public function __get($name) {
-        if (isset($this->_data[$name])) {
+        if (array_key_exists($name, $this->_data)) {
             return $this->_data[$name];
         }
         return null;
+    }
+
+    /**
+     * Whether a magic property is present.
+     *
+     * Required so empty() / isset() call __get() instead of treating the value as missing.
+     *
+     * @param string $name The property name
+     * @return bool
+     */
+    public function __isset($name) {
+        return array_key_exists($name, $this->_data) && $this->_data[$name] !== null;
     }
 
     /**
@@ -176,5 +188,20 @@ class checklist implements checklist_interface {
 
         return (bool)$success;
 
+    }
+
+    /**
+     * Create, update, or delete a teacher comment on a student's checklist item.
+     *
+     * @param int $itemid The checklist item id
+     * @param int $studentid The student the comment is for
+     * @param int $teacherid The teacher writing the comment
+     * @param string $comment The comment text
+     * @return bool True if the update was successful
+     */
+    public function update_checklist_comment(int $itemid, int $studentid, int $teacherid, string $comment) {
+        $checklist = checklist_vault::update_checklist_comment($itemid, $studentid, $teacherid, $comment);
+        $this->populate((array)$checklist);
+        return !empty($checklist);
     }
 }

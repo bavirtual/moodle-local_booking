@@ -972,11 +972,23 @@ class subscriber implements subscriber_interface {
      * @return bool
      */
     public static function has_checklists($courseid) {
-        // check if the Checklist plugin is enabled and there are checklists for the course
+        global $DB;
+
+        // Checklist activity plugin (https://github.com/davosmith/moodle-checklist)
         if (!\core_plugin_manager::instance()->get_plugin_info('mod_checklist')) {
             return false;
         }
-        return count(checklist_vault::get_course_checklists($courseid)) > 0;
+
+        $moduleid = $DB->get_field('modules', 'id', ['name' => 'checklist']);
+        if (empty($moduleid)) {
+            return false;
+        }
+
+        return $DB->record_exists('course_modules', [
+            'course' => $courseid,
+            'module' => $moduleid,
+            'deletioninprogress' => 0,
+        ]);
     }
 
     /**

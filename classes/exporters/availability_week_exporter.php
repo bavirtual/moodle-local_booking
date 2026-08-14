@@ -183,6 +183,7 @@ class availability_week_exporter extends exporter {
             'exerciseid'  => $exerciseid,
             'exercisename'=> $this->course->get_exercise($exerciseid)->name,
             'trainingtype'=> $this->course->trainingtype,
+            'haschecklists' => $this->course->has_checklists($this->course->get_id()),
             'confirm'     => $actiondata['confirm'],
             'editing'     => $this->view == 'user' && $this->actiondata['action'] != 'book',    // Editing is not allowed if user id is passed for booking
             'alreadybooked' => !empty($this->activebooking),
@@ -237,6 +238,10 @@ class availability_week_exporter extends exporter {
             'trainingtype' => [
                 'type' => PARAM_RAW,
                 'default' => '',
+            ],
+            'haschecklists' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
             ],
             'confirm' => [
                 'type' => PARAM_BOOL,

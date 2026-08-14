@@ -129,23 +129,18 @@ class action implements action_interface {
                 // set grading url and params - default to Moodle assignment grading page with exerciseid as the assignment id
                 $actionurl = '/local/booking/assign.php';
                 $params = ['exeid' => $exerciseid];
-                // get Moodle assignment grading urls
+                $grade = $student->get_current_grade();
                 if (!empty($grade) && !$grade->is_passed()) {
                     $params['passed'] = 0;
                 }
 
-                if ($course->has_checklists($course->get_id())) {
-                    // if the course has a checklist, the grading action will take the instructor to the checklist grading page
-                    $actionurl = '/local/booking/checklist_grading.php';
-
-                    // Get checklist grading url and params
+                // Multicrew courses with at least one Checklist activity grade via
+                // checklist sign-off before the assignment grader.
+                if ($course->trainingtype == 'Multicrew' && $course->has_checklists($course->get_id())) {
                     $actionurl = '/local/booking/checklist_grading.php';
                     $booking = new booking(0, $course->get_id(), $student->get_id(), $exerciseid);
                     $booking->load();
                     $params['bookingid'] = $booking->get_id();
-                } else {
-                    // if not, the grading action will take the instructor to the Moodle assignment grading page
-                    $actionurl = '/local/booking/assign.php';
                 }
 
                 $name = get_string('grade', 'local_booking');

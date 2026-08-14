@@ -77,4 +77,15 @@ interface checklist_interface {
      * @return bool True if the update was successful, false otherwise
      */
     public function update_checklist_item(int $itemid, int $studentid, int $teacherid, int $state, int $bookingid = 0);
+
+    /**
+     * Create, update, or delete a teacher comment on a student's checklist item.
+     *
+     * @param int $itemid The checklist item id
+     * @param int $studentid The student the comment is for
+     * @param int $teacherid The teacher writing the comment
+     * @param string $comment The comment text
+     * @return bool True if the update was successful
+     */
+    public function update_checklist_comment(int $itemid, int $studentid, int $teacherid, string $comment);
 }

@@ -187,7 +187,11 @@ body.local-booking-checklist-grading .custom-switch .toggle-switch:checked ~ .to
 body.local-booking-checklist-grading .custom-switch .toggle-switch:disabled:checked ~ .toggle-label::before {
     background-color: rgba(15, 111, 197, 0.5);
 }
-.callout {
+body.local-booking-checklist-grading .checklist-comment {
+    min-width: 180px;
+}
+
+body.local-booking-checklist-grading .callout {
     position: fixed;
     z-index: 99999;
     padding: 10px 20px;

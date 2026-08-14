@@ -53,8 +53,11 @@
         <table class="table">
           <thead>
             <tr>
-              <th style="width: 50%;">{{#str}}item, local_booking{{/str}}</th>
-              <th style="width: 200px;" class="text-center">{{#str}}teachermark, local_booking{{/str}}</th>
+              <th style="width: 40%;">{{#str}}item, local_booking{{/str}}</th>
+              <th style="width: 120px;" class="text-center">{{#str}}teachermark, local_booking{{/str}}</th>
+              {{#teachercomments}}
+              <th>{{#str}}comment, local_booking{{/str}}</th>
+              {{/teachercomments}}
               <th>{{#str}}date{{/str}}</th>
             </tr>
           </thead>
@@ -78,12 +81,21 @@
                 </div>
               </td>
               <td class="text-center">
-                <div id="callout" class="callout"></div>
+                <div class="callout"></div>
                 <div class="custom-control custom-switch">
-                  <input type="checkbox" data-itemid="{{id}}" data-bookingid={{bookingid}} class="toggle-input" id="item-{{id}}" {{#teacherchecked}}checked{{/teacherchecked}} {{^grading}}disabled{{/grading}}>
+                  <input type="checkbox" data-itemid="{{id}}" data-bookingid="{{bookingid}}" class="toggle-input" id="item-{{id}}" {{#teacherchecked}}checked{{/teacherchecked}} {{^grading}}disabled{{/grading}}>
                   <label id="teacher-checked-label" class="toggle-label" for="item-{{id}}"></label>
                 </div>
               </td>
+              {{#teachercomments}}
+              <td>
+                <input type="text"
+                       class="form-control form-text-inline checklist-comment"
+                       data-itemid="{{id}}"
+                       value="{{teachercomment}}"
+                       {{^grading}}disabled{{/grading}}>
+              </td>
+              {{/teachercomments}}
               <td id="teacher-timestamp-{{id}}">{{teachertimestamp}}</td>
             </tr>
             {{/isheading}}

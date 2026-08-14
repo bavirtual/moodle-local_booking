@@ -57,6 +57,13 @@ define([
                 // Auto-save (or you can save on button click)
                 self.saveChecklistItem(e, itemid, state);
             });
+
+            // Save teacher comments on change, matching the Checklist plugin field.
+            $(document).on('change', '.checklist-comment', function(e) {
+                var itemid = $(this).data('itemid');
+                var comment = $(this).val();
+                self.saveChecklistComment(e, itemid, comment);
+            });
         },
 
         saveChecklistItem: function(e, itemid, state) {
@@ -83,8 +90,32 @@ define([
             .fail(Notification.exception);
         },
 
+        saveChecklistComment: function(e, itemid, comment) {
+            var self = this;
+            var input = $(e.currentTarget);
+            var courseid = new URLSearchParams(window.location.search).get('courseid');
+            var studentid = new URLSearchParams(window.location.search).get('userid');
+            var bookingid = new URLSearchParams(window.location.search).get('bookingid');
+
+            return Repository.saveChecklistItem(courseid, studentid, bookingid, itemid, 0, comment, true)
+            .then(function(response) {
+                if (response.success) {
+                    self.showCallout(input, response.message);
+                }
+                return;
+            })
+            .always(function() {
+                Notification.fetchNotifications();
+                return;
+            })
+            .fail(Notification.exception);
+        },
+
         showCallout: function(toggle, message) {
-            var callout = $('#callout');
+            var callout = toggle.closest('tr').find('.callout');
+            if (!callout.length) {
+                callout = $('.callout').first();
+            }
 
             // 1. Set the dynamic text from the response
             callout.text(message || "Saved!"); // Fallback to "Saved!" if message is empty

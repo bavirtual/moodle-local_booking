@@ -139,6 +139,7 @@ define([
             const exercise = $(Selectors.wrappers.calendarwrapper).data('exercise-id');
             const studentid = $(Selectors.wrappers.calendarwrapper).data('student-id');
             const trainingtype = $(Selectors.wrappers.calendarwrapper).data('training-type');
+            const haschecklists = $(Selectors.wrappers.calendarwrapper).data('has-checklists');
 
             // Get marked availability slots
             getSlots(root, 'book');
@@ -174,7 +175,7 @@ define([
                     } else {
                         clean();
                         let redirectPage = 'view.php?courseid=' + course;
-                        if (trainingtype === 'Multicrew') {
+                        if (trainingtype === 'Multicrew' && haschecklists) {
                             redirectPage = 'studentstats.php?courseid=' + course + '&studentid=' + studentid;
                         }
                         // Redirect to the report page instead of view.php

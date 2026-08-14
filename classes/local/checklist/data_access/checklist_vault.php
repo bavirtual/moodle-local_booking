@@ -47,6 +47,9 @@ class checklist_vault implements checklist_vault_interface
     /** Checklist check table */
     const DB_CHECKLIST_CHECK = 'checklist_check';
 
+    /** Teacher comments on a student's checklist item */
+    const DB_CHECKLIST_COMMENT = 'checklist_comment';
+
     /**
      * Get all checklists in a course, optionally including their items and student progress
      *
@@ -101,7 +104,20 @@ class checklist_vault implements checklist_vault_interface
             return $items;
         }
 
-        // Get student's check status for each item
+        $comments = [];
+        if (!empty($items)) {
+            list($insql, $inparams) = $DB->get_in_or_equal(array_keys($items), SQL_PARAMS_NAMED);
+            $inparams['userid'] = $studentid;
+            $comments = $DB->get_records_select(
+                self::DB_CHECKLIST_COMMENT,
+                "userid = :userid AND itemid $insql",
+                $inparams,
+                '',
+                'itemid, text, commentby'
+            );
+        }
+
+        // Get student's check status and teacher comment for each item
         foreach ($items as $item) {
             $check = $DB->get_record(self::DB_CHECKLIST_CHECK, [
                 'item' => $item->id,
@@ -112,6 +128,8 @@ class checklist_vault implements checklist_vault_interface
             $item->teachercheck = $check ? $check->teachermark : CHECKLIST_TEACHERMARK_UNDECIDED;
             $item->teachertimestamp = $check ? $check->teachertimestamp : 0;
             $item->checkid = $check ? $check->id : 0;
+            $item->teachercomment = isset($comments[$item->id]) ? $comments[$item->id]->text : '';
+            $item->teachermark_comment = $item->teachercomment;
         }
 
         return $items;
@@ -181,6 +199,51 @@ class checklist_vault implements checklist_vault_interface
             $check->teacherid = $teacherid;
             $check->usertimestamp = 0;
             $DB->insert_record(self::DB_CHECKLIST_CHECK, $check);
+        }
+
+        return $checklist;
+    }
+
+    /**
+     * Create, update, or delete a teacher comment on a student's checklist item.
+     * Empty comment text removes the existing comment, matching the Checklist plugin.
+     *
+     * @param int $itemid The checklist item id
+     * @param int $studentid The student the comment is for
+     * @param int $teacherid The teacher writing the comment
+     * @param string $comment The comment text
+     * @return object The parent checklist record
+     */
+    public static function update_checklist_comment(int $itemid, int $studentid, int $teacherid, string $comment)
+    {
+        global $DB;
+
+        $item = $DB->get_record(self::DB_CHECKLIST_ITEMS, ['id' => $itemid], '*', MUST_EXIST);
+        $checklist = $DB->get_record(self::DB_CHECKLIST, ['id' => $item->checklist], '*', MUST_EXIST);
+
+        $comment = trim($comment);
+        $existing = $DB->get_record(self::DB_CHECKLIST_COMMENT, [
+            'itemid' => $itemid,
+            'userid' => $studentid,
+        ]);
+
+        if ($comment === '') {
+            if ($existing) {
+                $DB->delete_records(self::DB_CHECKLIST_COMMENT, ['id' => $existing->id]);
+            }
+        } else if ($existing) {
+            if ($existing->text != $comment) {
+                $existing->text = $comment;
+                $existing->commentby = $teacherid;
+                $DB->update_record(self::DB_CHECKLIST_COMMENT, $existing);
+            }
+        } else {
+            $addcomment = new stdClass();
+            $addcomment->itemid = $itemid;
+            $addcomment->userid = $studentid;
+            $addcomment->commentby = $teacherid;
+            $addcomment->text = $comment;
+            $DB->insert_record(self::DB_CHECKLIST_COMMENT, $addcomment);
         }
 
         return $checklist;

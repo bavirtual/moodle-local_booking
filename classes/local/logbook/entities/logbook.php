@@ -245,7 +245,7 @@ class logbook implements logbook_interface {
     public function get_summary(bool $tostring = false, bool $allcourses = false, int $examid = 0, int $sessionid = 0) {
         $totals = logbook_vault::get_logbook_summary($this->courseid, $this->userid, $examid, $allcourses, $sessionid);
         if ($tostring) {
-            $exceptionkeys = ['totallandingsday', 'totallandingsnight', 'totalpftime', 'totalpmtime'];
+            $exceptionkeys = ['totallandingsday', 'totallandingsnight', 'totalpfflights', 'totalpmflights'];
             foreach ($totals as $key => $total) {
                 if (!in_array($key, $exceptionkeys)) {
                     // TODO: PHP9 deprecates dynamic properties
@@ -266,7 +266,7 @@ class logbook implements logbook_interface {
     public function get_summary_upto_exercise(int $exerciseid, bool $tostring = false) {
         $totals = logbook_vault::get_logbook_summary_to_exercise($this->courseid, $this->userid, $exerciseid);
         if ($tostring) {
-            $exceptionkeys = ['totallandingsday', 'totallandingsnight', 'totalpftime', 'totalpmtime'];
+            $exceptionkeys = ['totallandingsday', 'totallandingsnight', 'totalpfflights', 'totalpmflights'];
             foreach ($totals as $key => $total) {
                 if (!in_array($key, $exceptionkeys)) {
                     // TODO: PHP9 deprecates dynamic properties

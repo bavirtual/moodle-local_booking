@@ -27,7 +27,7 @@ import * as Str from 'core/str';
 import Notification from 'core/notification';
 import ModalEvents from 'core/modal_events';
 import Pending from 'core/pending';
-import Repository from 'local_booking/repository';
+import * as Repository from 'local_booking/repository';
 import ModalDelete from 'local_booking/modal_delete';
 import ModalWarning from 'local_booking/modal_warning';
 import BookingSessions from 'local_booking/events';

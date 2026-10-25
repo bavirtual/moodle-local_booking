@@ -372,7 +372,11 @@ function local_booking_output_fragment_logentry_form($args) {
         // copy over additional data needed for setting the form
         $data['courseid'] = $courseid;
         $data['userid'] = $userid;
-        $data['exerciseid'] = $exerciseid;
+        // Leave exerciseid unset when opening from the logbook so the form default
+        // (the selected exercise) is not overwritten with 0.
+        if (!empty($exerciseid)) {
+            $data['exerciseid'] = $exerciseid;
+        }
         $data['sessionid'] = $sessionid;
     }
 

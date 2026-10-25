@@ -81,6 +81,13 @@ class save_logentry extends external_api {
         parse_str($params['formargs'], $args);
         parse_str($params['formdata'], $data);
 
+        // Logbook entries created from the logbook page pick the exercise in the
+        // "exercises" select. That select is already on its first option, so the
+        // change handler never copies it into the hidden exerciseid (left at 0).
+        if (!empty($data['exercises'])) {
+            $data['exerciseid'] = clean_param($data['exercises'], PARAM_INT);
+        }
+
         $courseid = clean_param($args['courseid'] ?? 0, PARAM_INT);
         $exerciseid = clean_param($args['exerciseid'] ?? 0, PARAM_INT);
         $userid = clean_param($args['userid'] ?? 0, PARAM_INT);

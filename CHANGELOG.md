@@ -1,5 +1,11 @@
 # Change log
 
+## [2026102500] - RELEASED 2026-10-25
+
+### Fixed
+
+- Logbook entries added from the logbook page kept exercise id 0, so the entry card showed "Invalid exercise" instead of the selected exercise
+
 ## [2026081403] - RELEASED 2026-08-14
 
 ### Added

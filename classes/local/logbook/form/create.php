@@ -86,6 +86,11 @@ class create extends \moodleform {
         $graduationexerciseid = $subscriber->get_graduation_exercise_id();
         $flighttype = $newentry ? ($this->_customdata['exerciseid'] == $graduationexerciseid ? 'check' : 'training') : $logentry->get_flighttype();
         $this->add_default_hidden_elements($mform, $subscriber->trainingtype, $flighttype, $graduationexerciseid);
+        // The exercise picker opens with its first option selected. Match the
+        // hidden exercise id so a save without changing the select keeps that exercise.
+        if ($exerciseempty && !empty($exercises)) {
+            $mform->setDefault('exerciseid', (int) array_key_first($exercises));
+        }
         $this->add_elements($mform, $subscriber, $logentry, $flighttype, $exerciseempty);
 
         // Add the javascript required to enhance this mform.

@@ -334,6 +334,41 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
     }
 
     /**
+     * A logbook-page entry keeps the exercise already selected in the picker.
+     */
+    public function test_save_logentry_from_logbook_keeps_selected_exercise(): void {
+        global $DB, $COURSE;
+
+        $setup = $this->create_subscribed_course();
+        unset($COURSE->subscriber);
+
+        $this->setUser($setup->teacher);
+        $this->redirectMessages();
+        $GLOBALS['USER']->ignoresesskey = true;
+
+        $formargs = http_build_query([
+            'courseid' => $setup->course->id,
+            'exerciseid' => 0,
+            'userid' => $setup->student->id,
+        ], '', '&');
+        $result = save_logentry::execute(
+            $formargs,
+            $this->logentry_formdata($setup, [
+                'exerciseid' => 0,
+                'exercises' => $setup->exerciseid,
+            ])
+        );
+        $result = external_api::clean_returnvalue(save_logentry::execute_returns(), $result);
+
+        $this->assertFalse($result['validationerror']);
+        $studententry = $DB->get_record('local_booking_logbooks', [
+            'courseid' => $setup->course->id,
+            'userid' => $setup->student->id,
+        ], '*', MUST_EXIST);
+        $this->assertEquals($setup->exerciseid, (int) $studententry->exerciseid);
+    }
+
+    /**
      * Editing a logentry updates the stored remarks.
      */
     public function test_save_logentry_updates_remarks(): void {

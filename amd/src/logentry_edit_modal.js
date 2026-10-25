@@ -516,6 +516,29 @@ export default class ModalLogEntryForm extends Modal {
     }
 
     /**
+     * Copy the exercise picker value into the hidden exercise id.
+     *
+     * The logbook form has no exercise until the user picks one, and the
+     * select's initial option does not fire a change event.
+     *
+     * @method syncSelectedExercise
+     */
+    syncSelectedExercise() {
+        const exercises = $('#id_exercises');
+        if (!exercises.length) {
+            return;
+        }
+
+        const exerciseid = exercises.val();
+        $('input[name="exerciseid"]').val(exerciseid);
+        if (exerciseid == $('input[name="graduationexerciseid"]').val()) {
+            $('input[name="flighttypehidden"]').val('check');
+        } else if ($('input[name="flighttype"]:checked').length) {
+            $('input[name="flighttypehidden"]').val($('input[name="flighttype"]:checked').val());
+        }
+    }
+
+    /**
      * Sets the input mask for all masked elements.
      *
      * @method registerChangeListeners
@@ -533,17 +556,14 @@ export default class ModalLogEntryForm extends Modal {
             }.bind(this));
         }
 
+        // The exercise list is already on its first option when the logbook
+        // form opens, so copy that choice before the user has to change it.
+        this.syncSelectedExercise();
+
         // Update elements based on selected exercise
         var exercises = $('#id_exercises');
         exercises.on('change', function() {
-            // Assign the value selected in the radio buttons to the hidden flight type element
-            let $exerciseid = $("#id_exercises").val();
-            $("input[name='exerciseid']").val($exerciseid);
-            if ($exerciseid == $("input[name='graduationexerciseid']").val()) {
-                $("input[name='flighttypehidden']").val("check");
-            } else {
-                $("input[name='flighttypehidden']").val($("input[name='flighttype']:checked").val());
-            }
+            this.syncSelectedExercise();
             this.doDynamicDisplay();
         }.bind(this));
 
